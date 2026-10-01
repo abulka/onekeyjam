@@ -142,8 +142,15 @@ export function candidatesToTriggerMapSmart(chordConfigs, maxChordConfigs, song,
 
 }
 
+/**
+ * Re-allocate mappings to white notes, reusing an existing chord trigger map.
+ * @param {ChordTriggerMap} existingChordTriggerMap
+ * @param {Array<number>} idsInOrder the desired order of chord config ids
+ * @returns {TriggerMapSmartResult}
+ */
 export function existingToTriggerMapSmart(existingChordTriggerMap, idsInOrder) {
     // re-allocate mappings to white notes, use existing chord trigger map
+    /** @type {ChordTriggerMap} */
     let chordTriggerMap = {}
     let nextTriggerNoteIndex = 0;
 

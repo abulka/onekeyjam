@@ -1,3 +1,4 @@
+// @ts-check
 import { globals } from "./globals.js"
 import { changeScaleFilter } from "./change-scale.js" // for testing
 import { wireNoteOnEvents, wireNoteOffEvents, wireCCEvents, calculateRhBlackNoteModifierNotes } from './wire-events.js';
@@ -13,6 +14,9 @@ import { keyDetection } from "./keyDetection"
 import { deletePendingChordConfigs } from './massOperationsOnChordConfigs'
 import { fetchFeaturedProject, fetchUserProject } from './projectLibrary';
 import { listKeyboardConfigs, fetchKeyboardConfig, listFeaturedProjects, listUserProjects } from './projectLibrary';
+
+/** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
+/** @typedef {import("./typedefs").KeyboardConfig} KeyboardConfig */
 
 // ╔═╗┬─┐┌─┐ ┬┌─┐┌─┐┌┬┐  ┌─┐┌─┐┌┐┌┌─┐┬┌─┐
 // ╠═╝├┬┘│ │ │├┤ │   │   │  │ ││││├┤ ││ ┬
@@ -209,13 +213,12 @@ export function loadNeoSoul() {
 
 // Event handlers - work around for vue setters not being async and we need to await the json load before linking
 
-document.addEventListener("switch-project", async function (event) {
+document.addEventListener("switch-project", async function (/** @type {CustomEvent} */ event) {
     if (event.detail.url) {
         await setProject(
             event.detail.url,
             event.detail.project,  // usually undefined
             event.detail.currentChordTriggerNote,  // usually undefined
-            event.detail.maxChordConfigs,  // usually undefined
         )
     }
     else {
@@ -224,14 +227,12 @@ document.addEventListener("switch-project", async function (event) {
                 event.detail.name,
                 event.detail.project,  // usually undefined
                 event.detail.currentChordTriggerNote,  // usually undefined
-                event.detail.maxChordConfigs,  // usually undefined
             )
         else
             await setUserProject(
                 event.detail.name,
                 event.detail.project,  // usually undefined
                 event.detail.currentChordTriggerNote,  // usually undefined
-                event.detail.maxChordConfigs,  // usually undefined
             )
 
     }
@@ -242,7 +243,7 @@ document.addEventListener("switch-project", async function (event) {
     });
 })
 
-document.addEventListener("switch-keyboard", async function (event) {
+document.addEventListener("switch-keyboard", async function (/** @type {CustomEvent} */ event) {
     await switchKeyboard(event.detail.name)
     regen();
     linkProjectToKeyboard()
@@ -281,7 +282,9 @@ function projectChores({ project, maxChordConfigs, preserveSongIds }) {
 // ┴└─└─┘└─┘└─┘┘└┘
 
 export function regen(updateSong = false, useExistingChordMap = false, idsInOrder = []) {
-    let chordTriggerMap, ids, statistics
+    /** @type {ChordTriggerMap} */
+    let chordTriggerMap
+    let ids, statistics
     if (useExistingChordMap) {
         ({ chordTriggerMap, ids, statistics } = existingToTriggerMapSmart(
             globals.chordTriggerMap,
@@ -332,14 +335,15 @@ export async function bootKeyboard() {
 }
 
 export async function switchKeyboard(name) {
-    let keyboardConfig = {}
+    /** @type {KeyboardConfig} */
+    let keyboardConfig = { name: '', rhJamSoundOctave: 4, lhTriggerOctave: 3 }
 
     try {
         keyboardConfig = await fetchKeyboardConfig(name)
     }
     catch (e) {
         console.warn('Could not get midi keyboard config', name, '- caught and continuing with emergency settings...')
-        keyboardConfig = { name: 'Dummy (emergency)', description: '' }
+        keyboardConfig = { name: 'Dummy (emergency)', description: '', rhJamSoundOctave: 4, lhTriggerOctave: 3 }
     }
 
     // Emergency defaults, based on a small, two octave keyboard

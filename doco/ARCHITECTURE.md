@@ -30,8 +30,8 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
   libraries. It runs automatically before `npm run dev` and `npm run build`.
 - `public/` holds static assets: project JSON in `public/projects/`, keyboard
   configs in `public/keyboards/`, MIDI files, images and CSS.
-- `test/` holds the Mocha tests. Component tests live beside the components in
-  `src/components/__tests__/` and run under Vitest.
+- `test/` holds the Vitest tests. Component tests live beside the components in
+  `src/components/__tests__/` and run under Vitest too.
 
 ## Shared state
 
@@ -71,6 +71,9 @@ boundary between the UI layer and the MIDI and audio logic.
 - A keyboard config sets `lhTriggerOctave` (where chords are triggered) and
   `rhJamSoundOctave` (where jam notes sound). A project may override these in
   `options.keyboard`.
+
+See `doco/DATA-MODEL.md` for the full field reference, the static file schemas
+and the validation commands.
 
 ## Runtime flows
 

@@ -1,67 +1,122 @@
+// @ts-check
 
 /**
- * @typedef Chord
- * @type {Array<string>}
+ * The shared data model for projects, keyboard configs and the static library
+ * manifests. This is the single source of truth for the shapes that are saved
+ * to IndexedDB, exported/imported as JSON and shipped in `public/`.
+ *
+ * There are two closely related project shapes:
+ * - `Project` is the in-memory shape used by the app.
+ * - `PersistedProject` is what `getProjectForPersistence()` writes: it strips
+ *   the derived scale-note arrays (and empty `symbols`) so saved files stay
+ *   small. `emergencyRepairProject()` re-expands them on load.
+ */
+
+/**
+ * A chord as a list of note names with octaves, e.g. `["C3", "E3", "G3"]`.
+ * @typedef {Array<string>} Chord
  */
 
 /** @typedef {Array<string>} ScaleNotes */
 
-
 /**
- * @typedef ProjectMeta
- * @type {object}
- * @property {string} type // e.g. "onekeyjam"
- * @property {number} version // e.g. 2
- * @property {string} source // url e.g. "https://onekeyjam.netlify.app"
-}
-
-/**
- * @typedef Project
- * @type {object}
- * @property {ProjectMeta} meta version and url
- * @property {string} name description of the project
- * @property {Array<ChordConfig>} chords - the chords (candidates) in the project
- * @property {object} options - the project options
- * @property {Songs} songs a collection of chord configs referenced by id, incl favourites and blacklist
+ * @typedef {object} ProjectMeta
+ * @property {string} type e.g. "onekeyjam"
+ * @property {number} version e.g. 2
+ * @property {string} source url e.g. "https://onekeyjam.netlify.app"
  */
 
 /**
- * @typedef ChordConfig
- * @type {object}
- * @property {number} id unique id
- * @property {string} name description of the config e.g. "Dm7 chord - symbols and scale3 is random stuff"
+ * A chord config: one chord with its notes, optional bass and up to three
+ * candidate scales. `scale1Notes`/`scale2Notes`/`scale3Notes`/`scaleNotesOfChord`
+ * are derived and are stripped when persisted (see `PersistedChordConfig`).
+ * @typedef {object} ChordConfig
+ * @property {number} id unique id within the project
+ * @property {string} name description e.g. "Dm7 chord - symbols and scale3 is random stuff"
  * @property {string} chord chord name incl tonic and type e.g. "Dm7"
- * @property {Array<string>} chordNotes chord expanded into actual notes incl octave e.g. ["D3", "F3", "A3", "C4", "D4"]
- * @property {string} [symbols] possible other chords, comma separated string e.g. "Dm7,CM,Gm7#5/F"
- * @property {string} [bass] bass note sans octave e.g. "A",
+ * @property {Array<string>} chordNotes chord expanded into notes incl octave e.g. ["D3", "F3", "A3", "C4", "D4"]
+ * @property {string} [symbols] alternative detected chord symbols, comma separated e.g. "Dm7,CM,Gm7#5/F"
+ * @property {string} [bass] bass note sans octave e.g. "A"
  * @property {string} [bassNote] bass note incl octave e.g. "A3"
  * @property {string} scale1 default scale e.g. "d dorian"
  * @property {string} [scale2] alternative scale e.g. "c major pentatonic"
  * @property {string} [scale3] alternative scale e.g. "f# minor"
- * @property {Array<string>} [scale1Notes] expanded scale1 into notes sans octave e.g. ["C", "D", "E", "F", "G"],
- * @property {Array<string>} [scale2Notes] expanded scale2 into notes sans octave e.g.  ["C", "D", "E", "F", "G"],
- * @property {Array<string>} [scale3Notes] expanded scale3 into notes sans octave e.g. []
- * @property {Array<string>} scaleNotesOfChord special scale sans octave
+ * @property {Array<string>} [scale1Notes] derived: scale1 expanded to notes sans octave
+ * @property {Array<string>} [scale2Notes] derived
+ * @property {Array<string>} [scale3Notes] derived
+ * @property {Array<string>} [scaleNotesOfChord] derived: the chord notes as a scale
  */
 
 /**
- * An object with trigger note keys and chord config values:
+ * A chord config as persisted: the derived scale-note arrays are removed.
+ * @typedef {Omit<ChordConfig, "scale1Notes"|"scale2Notes"|"scale3Notes"|"scaleNotesOfChord">} PersistedChordConfig
+ */
+
+/**
+ * Maps a left-hand trigger note to a chord config.
  * @typedef {Object.<string, ChordConfig>} ChordTriggerMap
  */
 
 /**
- * An object with trigger note keys and note values:
+ * Maps a played right-hand note to an allowed scale note.
  * @typedef {Object.<string, string>} ScaleTriggerMap
  */
 
 /**
- * @typedef Song
- * @type {object}
+ * A song is a named selection of chord config ids plus favourites/blacklist.
+ * @typedef {object} Song
  * @property {Array<number>} ids the chord config ids in this song
- * @property {Array<number>} favourites ids that appear at the top of the chord list
- * @property {Array<number>} blacklist ids that have been excluded in this song but not from other songs
+ * @property {Array<number>} favourites ids shown at the top of the chord list
+ * @property {Array<number>} blacklist ids excluded in this song only
  */
 
 /** @typedef {Object.<string, Song>} Songs */
+
+/**
+ * A sequencer pattern stored with a project.
+ * @typedef {object} ChordSequence
+ * @property {string} mml Music Macro Language string
+ * @property {number} tempo
+ */
+
+/**
+ * Per-project overrides. `keyboard` overrides the current keyboard config.
+ * @typedef {object} ProjectOptions
+ * @property {Partial<KeyboardConfig>} [keyboard]
+ */
+
+/**
+ * The in-memory project shape.
+ * @typedef {object} Project
+ * @property {ProjectMeta} [meta]
+ * @property {string} name description of the project
+ * @property {Array<ChordConfig>} chords the chord configs in the project
+ * @property {ProjectOptions} options
+ * @property {Songs} songs chord configs grouped by song, incl favourites and blacklist
+ * @property {Object.<string, ChordSequence>} [chordSequences]
+ */
+
+/**
+ * The persisted (slimmed) project shape written to IndexedDB or exported JSON.
+ * @typedef {Omit<Project, "chords"> & { chords: Array<PersistedChordConfig> }} PersistedProject
+ */
+
+/**
+ * A keyboard config (static JSON in `public/keyboards/`).
+ * @typedef {object} KeyboardConfig
+ * @property {string} name
+ * @property {string} [description]
+ * @property {number} rhJamSoundOctave where jam notes sound
+ * @property {number} lhTriggerOctave where chords are triggered
+ */
+
+/**
+ * An entry in the generated library manifests
+ * (`projects-manifest.json`, `keyboards-manifest.json`).
+ * @typedef {object} ManifestEntry
+ * @property {string} text display name
+ * @property {string} value URL to the JSON file
+ * @property {string} file file name on disk
+ */
 
 export { }

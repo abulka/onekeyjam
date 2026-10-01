@@ -1,3 +1,4 @@
+// @ts-check
 import { globals } from "./globals.js"
 import { stringify } from './prettyjson.js'
 import { getProjectForPersistence } from './projectConfig'
@@ -58,7 +59,7 @@ export function downloadProject() {
     let name = prompt('Save Project As', project.name);
     if (name != null) {
         // Update the download project link with the contents of the project as JSON
-        const json = stringify(project, null, 2)
+        const json = stringify(project, { indent: 2 })
 
         // Use existing link on page
         // var a = document.getElementById('download-project')
@@ -118,18 +119,18 @@ export async function uploadProject() {
     input.type = 'file'
 
     // Listen for the change event
-    input.addEventListener('change', function (e) {
+    input.addEventListener('change', function (/** @type {Event} */ e) {
         // Get the file
-        var file = e.target.files[0]
+        var file = (/** @type {HTMLInputElement} */ (e.target)).files[0]
 
         // Read the file
         var reader = new FileReader()
         reader.readAsText(file, 'UTF-8')
 
         // When the file is loaded
-        reader.onload = async function (evt) {
+        reader.onload = async function (/** @type {ProgressEvent<FileReader>} */ evt) {
             // Parse the JSON
-            var project = JSON.parse(evt.target.result)
+            var project = JSON.parse(/** @type {string} */ (evt.target.result))
 
             console.log('uploading project', project)
             let fileName = input.value.replace(/^.*[\\/]/, '')

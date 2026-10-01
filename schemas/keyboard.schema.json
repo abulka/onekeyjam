@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://onekeyjam.netlify.app/schemas/keyboard.schema.json",
+  "title": "OneKeyJam Keyboard Config",
+  "description": "A keyboard config stored in public/keyboards.",
+  "type": "object",
+  "required": ["name", "lhTriggerOctave", "rhJamSoundOctave"],
+  "properties": {
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "rhJamSoundOctave": { "type": "number" },
+    "lhTriggerOctave": { "type": "number" }
+  }
+}

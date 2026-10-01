@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://onekeyjam.netlify.app/schemas/project.schema.json",
+  "title": "OneKeyJam Project",
+  "description": "A project as stored in public/projects or exported/imported as JSON. Derived scale-note arrays may be present in-memory but are stripped when persisted.",
+  "type": "object",
+  "required": ["name", "chords"],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["type", "version"],
+      "properties": {
+        "type": { "const": "onekeyjam" },
+        "version": { "type": "number" },
+        "source": { "type": "string" }
+      }
+    },
+    "name": { "type": "string" },
+    "chords": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/chordConfig" }
+    },
+    "options": { "type": "object" },
+    "songs": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "ids": { "type": "array", "items": { "$ref": "#/definitions/id" } },
+          "favourites": { "type": "array", "items": { "$ref": "#/definitions/id" } },
+          "blacklist": { "type": "array", "items": { "$ref": "#/definitions/id" } }
+        }
+      }
+    },
+    "chordSequences": { "type": "object" }
+  },
+  "definitions": {
+    "id": {
+      "description": "Chord config ids are normally numbers, but some hand-authored projects still use numeric strings. The app compares ids loosely, so both are accepted.",
+      "type": ["number", "string"]
+    },
+    "chordConfig": {
+      "description": "Chord configs in static projects may omit 'chord' and/or 'chordNotes'; expandChordConfig() derives the missing parts on load.",
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "#/definitions/id" },
+        "name": { "type": "string" },
+        "chord": { "type": "string" },
+        "chordNotes": { "type": "array", "items": { "type": "string" } },
+        "symbols": { "type": "string" },
+        "bass": { "type": "string" },
+        "bassNote": { "type": "string" },
+        "scale1": { "type": "string" },
+        "scale2": { "type": "string" },
+        "scale3": { "type": "string" },
+        "scale1Notes": { "type": "array", "items": { "type": "string" } },
+        "scale2Notes": { "type": "array", "items": { "type": "string" } },
+        "scale3Notes": { "type": "array", "items": { "type": "string" } },
+        "scaleNotesOfChord": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  }
+}

@@ -16,6 +16,10 @@ starts, so the static libraries are listed in the UI.
 Tests: `npm test` runs the Vitest suite once. Use `npm run test:watch` while
 developing.
 
+Type-checking: `npm run typecheck` (TypeScript checks the JS files that opt in
+with `// @ts-check`). Data validation: `npm run validate:data` checks the static
+project and keyboard JSON against `schemas/`. See doco/DATA-MODEL.md.
+
 ## Deploying to Netlify
 
 The app is a static site with no backend. Netlify builds it and serves the

@@ -20,9 +20,10 @@ import { isProduction } from './settings.js'
 // We also make this reactive so that it plays nice with vue.
 // TIP: reactive variables are never 'undefined', as vue will set them to a special proxy object
 export const globals = reactive({
+    /** @type {Project} */
     project: {
         name: '',
-        chords: {},  // original chord configs
+        chords: [],  // original chord configs
         songs: {},
         chordSequences: {
             default: { mml: "t100o4l8c1d1c1d1e1f1g1g1", tempo: 99 },
