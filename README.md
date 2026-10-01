@@ -30,6 +30,10 @@ sound in the browser.
 - **Import MIDI files** - load a MIDI file and OneKeyJam finds the chords inside
   it, then assigns them across the keyboard so you can trigger each chord with
   one note and jam over it in key. If you know [Cthulhu](https://xferrecords.com/products/cthulhu), this is the same idea.
+- **Play from your computer keyboard** - if you do not have an external MIDI
+  keyboard handy, click the on-screen keyboard and play it with your computer
+  keys: the lower row (`z x c v b n m`) triggers the left-hand chords and the
+  upper row (`q w e r t y u`) plays the solo notes.
 
 ## Using the app
 
@@ -52,6 +56,25 @@ the box, and you can also route notes to a DAW or synth such as Ableton via the
 macOS IAC Driver. MIDI needs a secure context, so the page must be served over
 HTTPS (or `localhost`). See [doco/NOTES.md](doco/NOTES.md) for the full MIDI and
 DAW setup.
+
+### Play with your computer keyboard
+
+If you do not have an external MIDI keyboard handy, you can play the on-screen
+keyboard with your computer keyboard instead.
+
+1. Click the on-screen piano keyboard once so that it has focus.
+2. Trigger chords with the lower row of keys, `z x c v b n m`. These are the
+   white keys of the chord trigger octave (`C3` to `B3` by default).
+3. The black keys `s d g h j` in that octave are the chord modifiers (`C#`,
+   `D#`, `F#`, `G#`, `A#`). Hold `s` as a shift key, and use the others to
+   switch scales or transpose the chords.
+4. Play solo notes with the upper row, `q w e r t y u i`. These land in the jam
+   octave (`C4` upward by default) and are filtered into the current scale.
+
+The keys only work while the on-screen keyboard has focus, so if typing does
+nothing, click the keyboard first. The octaves follow the keyboard config
+(`lhTriggerOctave`, `rhJamSoundOctave`), so a different project or keyboard may
+shift the notes that each key plays.
 
 ## Quick start
 

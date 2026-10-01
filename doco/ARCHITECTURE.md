@@ -92,6 +92,17 @@ and the validation commands.
   notes, channel 2 for chords and channel 3 for bass. When `globals.GM` is
   true, sounds are instead made in the browser with WebAudioFont
   (`src/lib/general-midi.js`).
+- The on-screen keyboard is the `webaudio-keyboard` custom element from g200kg
+  webaudio-controls. Alongside mouse and touch it maps computer keys to notes
+  (the QWERTY rows, using the keycodes in `src/lib/webaudio-controls.js`), so it
+  can be played without an external MIDI keyboard. It emits the same `change`
+  events that `LivePianoKeyboard.vue` handles in `onChange()`, which means
+  computer-keyboard notes flow through `onNoteOn()` and `onNoteOff()` in
+  `src/lib/wire-events.js` exactly like mouse or MIDI notes. It only responds
+  while the keyboard canvas has focus, so the user must click it first.
+- The separate `src/components/PianoKeyboard.vue` component (reachable only from
+  the research view) is an older experiment. It highlights keys when computer
+  keys are pressed but does not emit events, so it does not produce sound.
 
 ## Persistence and backend
 
