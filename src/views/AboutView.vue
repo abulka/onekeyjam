@@ -32,9 +32,9 @@
 
       <p>MORE HELP TO COME</p>
       
-      <h2>Subscriptions</h2>
-      <p>You can subscribe to the app for $2/month to get access to more than three chords per project.  For more
-      information visit the <a href="https://github.com/abulka/onekeyjam">OneKeyJam public GitHub page</a>.
+      <h2>Free to use</h2>
+      <p>OneKeyJam is free and open source, with no subscriptions. All features are available to everyone. See the
+      <a href="https://github.com/abulka/onekeyjam">OneKeyJam public GitHub page</a> for the source code.
       </p>
       <h2>Issues and Bugs</h2>
       <p>Report any issues, feature requests or bugs in the <a href="https://github.com/abulka/onekeyjam/issues">OneKeyJam issue tracker</a>.

@@ -34,7 +34,7 @@ The `prebuild` script generates the manifests automatically on Netlify.
 
 ## Running MIDI and audio
 
-MIDI requires a secure context. The IAC Driver must be enabled in macOS Audio MIDI Setup, and a synth (for example Ableton) must listen on the IAC Driver input. See README.md for the full setup.
+MIDI requires a secure context. The IAC Driver must be enabled in macOS Audio MIDI Setup, and a synth (for example Ableton) must listen on the IAC Driver input. See doco/NOTES.md for the full setup.
 
 ## Architecture
 

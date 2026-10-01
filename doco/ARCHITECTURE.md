@@ -111,6 +111,8 @@ and the validation commands.
 
 ## Further reading
 
-- `README.md` covers usage, MIDI setup and the many deployment options.
+- `README.md` covers what the app is, how to run it and how to use it.
+- `doco/NOTES.md` covers detailed MIDI setup, usage reference and the many
+  deployment options.
 - `doco/implementation-notes.md` records detailed WebMidi.js findings.
 - `doco/chord-scale-ref.md` covers the chord and scale reference material.
