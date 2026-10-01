@@ -1,0 +1,41 @@
+{
+  "name": "C Minor II-V-I no custom chords",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Dø7, Dm7b5ChordNicerVoicing - Fm Melodic scale",
+      "chordNotes": ["F3", "Ab3", "C4", "D4"],
+      "bass": "D3",
+      "scale1": "F melodic minor",
+      "scale2": "",
+      "scale3": ""
+    },
+    {
+      "id": 2,
+      "name": "G7alt, G7b9ChordNicerVoicing - Abm Melodic scale",
+      "chordNotes": ["F3", "Ab3", "B3", "D4"],
+      "bass": "G3",
+      "scale1": "Ab melodic minor",
+      "scale2": "",
+      "scale3": ""
+    },
+    {
+      "id": 3,
+      "name": "CmMaj7, Cm7ChordNicerVoicing - Cm Melodic scale",
+      "bass": "C2",
+      "chordNotes": ["Eb3", "G3", "Bb3", "C4"],
+      "scale1": "C melodic minor",
+      "scale2": "",
+      "scale3": ""
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {"ids": [1, 2, 3], "favourites": [1, 2, 3], "blacklist": []}
+  }
+}

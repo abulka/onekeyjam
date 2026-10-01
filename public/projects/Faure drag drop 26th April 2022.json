@@ -1,0 +1,78 @@
+{
+  "name": "Faure drag drop 26th April 2022",
+  "options": {},
+  "chords": [
+    {
+      "name": "DM,F#m#5/D",
+      "chord": "DM",
+      "chordNotes": ["D2", "A2", "D3", "F#3", "A3", "D4", "F#4"],
+      "id": 14,
+      "scale1": "D major pentatonic",
+      "scale2": "F# vietnamese 1",
+      "scale3": "F# pelog"
+    },
+    {
+      "name": "Em",
+      "chord": "Em",
+      "chordNotes": ["E3", "G3", "B3"],
+      "id": 25,
+      "scale1": "E minor pentatonic",
+      "scale2": "E minor six pentatonic",
+      "scale3": "E flat three pentatonic"
+    },
+    {
+      "name": "E7/D",
+      "chord": "E7/D",
+      "chordNotes": ["D2", "D3", "E3", "G#3", "B3", "E4"],
+      "id": 30,
+      "scale1": "E mixolydian pentatonic",
+      "scale2": "E lydian dominant pentatonic",
+      "scale3": "E composite blues"
+    },
+    {
+      "name": "Bm/D",
+      "chord": "Bm/D",
+      "chordNotes": ["D2", "B2", "D3", "F#3", "B3"],
+      "id": 23,
+      "scale1": "B minor pentatonic",
+      "scale2": "B minor six pentatonic",
+      "scale3": "B flat three pentatonic"
+    },
+    {
+      "name": "FM/C,Am#5/C",
+      "chord": "FM/C",
+      "chordNotes": ["C2", "C3", "A3", "F4"],
+      "id": 34,
+      "scale1": "F major pentatonic",
+      "scale2": "A vietnamese 1",
+      "scale3": "A pelog"
+    },
+    {
+      "name": "FM,Am#5/F",
+      "chord": "FM",
+      "chordNotes": ["F2", "A3", "C4", "A4"],
+      "id": 10,
+      "scale1": "F major pentatonic",
+      "scale2": "A vietnamese 1",
+      "scale3": "A pelog"
+    },
+    {
+      "name": "C#m/E",
+      "chord": "C#m/E",
+      "chordNotes": ["E2", "E3", "C#4", "E4", "G#4"],
+      "id": 19,
+      "scale1": "C# minor pentatonic",
+      "scale2": "C# minor six pentatonic",
+      "scale3": "C# flat three pentatonic"
+    },
+    {
+      "name": "Dsus24,E4/D,A7sus4/D",
+      "chord": "Dsus24",
+      "chordNotes": ["D3", "E3", "G3", "A3"],
+      "id": 6,
+      "scale1": "D composite blues",
+      "scale2": "E locrian pentatonic",
+      "scale3": "A mixolydian pentatonic"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+.DS_Store
+dist
+dist-ssr
+coverage
+*.local
+
+/cypress/videos/
+/cypress/screenshots/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Custom
+
+public/midi-files/output.mid
+public/projects/Untitled.json
+public/projects/SavedProject.json
+public/projects/junk*.json
+public/projects/projects-manifest.json
+public/keyboards/keyboards-manifest.json
+
+junk*.js
+junk*.py
+jsdoc-out/
+
+# tension java - key detection research
+XmlTensionVisualiser.jar
+AudioTensionVisualiser.jar
+*.musicxml_*.*
+research/key-detection-from-chords/tension-java/tmp/
+doco/.obsidian/
+out*.*
+.playwright-mcp/

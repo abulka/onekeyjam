@@ -1,0 +1,126 @@
+{
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "name": "neo soul thickener realloc bug",
+  "options": {},
+  "chords": [
+    {
+      "chordNotes": ["F2", "C3", "G3", "A3", "C4", "E4", "F4"],
+      "symbols": "Fmaj9",
+      "name": "Chord 1 from midi (chord was auto detected)",
+      "chord": "Fmaj9",
+      "bass": "F",
+      "scale1": "F lydian",
+      "scale2": "F major",
+      "scale3": "F bebop major",
+      "id": 0,
+      "bassNote": "F2"
+    },
+    {
+      "chordNotes": ["G2", "A2", "F3", "A3", "B3", "C4", "D4", "F4"],
+      "symbols": "F69#11/G,Am11A/G",
+      "name": "Chord 2 from midi (chord was auto detected)",
+      "chord": "F 69#11",
+      "bass": "G",
+      "scale1": "",
+      "scale2": "",
+      "scale3": "",
+      "id": 1,
+      "bassNote": "G2"
+    },
+    {
+      "chordNotes": ["A2", "E3", "F3", "G3", "B3", "C4", "F4"],
+      "symbols": "Fmaj9#11/A",
+      "name": "Chord 3 from midi (chord was auto detected)",
+      "chord": "Fmaj9#11",
+      "bass": "A",
+      "scale1": "F lydian",
+      "scale2": "F ichikosucho",
+      "scale3": "F messiaen's mode #3",
+      "id": 2,
+      "bassNote": "A2"
+    },
+    {
+      "chordNotes": ["F3", "A3", "D4"],
+      "symbols": "Dm/F",
+      "name": "Chord 4 from midi (chord was auto detected)",
+      "chord": "Dm",
+      "bass": "F",
+      "scale1": "D minor pentatonic",
+      "scale2": "D minor six pentatonic",
+      "scale3": "D flat three pentatonic",
+      "id": 3,
+      "bassNote": "F2"
+    },
+    {
+      "chordNotes": ["D2", "A2", "E3", "F3", "B3", "C4", "F4"],
+      "symbols": "Dm13,E7sus4b9b13/D",
+      "name": "Chord 5 from midi (chord was auto detected)",
+      "chord": "Dm13",
+      "bass": "D",
+      "scale1": "D composite blues",
+      "scale2": "D dorian #4",
+      "scale3": "D dorian",
+      "id": 4,
+      "bassNote": "D2"
+    },
+    {
+      "chordNotes": ["D2", "A2", "F3", "G3", "C4", "E4", "F4"],
+      "symbols": "Dm11,Fmaj13/D,FM7add13/D,G13sus4/D",
+      "name": "Chord 6 from midi (chord was auto detected)",
+      "chord": "Dm11",
+      "bass": "D",
+      "scale1": "D composite blues",
+      "scale2": "D aeolian",
+      "scale3": "D dorian",
+      "id": 5,
+      "bassNote": "D2"
+    },
+    {
+      "chordNotes": ["F3", "G3", "B3"],
+      "symbols": "G7no5/F",
+      "name": "Chord 8 from midi (chord was auto detected)",
+      "chord": "G7no5",
+      "bass": "F",
+      "scale1": "G mixolydian pentatonic",
+      "scale2": "G neopolitan major pentatonic",
+      "scale3": "G whole tone pentatonic",
+      "id": 6,
+      "bassNote": "F2"
+    },
+    {
+      "chordNotes": ["G2", "C#3", "G#3", "B3", "D4", "E4", "F4"],
+      "symbols": "G13b9#11",
+      "name": "Chord 9 from midi (chord was auto detected)",
+      "chord": "G13b9#11",
+      "bass": "G",
+      "scale1": "G lydian dominant",
+      "scale2": "G lydian minor",
+      "scale3": "G composite blues",
+      "id": 7,
+      "bassNote": "G2"
+    },
+    {
+      "chordNotes": ["C2", "E2", "G3", "C4"],
+      "symbols": "CM,Em#5/C",
+      "name": "Chord 11 from midi (chord was auto detected)",
+      "chord": "CM",
+      "bass": "C",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic",
+      "id": 8,
+      "bassNote": "C2"
+    }
+  ],
+  "songs": {
+    "default": {
+      "ids": [0, 1, 2, 3, 4, 5, 7],
+      "favourites": [0, 5, 7, 2, 4, 1, 3],
+      "blacklist": []
+    }
+  }
+}

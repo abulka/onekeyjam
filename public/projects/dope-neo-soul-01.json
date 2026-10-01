@@ -1,0 +1,47 @@
+{
+  "name": "dope-neo-soul-01",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Bbsus13 (manual json)",
+      "chord": "Bb13sus",
+      "chordNotes": ["G#3", "C4", "Eb4", "G4"],
+      "bassNote": "Bb2",
+      "bass": "Bb",
+      "scale1": "Bb dorian",
+      "scale2": "",
+      "scale3": ""
+    },
+    {
+      "id": 2,
+      "name": "G(add2)/B (manual json)",
+      "chord": "GMadd9",
+      "chordNotes": ["G3", "A3", "B3", "D4", "G4"],
+      "symbols": "",
+      "bassNote": "B2",
+      "bass": "B",
+      "scale1": "G major",
+      "scale2": "",
+      "scale3": ""
+    },
+    {
+      "id": 3,
+      "name": "CMaj9 (manual json)",
+      "chord": "Cmaj9",
+      "chordNotes": ["G3", "B3", "D4", "E4", "G4"],
+      "symbols": "",
+      "bassNote": "C3",
+      "bass": "C",
+      "scale1": "G major",
+      "scale2": "",
+      "scale3": ""
+    }
+  ],
+  "options": {},
+  "songs": {"default": {"ids": [1,2,3], "favourites": [1,2,3], "blacklist": []}},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  }
+}

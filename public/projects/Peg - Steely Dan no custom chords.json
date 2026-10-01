@@ -1,0 +1,32 @@
+{
+  "name": "Peg - Steely Dan no custom chords",
+  "chords": [
+    {
+      "name": "Gadd9, Gadd9ChordStartsOnA",
+      "bass": "G",
+      "chordNotes": ["A3", "B3", "D4", "G4"],
+      "scale1": "",
+      "scale2": "",
+      "scale3": "",
+      "id": 0,
+      "bassNote": "G3"
+    },
+    {
+      "name": "Cmaj7, Cmaj7ChordStartOnB",
+      "bass": "C",
+      "chordNotes": ["B3", "C4", "E4", "G4"],
+      "scale1": "",
+      "scale2": "",
+      "scale3": "",
+      "id": 1,
+      "bassNote": "C3"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {"default": {"ids": [0, 1], "favourites": [1], "blacklist": []}}
+}

@@ -1,0 +1,107 @@
+{
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "name": "Imported some fileName",
+  "options": {},
+  "chords": [
+    {
+      "chordNotes": [
+        "C2",
+        "G2",
+        "E3",
+        "G3",
+        "G#3",
+        "A#3",
+        "D#4",
+        "G#4",
+        "A#4",
+        "B4"
+      ],
+      "name": "Unrecognised chord",
+      "chord": "C2,G2,E3,G3,G#3,A#3,D#4,G#4,A#4,B4",
+      "bass": "C",
+      "scale3": "C major",
+      "scale2": "Ab major",
+      "scale1": "F aeolian",
+      "id": 3,
+      "bassNote": "C2"
+    },
+    {
+      "name": "G#m (user)",
+      "chord": "G#m",
+      "chordNotes": ["G#3", "B3", "D#4"],
+      "scale1": "G# minor pentatonic",
+      "scale2": "G# minor six pentatonic",
+      "scale3": "G# flat three pentatonic",
+      "id": 4,
+      "symbols": "G#m",
+      "bassNote": "G#2",
+      "bass": "G#"
+    },
+    {
+      "name": "Edim (user)",
+      "chord": "Edim",
+      "chordNotes": ["E3", "G3", "Bb3"],
+      "scale1": "E locrian pentatonic",
+      "scale2": "E super locrian pentatonic",
+      "scale3": "E minor blues",
+      "id": 5,
+      "symbols": "Edim",
+      "bassNote": "E2",
+      "bass": "E"
+    },
+    {
+      "name": "EMb5 (user)",
+      "chord": "EMb5",
+      "chordNotes": ["E3", "G#3", "Bb3"],
+      "scale1": "E lydian",
+      "scale2": "E lydian pentatonic",
+      "scale3": "E neopolitan major pentatonic",
+      "id": 6,
+      "symbols": "EMb5",
+      "bassNote": "E2"
+    },
+    {
+      "name": "G#m9 (user jam)",
+      "chord": "G#m9",
+      "chordNotes": ["G#3", "B3", "A#4", "D#5", "F#5"],
+      "bass": "G#",
+      "scale1": "G# dorian",
+      "scale2": "G# dorian #4",
+      "scale3": "G# bebop minor",
+      "id": 7,
+      "symbols": "G#m9",
+      "bassNote": "G#2"
+    },
+    {
+      "name": "G#m9 (user jam)",
+      "chord": "G#m9",
+      "chordNotes": ["F#3", "A#3", "G#4", "B4", "D#5"],
+      "bass": "F#",
+      "scale1": "G# dorian",
+      "scale2": "G# dorian #4",
+      "scale3": "G# bebop minor",
+      "id": 8,
+      "symbols": "G#m9",
+      "bassNote": "F#2"
+    },
+    {
+      "name": "G#maj7 (user jam)",
+      "chord": "G#maj7",
+      "chordNotes": ["G3", "G#3", "C4", "D#4"],
+      "bass": "G#",
+      "scale1": "G# lydian",
+      "scale2": "G# major",
+      "scale3": "G# lydian pentatonic",
+      "id": 9,
+      "symbols": "G#maj7",
+      "bassNote": "G#2"
+    }
+  ],
+  "songs": {
+    "default": {"ids": [3, 4, 5, 6, 7, 8, 9], "favourites": [], "blacklist": []}
+  }
+}

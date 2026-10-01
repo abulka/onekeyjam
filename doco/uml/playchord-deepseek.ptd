@@ -1,0 +1,91 @@
+Diagram:
+  name: Music Scale and Chord Management
+  version: 1.0
+  version-ptd: 1.1
+  description: PTD notation for managing music scales and chords, including scale filtering, chord playback, and MIDI interactions.
+  files: change-scale.js, play-chord.js, globals.js, general-midi.js
+
+Imports:
+  change-scale.js (function changeScaleFilter, function setActiveScaleFilter, function setActiveScaleFilterToMatchChord)
+    --> globals.js (object globals)
+    --> jam-mapping-to-allowed.js (function buildNoteMap)
+    --> findMatchingScales.js (function findTop3MatchingScales)
+    --> note-tools.js (function createChordSymbol)
+    --> chord-to-scale.js (function chordSymbolToScaleNames)
+    --> scaleToNotes.js (function scaleObjToNotes, function chordNotesToScaleNotes)
+
+  play-chord.js (function playChord, function playChordNote, function playChordOff)
+    --> globals.js (object globals)
+    --> change-scale.js (function changeScaleFilter)
+    --> general-midi.js (function playGmNote, function stopGmNote)
+
+Files:
+  file: change-scale.js
+    Variables:
+      const options: object
+    Functions:
+      changeScaleFilter(scaleFilter): void
+      setActiveScaleFilter(scaleTonic, scaleType, scaleNotes, scaleTypes, override): void
+      setActiveScaleFilterToMatchChord(chordTonic, chordType, strategy): void
+      _setActiveScaleFilter(scaleNotes): void
+      clearActiveScaleFilter(): void
+      calcScaleTypesDropdown(chordConfig): string[]
+      calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy): string[]
+      reportScaleChange(msg): void
+
+  file: play-chord.js
+    Variables:
+      const noteOffInfo: object
+    Functions:
+      playChord(singleNote, options): void
+      changeChordTriggerNoteAndThusScale(singleNote): void
+      playChordNote(noteName, toneType, options, channel, triggerNote, pendingNoteOffs): void
+      playChordOff(singleNote): void
+
+Classes:
+  N/A (No explicit classes defined in these files)
+
+Use Cases:
+  Sequence: Change Scale Filter
+    🧍‍♂️ -> changeScaleFilter(scaleFilter) [change-scale.js]
+         checks globals.scaleFiltering.frozen
+         -> globals.currentChordTriggerNote [globals.js]
+             validates chord trigger note
+         -> globals.currentChordConfig() [globals.js]
+             retrieves current chord configuration
+         -> _setActiveScaleFilter(scaleNotes) [change-scale.js]
+             builds scale trigger map
+             -> buildNoteMap(scaleNotes, ...) [jam-mapping-to-allowed.js]
+                 creates note mapping
+             < void
+         -> reportScaleChange(scaleFilter) [change-scale.js]
+             broadcasts scale change events
+             -> document.broadcastEvent('scale-changed') [Document]
+             -> document.broadcastEvent('scale-filtering-changed') [Document]
+         < void
+
+  Sequence: Play Chord
+    🧍‍♂️ -> playChord(singleNote, options) [play-chord.js]
+         validates singleNote in globals.chordTriggerMap
+         -> changeChordTriggerNoteAndThusScale(singleNote) [play-chord.js]
+             updates globals.currentChordTriggerNote
+             -> changeScaleFilter('rhnotes') [change-scale.js]
+                 resets scale filter
+         -> document.broadcastEvent('chord-changed') [Document]
+             updates UI for chord changes
+         -> playChordNote(noteName, 'bass', options, ...) [play-chord.js]
+             plays bass note
+             -> playGmNote(noteName, ...) [general-midi.js]
+                 sends MIDI note-on
+         -> playChordNote(noteName, 'chord', options, ...) [play-chord.js]
+             plays chord notes
+             -> playGmNote(noteName, ...) [general-midi.js]
+                 sends MIDI note-on
+         < void
+
+  Sequence: Stop Chord
+    🧍‍♂️ -> playChordOff(singleNote) [play-chord.js]
+         validates singleNote in globals.chordTriggerMap
+         -> stopGmNote(noteOffInfo) [general-midi.js]
+             stops MIDI note
+         < void

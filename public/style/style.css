@@ -1,0 +1,103 @@
+#mappings-list {
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+
+    font-size: small;
+    font-family: 'Courier New', Courier, monospace
+}
+
+/* various displays of notes and scales */
+.boldy {
+    font-weight: bold;
+}
+.chord-note-padding {
+    padding-left: 1.5px;
+    padding-right: 1.5px;
+}
+.scale-description-padding {
+    padding-left: 1em;
+}
+
+.checkboxLabel {
+    padding-left: 1em;   
+}
+
+.keyboard-label {
+    display: inline-block;
+    width: 4em;
+}
+
+/* grand summary table  */
+table,
+td {
+    border-collapse: collapse;
+    padding-left: 5px;
+}
+
+th {
+    font-weight: normal;
+    text-align: left;
+    padding-left: 0.25em;
+}
+
+.trigger-btn {
+    color: black;
+    margin-left: 0.5em;
+}
+
+/* project json config debug display */
+.mono-json {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* main heading */
+.pad-top {
+    padding-top: 1em;
+}
+
+
+
+/* responsive piano keyboard */
+
+/* On smaller resolutions, hide the text for Large screens */
+@media only screen and (max-width: 960px) {
+    .large-screen {display: none;}
+}
+
+/* On larger resolutions, hide the text for Small screens */
+@media only screen and (min-width: 960px) {
+    .small-screen {display: none;}
+}
+
+
+/* drag drop table */
+
+.move-cursor * {
+    cursor: move;
+}
+
+/* keep column cell contents on the same line and wide enough */
+td.move-cursor {
+    width: 5%;
+    white-space: nowrap;
+}
+
+/* keep drag handle floated left, push it down from top to align with id */
+.draggable-indicator svg {
+    width: 16px;
+    height: 16px;
+    float: left;
+    margin-top: 2.5px;
+    /* border: 1px solid rgb(171, 27, 27); */
+}
+
+.draggable-indicator rect {
+    fill: rgb(107, 100, 100);
+}
+
+/* prevent zoom on ios  */
+/* body {
+    touch-action: pan-x pan-y;
+} */

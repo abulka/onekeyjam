@@ -1,0 +1,61 @@
+{
+  "name": "Untitled",
+  "chords": [
+    {
+      "name": "CM (user jam)",
+      "chord": "CM",
+      "chordNotes": ["C3", "E3", "G3"],
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic",
+      "id": 1,
+      "symbols": "CM",
+      "bassNote": "C2"
+    },
+    {
+      "name": "Cm (user jam)",
+      "chord": "Cm",
+      "chordNotes": ["C3", "Eb3", "G3"],
+      "scale1": "C minor pentatonic",
+      "scale2": "C minor six pentatonic",
+      "scale3": "C flat three pentatonic",
+      "id": 2,
+      "symbols": "Cm",
+      "bassNote": "C2"
+    },
+    {
+      "name": "Fm9 (user jam)",
+      "chord": "Fm9",
+      "chordNotes": ["F3", "Ab3", "G4", "C5", "Eb5"],
+      "scale1": "F dorian",
+      "scale2": "F dorian #4",
+      "scale3": "F bebop minor",
+      "id": 3,
+      "symbols": "Fm9",
+      "bassNote": "F2"
+    },
+    {
+      "name": "Gm7 (user jam)",
+      "chord": "Gm7",
+      "chordNotes": ["G3", "Bb3", "D4", "F4"],
+      "scale1": "G dorian",
+      "scale2": "G minor pentatonic",
+      "scale3": "G minor blues",
+      "id": 4,
+      "symbols": "Gm7",
+      "bassNote": "G2"
+    }
+  ],
+  "options": {},
+  "songs": {
+    "default": {"ids": [1, 2, 3, 4], "favourites": [], "blacklist": []}
+  },
+  "chordSequences": {
+    "default": {"mml": "t100o4l8c1d1c1d1e1f1g1g1", "tempo": 99}
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  }
+}

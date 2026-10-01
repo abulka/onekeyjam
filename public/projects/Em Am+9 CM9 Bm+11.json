@@ -1,0 +1,59 @@
+{
+  "name": "Em Am+9 CM9 Bm+11",
+  "chords": [
+    {
+      "id": "1",
+      "name": "Em7",
+      "chord": "Em7Chord",
+      "scale1": "E dorian",
+      "scale2": "E minor pentatonic",
+      "scale3": "E minor blues"
+    },
+    {
+      "id": "2",
+      "name": "AmAdd9 (scale 1 is E natural minor == E aeolian)",
+      "chord": "AmAdd9Chord",
+      "scale1": "E aeolian",
+      "scale2": "E minor pentatonic",
+      "scale3": "E minor blues"
+    },
+    {
+      "id": "3",
+      "name": "CM9 (scale 1 is E natural minor == E aeolian)",
+      "bass": "C3",
+      "chord": "CM9Chord",
+      "scale1": "E aeolian",
+      "scale2": "E minor pentatonic",
+      "scale3": "E minor blues"
+    },
+    {
+      "id": "4",
+      "name": "Bm (+11) inverted (scale 1 is E natural minor == E aeolian)",
+      "chord": "BmAdd11ChordInversion1",
+      "scale1": "E aeolian",
+      "scale2": "E minor pentatonic",
+      "scale3": "E minor blues"
+    },
+    {
+      "id": "5",
+      "name": "Em7 - Dmaj Scale  - BLUES is ALT OUT THE BOX",
+      "chord": "Em7Chord",
+      "scale1": "D major",
+      "scale2": "E minor pentatonic",
+      "scale3": "E dorian"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": ["1", "2", "3", "4", "5"],
+      "favourites": ["1", "2", "3", "4", "5"],
+      "blacklist": []
+    }
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "name": "AHouseis two nice chords - AHouseis_flattened-type0.mid",
+  "chords": [
+    {
+      "chordNotes": ["D3", "A3", "F#4"],
+      "name": "DM,F#m#5/D",
+      "id": 40,
+      "scale1": "D major pentatonic",
+      "scale2": "F# vietnamese 1",
+      "scale3": "F# pelog"
+    },
+    {
+      "chordNotes": ["F3", "C4", "D4", "G4"],
+      "name": "Csus24/F,D4/F,G7sus4/F",
+      "id": 85,
+      "scale1": "C composite blues",
+      "scale2": "D locrian pentatonic",
+      "scale3": "G mixolydian pentatonic"
+    },
+    {
+      "chordNotes": ["G3", "C4", "D#4", "G4", "A#4"],
+      "name": "Cm7/G,D#6/G",
+      "id": 122,
+      "scale1": "C minor pentatonic",
+      "scale2": "D# major pentatonic",
+      "scale3": "D# major blues"
+    },
+    {
+      "chordNotes": ["C3", "D#3", "A3", "D4", "F#4"],
+      "name": "D7b9/C,D#o7M7/C",
+      "id": 164,
+      "scale1": "D phrygian dominant",
+      "scale2": "D# lydian diminished",
+      "scale3": "D# lydian #9"
+    },
+    {
+      "chordNotes": ["D3", "C4", "F#4", "G#4"],
+      "name": "D7b5,G#7b5/D",
+      "id": 43,
+      "scale1": "D neopolitan major pentatonic",
+      "scale2": "G# neopolitan major pentatonic",
+      "scale3": "G# whole tone pentatonic"
+    },
+    {
+      "chordNotes": ["C3", "D3", "F3", "A3", "C4", "D4"],
+      "name": "Dm7/C,F6/C",
+      "id": 180,
+      "scale1": "D minor pentatonic",
+      "scale2": "F major pentatonic",
+      "scale3": "F major blues"
+    },
+    {
+      "chordNotes": ["F3", "D4", "F4", "A4"],
+      "name": "Dm/F",
+      "id": 86,
+      "scale1": "D minor pentatonic",
+      "scale2": "D minor six pentatonic",
+      "scale3": "D flat three pentatonic"
+    }
+  ],
+  "songs": {
+    "default": {
+      "ids": [122, 164, 180, 40, 43, 85, 86],
+      "favourites": [40, 85],
+      "blacklist": []
+    }
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "options": {}
+}

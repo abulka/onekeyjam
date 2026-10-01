@@ -1,0 +1,67 @@
+{
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "name": "neo soul thickener",
+  "options": {},
+  "chords": [
+    {
+      "chordNotes": ["F2", "C3", "G3", "A3", "C4", "E4", "F4"],
+      "name": "1. Fmaj9",
+      "bass": "F",
+      "id": 0,
+      "bassNote": "F2"
+    },
+    {
+      "chordNotes": ["Ab2", "Eb3", "F3", "G3", "Bb3", "C4", "F4"],
+      "name": "2. Abmaj13",
+      "bass": "Ab",
+      "id": 1
+    },
+    {
+      "chordNotes": ["G2", "F3", "A3", "Bb3", "C4", "D4", "F4"],
+      "name": "3. Gm11",
+      "bass": "G",
+      "id": 2
+    },
+    {
+      "chordNotes": ["Db2", "Ab2", "Eb3", "F3", "Bb3", "C4", "F4"],
+      "name": "4. Dbmaj13",
+      "bass": "Db",
+      "id": 4
+    },
+    {
+      "chordNotes": ["D2", "A2", "F3", "G3", "C4", "E4", "F4"],
+      "name": "5. Dm11",
+      "bass": "D",
+      "id": 5
+    },
+    {
+      "chordNotes": ["Eb2", "Bb2", "F3", "G3", "Bb3", "C4", "F4"],
+      "name": "5. Ebmaj13",
+      "bass": "Eb",
+      "id": 6
+    },
+    {
+      "chordNotes": ["Gb2", "Db3", "Ab3", "Bb3", "Db4", "Eb4", "F4"],
+      "name": "7. Gbmaj13",
+      "bass": "Gb",
+      "id": 7
+    },
+    {
+      "chordNotes": ["C2", "G2", "F3", "G3", "Bb3", "D4", "Eb4", "F4"],
+      "name": "8. Cm11",
+      "bass": "C",
+      "id": 8
+    }
+  ],
+  "songs": {
+    "default": {
+      "ids": [],
+      "favourites": [0, 1, 2, 4, 5, 6, 7, 8],
+      "blacklist": []
+    }
+  }
+}

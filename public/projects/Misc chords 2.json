@@ -1,0 +1,48 @@
+{
+    "name": "Misc chords 2",
+    "chords": [
+      {
+        "id": 1,
+        "name": "Em7",
+        "chord": "Em7Chord",
+        "scale1": "E dorian",
+        "scale2": "E minor pentatonic",
+        "scale3": "E minor blues"
+      },
+      {
+        "id": 2,
+        "name": "AmAdd9 - Em Natural",
+        "chord": "AmAdd9Chord",
+        "scale1": "E aeolian",
+        "scale2": "E minor pentatonic",
+        "scale3": "E minor blues"
+      },
+      {
+        "id": 3,
+        "name": "CM9 - Em Natural",
+        "bass": "C3",
+        "chord": "CM9Chord",
+        "scale1": "E aeolian",
+        "scale2": "E minor pentatonic",
+        "scale3": "E minor blues"
+      },
+      {
+        "id": 4,
+        "name": "Bm (+11) inverted - Em Natural",
+        "chord": "BmAdd11ChordInversion1",
+        "scale1": "E aeolian",
+        "scale2": "E minor pentatonic",
+        "scale3": "E minor blues"
+      },
+      {
+        "id": 5,
+        "name": "E min7 - note E melodic minor is the wrong scale to use - disregard 'scale3'",
+        "chord": "E min7",
+        "scale1": "E dorian",
+        "scale2": "E minor pentatonic",
+        "scale3": "E melodic minor"
+      }
+    ],
+    "options": {}
+  }
+  

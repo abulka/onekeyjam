@@ -1,0 +1,113 @@
+# Architecture
+
+OneKeyJam is a browser-based MIDI jam app. It is a Vue 3 single page
+application built with Vite that talks to hardware MIDI devices and a DAW, and
+synthesises sound in the browser. It has no backend: projects and keyboard
+configs are static JSON files, and user projects are saved in the browser with
+IndexedDB. It can be hosted as a static site (for example on Netlify).
+
+## Top level pieces
+
+- `index.html` loads the third-party browser libraries as global scripts
+  (jQuery and Fomantic UI, the WebMidi.js IIFE build, g200kg webaudio-controls
+  and webaudio-pianoroll, and the WebAudioFont soundfont and player). It then
+  boots the app with `/src/main.js`.
+- `src/main.js` creates the Vue app, installs the router and mounts it on
+  `#app`.
+- `src/App.vue` renders the top menu. Its `onMounted()` hook calls
+  `mainOneKeyJam()` from `src/lib/main.js`, which starts the one-time MIDI and
+  project boot.
+- `src/router/index.js` maps routes to views: `/` (HomeView), `/perform`
+  (PerformView), `/about` (AboutView) and `/research` (ResearchView). The
+  Perform route is lazy loaded.
+- `src/views/` holds the routed pages. `src/components/` holds the UI widgets
+  such as the piano keyboards, chord pickers, scale pickers and status panels.
+- `src/lib/` holds the framework-independent domain logic and the MIDI and
+  audio plumbing. This is the largest part of the codebase.
+- `bin/generate-manifests.mjs` scans `public/projects` and `public/keyboards`
+  and writes manifest JSON files listing the available files. Static hosting
+  cannot list a directory, so the app reads these manifests to discover the
+  libraries. It runs automatically before `npm run dev` and `npm run build`.
+- `public/` holds static assets: project JSON in `public/projects/`, keyboard
+  configs in `public/keyboards/`, MIDI files, images and CSS.
+- `test/` holds the Mocha tests. Component tests live beside the components in
+  `src/components/__tests__/` and run under Vitest.
+
+## Shared state
+
+`src/lib/globals.js` exports a single Vue `reactive` object named `globals`.
+It holds the current project, the chord and scale trigger maps, the current
+chord and scale, the project library lists, and the MIDI input and output
+channels. Vue components read it reactively, and the plain JavaScript in
+`src/lib/` mutates it. Because it is a single shared object, it acts as the
+boundary between the UI layer and the MIDI and audio logic.
+
+## Boot sequence
+
+1. `index.html` loads the vendor scripts, then `/src/main.js`.
+2. `main.js` mounts the Vue app.
+3. `App.vue` calls `mainOneKeyJam()` in `src/lib/main.js`.
+4. `bootGeneralMidi()` prepares the in-browser sounds, then `await
+   bootWebMidi()` enables WebMidi.js, records the detected keyboards in
+   `globals.keyboardsDetected`, and finds the IAC Driver output channels.
+5. `bootKeyboard()` loads the keyboard config that matches a detected device,
+   and `bootProject()` loads the starting (empty) project.
+6. `regen()` allocates the project chords into `globals.chordTriggerMap`.
+7. `keyDetection()`, `initChordPlayEvents()` and `linkProjectToKeyboard()`
+   finish the setup by wiring the MIDI input listeners and building the scale
+   mapping.
+
+## Data model
+
+- A project has a `name`, an array of `chords` (each a chord config), `songs`,
+  `options` and `chordSequences`.
+- A chord config has a chord symbol, its `chordNotes`, an optional `bass`, up
+  to three scale names (`scale1`, `scale2`, `scale3`) and the notes of the
+  chord as a scale (`scaleNotesOfChord`).
+- `chordTriggerMap` maps a left-hand MIDI note to a chord config. It is built
+  by `regen()` from the project chords, capped by `globals.maxChordConfigs`.
+- `scaleTriggerMap` maps a right-hand played note to the allowed scale note.
+  It is rebuilt whenever the current scale changes.
+- A keyboard config sets `lhTriggerOctave` (where chords are triggered) and
+  `rhJamSoundOctave` (where jam notes sound). A project may override these in
+  `options.keyboard`.
+
+## Runtime flows
+
+- Playing a note in the left-hand trigger octave that is in `chordTriggerMap`
+  plays the chord and changes the current scale, which rebuilds the scale
+  mapping (see `src/lib/play-chord.js` and `src/lib/change-scale.js`).
+- Playing any other note calls `jam()` in `src/lib/jam.js`. If scale filtering
+  is on, the played note is translated through `scaleTriggerMap` to an allowed
+  note; otherwise it is echoed through. Pending note-offs are tracked in
+  `globals.pendingNoteOffs` so the correct note can be stopped later.
+- Left-hand black keys act as modifiers: `C#` is a shift key, and `D#`, `F#`,
+  `G#` and `A#` toggle scale filtering, switch scales or transpose the chords.
+  Right-hand black keys switch scale and transpose as well. See `onNoteOn()` in
+  `src/lib/wire-events.js`.
+- MIDI output goes to three channels of the IAC Driver: channel 1 for jam
+  notes, channel 2 for chords and channel 3 for bass. When `globals.GM` is
+  true, sounds are instead made in the browser with WebAudioFont
+  (`src/lib/general-midi.js`).
+
+## Persistence and backend
+
+- There is no backend. The app is a static site.
+- Featured projects are static JSON files in `public/projects/`. They are
+  discovered through `public/projects/projects-manifest.json`, which is
+  generated by `bin/generate-manifests.mjs`. Saving a featured project means
+  editing the JSON and redeploying.
+- Keyboard configs are static JSON files in `public/keyboards/`, discovered
+  through `public/keyboards/keyboards-manifest.json`.
+- Projects the user saves are stored in the browser with IndexedDB, in
+  `src/lib/localStore.js`. `src/lib/projectLibrary.js` is the single module the
+  rest of the app uses to list, fetch and save projects and keyboard configs.
+- `src/lib/projectSave.js` wires the Save, Save As, Import and Export actions to
+  the local store. Projects can also be exported and imported as JSON files, so
+  they can be backed up or moved between browsers and machines.
+
+## Further reading
+
+- `README.md` covers usage, MIDI setup and the many deployment options.
+- `doco/implementation-notes.md` records detailed WebMidi.js findings.
+- `doco/chord-scale-ref.md` covers the chord and scale reference material.

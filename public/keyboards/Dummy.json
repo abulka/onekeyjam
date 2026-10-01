@@ -1,0 +1,6 @@
+{
+    "name": "Dummy Keyboard",
+    "description": "Dummy Keyboard for when no physical MIDI keyboard is connected",
+    "rhJamSoundOctave": 4,
+    "lhTriggerOctave": 3
+}

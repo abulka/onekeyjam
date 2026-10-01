@@ -1,0 +1,33 @@
+{
+  "name": "Misc chords - initial project",
+  "chords": [
+    {
+      "id": "1",
+      "name": "CM7 - blues",
+      "chord": "CM7Chord",
+      "scale1": "C major blues"
+    },
+    {
+      "id": "2",
+      "name": "Dm11 - pentatonic",
+      "chord": "Dm11Chord",
+      "scale1": "D minor pentatonic"
+    },
+    {
+      "id": "3",
+      "name": "Em7",
+      "chord": "Em7Chord",
+      "scale1": "E dorian"
+    },
+    {
+      "id": "4",
+      "name": "AmAdd9 - E natural minor",
+      "chord": "AmAdd9Chord",
+      "scale1": "E aeolian"
+    }
+  ],
+  "options": {
+    "transposeUpAmount": 5,
+    "transposeDownAmount": -1
+  }
+}

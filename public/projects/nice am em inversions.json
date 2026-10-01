@@ -1,0 +1,66 @@
+{
+  "name": "nice am em inversions",
+  "chords": [
+    {
+      "name": "Ddim",
+      "chordNotes": ["D3", "F3", "Ab3"],
+      "bass": "D2",
+      "scale1": "D locrian pentatonic",
+      "scale2": "D super locrian pentatonic",
+      "scale3": "D minor blues",
+      "id": 1
+    },
+    {
+      "name": "Dm (inv 1)",
+      "chordNotes": ["F3", "A3", "D4"],
+      "bass": "F2",
+      "scale1": "D minor pentatonic",
+      "scale2": "D minor six pentatonic",
+      "scale3": "D flat three pentatonic",
+      "id": 2
+    },
+    {
+      "name": "Am (inv 1)",
+      "chordNotes": ["C3", "E3", "A3"],
+      "bass": "A2",
+      "scale1": "A minor pentatonic",
+      "scale2": "A minor six pentatonic",
+      "scale3": "A flat three pentatonic",
+      "id": 3
+    },
+    {
+      "name": "Am",
+      "chordNotes": ["A3", "C4", "E4"],
+      "bass": "A2",
+      "scale1": "A minor pentatonic",
+      "scale2": "A minor six pentatonic",
+      "scale3": "A flat three pentatonic",
+      "id": 4
+    },
+    {
+      "name": "Em",
+      "chordNotes": ["E3", "G3", "B3"],
+      "bass": "E2",
+      "scale1": "E minor pentatonic",
+      "scale2": "E minor six pentatonic",
+      "scale3": "E flat three pentatonic",
+      "id": 5
+    },
+    {
+      "name": "Em (inv 2)",
+      "chordNotes": ["B3", "E4", "G4"],
+      "bass": "B2",
+      "scale1": "E minor pentatonic",
+      "scale2": "E minor six pentatonic",
+      "scale3": "E flat three pentatonic",
+      "id": 6
+    }
+  ],
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "options": {},
+  "songs": {"default": {"ids": [], "favourites": [], "blacklist": []}}
+}

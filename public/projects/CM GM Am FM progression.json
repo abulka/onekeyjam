@@ -1,0 +1,50 @@
+{
+  "name": "CM GM Am FM progression",
+  "chords": [
+    {
+      "name": "CM",
+      "chord": "C",
+      "chordNotes": ["C3", "E3", "G3"],
+      "bass": "",
+      "names": {},
+      "id": 1
+    },
+    {
+      "name": "GM",
+      "chord": "G",
+      "chordNotes": ["B3", "D4", "G4"],
+      "bass": "B2",
+      "names": {},
+      "id": 2
+    },
+    {
+      "name": "Am",
+      "chord": "Am",
+      "chordNotes": ["A3", "C4", "E4"],
+      "bass": "A2",
+      "names": {},
+      "id": 3
+    },
+    {
+      "name": "FM",
+      "chord": "F",
+      "chordNotes": ["A3", "C4", "F4"],
+      "bass": "A2",
+      "names": {},
+      "id": 4
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [1, 2, 3, 4],
+      "favourites": [1, 2, 3, 4],
+      "blacklist": []
+    }
+  }
+}

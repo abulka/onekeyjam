@@ -1,0 +1,126 @@
+Diagram:
+  name: Change Scale Functionality
+  version: 1.0
+  version-ptd: 1.1
+  description: Example of PT (plain text) diagram notation for scale change logic, showing the integration of global settings, scale types, and chord mappings
+  files: change-scale.js, globals.js, jam-mapping-to-allowed.js, note-tools.js, chord-to-scale.js, scaleToNotes.js
+
+Imports:
+  change-scale.js (function changeScaleFilter, function setActiveScaleFilter, function setActiveScaleFilterToMatchChord)
+    --> globals.js (globals)
+    --> jam-mapping-to-allowed.js (function buildNoteMap)
+    --> note-tools.js (function createChordSymbol)
+    --> chord-to-scale.js (function chordSymbolToScaleNames)
+    --> scaleToNotes.js (function scaleObjToNotes, function chordNotesToScaleNotes)
+
+Files:
+  file: change-scale.js
+    Variables:
+      const uniq: function
+      const Tonal: object
+      const globals: object
+    Functions:
+      changeScaleFilter(scaleFilter: string)
+      setActiveScaleFilter(scaleTonic: string, scaleType: string, scaleNotes: array, scaleTypes: array)
+      setActiveScaleFilterToMatchChord(chordTonic: string, chordType: string, strategy: string)
+      _setActiveScaleFilter(scaleNotes: array) (private)
+      clearActiveScaleFilter() (private)
+      calcScaleTypesDropdown(chordConfig: object) (private)
+    Classes:
+      none
+
+  file: globals.js
+    Variables:
+      (globals is an object)
+    Functions:
+      none
+    Classes:
+      none
+
+  file: jam-mapping-to-allowed.js
+    Variables:
+      (none)
+    Functions:
+      buildNoteMap(scaleNotes: array, maxChordConfigs: number, lhTriggerOctave: string, rhJamSoundOctave: string, options: object)
+    Classes:
+      none
+
+  file: note-tools.js
+    Variables:
+      (none)
+    Functions:
+      createChordSymbol(chordTonic: string, chordType: string)
+    Classes:
+      none
+
+  file: chord-to-scale.js
+    Variables:
+      (none)
+    Functions:
+      chordSymbolToScaleNames(chordSymbol: string)
+    Classes:
+      none
+
+  file: scaleToNotes.js
+    Variables:
+      (none)
+    Functions:
+      scaleObjToNotes(scaleObj: object)
+      chordNotesToScaleNotes(chordNotes: object, scaleNotes: object)
+    Classes:
+      none
+
+Classes:
+  class: (none)
+
+Use Cases:
+  Sequence: Change Scale Filtering
+    🧑‍💻 -> changeScaleFilter() [change-scale.js]
+         checks current scale filter
+         -> setActiveScaleFilter() [change-scale.js]
+             sets active scale filter
+             -> _setActiveScaleFilter() [change-scale.js]
+                 updates scale trigger map
+                 < void
+             < void
+         -> reportScaleChange() [change-scale.js]
+             broadcasts scale change
+             < void
+         < void
+
+  Sequence: Set Active Scale Filter
+    🧑‍💻 -> setActiveScaleFilter() [change-scale.js]
+         sets the active scale filter
+         -> globals.scaleFiltering.scaleTonic = scaleObj.tonic [globals.js]
+             updates scale tonic
+         -> globals.scaleFiltering.scaleType = scaleObj.type [globals.js]
+             updates scale type
+         -> _setActiveScaleFilter() [change-scale.js]
+             updates scale trigger map
+             < void
+         < void
+
+  Sequence: Playing a Chord
+    🧍‍♂️ -> playChord [change-scale.js]
+        plays a chord
+        -> changeChordTriggerNoteAndThusScale [change-scale.js]
+            updates globals.currentChordTriggerNote
+            -> changeScaleFilter [change-scale.js]
+                determines appropriate scale filter
+                [if] scaleName == 'notes of chord'
+                    -> _setActiveScaleFilter [change-scale.js]
+                [else]
+                    normal Tonal scale
+                    -> calcScaleTypesDropdown [change-scale.js]
+                    -> setActiveScaleFilter [change-scale.js]
+                        updates globals.scaleFiltering
+                        -> _setActiveScaleFilter [change-scale.js]
+                            builds scale trigger map
+                        -> reportScaleChange [change-scale.js]
+                            broadcasts 'scale-changed' and 'scale-filtering-changed'
+                < void
+        -> GM [change-scale.js]
+            plays notes in GM
+        -> Document [change-scale.js]
+            broadcasts 'chord-changed' for UI piano roll
+    < void

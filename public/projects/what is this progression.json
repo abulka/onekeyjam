@@ -1,0 +1,102 @@
+{
+  "name": "what is this progression",
+  "chords": [
+    {
+      "name": "CM (user jam)",
+      "chord": "CM",
+      "chordNotes": ["C4", "E4", "G4"],
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic",
+      "id": 1,
+      "symbols": "CM,Em#5/C",
+      "bassNote": "C2",
+      "bass": "C"
+    },
+    {
+      "name": "Bm#5 (user jam)",
+      "chord": "Bm#5",
+      "chordNotes": ["B3", "D4", "G4"],
+      "scale1": "B harmonic minor",
+      "scale2": "B phrygian",
+      "scale3": "B aeolian",
+      "id": 2,
+      "symbols": "Bm#5,GM/B",
+      "bassNote": "B2",
+      "bass": "B"
+    },
+    {
+      "name": "Am (user jam)",
+      "chord": "Am",
+      "chordNotes": ["A3", "C4", "E4"],
+      "scale1": "A minor pentatonic",
+      "scale2": "A minor six pentatonic",
+      "scale3": "A flat three pentatonic",
+      "id": 3,
+      "symbols": "Am",
+      "bassNote": "A2",
+      "bass": "A"
+    },
+    {
+      "name": "FM (user jam)",
+      "chord": "FM",
+      "chordNotes": ["A3"],
+      "scale1": "F lydian",
+      "scale2": "F major",
+      "scale3": "F major pentatonic",
+      "id": 4,
+      "symbols": "FM,Am#5/F",
+      "bassNote": "A2",
+      "bass": "A"
+    },
+    {
+      "name": "Am#5 (user jam)",
+      "chord": "Am#5",
+      "chordNotes": ["A3"],
+      "bass": "F",
+      "scale1": "A harmonic minor",
+      "scale2": "A phrygian",
+      "scale3": "A aeolian",
+      "id": 5,
+      "symbols": "FM,Am#5/F",
+      "bassNote": "F2"
+    },
+    {
+      "name": "FM (user)",
+      "chord": "FM",
+      "chordNotes": ["F3", "A3", "C4"],
+      "scale1": "F lydian",
+      "scale2": "F major",
+      "scale3": "F major pentatonic",
+      "id": 6,
+      "symbols": "FM,Am#5/F",
+      "bassNote": "F2",
+      "bass": "F"
+    },
+    {
+      "name": "FM (user jam)",
+      "chord": "FM",
+      "chordNotes": ["A3", "C4", "F4"],
+      "bass": "A",
+      "scale1": "F lydian",
+      "scale2": "F major",
+      "scale3": "F major pentatonic",
+      "id": 7,
+      "symbols": "FM",
+      "bassNote": "A2"
+    }
+  ],
+  "options": {},
+  "songs": {
+    "default": {
+      "ids": [1, 2, 3, 7],
+      "favourites": [1, 2, 3, 7],
+      "blacklist": [4, 5, 6]
+    }
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "C Major II-V-I with options",
+  "chords": [
+    {
+      "id": "1",
+      "name": "Dm7 chord",
+      "chord": "Dm7",
+      "scale1": "d dorian",
+      "scale2": "c major pentatonic",
+      "scale3": ""
+    },
+    {
+      "id": "2",
+      "name": "G7 chord",
+      "chord": "G7inversion2",
+      "scale1": "g mixolydian",
+      "scale2": "c major pentatonic",
+      "scale3": "f minor"
+    },
+    {
+      "id": "3",
+      "name": "CMaj7 chord - various scales",
+      "chord": "Cmaj7",
+      "scale1": "c major",
+      "scale2": "c major pentatonic",
+      "scale3": "c lydian"
+    },
+    {
+      "id": "4",
+      "name": "Db7 chord - tritone substituion of V chord G7",
+      "chord": "Db7",
+      "scale1": "g mixolydian",
+      "scale2": "c major pentatonic",
+      "scale3": ""
+    }
+  ],
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "options": {
+    "transposeUpAmount": 4,
+    "transposeDownAmount": -4,    
+    "keyboard": {
+      "lhTriggerOctave": 3,
+      "rhJamSoundOctave": 3
+    }
+  },
+  "songs": {
+    "default": {"ids": [], "favourites": ["1", "2", "3"], "blacklist": []}
+  }
+}

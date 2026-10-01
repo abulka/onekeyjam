@@ -1,0 +1,159 @@
+{
+  "chords": [
+    {
+      "scale1": "F lydian",
+      "bass": "F",
+      "name": "Fmaj7 (user jam)",
+      "id": 1,
+      "chord": "Fmaj7",
+      "symbols": "Fmaj7",
+      "chordNotes": [
+        "F3",
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "bassNote": "F2",
+      "scale3": "F lydian pentatonic",
+      "scale2": "F major"
+    },
+    {
+      "symbols": "Dm6/F,Bm7b5/F",
+      "scale1": "D melodic minor",
+      "id": 2,
+      "chord": "Dm6",
+      "bass": "F",
+      "scale3": "D minor six pentatonic",
+      "scale2": "D dorian",
+      "name": "Dm6 (user jam)",
+      "chordNotes": [
+        "F3",
+        "A3",
+        "B3",
+        "D4"
+      ],
+      "bassNote": "F2"
+    },
+    {
+      "symbols": "Em7,G6/E",
+      "id": 3,
+      "scale1": "E dorian",
+      "chord": "Em7",
+      "chordNotes": [
+        "E3",
+        "G3",
+        "B3",
+        "D4"
+      ],
+      "scale2": "E minor pentatonic",
+      "scale3": "E minor blues",
+      "bass": "E",
+      "bassNote": "E2",
+      "name": "Em7 (user jam)"
+    },
+    {
+      "scale2": "C mixolydian",
+      "scale3": "C major pentatonic",
+      "chordNotes": [
+        "E3",
+        "G3",
+        "A3",
+        "C4"
+      ],
+      "bassNote": "E2",
+      "chord": "C6",
+      "name": "C6 (user jam)",
+      "id": 4,
+      "bass": "E",
+      "scale1": "C major",
+      "symbols": "C6/E,Am7/E"
+    },
+    {
+      "chord": "Dm7",
+      "scale2": "D minor pentatonic",
+      "scale3": "D minor blues",
+      "name": "Dm7 (user jam)",
+      "symbols": "Dm7,F6/D",
+      "bass": "D",
+      "scale1": "D dorian",
+      "chordNotes": [
+        "D3",
+        "F3",
+        "A3",
+        "C4"
+      ],
+      "bassNote": "D2",
+      "id": 5
+    },
+    {
+      "symbols": "G7/D",
+      "bass": "D",
+      "name": "G7 (user jam)",
+      "scale1": "G mixolydian",
+      "id": 6,
+      "bassNote": "D2",
+      "chordNotes": [
+        "D3",
+        "F3",
+        "G3",
+        "B3"
+      ],
+      "chord": "G7",
+      "scale3": "G lydian dominant pentatonic",
+      "scale2": "G lydian dominant"
+    },
+    {
+      "bass": "C",
+      "id": 7,
+      "name": "Cmaj7 (user jam)",
+      "chord": "Cmaj7",
+      "scale2": "C major",
+      "scale3": "C lydian pentatonic",
+      "symbols": "Cmaj7",
+      "scale1": "C lydian",
+      "bassNote": "C2",
+      "chordNotes": [
+        "C3",
+        "E3",
+        "G3",
+        "B3"
+      ]
+    }
+  ],
+  "meta": {
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app",
+    "type": "onekeyjam"
+  },
+  "chordSequences": {
+    "default": {
+      "tempo": 99,
+      "mml": "t100o4l8c1d1c1d1e1f1g1g1"
+    }
+  },
+  "songs": {
+    "default": {
+      "blacklist": [],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ]
+    }
+  },
+  "options": {},
+  "name": "descending seven"
+}

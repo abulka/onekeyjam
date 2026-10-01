@@ -1,0 +1,153 @@
+{
+  "name": "How to Solo 01 video tips from youtube",
+  "options": {},
+  "chords": [
+    {
+      "name": "CM7 chord",
+      "chord": "Cmaj7",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C lydian pentatonic"
+    },
+    {
+      "name": "Cmaj9 chord",
+      "chord": "Cmaj9",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "C9#11 chord",
+      "chord": "C9#11",
+      "scale1": "C lydian dominant",
+      "scale2": "C lydian minor",
+      "scale3": "C composite blues"
+    },
+    {
+      "name": "Cmaj7#5 - Major 7 with #5",
+      "chord": "Cmaj7#5",
+      "scale1": "C lydian augmented",
+      "scale2": "C lydian #5P pentatonic",
+      "scale3": "C augmented"
+    },
+    {
+      "name": "C min7",
+      "chord": "C min7",
+      "scale1": "C dorian",
+      "scale2": "C minor pentatonic",
+      "scale3": "C minor blues"
+    },
+    {
+      "name": "C minor chord, but with a major 7th",
+      "chord": "Cm/ma7",
+      "scale1": "C melodic minor",
+      "scale2": "C minor #7M pentatonic",
+      "scale3": "C minor bebop"
+    },
+    {
+      "name": "C min6",
+      "chord": "Cm6",
+      "scale1": "C melodic minor",
+      "scale2": "C dorian",
+      "scale3": "C minor six pentatonic"
+    },
+    {
+      "name": "C min6/9",
+      "chord": "Cm69",
+      "scale1": "C melodic minor",
+      "scale2": "C dorian",
+      "scale3": "C minor six pentatonic"
+    },
+    {
+      "name": "C7 - dominant chord",
+      "chord": "C7",
+      "scale1": "C mixolydian",
+      "scale2": "C lydian dominant",
+      "scale3": "C lydian dominant pentatonic"
+    },
+    {
+      "name": "C9 - dominant chord",
+      "chord": "C9",
+      "scale1": "C mixolydian",
+      "scale2": "C lydian dominant",
+      "scale3": "C bebop minor"
+    },
+    {
+      "name": "C9#11 - dominant chord",
+      "chord": "C9#11",
+      "scale1": "C lydian dominant",
+      "scale2": "C lydian minor",
+      "scale3": "C composite blues"
+    },
+    {
+      "name": "C13 - dominant chord",
+      "chord": "C13",
+      "scale1": "C lydian dominant",
+      "scale2": "C mixolydian",
+      "scale3": "C bebop"
+    },
+    {
+      "name": "C7(#9#5) - altered chord",
+      "chord": "C7#5#9",
+      "scale1": "C altered",
+      "scale2": "Db melodic minor",
+      "scale3": "C half-whole diminished"
+    },
+    {
+      "name": "E Maj7b5 - altered chord",
+      "chord": "EM7b5",
+      "scale1": "E altered",
+      "scale2": "F melodic minor",
+      "scale3": "E half-whole diminished"
+    },
+    {
+      "name": "C dim7 - diminished chord, No C whole-half diminished scale (in Tonal) so use equivalent D half-whole diminished",
+      "chord": "Cdim7",
+      "scale1": "D half-whole diminished",
+      "scale2": "",
+      "scale3": ""
+    },
+    {
+      "name": "Example Progression B Maj (add2) - use whole-half during transitions",
+      "chord": "Badd2",
+      "scale1": "B major",
+      "scale2": "B half-whole diminished",
+      "scale3": ""
+    },
+    {
+      "name": "Example Progression C dim7",
+      "chord": "Cdim7",
+      "scale1": "D half-whole diminished",
+      "scale2": "",
+      "scale3": ""
+    },
+    {
+      "name": "Example Progression Db min7 - not sure about scale2 half-whole usage",
+      "chord": "Db min7",
+      "scale1": "Db dorian",
+      "scale2": "Db half-whole diminished",
+      "scale3": ""
+    },
+    {
+      "name": "Tricky half diminished C min7b5",
+      "chord": "Cm7b5",
+      "scale1": "C locrian",
+      "scale2": "Db major",
+      "scale3": ""
+    },
+    {
+      "name": "Tricky C min9(b5) - a half diminished 9 chord - beautiful in jazz",
+      "chord": "Cm9b5",
+      "scale1": "C locrian #2",
+      "scale2": "",
+      "scale3": ""
+    },
+    {
+      "name": "Sus Chords - F13sus - pretty chord",
+      "chord": "F13sus4",
+      "scale1": "F mixolydian",
+      "scale2": "",
+      "scale3": ""
+    }
+  ]
+}

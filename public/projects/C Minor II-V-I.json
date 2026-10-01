@@ -1,0 +1,41 @@
+{
+  "name": "C Minor II-V-I",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Dø7 chord - Fm Melodic scale",
+      "chord": "Dm7b5ChordNicerVoicing",
+      "bass": "D3",
+      "scale1": "C major blues",
+      "scale2": "F melodic minor",
+      "scale3": "C minor blues"
+    },
+    {
+      "id": 2,
+      "name": "G7alt chord - Abm Melodic scale",
+      "chord": "G7alt",
+      "bass": "G3",
+      "scale1": "C major blues",
+      "scale2": "Ab melodic minor",
+      "scale3": "C minor blues"
+    },
+    {
+      "id": 3,
+      "name": "CmMaj7 chord - Cm Melodic scale",
+      "bass": "C2",
+      "chord": "Cm7ChordNicerVoicing",
+      "scale1": "C major blues",
+      "scale2": "C melodic minor",
+      "scale3": "C minor pentatonic"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {"ids": [1, 2, 3], "favourites": [1, 2, 3], "blacklist": []}
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "name": "Imported neo soul thickener.mid",
+  "options": {},
+  "chords": [
+    {
+      "chordNotes": ["F2", "C3", "G3", "A3", "C4", "E4", "F4"],
+      "symbols": "Fmaj9",
+      "name": "Chord 1 from midi (chord was auto detected)",
+      "chord": "Fmaj9",
+      "bass": "F",
+      "scale1": "F lydian",
+      "scale2": "F major",
+      "scale3": "F bebop major",
+      "id": 0,
+      "bassNote": "F2"
+    },
+    {
+      "chordNotes": ["A2", "E3", "F3", "G3", "B3", "C4", "F4"],
+      "symbols": "Fmaj9#11/A",
+      "name": "Chord 3 from midi (chord was auto detected)",
+      "chord": "Fmaj9#11",
+      "bass": "A",
+      "scale1": "F lydian",
+      "scale2": "F ichikosucho",
+      "scale3": "F messiaen's mode #3",
+      "id": 2,
+      "bassNote": "A2"
+    },
+    {
+      "chordNotes": ["F3", "A3", "D4"],
+      "symbols": "Dm/F",
+      "name": "Chord 4 from midi (chord was auto detected)",
+      "chord": "Dm",
+      "bass": "F",
+      "scale1": "D minor pentatonic",
+      "scale2": "D minor six pentatonic",
+      "scale3": "D flat three pentatonic",
+      "id": 3,
+      "bassNote": "F2"
+    },
+    {
+      "chordNotes": ["D2", "A2", "E3", "F3", "B3", "C4", "F4"],
+      "symbols": "Dm13,E7sus4b9b13/D",
+      "name": "Chord 5 from midi (chord was auto detected)",
+      "chord": "Dm13",
+      "bass": "D",
+      "scale1": "D composite blues",
+      "scale2": "D dorian #4",
+      "scale3": "D dorian",
+      "id": 4,
+      "bassNote": "D2"
+    },
+    {
+      "chordNotes": ["D2", "A2", "F3", "G3", "C4", "E4", "F4"],
+      "symbols": "Dm11,Fmaj13/D,FM7add13/D,G13sus4/D",
+      "name": "Chord 6 from midi (chord was auto detected)",
+      "chord": "Dm11",
+      "bass": "D",
+      "scale1": "D composite blues",
+      "scale2": "D aeolian",
+      "scale3": "D dorian",
+      "id": 5,
+      "bassNote": "D2"
+    },
+    {
+      "chordNotes": ["C2", "E2", "G3", "C4"],
+      "symbols": "CM,Em#5/C",
+      "name": "Chord 11 from midi (chord was auto detected)",
+      "chord": "CM",
+      "bass": "C",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic",
+      "id": 8,
+      "bassNote": "C2"
+    }
+  ],
+  "songs": {
+    "default": {
+      "ids": [0, 2, 3, 4, 5, 8],
+      "favourites": [0, 8, 4, 5, 2, 3],
+      "blacklist": []
+    }
+  }
+}

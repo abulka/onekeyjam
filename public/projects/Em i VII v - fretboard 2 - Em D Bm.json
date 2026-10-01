@@ -1,0 +1,80 @@
+{
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "blacklist": [],
+      "favourites": [
+        1,
+        2,
+        3
+      ]
+    }
+  },
+  "chords": [
+    {
+      "scale3": "E aeolian",
+      "symbols": "Em",
+      "chordNotes": [
+        "E3",
+        "G3",
+        "B3"
+      ],
+      "name": "Em (user jam)",
+      "id": 1,
+      "bassNote": "E2",
+      "scale1": "B minor pentatonic",
+      "scale2": "E minor pentatonic",
+      "chord": "Em",
+      "bass": "E"
+    },
+    {
+      "scale1": "B minor pentatonic",
+      "scale2": "E minor pentatonic",
+      "symbols": "DM",
+      "chordNotes": [
+        "D3",
+        "F#3",
+        "A3"
+      ],
+      "name": "DM (user jam)",
+      "scale3": "D major pentatonic",
+      "id": 2,
+      "chord": "DM",
+      "bass": "D",
+      "bassNote": "D2"
+    },
+    {
+      "scale1": "B minor pentatonic",
+      "name": "Bm (user jam)",
+      "id": 3,
+      "scale2": "E minor pentatonic",
+      "bassNote": "B2",
+      "symbols": "Bm",
+      "scale3": "B minor pentatonic",
+      "bass": "B",
+      "chord": "Bm",
+      "chordNotes": [
+        "B3",
+        "D4",
+        "F#4"
+      ]
+    }
+  ],
+  "options": {},
+  "chordSequences": {
+    "default": {
+      "mml": "t100o4l8c1d1c1d1e1f1g1g1",
+      "tempo": 99
+    }
+  },
+  "name": "Em i VII v - fretboard 2 - Em D Bm",
+  "meta": {
+    "type": "onekeyjam",
+    "source": "https://onekeyjam.netlify.app",
+    "version": 2
+  }
+}

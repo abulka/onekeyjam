@@ -1,0 +1,72 @@
+{
+  "name": "nice cM c11 and a few others",
+  "chords": [
+    {
+      "name": "CM",
+      "chordNotes": [
+        "C3",
+        "E3",
+        "G3"
+      ],
+      "bass": "",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic",
+      "id": 488
+    },
+    {
+      "name": "C11",
+      "chordNotes": [
+        "C3",
+        "G3",
+        "Bb3",
+        "D4",
+        "F4"
+      ],
+      "bass": "",
+      "scale1": "C mixolydian",
+      "scale2": "C mixolydian b6",
+      "scale3": "C bebop",
+      "id": 415
+    },
+    {
+      "name": "Am",
+      "chordNotes": [
+        "A3",
+        "C4",
+        "E4"
+      ],
+      "bass": "C2",
+      "scale1": "A minor pentatonic",
+      "scale2": "A minor six pentatonic",
+      "scale3": "A flat three pentatonic",
+      "id": 898
+    },
+    {
+      "name": "E7#5sus4",
+      "chordNotes": [
+        "E3",
+        "A3",
+        "C4",
+        "D4"
+      ],
+      "bass": "C2",
+      "scale1": "E malkos raga",
+      "scale2": "E locrian major",
+      "scale3": "E locrian #2",
+      "id": 676
+    }
+  ],
+  "songs": {
+    "default": {
+      "ids": [],
+      "favourites": [
+        488,
+        415,
+        898,
+        676
+      ],
+      "blacklist": []
+    }
+  }
+}

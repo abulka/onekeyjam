@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OneKeyJam</title>
+
+
+    <!-- You MUST include jQuery before Fomantic -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.js"></script>
+
+    <!-- this defines Note as well and new Note is OK unlike tonaljs where Note.get() is the way
+    TODO Need to instead npm install webmidi and import with import {WebMidi} from "webmidi"; 
+    rather than importing into the global namespace like this. -->
+    <script src="https://cdn.jsdelivr.net/npm/webmidi@next/dist/iife/webmidi.iife.js"></script>
+
+    <!-- We now import from npm node_modules  -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tonaljs/tonal/browser/tonal.min.js"></script> -->
+
+    <!-- clarify which version I am using and need - see my comments
+    https://github.com/g200kg/webaudio-controls/issues/45 -->
+    <!-- <script src="src/lib/webaudio-controls.js"></script> -->
+    <script src="https://g200kg.github.io/webaudio-controls/webaudio-controls.js"></script>
+    <script src="https://g200kg.github.io/webaudio-pianoroll/webaudio-pianoroll.js"></script>
+
+    <script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'></script>
+    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0250_SoundBlasterOld_sf2.js'></script> -->
+    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0000_JCLive_sf2_file.js'></script> -->
+    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0180_SoundBlasterOld_sf2.js'></script> -->
+
+    <!-- jam note, e piano 45 -->
+    <script src='https://surikov.github.io/webaudiofontdata/sound/0040_Chaos_sf2_file.js'></script>
+    <!-- New chord - acoustic guitar -->
+    <script src='https://surikov.github.io/webaudiofontdata/sound/0243_JCLive_sf2_file.js'></script>
+    <!-- bass 374 -->
+    <script src='https://surikov.github.io/webaudiofontdata/sound/0321_GeneralUserGS_sf2_file.js'></script>
+
+    <!-- Old unknown - Synth Strings 1: Ensemble - 554 -->
+    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0502_FluidR3_GM_sf2_file.js'></script> -->
+
+    <!-- Old chord sound Synth Strings 1: Ensemble - 559 -->
+    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0500_SBLive_sf2.js'></script> -->
+
+    <!-- New jam - softer - but this somehow affects the bass note - WTF !!!!? -->
+    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0020_SBLive_sf2.js'></script> -->
+
+
+    <!-- lodash for unique/de-duplication function but now import directly within 'src/parse-midi.mjs' 
+        using "import _ from 'lodash';" and rely on snowpack to fix things so the browser understand this -->
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
+
+    <!-- for reading midi files. We now import from npm node_modules  -->
+    <!-- <script src="https://unpkg.com/@tonejs/midi"></script> -->
+
+    <link rel="stylesheet" href="/style/style.css">
+
+    <!-- favicon - generated from https://favicon.io/favicon-converter/  -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon_io/favicon-16x16.png">
+    <link rel="manifest" href="/favicon_io/site.webmanifest">
+
+    <script>
+      document.broadcastEvent = function broadcast(eventName, detailObject) {
+          document.dispatchEvent(new CustomEvent(eventName, {
+              detail: detailObject
+          }));
+      }
+      document.addEventListener("hello", function (event) {
+          console.log('Welcome to', event.detail.name);
+      });
+      document.broadcastEvent("hello", { name: "OneKeyJam!" })
+  </script>
+
+  <!-- Modules have access to <script src> namespaces, <script> namespace and to document and window -->
+
+  
+  </head>
+  <body style="background-color: burlywood;">
+    <div id="app"></div>
+
+    <!-- boot vuejs, creates topmost App.vue which has its own onMounted() which runs before router views' onMounted() -->
+    <script type="module" src="/src/main.js"></script>
+
+    <!-- This is the last thing to run, after vue has loaded all the components and
+    the UI is ready thus USELESS if router views need stuff to be set up first -->
+    <script type="module">
+    </script>
+
+  </body>
+</html>

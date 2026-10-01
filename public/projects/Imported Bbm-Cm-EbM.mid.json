@@ -1,0 +1,62 @@
+{
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "name": "Imported Bbm-Cm-EbM.mid",
+  "options": {},
+  "chords": [
+    {
+      "chordNotes": ["A#3", "C#4", "F4"],
+      "symbols": "A#m",
+      "name": "Chord 1 from midi (chord was auto detected)",
+      "chord": "A#m",
+      "bass": "A#",
+      "scale1": "A# minor pentatonic",
+      "scale2": "Ab major",
+      "scale3": "Eb major",
+      "id": 0,
+      "bassNote": "A#2"
+    },
+    {
+      "chordNotes": ["A#2", "C#4", "F4", "A#4"],
+      "symbols": "A#m",
+      "name": "Chord 2 from midi (chord was auto detected)",
+      "chord": "A#m",
+      "bass": "A#",
+      "scale1": "A# minor pentatonic",
+      "scale2": "Ab major",
+      "scale3": "Eb major",
+      "id": 1,
+      "bassNote": "A#2"
+    },
+    {
+      "chordNotes": ["C2", "C4", "D#4", "G4"],
+      "symbols": "Cm",
+      "name": "Chord 3 from midi (chord was auto detected)",
+      "chord": "Cm",
+      "bass": "C",
+      "scale1": "C minor pentatonic",
+      "scale2": "Ab major",
+      "scale3": "Eb major",
+      "id": 2,
+      "bassNote": "C2"
+    },
+    {
+      "chordNotes": ["D#2", "D#4", "F#4", "A#4"],
+      "symbols": "D#m",
+      "name": "Chord 4 from midi (chord was auto detected)",
+      "chord": "D#m",
+      "bass": "D#",
+      "scale1": "D# minor pentatonic",
+      "scale2": "Ab major",
+      "scale3": "Eb major",
+      "id": 3,
+      "bassNote": "D#2"
+    }
+  ],
+  "songs": {
+    "default": {"ids": [1, 2, 3], "favourites": [1, 2, 3], "blacklist": [0]}
+  }
+}

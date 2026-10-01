@@ -1,0 +1,96 @@
+{
+  "name": "Satin Doll - Jazz Classic",
+  "chords": [
+    {
+      "name": "DM7 chord",
+      "chord": "Dm7",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "G7 - dominant chord",
+      "chord": "G7",
+      "scale1": "C mixolydian",
+      "scale2": "C dominant",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "EM7 chord",
+      "chord": "EM7",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "A7 - dominant chord",
+      "chord": "A7",
+      "scale1": "C mixolydian",
+      "scale2": "C dominant",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "CM/Eb chord",
+      "chord": "CM",
+      "bass": "Eb",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "D7 - dominant chord",
+      "chord": "D7",
+      "scale1": "C mixolydian",
+      "scale2": "C dominant",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "Abm7 chord",
+      "chord": "Abm7",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "Db7b9 ?? chord",
+      "chord": "Db7b9",
+      "scale1": "C mixolydian",
+      "scale2": "C dominant",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "C6 ?? chord",
+      "chord": "C6",
+      "scale1": "C mixolydian",
+      "scale2": "C dominant",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "F chord",
+      "chord": "FM",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "name": "A7b9 chord",
+      "chord": "A7b9",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    }
+  ],
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "options": {},
+  "songs": {
+    "default": {
+      "ids": [],
+      "favourites": [],
+      "blacklist": []
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+    "name": "LPK25",
+    "description": "Akai LPK25",
+    "rhJamSoundOctave": 4,
+    "lhTriggerOctave": 3
+}

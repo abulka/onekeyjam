@@ -1,0 +1,67 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+            {
+                "name": "Launch CURRENT Program",
+                "program": "${file}",
+                "cwd": "${fileDirname}",
+                "request": "launch",
+                "skipFiles": [
+                    "<node_internals>/**"
+                ],
+                "type": "node"
+            },
+        {
+            // For this to work quit Edge and restart it with
+            // /Applications/Microsoft\ Edge.app/Contents/MacOS/Microsoft\ Edge --remote-debugging-port=9222
+            // Benefit of this appraoch is that vue extension tools are accessible
+            "name": "Attach to Edge",
+            "port": 9222,
+            "request": "attach",
+            "type": "msedge",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "name": "Launch Edge",
+            "request": "launch",
+            "type": "msedge",
+            "url": "http://localhost:8080",
+            "webRoot": "${workspaceFolder}"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run refactoring play",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/research/refactoring-play/main.js",
+            "runtimeArgs": [
+                "--es-module-specifier-resolution=node",
+            ],            
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Run junk.js",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "program": "${workspaceFolder}/junk.js",
+            "runtimeArgs": [
+                "--es-module-specifier-resolution=node",
+            ],            
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Typescript play.ts",
+            "program": "${workspaceFolder}/research/typescript-play/play.js",
+            "preLaunchTask": "tsc: build - research/typescript-play/tsconfig-play.json",
+            "console": "integratedTerminal",
+        },
+    ]
+}

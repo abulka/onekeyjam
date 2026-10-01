@@ -1,0 +1,9 @@
+# install jsdoc with 'npm i jsdoc -g'
+# jsdoc -c jsdoc.conf.json -d jsdoc-out -r src research/jsdoc -R README.md
+jsdoc -c jsdoc.conf.json -d jsdoc-out -r src research/jsdoc -R README.md -t ./node_modules/better-docs
+
+# jsdoc -c jsdoc.conf.json -d jsdoc-out -r src research/jsdoc -R README.md -t jsdoc-docdash
+# jsdoc -c jsdoc.conf.json -d jsdoc-out -r src research/jsdoc -R README.md -t jsdoc-minami
+# jsdoc -c jsdoc.conf.json -d jsdoc-out -r src research/jsdoc -R README.md -t ./node_modules/ink-docstrap/template
+# jsdoc -c jsdoc.conf.json -d jsdoc-out -r src research/jsdoc -R README.md -t jsdoc-docstrap
+

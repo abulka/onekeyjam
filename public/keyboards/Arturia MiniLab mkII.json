@@ -1,0 +1,6 @@
+{
+    "name": "Arturia MiniLab mkII",
+    "description": "Arturia MiniLab mkII with inverted colours",
+    "rhJamSoundOctave": 4,
+    "lhTriggerOctave": 3
+}

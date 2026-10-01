@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "source": "https://onekeyjam.netlify.app",
+    "version": 2,
+    "type": "onekeyjam"
+  },
+  "songs": {
+    "default": {
+      "favourites": [],
+      "ids": [
+        2,
+        3,
+        5
+      ],
+      "blacklist": []
+    }
+  },
+  "options": {},
+  "chordSequences": {
+    "default": {
+      "tempo": 99,
+      "mml": "t100o4l8c1d1c1d1e1f1g1g1"
+    }
+  },
+  "chords": [
+    {
+      "chordNotes": [
+        "D3",
+        "F3",
+        "Ab3",
+        "C4"
+      ],
+      "scale1": "D lydian dominant pentatonic",
+      "scale2": "C minor pentatonic",
+      "bass": "D",
+      "chord": "Dm7b5",
+      "symbols": "Dm7b5",
+      "id": 2,
+      "scale3": "D dorian",
+      "name": "Dm7b5 (user jam)",
+      "bassNote": "D2"
+    },
+    {
+      "bassNote": "G#2",
+      "bass": "G#",
+      "scale3": "G mixolydian",
+      "symbols": "G7b9",
+      "chordNotes": [
+        "Ab3",
+        "B3",
+        "D4",
+        "F4",
+        "G4"
+      ],
+      "id": 3,
+      "chord": "G7b9",
+      "name": "G7b9 (user jam)",
+      "scale1": "G phrygian dominant",
+      "scale2": "C minor pentatonic"
+    },
+    {
+      "chordNotes": [
+        "G3",
+        "B3",
+        "C4",
+        "D4",
+        "E4"
+      ],
+      "bass": "G",
+      "id": 5,
+      "bassNote": "G2",
+      "scale1": "C major pentatonic",
+      "scale2": "C major",
+      "name": "Cmaj9 (user jam)",
+      "symbols": "Cmaj9",
+      "chord": "Cmaj9",
+      "scale3": "C bebop major"
+    }
+  ],
+  "name": "ii v i - play01"
+}

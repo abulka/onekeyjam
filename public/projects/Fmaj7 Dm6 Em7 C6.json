@@ -1,0 +1,66 @@
+{
+  "name": "Fmaj7 Dm6 Em7 C6",
+  "chords": [
+    {
+      "name": "Fmaj7 (user)",
+      "chord": "Fmaj7",
+      "chordNotes": ["F3", "A3", "C4", "E4"],
+      "scale1": "F lydian",
+      "scale2": "A aeolian",
+      "scale3": "notes of chord",
+      "id": 1,
+      "symbols": "Fmaj7",
+      "bassNote": "F2",
+      "bass": "F"
+    },
+    {
+      "name": "Dm6 (user)",
+      "chord": "Dm6",
+      "chordNotes": ["D3", "F3", "A3", "B3"],
+      "bass": "F",
+      "scale1": "D melodic minor",
+      "scale2": "A aeolian",
+      "scale3": "notes of chord",
+      "id": 2,
+      "symbols": "Dm6,Bm7b5/D",
+      "bassNote": "F2"
+    },
+    {
+      "name": "Em7 (user)",
+      "chord": "Em7",
+      "chordNotes": ["E3", "G3", "B3", "D4"],
+      "scale1": "E dorian",
+      "scale2": "A aeolian",
+      "scale3": "notes of chord",
+      "id": 3,
+      "symbols": "Em7,G6/E",
+      "bassNote": "E2",
+      "bass": "E"
+    },
+    {
+      "name": "C6 (user)",
+      "chord": "C6",
+      "chordNotes": ["C3", "E3", "G3", "A3"],
+      "bass": "E",
+      "scale1": "C major",
+      "scale2": "A aeolian",
+      "scale3": "notes of chord",
+      "id": 4,
+      "symbols": "C6,Am7/C",
+      "bassNote": "E2"
+    }
+  ],
+  "options": {},
+  "songs": {
+    "default": {
+      "ids": [1, 2, 3, 4],
+      "favourites": [1, 2, 3, 4],
+      "blacklist": []
+    }
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "name": "baccus jazz",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Bbsus13 (manual json)",
+      "chord": "Bb13sus",
+      "chordNotes": ["G#3", "C4", "Eb4", "G4"],
+      "bassNote": "Bb2",
+      "bass": "Bb",
+      "scale1": "Bb dorian",
+      "scale2": "Bb dorian",
+      "scale3": "Bb mixolydian"
+    },
+    {
+      "id": 2,
+      "name": "G(add2)/B (manual json)",
+      "chord": "GMadd9",
+      "chordNotes": ["G3", "A3", "B3", "D4", "G4"],
+      "bassNote": "B2",
+      "bass": "B",
+      "scale1": "G major",
+      "scale2": "G major",
+      "scale3": "G major pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "CMaj9 (manual json)",
+      "chord": "Cmaj9",
+      "chordNotes": ["G3", "B3", "D4", "E4", "G4"],
+      "bassNote": "C3",
+      "bass": "C",
+      "scale1": "G major",
+      "scale2": "C major",
+      "scale3": "C bebop major"
+    },
+    {
+      "name": "G#13sus4 (user) (inv 2)",
+      "chord": "G#13sus4",
+      "chordNotes": ["D#3", "F#3", "A#3", "F4", "G#4", "C#5"],
+      "bass": "D#",
+      "scale1": "G# mixolydian",
+      "scale2": "G# dorian",
+      "scale3": "G# bebop",
+      "id": 4,
+      "symbols": "D#m11,F#maj13/D#,F#M7add13/D#,G#13sus4/D#",
+      "bassNote": "D#2"
+    },
+    {
+      "name": "G#13sus4 (user) (inv 2)",
+      "chord": "G#13sus4",
+      "chordNotes": ["D#3", "F#3", "A#3", "F4", "G#4", "C#5"],
+      "bass": "D#",
+      "scale1": "G# mixolydian",
+      "scale2": "G# dorian",
+      "scale3": "G# bebop",
+      "id": 5,
+      "symbols": "D#m11,F#maj13/D#,F#M7add13/D#,G#13sus4/D#",
+      "bassNote": "D#2"
+    },
+    {
+      "name": "D#13sus4 (user) (inv 2)",
+      "chord": "D#13sus4",
+      "chordNotes": ["A#3", "C4", "C#4", "D#4", "F4", "G#4"],
+      "bass": "A#",
+      "scale1": "D# mixolydian",
+      "scale2": "D# dorian",
+      "scale3": "D# bebop",
+      "id": 6,
+      "symbols": "A#m11,C#maj13/A#,C#M7add13/A#,D#13sus4/A#",
+      "bassNote": "A#2"
+    }
+  ],
+  "options": {},
+  "songs": {
+    "default": {"ids": [3, 4, 6], "favourites": [3, 4], "blacklist": [1, 2, 5]}
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  }
+}

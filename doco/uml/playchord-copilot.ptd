@@ -1,0 +1,67 @@
+Diagram:
+  name: Scale and Chord Management
+  version: 1.0
+  version-ptd: 1.1
+  description: This diagram describes the structure and interactions within a scale and chord management system.
+               The system includes various functions and their relationships to manage scales, chords, and their interactions.
+
+Files:
+  file: change-scale.js
+    Variables:
+      const { uniq } = pkg
+      const Tonal
+      const globals
+    Functions:
+      changeScaleFilter(scaleFilter): void
+      setActiveScaleFilter(scaleTonic: string, scaleType: string, scaleNotes: ScaleNotes[], scaleTypes: string[]): void
+      setActiveScaleFilterToMatchChord(chordTonic: string, chordType: string): void
+      _setActiveScaleFilter(scaleNotes: ScaleNotes[]): void
+      clearActiveScaleFilter(): void
+      calcScaleTypesDropdown(chordConfig: ChordConfig): string[]
+      calcScaleTypesDropdownFromChordSymbol(chordSymbol: string, strategy: string): string[]
+      reportScaleChange(msg: string): void
+    Classes:
+      none
+
+  file: play-chord.js
+    Variables:
+      const globals
+    Functions:
+      playChord(singleNote: string, options: object): void
+      changeChordTriggerNoteAndThusScale(singleNote: string): void
+      playChordNote(noteName: string, toneType: string, options: object, channel: object, triggerNote: string, pendingNoteOffs: object[]): void
+      playChordOff(singleNote: string): void
+    Classes:
+      none
+
+Classes:
+  none
+
+Use Cases:
+  Sequence: Change Scale Filter
+    🧍‍♂️ -> changeScaleFilter(scaleFilter) [change-scale.js]
+         changes the scale filter
+         -> _setActiveScaleFilter(scaleNotes) [change-scale.js]
+             sets the active scale filter
+             < void
+         -> reportScaleChange(msg) [change-scale.js]
+             reports the scale change
+             < void
+         < void
+
+  Sequence: Play Chord
+    🧍‍♂️ -> playChord(singleNote, options) [play-chord.js]
+         plays a chord
+         -> changeChordTriggerNoteAndThusScale(singleNote) [play-chord.js]
+             changes the chord trigger note and thus the scale
+             -> changeScaleFilter(scaleFilter) [change-scale.js]
+                 changes the scale filter
+                 < void
+             < void
+         -> playChordNote(noteName, toneType, options, channel, triggerNote, pendingNoteOffs) [play-chord.js]
+             plays a chord note
+             < void
+         -> playChordOff(singleNote) [play-chord.js]
+             stops playing the chord
+             < void
+         < void
