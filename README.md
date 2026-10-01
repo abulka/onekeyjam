@@ -138,13 +138,23 @@ Other hosting options are documented in [doco/NOTES.md](doco/NOTES.md).
 - [doco/NOTES.md](doco/NOTES.md) - detailed MIDI setup, usage reference,
   deployment history and development notes.
 
-## More Screenshots
+## Screenshots
 
-![OneKeyJam screenshot](doco/images/onekeyjam-screenshot-2-sequencer.png)
+![OneKeyJam main view](doco/images/onekeyjam-main-view.png)
 
-OneKeyJam has a built in sequencer, with the left-hand chords on one track and the right-hand jam notes on another. 
+Main view, where you can edit your project.
 
-![OneKeyJam screenshot](doco/images/onekeyjam-screenshot-4-features.png)
+![OneKeyJam performance view](doco/images/onekeyjam-performance-view.png)
+
+Performance view, where you can play your project.
+
+![OneKeyJam sequencer](doco/images/onekeyjam-screenshot-2-sequencer.png)
+
+OneKeyJam has a built in sequencer, with the left-hand chords on one track and the right-hand jam notes on another.
+
+![OneKeyJam features](doco/images/onekeyjam-screenshot-4-features.png)
+
+OneKeyJam features at a glance.
 
 ## Contributing
 
