@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from 'url'
 
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import postcss from './postcss.config.js'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -20,7 +20,7 @@ export default defineConfig({
                                  ) 
       }
     }
-  })],
+  }), tailwindcss()],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -32,10 +32,6 @@ export default defineConfig({
 
   // logs all file changes, not just the last one
   clearScreen: false,
-
-  css: {
-    postcss,
-  },
 
   test: {
     globals: true,

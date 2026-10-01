@@ -72,7 +72,7 @@ const noKeySignatureBecauseNoChords = computed({
                 <code class="ml-2"> {{ chord }} </code>
             </span>
             <span v-if="globals.keySignatureDetection.allChordNotesInProject.length == 12" class="ml-1"><span
-                    class="ml-1 !text-red-500">(Every Note!)</span>🃏</span>
+                    class="ml-1 text-red-500!">(Every Note!)</span>🃏</span>
             <br>
 
             <span class="chords-that-fit-label">Key Signatures (chords): </span>
@@ -102,7 +102,7 @@ const noKeySignatureBecauseNoChords = computed({
                                 globals.keySignatureDetection.music21Result.alt
                         }}</a> &nbsp;
                 </span>
-                <span v-else class="!bg-yellow-500">
+                <span v-else class="bg-yellow-500!">
                     {{ globals.keySignatureDetection.music21Result.status }}
                     {{ globals.keySignatureDetection.music21Result.result }}
                 </span>

@@ -10,6 +10,10 @@ const router = createRouter({
       component: HomeView
     },
     {
+      path: '/index.html',
+      redirect: '/'
+    },
+    {
       path: '/perform',
       name: 'perform',
       component: () => import('../views/PerformView.vue')

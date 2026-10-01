@@ -119,7 +119,7 @@ function replaceCurrentScaleDisabled() {
 
     <div class="row">
         <button @click="replaceCurrentScale()" :disabled="replaceCurrentScaleDisabled()"
-            class="ui tiny button brown !mr-1" title="Replace current Project Scale">
+            class="ui tiny button brown mr-1!" title="Replace current Project Scale">
             Replace</button>
         <span v-if="!globals.currentConfigEmpty() && globals.currentScaleFilter != 'notesOfChord'" class="mr-1"
             :class="{ 'opacity-50': replaceCurrentScaleDisabled() }">

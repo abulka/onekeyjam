@@ -74,9 +74,9 @@ const debug = computed({
             class="ml-1 w-10" />
 
         <!-- arguably this should clear the chord picker too -->
-        <button @click="globals.clearCurrentChordBeingJammed()" class="ui tiny button !ml-6">Clear</button>
+        <button @click="globals.clearCurrentChordBeingJammed()" class="ui tiny button ml-6!">Clear</button>
 
-        <ButtonAudition class="!ml-3" :notes="props.auditionInfo.currentChordBeingJammed.notes" :bass="props.auditionInfo.currentChordBeingJammed.bass" />
+        <ButtonAudition class="ml-3!" :notes="props.auditionInfo.currentChordBeingJammed.notes" :bass="props.auditionInfo.currentChordBeingJammed.bass" />
 
     </div>
     <div class="row">

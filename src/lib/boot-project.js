@@ -378,7 +378,6 @@ export function linkProjectToKeyboard() {
     if (keyboardName) {  // current keyboard config JSON
 
         // Open INPUT of hardware MIDI keyboard, so that we can later listen for notes on it
-        // eslint-disable-next-line no-undef
         globals.mySynth = WebMidi.getInputByName(keyboardName)
 
         // Scraps - other ways of detecting the external MIDI keyboard

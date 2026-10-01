@@ -154,7 +154,7 @@ function replaceCurrentChordDisabled() {
     <span><code class="ml-1 font-semibold"> {{ removeDefaultVoicingSuffix(radioPicked) }}</code> to Project</span>
 
     <button @click="chordAction('replace', radioPicked)" v-if="areSymbols() && !globals.currentConfigEmpty()"
-      :disabled="!radioPicked || replaceCurrentChordDisabled()" class="ui tiny brown button !ml-2" title="Replace current Project Chord">Replace</button>
+      :disabled="!radioPicked || replaceCurrentChordDisabled()" class="ui tiny brown button ml-2!" title="Replace current Project Chord">Replace</button>
     <span v-if="areSymbols() && !globals.currentConfigEmpty()" :class="{'opacity-50' : replaceCurrentChordDisabled()}">
       <code class="ml-1"> {{ globals.currentChordName() }}</code> with
       <code class="ml-1 font-semibold"> {{ radioPicked }}</code>
@@ -175,15 +175,15 @@ function replaceCurrentChordDisabled() {
           <span v-if="radioSymbols.length > 1">Choose interpretation</span>
           <span v-else>Interpretation</span>
           of Chord Notes 
-          <ButtonAudition class="!ml-1" :notes="props.auditionInfo.currentChordBeingJammed.notes" :bass="props.auditionInfo.currentChordBeingJammed.bass" />
+          <ButtonAudition class="ml-1!" :notes="props.auditionInfo.currentChordBeingJammed.notes" :bass="props.auditionInfo.currentChordBeingJammed.bass" />
           <code>[{{globals.currentChordBeingJammed.chordNotes.join(' ')}}]</code> 
         </p>
         <div v-for="symbol of radioSymbols" :key="symbol" class="inline mr-4">
 
-          <p v-if="symbol.includes('-default-voicing')" class="mb-1 !mt-3" 
+          <p v-if="symbol.includes('-default-voicing')" class="mb-1 mt-3!" 
           title="Default Chord Picker chord note voicing of the detected chord symbol">
           Use default Chord Picker voicing 
-          <ButtonAudition class="!ml-1" :notes="props.auditionInfo.defaultVoicing.notes" :bass="props.auditionInfo.defaultVoicing.bass" />
+          <ButtonAudition class="ml-1!" :notes="props.auditionInfo.defaultVoicing.notes" :bass="props.auditionInfo.defaultVoicing.bass" />
           <code>[{{props.auditionInfo.defaultVoicing.notes.join(' ')}}]</code></p>
 
           <input type="radio" :id="symbol" :value="symbol" v-model="radioPicked" :disabled="radioSymbols.length == 1">
@@ -192,7 +192,7 @@ function replaceCurrentChordDisabled() {
         </div>
         <!-- Show dimmed default voicing area if it wasn't already shown - so that UI doesn't jump around -->
         <div v-if="!lastRadioSymbol.includes('-default-voicing')" class="inline mr-4">
-          <p class="mb-1 !mt-3 opacity-50">The default Chord Picker voicing is <code>[{{props.auditionInfo.defaultVoicing.notes.join(' ')}}]</code>:</p>
+          <p class="mb-1 mt-3! opacity-50">The default Chord Picker voicing is <code>[{{props.auditionInfo.defaultVoicing.notes.join(' ')}}]</code>:</p>
           <input type="radio" :disabled="true">
           <label class="ml-1 opacity-50">{{ removeDefaultVoicingSuffix(lastRadioSymbol) }}</label>
         </div>

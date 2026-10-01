@@ -147,7 +147,7 @@ export function keyFromChords(chordSymbols, options) {
 export function keyFromNotes(chordsAsNotes, options) {
     // chordsAsNotes is array of arrays of notes e.g. [['C', 'E', 'G'], ['C', 'E', 'G']]
     init();
-    if (debug >= 1) console.log(dumpNotesForTensionJar(chords))
+    if (debug >= 1) console.log(dumpNotesForTensionJar(chordsAsNotes))
     chordsAsNotes.forEach(function (chord) {
         addPlainNotes(chord);
     });
