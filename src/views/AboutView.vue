@@ -4,7 +4,7 @@
 <template>
 
   <div class="ui container center aligned pad-top">
-    <h1 class="ui header">Chord-Jammer</h1>
+    <h1 class="ui header">OneKeyJam</h1>
   </div>
 
   <div class="ui container">
