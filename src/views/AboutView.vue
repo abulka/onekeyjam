@@ -1,49 +1,317 @@
 <script setup>
+import { RouterLink } from 'vue-router'
+
+import mainView from '../../doco/images/onekeyjam-main-view.png'
+import performanceView from '../../doco/images/onekeyjam-performance-view.png'
+import sequencerView from '../../doco/images/onekeyjam-screenshot-2-sequencer.png'
+import featuresView from '../../doco/images/onekeyjam-screenshot-4-features.png'
+import externalKeyboard from '../../doco/images/example-external-midi-keyboard.avif'
 </script>
 
 <template>
+  <main class="help">
+    <div class="ui container">
 
-  <div class="ui container center aligned pad-top">
-    <h1 class="ui header">OneKeyJam</h1>
-  </div>
+      <!-- Hero -->
+      <div class="ui center aligned pad-top hero">
+        <h1 class="ui huge header">OneKeyJam</h1>
+        <p class="ui large text">
+          Play chords with one finger in your left hand, and jam safely in the right hand.
+        </p>
+      </div>
 
-  <div class="ui container">
-    <h2>Help</h2>
+      <!-- What it is -->
+      <h2 class="ui header">What is OneKeyJam?</h2>
+      <p>
+        OneKeyJam is a browser-based MIDI app. Left-hand notes trigger whole chords
+        with a single finger, and right-hand notes are filtered into the current
+        scale, so everything you play fits the chord. Change chord and the safe
+        notes change with it. It can drive a real MIDI keyboard and DAW (for
+        example Ableton), or make the sound in the browser using the bundled
+        General MIDI sounds.
+      </p>
 
-    <div class="content">
-      <p>OneKeyJam is a web app which lets you play like a professional piano improviser - without worring
-        about learning chord shapes or scales!</p>
-      <ul>
+      <!-- Explore -->
+      <h2 class="ui header">Explore the app</h2>
+      <p>
+        The screen gives away more than it first appears. Opening up the sections
+        of the UI and drilling in reveals all sorts of features, such as:
+      </p>
+
+      <h3 class="ui header">Main view accordions</h3>
+      <ul class="ui list">
         <li>
-          Left hand: Single finger Chords!
+          <strong>Edit Chords</strong> - add, edit and audition the chords in your
+          project, and choose the scale filters used in the right hand.
         </li>
         <li>
-          Right hand: Note filtering - Always improvise in the correct scale. Black keys act as modifers -
-          e.g. change scale or transpose chords whilst playing.
+          <strong>Edit Scales</strong> - define the scales and their notes.
         </li>
         <li>
-          Real MIDI device integration with your DAW or just use built in GM sounds.
+          <strong>Import MIDI File</strong> - load a MIDI file and OneKeyJam finds
+          the chords inside it and lays them out across the keyboard.
+        </li>
+        <li>
+          <strong>MIDI Keyboard Config</strong> - see the MIDI keyboards that have
+          been detected and how they are mapped.
         </li>
       </ul>
 
+      <h3 class="ui header">File menu</h3>
       <p>
-        Advanced: Define all chords, scales using <code>JSON</code> - allowing full configurability.
+        Use the <strong>File</strong> menu to open and save projects. It includes
+        <em>New</em>, <em>Open</em>, <em>Open Featured</em>, <em>Save</em>,
+        <em>Save As</em>, <em>Reload current Project</em>, <em>Import MIDI file</em>,
+        <em>Download / Upload Project</em> (to back up or move projects between
+        machines), and <em>Download MIDI Chords</em> in a couple of formats.
       </p>
 
-      <p>MORE HELP TO COME</p>
-      
-      <h2>Free to use</h2>
-      <p>OneKeyJam is free and open source, with no subscriptions. All features are available to everyone. See the
-      <a href="https://github.com/abulka/onekeyjam">OneKeyJam public GitHub page</a> for the source code.
+      <h3 class="ui header">Actions menu</h3>
+      <ul class="ui list">
+        <li><strong>Reallocate Chords</strong> - shuffle the chord triggers across the keyboard.</li>
+        <li><strong>Find Matching Scales</strong> - suggest scales that fit the chords.</li>
+        <li><strong>Reset Transpositions</strong> - undo any transposing you did while playing.</li>
+        <li><strong>Fill with Key Signature</strong> - seed the scale filters from a key signature.</li>
+      </ul>
+
+      <h3 class="ui header">And there is more</h3>
+      <ul class="ui list">
+        <li><strong>Start Tour</strong> - a guided tour of the main controls.</li>
+        <li>The chord and scale pickers, with search and audition buttons.</li>
+        <li>The <strong>Circle of Fifths</strong> helper.</li>
+        <li>The <strong>keyboard note meanings</strong> legend, which explains what every key does.</li>
+        <li>The <strong>scale filtering toggles</strong> for switching filtering on and off.</li>
+      </ul>
+
+      <!-- Perform view -->
+      <h2 class="ui header">The Perform view</h2>
+      <p>
+        The <RouterLink to="/perform">Perform view</RouterLink> is a focused
+        playing screen. It shows the active chord and the active scale as you
+        play, together with a live piano keyboard, the scale-filtering toggles and
+        the note-meanings legend. Expand the accordions underneath to reach:
       </p>
-      <h2>Issues and Bugs</h2>
-      <p>Report any issues, feature requests or bugs in the <a href="https://github.com/abulka/onekeyjam/issues">OneKeyJam issue tracker</a>.
+      <ul class="ui list">
+        <li><strong>Active Chord</strong> - the chord that is currently sounding, with its notes and bass.</li>
+        <li><strong>Active Scale</strong> - the scale the right hand is currently filtered into.</li>
+        <li><strong>Chord Sequencer</strong> - a built-in sequencer that records your left-hand chords and right-hand jam notes on separate tracks.</li>
+      </ul>
+      <p>
+        The status readouts at the top of the page summarise the current chord and
+        scale at a glance, so you always know what you are playing over.
       </p>
+
+      <figure>
+        <img class="screenshot" :src="performanceView" alt="OneKeyJam performance view showing the active chord and active scale" />
+        <figcaption class="screenshot-caption">
+          The Perform view, with the active chord, active scale, live keyboard and
+          chord sequencer.
+        </figcaption>
+      </figure>
+
+      <!-- Features -->
+      <h2 class="ui header">Features</h2>
+      <ul class="ui list">
+        <li>
+          <strong>Single-finger chords</strong> - each left-hand key plays a full
+          chord from your project. No chord shapes to learn.
+        </li>
+        <li>
+          <strong>Scale filtering</strong> - right-hand notes snap to the scale
+          that fits the current chord, so improvisation always sounds right.
+        </li>
+        <li>
+          <strong>Black-key modifiers</strong> - switch scale, transpose chords
+          and turn filtering on or off while you play.
+        </li>
+        <li>
+          <strong>Real MIDI, or built-in sounds</strong> - send notes to a DAW
+          over the macOS IAC Driver (jam notes, chords and bass on separate
+          channels), or use the bundled General MIDI sounds in the browser.
+        </li>
+        <li>
+          <strong>Projects you control</strong> - configure chords and scales with
+          JSON, save projects in your browser, and export or import them as files.
+        </li>
+        <li>
+          <strong>Ready-made demo projects</strong> - open a featured project and
+          start playing straight away.
+        </li>
+        <li>
+          <strong>Import MIDI files</strong> - load a MIDI file and OneKeyJam
+          finds the chords inside it, then assigns them across the keyboard.
+        </li>
+        <li>
+          <strong>Play from your computer keyboard</strong> - play the on-screen
+          keyboard with the lower row (<code>z x c v b n m</code>) for chords and
+          the upper row (<code>q w e r t y u</code>) for solo notes.
+        </li>
+      </ul>
+
+      <!-- Getting started -->
+      <h2 class="ui header">Getting started</h2>
+      <ol class="steps">
+        <li>Open the app and choose <strong>File &rarr; Open Featured...</strong> to load a demo project.</li>
+        <li>Play the highlighted left-hand keys to trigger chords.</li>
+        <li>Play anywhere to the right to jam - the notes are filtered to fit the chord.</li>
+        <li>Use the black keys to switch scale or transpose.</li>
+      </ol>
+      <p>
+        A guided tour is available from the <strong>Start Tour</strong> item in the
+        menu. To build a project from an existing song, choose
+        <strong>File &rarr; Import MIDI file...</strong> and OneKeyJam will detect
+        the chords and lay them out on the keyboard.
+      </p>
+
+      <figure>
+        <img class="screenshot" :src="mainView" alt="OneKeyJam main view, where you edit your project" />
+        <figcaption class="screenshot-caption">
+          The main view, where you edit your project: one-finger chords, scale
+          filters and the piano keyboard.
+        </figcaption>
+      </figure>
+
+      <!-- Playing -->
+      <h2 class="ui header">Use a MIDI keyboard</h2>
+      <img class="midi-keyboard-image" :src="externalKeyboard" alt="An external MIDI keyboard connected to OneKeyJam" />
+      <p>
+        Plug in a MIDI keyboard and Chrome connects to it automatically through
+        the built-in Web MIDI support - no setup needed. Sound is made in the
+        browser out of the box, and you can also route notes to a DAW or synth
+        such as Ableton via the macOS IAC Driver. MIDI needs a secure context, so
+        the page must be served over HTTPS (or <code>localhost</code>).
+      </p>
+      <p>
+        See the
+        <a href="https://github.com/abulka/onekeyjam/blob/main/doco/NOTES.md" target="_blank" rel="noopener">MIDI setup notes</a>
+        for the full MIDI and DAW configuration.
+      </p>
+
+      <h2 class="ui header">Play with your computer keyboard</h2>
+      <ol class="steps">
+        <li>Click the on-screen piano keyboard once so that it has focus.</li>
+        <li>Trigger chords with the lower row, <code>z x c v b n m</code> (the white keys of the chord trigger octave).</li>
+        <li>The black keys <code>s d g h j</code> in that octave are the chord modifiers. Hold <code>s</code> as a shift key and use the others to switch scales or transpose.</li>
+        <li>Play solo notes with the upper row, <code>q w e r t y u</code>. These are filtered into the current scale.</li>
+      </ol>
+      <p>
+        The keys only work while the on-screen keyboard has focus, so if typing
+        does nothing, click the keyboard first. The octaves follow the keyboard
+        config, so a different project or keyboard may shift the notes that each
+        key plays.
+      </p>
+
+      <!-- Sequencer & features screenshots -->
+      <h2 class="ui header">More screenshots</h2>
+      <div class="ui two column stackable grid">
+        <div class="column">
+          <figure>
+            <img class="screenshot" :src="sequencerView" alt="OneKeyJam built-in sequencer" />
+            <figcaption class="screenshot-caption">
+              The built-in sequencer, with left-hand chords on one track and
+              right-hand jam notes on another.
+            </figcaption>
+          </figure>
+        </div>
+        <div class="column">
+          <h3 class="ui header">Features at a glance</h3>
+          <div class="features-scroll">
+            <img :src="featuresView" alt="A summary of OneKeyJam features" />
+          </div>
+          <p class="screenshot-caption">A quick visual summary of the main features.</p>
+        </div>
+      </div>
+
+      <!-- Free to use -->
+      <h2 class="ui header">Free to use</h2>
+      <p>
+        OneKeyJam is free and open source, with no subscriptions. All features are
+        available to everyone. See the
+        <a href="https://github.com/abulka/onekeyjam" target="_blank" rel="noopener">OneKeyJam public GitHub page</a>
+        for the source code.
+      </p>
+
+      <h2 class="ui header">Issues and bugs</h2>
+      <p>
+        Report any issues, feature requests or bugs in the
+        <a href="https://github.com/abulka/onekeyjam/issues" target="_blank" rel="noopener">OneKeyJam issue tracker</a>.
+      </p>
+
+      <h2 class="ui header">Further reading</h2>
+      <ul class="ui list">
+        <li>
+          <a href="https://github.com/abulka/onekeyjam/blob/main/doco/ARCHITECTURE.md" target="_blank" rel="noopener">Architecture</a>
+          - how the app is put together.
+        </li>
+        <li>
+          <a href="https://github.com/abulka/onekeyjam/blob/main/doco/DATA-MODEL.md" target="_blank" rel="noopener">Data model</a>
+          - the project and keyboard data model.
+        </li>
+        <li>
+          <a href="https://github.com/abulka/onekeyjam/blob/main/doco/NOTES.md" target="_blank" rel="noopener">Notes</a>
+          - detailed MIDI setup and usage reference.
+        </li>
+      </ul>
+
     </div>
-
-  </div>
-
+  </main>
 </template>
 
-<style>
+<style scoped>
+.help {
+  padding-bottom: 4rem;
+}
+
+.help .hero {
+  padding-bottom: 0.5rem;
+  text-align: center;
+}
+
+.help .screenshot {
+  width: 100%;
+  height: auto;
+  border: 1px solid #d9c9b0;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.help .screenshot-caption {
+  color: #6b5a45;
+  font-size: 0.95rem;
+  margin: 0.5rem 0 1.5rem;
+}
+
+.help .steps {
+  line-height: 1.8;
+}
+
+.help .midi-keyboard-image {
+  float: right;
+  width: 200px;
+  margin: 0 0 1rem 1.5rem;
+  border: 1px solid #d9c9b0;
+  border-radius: 4px;
+}
+
+.help .features-scroll {
+  max-height: 70vh;
+  overflow: auto;
+  border: 1px solid #d9c9b0;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.help .features-scroll img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 600px) {
+  .help .midi-keyboard-image {
+    float: none;
+    width: 100%;
+    margin: 1rem 0;
+  }
+}
 </style>

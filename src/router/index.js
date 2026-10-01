@@ -26,11 +26,17 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import('../views/AboutView.vue')
     },
-    {
-      path: '/research',
-      name: 'research',
-      component: () => import('../views/ResearchView.vue')
-    }
+    // The Research view is a development-only playground. In production it is
+    // not registered, so its code is not shipped and deep links redirect home.
+    ...(import.meta.env.DEV
+      ? [
+          {
+            path: '/research',
+            name: 'research',
+            component: () => import('../views/ResearchView.vue')
+          }
+        ]
+      : [{ path: '/research', redirect: '/' }])
   ]
 })
 

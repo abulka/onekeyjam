@@ -3,6 +3,9 @@ import { onMounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import mainOneKeyJam from '../src/lib/main.js';
 
+// The Research view is a development-only playground; hide it from production builds.
+const showResearch = import.meta.env.DEV
+
 onMounted(() => {
   console.log('App onMounted')
 
@@ -35,7 +38,7 @@ onMounted(() => {
         <RouterLink class="item" active-class="active" to="/">OneKeyJam</RouterLink>
         <RouterLink class="item" active-class="active" to="/perform">Perform</RouterLink>
         <RouterLink class="item" active-class="active" to="/about">Help</RouterLink>
-        <RouterLink class="item" active-class="active" to="/research">Research</RouterLink>
+        <RouterLink v-if="showResearch" class="item" active-class="active" to="/research">Research</RouterLink>
 
         <!-- Just for development ease -->
         <!-- <div class="item"> <a href="#" @click="newProject()">New</a> </div> -->
