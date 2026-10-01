@@ -49,3 +49,5 @@ research/key-detection-from-chords/tension-java/tmp/
 doco/.obsidian/
 out*.*
 .playwright-mcp/
+# Local Netlify folder
+.netlify
