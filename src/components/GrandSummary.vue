@@ -248,6 +248,7 @@ function generalTableClick(event) {
         <th>Bass</th>
         <th>
           <table style="width:100%;">
+            <tbody>
             <tr>
               <th width="25%">Scale Filter 1<br> <button @mousedown="_scaleFilterMouseDown" @touchstart.prevent="_scaleFilterMouseDown"
                   :class="{ 'boldy': globals.currentScaleFilter == 'scale1' }" class="trigger-btn p-2">C#</button></th>
@@ -261,6 +262,7 @@ function generalTableClick(event) {
                   :class="{ 'boldy': globals.currentScaleFilter == 'notesOfChord' }" class="trigger-btn p-2">G#</button>
               </th>
             </tr>
+            </tbody>
           </table>
         </th>
 
@@ -328,24 +330,23 @@ function generalTableClick(event) {
           This can be tightened to only bold the current scale by adding the condition  && globals.currentScaleFilter == 'rhnotes{,2,3}' 
           -->
           <table class="scale-filters" style="width:100%;" @click="scaleFilterTableClick($event);">
+            <tbody>
             <tr 
               :data-trigger-note="info.lhTriggerNote">
               <td width="25%"
                 data-scale-filter="scale1"
                 data-scale-filter-note="C#"
                 :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale1' }">
-                <code v-if="info.rhScaleName" :class="{ 'boldy': !lockedOrFrozen() && info.rhScaleIsCurrent && info.lhChordIsCurrent }">
-                            {{ info.rhScaleName }}</code> &nbsp;&nbsp;
-                <code v-else>none</code>
+                <span><code v-if="info.rhScaleName" :class="{ 'boldy': !lockedOrFrozen() && info.rhScaleIsCurrent && info.lhChordIsCurrent }">
+                            {{ info.rhScaleName }}</code><code v-else>none</code></span>&nbsp;&nbsp;
                 <!-- debugging: &nbsp;{{info.rhScaleIsCurrent}}&nbsp;{{globals.currentScaleFilter == 'scale1'}} -->
               </td>
               <td width="25%"
                 data-scale-filter="scale2"
                 data-scale-filter-note="D#"
                 :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale2' }">
-                <code v-if="info.rhScale2Name" :class="{ 'boldy': !lockedOrFrozen() && info.rhScale2IsCurrent && info.lhChordIsCurrent }">
-                            {{ info.rhScale2Name }}</code> &nbsp;&nbsp; 
-                <code v-else>none</code>
+                <span><code v-if="info.rhScale2Name" :class="{ 'boldy': !lockedOrFrozen() && info.rhScale2IsCurrent && info.lhChordIsCurrent }">
+                            {{ info.rhScale2Name }}</code><code v-else>none</code></span>&nbsp;&nbsp; 
                 <!-- debugging: &nbsp;{{info.rhScale2IsCurrent}}&nbsp;{{globals.currentScaleFilter == 'scale2'}} -->
               </td>
               <td width="25%"
@@ -366,6 +367,7 @@ function generalTableClick(event) {
                 </code>
               </td>
             </tr>
+            </tbody>
           </table>
 
         </td>

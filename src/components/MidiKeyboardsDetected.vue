@@ -64,9 +64,8 @@ function enableMidi() {
 
     <div v-if="globals.superUser">
       <h5>Current MIDI Keyboard config:</h5>
-      <p>globals.keyboard:
+      <p>globals.keyboard:</p>
       <pre>{{ globals.keyboard }}</pre>
-      </p>
     </div>
 
   </div>

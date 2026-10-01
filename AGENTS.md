@@ -13,7 +13,8 @@ Then visit http://localhost:8080/index.html.
 The `predev` script generates the project and keyboard manifests before Vite
 starts, so the static libraries are listed in the UI.
 
-Tests: `npm run test:unit` (Vitest) and `npm test` (Mocha).
+Tests: `npm test` runs the Vitest suite once. Use `npm run test:watch` while
+developing.
 
 ## Deploying to Netlify
 
