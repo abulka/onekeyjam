@@ -243,8 +243,12 @@ export const globals = reactive({
         hasTake: false,  // a take with at least one note is ready to export
         playback: {
             isPlaying: false,
+            isScrubbing: false,
             positionSec: 0,
             durationSec: 0,
+            // Which keys light up on the piano keyboard during playback:
+            // 'sounding' (notes that sound), 'played' (keys pressed) or 'both'.
+            highlightMode: 'sounding',
         },
     },
 

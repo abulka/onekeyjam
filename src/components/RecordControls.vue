@@ -2,7 +2,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { globals } from '@/lib/globals.js'
 import { startRecording, stopRecording, clearTake } from '@/lib/midi/recorder.js'
-import { startPlayback, stopPlayback, seekPlayback, takeDurationSec } from '@/lib/midi/playback.js'
+import { startPlayback, stopPlayback, seekPlayback, previewVisuals, takeDurationSec } from '@/lib/midi/playback.js'
 import { downloadRecording } from '@/lib/midi/export-recording.js'
 
 const rec = globals.recording
@@ -35,19 +35,33 @@ function toggleRecord() {
 }
 
 function togglePlay() {
-  if (rec.playback.isPlaying)
-    stopPlayback(true)
-  else
-    startPlayback(0)
+  if (rec.playback.isPlaying) {
+    // Pause, keeping the play head where it is so play resumes from there.
+    stopPlayback(false)
+    return
+  }
+  // Start from the scrub position, unless it is already at the end.
+  const atEnd = rec.playback.durationSec > 0
+    && rec.playback.positionSec >= rec.playback.durationSec - 1e-6
+  startPlayback(atEnd ? 0 : rec.playback.positionSec)
+}
+
+function rewind() {
+  // Stop and return the play head to the start.
+  stopPlayback(true)
 }
 
 function onScrubInput(event) {
   scrubbing.value = true
+  rec.playback.isScrubbing = true
   scrubValue.value = Number(event.target.value)
+  // Show the notes at the dragged position straight away, not only on release.
+  previewVisuals(scrubValue.value)
 }
 
 function onScrubChange(event) {
   scrubbing.value = false
+  rec.playback.isScrubbing = false
   seekPlayback(Number(event.target.value))
 }
 
@@ -132,6 +146,16 @@ onUnmounted(() => {
                 class="ui icon button"
                 :class="{ disabled: !rec.hasTake }"
                 :disabled="!rec.hasTake"
+                title="Rewind to start"
+                @click="rewind"
+              >
+                <i class="step backward icon"></i>
+              </button>
+              <button
+                class="ui icon button"
+                :class="{ disabled: !rec.hasTake }"
+                :disabled="!rec.hasTake"
+                :title="rec.playback.isPlaying ? 'Pause' : 'Play'"
                 @click="togglePlay"
               >
                 <i :class="rec.playback.isPlaying ? 'pause icon' : 'play icon'"></i>
@@ -149,6 +173,14 @@ onUnmounted(() => {
                 @change="onScrubChange"
               />
               <span class="time">{{ formatTime(durationSec) }}</span>
+              <label class="highlight-mode" title="Which notes light up on the keyboard during playback">
+                Keys
+                <select v-model="rec.playback.highlightMode" :disabled="!rec.hasTake">
+                  <option value="sounding">Sounding notes</option>
+                  <option value="played" disabled>Played keys (soon)</option>
+                  <option value="both" disabled>Sounding + played (soon)</option>
+                </select>
+              </label>
             </div>
           </div>
         </div>
@@ -168,6 +200,17 @@ onUnmounted(() => {
 <style scoped>
 .record-controls {
   margin-bottom: 1rem;
+}
+
+/* Match the app's tan/green panel style instead of Fomantic's bright white. */
+.record-controls .ui.segment {
+  background-color: rgba(240, 195, 134, 0.543);
+  border-color: #2e8b57;
+  box-shadow: chocolate 0 0 10px;
+}
+
+.record-controls .ui.positive.message {
+  background-color: rgba(232, 245, 224, 0.9);
 }
 
 .recording-label {
@@ -199,5 +242,23 @@ onUnmounted(() => {
   color: #6b5a45;
   min-width: 3.5rem;
   text-align: center;
+}
+
+.playback .highlight-mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #333;
+  white-space: nowrap;
+}
+
+.playback .highlight-mode select {
+  padding: 1px 3px;
+  font-size: 0.78rem;
+  color: #333;
+  background: #fff;
+  border: 1px solid #999;
+  border-radius: 4px;
 }
 </style>

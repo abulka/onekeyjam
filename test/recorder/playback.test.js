@@ -1,15 +1,40 @@
 import assert from 'assert'
 import { globals } from '@/lib/globals.js'
-import { takeDurationSec, stopPlayback, seekPlayback, startPlayback } from '@/lib/midi/playback.js'
+import {
+    takeDurationSec,
+    stopPlayback,
+    seekPlayback,
+    startPlayback,
+    activeNotesAt,
+    syncVisuals,
+    previewVisuals,
+} from '@/lib/midi/playback.js'
+
+// jsdom does not load index.html, so provide the app's event helper ourselves
+// and capture the visual events that playback emits.
+let liveNoteEvents = []
+
+function installBroadcastEvent() {
+    // @ts-ignore test shim
+    document.broadcastEvent = (name, detail) => {
+        if (name === 'live-note')
+            liveNoteEvents.push(detail)
+    }
+}
 
 describe('midi playback helpers', () => {
     beforeEach(() => {
+        installBroadcastEvent()
+        liveNoteEvents = []
         globals.recording.bpm = 120
         globals.recording.ppq = 480
         globals.recording.take = { chords: [], jam: [] }
         globals.recording.playback.isPlaying = false
         globals.recording.playback.positionSec = 0
         globals.recording.playback.durationSec = 0
+        globals.recording.playback.highlightMode = 'sounding'
+        stopPlayback(true)  // clear any notes left lit by a previous test
+        liveNoteEvents = []
     })
 
     it('measures the take from the latest note end', () => {
@@ -39,5 +64,76 @@ describe('midi playback helpers', () => {
         globals.recording.playback.positionSec = 1.25
         stopPlayback(true)
         assert.equal(globals.recording.playback.positionSec, 0)
+    })
+})
+
+describe('playback keyboard highlighting', () => {
+    beforeEach(() => {
+        installBroadcastEvent()
+        liveNoteEvents = []
+        globals.recording.bpm = 120
+        globals.recording.ppq = 480
+        globals.recording.take = { chords: [], jam: [] }
+        globals.recording.playback.highlightMode = 'sounding'
+        stopPlayback(true)
+        liveNoteEvents = []
+    })
+
+    it('selects the notes that span a position', () => {
+        // 1/960 s per tick. Chord spans 0..1s, solo spans 0.5..1.5s.
+        const take = {
+            chords: [{ midi: 60, startTick: 0, durationTicks: 960 }],
+            jam: [{ midi: 72, startTick: 480, durationTicks: 960 }],
+        }
+        assert.deepEqual([...activeNotesAt(take, 0.1)].sort(), [60])
+        assert.deepEqual([...activeNotesAt(take, 0.6)].sort(), [60, 72])
+        assert.deepEqual([...activeNotesAt(take, 1.2)].sort(), [72])
+        assert.deepEqual([...activeNotesAt(take, 1.6)], [])
+    })
+
+    it('treats the start as inclusive and the end as exclusive', () => {
+        const take = { chords: [{ midi: 60, startTick: 480, durationTicks: 480 }], jam: [] }
+        assert.deepEqual([...activeNotesAt(take, 0.5)], [60])   // exactly at the start
+        assert.deepEqual([...activeNotesAt(take, 1.0)], [])     // exactly at the end
+    })
+
+    it('lights a note once and unlights it when the position moves past it', () => {
+        globals.recording.take = { chords: [{ midi: 60, startTick: 0, durationTicks: 480 }], jam: [] }
+
+        syncVisuals(0.1)
+        assert.equal(liveNoteEvents.length, 1)
+        assert.equal(liveNoteEvents[0].state, true)
+        assert.equal(liveNoteEvents[0].note.number, 60)
+        assert.equal(liveNoteEvents[0].source, 'playback')
+
+        syncVisuals(0.1)  // same position, no repeat event
+        assert.equal(liveNoteEvents.length, 1)
+
+        syncVisuals(0.7)  // past the note end
+        assert.equal(liveNoteEvents.length, 2)
+        assert.equal(liveNoteEvents[1].state, false)
+        assert.equal(liveNoteEvents[1].note.number, 60)
+    })
+
+    it('unlights any lit keys when playback stops', () => {
+        globals.recording.take = { chords: [{ midi: 64, startTick: 0, durationTicks: 960 }], jam: [] }
+        syncVisuals(0.1)
+        assert.equal(liveNoteEvents.length, 1)
+
+        stopPlayback(true)
+        assert.equal(liveNoteEvents.length, 2)
+        assert.equal(liveNoteEvents[1].state, false)
+        assert.equal(liveNoteEvents[1].note.number, 64)
+    })
+
+    it('previews notes while scrubbing without starting playback', () => {
+        globals.recording.take = { chords: [{ midi: 60, startTick: 0, durationTicks: 960 }], jam: [] }
+        previewVisuals(0.1)
+
+        assert.equal(liveNoteEvents.length, 1)
+        assert.equal(liveNoteEvents[0].state, true)
+        assert.equal(liveNoteEvents[0].note.number, 60)
+        assert.equal(globals.recording.playback.positionSec, 0.1)
+        assert.equal(globals.recording.playback.isPlaying, false)
     })
 })

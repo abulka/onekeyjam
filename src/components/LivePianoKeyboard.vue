@@ -110,12 +110,15 @@ function onKeyUp(e) {
 }
 
 function onLiveNote(event) {
-  // Custom event, detail has 'note' which is a Note object and 'state' boolean 
-  // indicating whether note is on or off
-  const C4 = 60
-  const C3 = C4 - 12
-  const noteNumber = event.detail.note.number - C3  // map note number to our visual keyboard range
-  pianoKeyboard.value.setNote(event.detail.state, noteNumber)
+  // Custom event, detail has 'note' which is a Note object and 'state' boolean
+  // indicating whether note is on or off. Playback re-uses this event (with
+  // source 'playback') to light the recorded notes as they play.
+  const baseMidi = 12 * (globals.keyboard.lhTriggerOctave + 1)  // MIDI number of the leftmost key
+  const noteNumber = event.detail.note.number - baseMidi  // map note number to our visual keyboard range
+  pianoKeyboard.value?.setNote(event.detail.state, noteNumber)
+
+  if (event.detail.source === 'playback')
+    return
 
   // Live real MIDI keyboard press got us here
   const note = indexToNote(noteNumber, globals.keyboard.lhTriggerOctave)

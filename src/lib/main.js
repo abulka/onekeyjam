@@ -2,6 +2,7 @@ import { globals } from './globals.js'
 import { bootProject, bootKeyboard, linkProjectToKeyboard, regen, wireProjectEvents } from './boot-project.js';
 import { bootWebMidi } from "./midi/boot-webmidi.js"
 import { bootGeneralMidi } from "./audio/general-midi.js"
+import { restoreTake } from "./midi/recorder.js"
 import { keyDetection } from "./keyDetection"
 import { initChordPlayEvents } from './midi/wire-chord-play-events';
 
@@ -23,6 +24,10 @@ export default async function () {
         initChordPlayEvents() // one time only, no need to wire again
 
         linkProjectToKeyboard() // done every time a new project is loaded
+
+        // Bring back the last recorded take, if there is one, so a refresh
+        // does not lose it.
+        restoreTake()
 
         globals.boot.status = 'ready'
         console.log('one time app boot complete')

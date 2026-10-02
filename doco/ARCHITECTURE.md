@@ -97,10 +97,15 @@ and the validation commands.
   scale-filtered right-hand notes. Timing comes from `audioContext.currentTime`
   and the pure helpers in `src/lib/midi/timing.js` (120 BPM, 480 PPQ, no
   quantisation). `src/lib/midi/playback.js` plays the take back through the
-  in-browser General MIDI sounds and supports scrubbing. `src/lib/midi/export-recording.js`
+  in-browser General MIDI sounds and supports scrubbing. While it plays (and
+  while the scrubber is dragged) the sounding notes light up on the piano
+  keyboard, re-using the same `live-note` document event that real MIDI input
+  uses. `src/lib/midi/export-recording.js`
   turns the take into a two-track `.mid` file with `@tonejs/midi`, writing the
-  solo part first and the chords second. The take is kept in memory only; the
-  Chord Sequencer now lives on the Record view rather than the Perform view.
+  solo part first and the chords second. The latest take is saved to
+  `localStorage` (key `onekeyjam.latestTake`) and restored at boot, so a refresh
+  does not lose it. The Chord Sequencer now lives on the Record view rather than
+  the Perform view.
 - Left-hand black keys act as modifiers: `C#` is a shift key, `D#` turns scale
   filtering off and `F#` turns it on, while `G#` and `A#` transpose the chords.
   Right-hand black keys switch scale and transpose as well. See `onNoteOn()` in

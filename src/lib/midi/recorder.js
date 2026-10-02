@@ -18,6 +18,111 @@ import { stopPlayback, takeDurationSec } from './playback.js'
  */
 
 const DEFAULT_VELOCITY = 0.8
+const STORAGE_KEY = 'onekeyjam.latestTake'
+
+/**
+ * The browser's localStorage, or null when it is unavailable (for example in
+ * some test environments).
+ * @returns {Storage|null}
+ */
+function defaultStorage() {
+    try {
+        return typeof localStorage === 'undefined' ? null : localStorage
+    }
+    catch (error) {
+        return null
+    }
+}
+
+/**
+ * @param {unknown} notes
+ * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number }>}
+ */
+function sanitizeNotes(notes) {
+    if (!Array.isArray(notes))
+        return []
+    return notes
+        .filter(note => note
+            && typeof note.midi === 'number'
+            && typeof note.startTick === 'number'
+            && typeof note.durationTicks === 'number'
+            && typeof note.velocity === 'number')
+        .map(note => ({
+            midi: note.midi,
+            startTick: note.startTick,
+            durationTicks: note.durationTicks,
+            velocity: note.velocity,
+        }))
+}
+
+/**
+ * Save the current take so a browser refresh does not lose it. Best effort:
+ * storage may be unavailable or full.
+ * @param {Storage|null} [storage]
+ */
+export function persistTake(storage = defaultStorage()) {
+    if (!storage)
+        return
+    const rec = globals.recording
+    try {
+        if (!rec.hasTake) {
+            storage.removeItem(STORAGE_KEY)
+            return
+        }
+        storage.setItem(STORAGE_KEY, JSON.stringify({
+            version: 1,
+            bpm: rec.bpm,
+            ppq: rec.ppq,
+            chords: rec.take.chords,
+            jam: rec.take.jam,
+        }))
+    }
+    catch (error) {
+        // Persistence is best effort.
+    }
+}
+
+/**
+ * Load the last persisted take, if any, into globals.recording.
+ * @param {Storage|null} [storage]
+ * @returns {boolean} true when a take was restored
+ */
+export function restoreTake(storage = defaultStorage()) {
+    if (!storage)
+        return false
+    let data
+    try {
+        const raw = storage.getItem(STORAGE_KEY)
+        if (!raw)
+            return false
+        data = JSON.parse(raw)
+    }
+    catch (error) {
+        return false
+    }
+    if (!data || data.version !== 1)
+        return false
+
+    const chords = sanitizeNotes(data.chords)
+    const jam = sanitizeNotes(data.jam)
+    if (chords.length === 0 && jam.length === 0)
+        return false
+
+    const rec = globals.recording
+    if (typeof data.bpm === 'number' && data.bpm > 0)
+        rec.bpm = data.bpm
+    if (typeof data.ppq === 'number' && data.ppq > 0)
+        rec.ppq = data.ppq
+    rec.take = { chords, jam }
+    rec.held = { chords: {}, jam: {} }
+    rec.isRecording = false
+    rec.hasTake = true
+    rec.playback.durationSec = takeDurationSec(rec)
+    rec.playback.positionSec = 0
+    rec.playback.isPlaying = false
+    rec.playback.isScrubbing = false
+    return true
+}
 
 /**
  * @param {number} [now]
@@ -120,6 +225,7 @@ export function stopRecording(now) {
     rec.isRecording = false
     rec.hasTake = rec.take.chords.length > 0 || rec.take.jam.length > 0
     rec.playback.durationSec = takeDurationSec(rec)
+    persistTake()
 }
 
 /** Discard the current take and stop recording. */
@@ -133,6 +239,7 @@ export function clearTake() {
     rec.hasTake = false
     rec.playback.durationSec = 0
     rec.playback.positionSec = 0
+    persistTake()
 }
 
 /**

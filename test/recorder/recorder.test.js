@@ -4,6 +4,8 @@ import {
     startRecording,
     stopRecording,
     clearTake,
+    persistTake,
+    restoreTake,
     recordChordNoteOn,
     recordChordNoteOff,
     recordJamNoteOn,
@@ -12,6 +14,17 @@ import {
 
 // 120 BPM and 480 PPQ give one tick every 1/960 second, so 0.5s == 480 ticks.
 const HALF_SECOND_IN_TICKS = 480
+
+const STORAGE_KEY = 'onekeyjam.latestTake'
+
+function fakeStorage() {
+    const map = new Map()
+    return {
+        getItem: (key) => (map.has(key) ? map.get(key) : null),
+        setItem: (key, value) => map.set(key, String(value)),
+        removeItem: (key) => map.delete(key),
+    }
+}
 
 describe('midi recorder', () => {
     beforeEach(() => {
@@ -77,7 +90,8 @@ describe('midi recorder', () => {
         assert.equal(globals.recording.take.jam[1].durationTicks, Math.round(0.25 * 960))
     })
 
-    it('ignores notes when not recording', () => {        recordChordNoteOn('C4', 0.9, 0)
+    it('ignores notes when not recording', () => {
+        recordChordNoteOn('C4', 0.9, 0)
         assert.equal(globals.recording.take.chords.length, 0)
         assert.equal(globals.recording.isRecording, false)
     })
@@ -103,5 +117,49 @@ describe('midi recorder', () => {
         assert.equal(globals.recording.take.jam.length, 0)
         assert.equal(globals.recording.hasTake, false)
         assert.equal(globals.recording.isRecording, false)
+    })
+
+    it('persists and restores the latest take', () => {
+        const storage = fakeStorage()
+        startRecording(0)
+        recordChordNoteOn('C4', 0.8, 0)
+        recordChordNoteOff('C4', 0.5)
+        recordJamNoteOn('C5', 0.6, 0.25)
+        stopRecording(1)
+        persistTake(storage)
+
+        clearTake()
+        assert.equal(globals.recording.hasTake, false)
+
+        assert.equal(restoreTake(storage), true)
+        assert.equal(globals.recording.hasTake, true)
+        assert.equal(globals.recording.take.chords.length, 1)
+        assert.equal(globals.recording.take.jam.length, 1)
+        assert.equal(globals.recording.take.chords[0].midi, 60)
+        assert.ok(globals.recording.playback.durationSec > 0)
+    })
+
+    it('removes the persisted take when the take is cleared', () => {
+        const storage = fakeStorage()
+        startRecording(0)
+        recordJamNoteOn('C4', 0.5, 0)
+        stopRecording(0.5)
+        persistTake(storage)
+        assert.ok(storage.getItem(STORAGE_KEY))
+
+        clearTake()
+        persistTake(storage)
+        assert.equal(storage.getItem(STORAGE_KEY), null)
+    })
+
+    it('ignores missing or corrupt persisted data', () => {
+        const storage = fakeStorage()
+        assert.equal(restoreTake(storage), false)
+
+        storage.setItem(STORAGE_KEY, '{not valid json')
+        assert.equal(restoreTake(storage), false)
+
+        storage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, chords: [], jam: [] }))
+        assert.equal(restoreTake(storage), false)
     })
 })

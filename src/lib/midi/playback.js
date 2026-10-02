@@ -3,6 +3,7 @@ import { Note } from '@tonaljs/tonal'
 import { globals } from '../globals.js'
 import { audioContext, playGmNote, stopGmNote } from '../audio/general-midi.js'
 import { secondsPerTick, ticksToSeconds } from './timing.js'
+import { Note as WebMidiNote } from './webmidi.js'
 
 /**
  * @module lib/midi/playback
@@ -19,6 +20,88 @@ let rafId = null
 let playbackBase = 0
 /** position (seconds) that playback started from */
 let startOffsetSec = 0
+/** MIDI numbers whose keys are currently lit during playback */
+let litNotes = new Set()
+
+/**
+ * MIDI numbers that should be lit at a given position, for a highlight mode.
+ * 'sounding' lights the notes that sound, 'played' the keys that were pressed
+ * (not captured yet, so it stays empty), and 'both' the union.
+ * @param {typeof globals.recording.take} take
+ * @param {number} positionSec
+ * @param {string} [mode]
+ * @returns {Set<number>}
+ */
+export function activeNotesAt(take, positionSec, mode = 'sounding') {
+    const rec = globals.recording
+    const spt = secondsPerTick(rec.bpm, rec.ppq)
+    const active = new Set()
+    for (const note of [...take.chords, ...take.jam]) {
+        const startSec = ticksToSeconds(note.startTick, spt)
+        const endSec = ticksToSeconds(note.startTick + note.durationTicks, spt)
+        if (positionSec < startSec || positionSec >= endSec)
+            continue
+        if ((mode === 'sounding' || mode === 'both') && typeof note.midi === 'number')
+            active.add(note.midi)
+        if ((mode === 'played' || mode === 'both') && typeof note.playedMidi === 'number')
+            active.add(note.playedMidi)
+    }
+    return active
+}
+
+/**
+ * @param {number} midi
+ * @param {boolean} state
+ */
+function broadcastLiveNote(midi, state) {
+    document.broadcastEvent('live-note', {
+        state,
+        note: new WebMidiNote(midi),
+        source: 'playback',
+    })
+}
+
+/**
+ * Light or unlight the piano keys for the given playback position. Only the
+ * differences are broadcast, so this is cheap to call every frame.
+ * @param {number} positionSec
+ */
+export function syncVisuals(positionSec) {
+    const desired = activeNotesAt(
+        globals.recording.take,
+        positionSec,
+        globals.recording.playback.highlightMode,
+    )
+    for (const midi of litNotes) {
+        if (!desired.has(midi)) {
+            broadcastLiveNote(midi, false)
+            litNotes.delete(midi)
+        }
+    }
+    for (const midi of desired) {
+        if (!litNotes.has(midi)) {
+            broadcastLiveNote(midi, true)
+            litNotes.add(midi)
+        }
+    }
+}
+
+function clearVisuals() {
+    for (const midi of litNotes)
+        broadcastLiveNote(midi, false)
+    litNotes = new Set()
+}
+
+/**
+ * Preview the keys at an arbitrary position without touching the audio. Used
+ * while the user drags the scrubber, so notes are visible during the drag
+ * rather than only when it is released.
+ * @param {number} positionSec
+ */
+export function previewVisuals(positionSec) {
+    globals.recording.playback.positionSec = positionSec
+    syncVisuals(positionSec)
+}
 
 /**
  * Total length of the take in seconds.
@@ -58,7 +141,9 @@ export function stopPlayback(resetPosition = true) {
         rafId = null
     }
     stopScheduled()
+    clearVisuals()
     globals.recording.playback.isPlaying = false
+    globals.recording.playback.isScrubbing = false
     if (resetPosition)
         globals.recording.playback.positionSec = 0
 }
@@ -134,6 +219,9 @@ function update() {
         return
     }
     rec.playback.positionSec = position
+    // While dragging the scrubber the preview positions the keys, not playback.
+    if (!rec.playback.isScrubbing)
+        syncVisuals(position)
     rafId = requestAnimationFrame(update)
 }
 
@@ -147,6 +235,9 @@ export function seekPlayback(sec) {
     const clamped = Math.max(0, Math.min(sec, rec.playback.durationSec))
     if (rec.playback.isPlaying)
         startPlayback(clamped)
-    else
+    else {
         rec.playback.positionSec = clamped
+        // Preview the notes at the scrubbed position while paused.
+        syncVisuals(clamped)
+    }
 }
