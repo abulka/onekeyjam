@@ -31,6 +31,18 @@ function onFocusChange() {
   setTimeout(updateKeyboardFocus, 0)
 }
 
+function focusKeyboard() {
+  const el = pianoKeyboard.value
+  if (!el)
+    return
+  // The focusable element is the canvas inside the widget's shadow root
+  const canvas = el.shadowRoot ? el.shadowRoot.querySelector('canvas') : null
+  if (canvas)
+    canvas.focus()
+  else
+    el.focus()
+}
+
 function buildRawPianoNoteInfo(note, on, noteNumber, showNoteNumber = true) {
   // sets globals.currentRawLiveNote
   // noteNumber is the piano key index startying with 0 as the first note of the visual keyuboard
@@ -162,13 +174,17 @@ onUnmounted(() => {
 <template>
   <!-- piano keyboard -->
   <div class="ui container mb-4" data-step="piano-keyboard">
+    <p class="keyboard-focus-hint" :class="{ 'keyboard-focus-hint-hidden': keyboardFocused }"
+      role="button" tabindex="0" title="Click to focus the keyboard" @click="focusKeyboard()"
+      @keydown.enter="focusKeyboard()">
+      Click the keyboard to use computer-keyboard shortcuts.
+    </p>
     <div class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }">
       <webaudio-keyboard v-if="isLargeScreen" keys="49" ref="pianoKeyboard" width="1130"></webaudio-keyboard>
       <webaudio-keyboard v-else keys="25" ref="pianoKeyboard" width="710"></webaudio-keyboard>
-      <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off'" :keyboard-el="pianoKeyboard"
+      <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off' || globals.showKeyShortcuts" :keyboard-el="pianoKeyboard"
         :keys="isLargeScreen ? 49 : 25" />
     </div>
-    <p v-if="!keyboardFocused" class="keyboard-focus-hint">Click the keyboard to use computer-keyboard shortcuts.</p>
   </div>
 </template>
 
@@ -177,19 +193,28 @@ onUnmounted(() => {
   position: relative;
   display: inline-block;
   line-height: 0;
-  outline: 1px solid rgba(0, 0, 0, 0.12);
+  outline: 2px solid rgba(0, 0, 0, 0.12);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 .piano-keyboard-wrap.keyboard-focused {
-  outline-color: rgba(34, 139, 34, 0.5);
+  outline: 2px solid #2e8b57;
 }
 
 .keyboard-focus-hint {
-  margin: 0.4rem 0 0;
-  font-size: 0.85rem;
-  color: #8a7f6a;
-  font-style: italic;
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #b45309;
+  cursor: pointer;
+}
+
+.keyboard-focus-hint:hover {
+  text-decoration: underline;
+}
+
+.keyboard-focus-hint-hidden {
+  visibility: hidden;
 }
 </style>

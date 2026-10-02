@@ -124,9 +124,17 @@ and the validation commands.
   controlled by the "Key labels" dropdown in `ScaleFilteringToggles.vue` and
   saved in `localStorage` by `src/lib/uiPrefs.js`. Label text and the
   horizontal/vertical fit decision live in `src/lib/keyboard-help.js`.
-- The main keyboard draws a subtle focus outline and shows a hint below it while
-  unfocused, because the computer-keyboard shortcuts only work once it is
-  clicked.
+- The main keyboard draws a subtle focus outline (green when focused) and
+  reserves a hint line above it telling the user to click the keyboard, because
+  the computer-keyboard shortcuts only work once it is clicked. The hint keeps
+  its space while focused so revealing it cannot shift the page under a click.
+- A "Show computer keyboard shortcuts" checkbox (persisted as
+  `globals.showKeyShortcuts` via `src/lib/uiPrefs.js`) adds small coloured key
+  badges on top of the on-screen keys, taken from `src/lib/midi/piano-key-map.js`.
+  The mapping covers the two main octaves (`Z X C V B N M`, `Q W E R T Y U` plus
+  `2 3 5 6 7`), extends into the next octave on `I O P [ ] \` (with `9 0 - =`
+  for its black keys), and keeps lower-row aliases (`, L . /`) for the right
+  hand. The badges render even when the text labels are off.
 
 ## Persistence and backend
 

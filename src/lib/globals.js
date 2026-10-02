@@ -105,6 +105,7 @@ export const globals = reactive({
     scaleFilteringModificationSticky: true,  // whether e.g. 'scale2' is preserved during chord changes
     scaleFilteringEnabled: true,
     keyboardHelpMode: 'all',  // 'off' | 'black' | 'white' | 'all' - text overlays on the main keyboard
+    showKeyShortcuts: false,  // show the computer-keyboard key badges on the main keyboard
     debugJamChord: false,
     syncChordPickerToJamChord: true,
     syncChordPickerToCurrentTriggeredChord: true,

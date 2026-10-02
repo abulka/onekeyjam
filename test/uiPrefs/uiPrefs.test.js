@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { readPrefs, writePrefs, loadUiPrefs, KEYBOARD_HELP_MODES } from '@/lib/uiPrefs.js'
+import { readPrefs, writePrefs, loadUiPrefs, currentPrefs, KEYBOARD_HELP_MODES } from '@/lib/uiPrefs.js'
 import { globals } from '@/lib/globals.js'
 
 function fakeStorage(initial = {}) {
@@ -25,6 +25,34 @@ describe('uiPrefs', () => {
     it('ignores an invalid keyboard help mode', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyboardHelpMode: 'nonsense' }) })
         assert.deepEqual(readPrefs(storage), {})
+    })
+
+    it('reads and validates the shortcut badge flag', () => {
+        const on = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showKeyShortcuts: true }) })
+        assert.equal(readPrefs(on).showKeyShortcuts, true)
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showKeyShortcuts: 'yes' }) })
+        assert.equal(readPrefs(bad).showKeyShortcuts, undefined)
+    })
+
+    it('loads the shortcut badge flag into globals', () => {
+        const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showKeyShortcuts: true }) })
+        loadUiPrefs(storage)
+        assert.equal(globals.showKeyShortcuts, true)
+        globals.showKeyShortcuts = false
+    })
+
+    it('round-trips the shortcut badge flag', () => {
+        const storage = fakeStorage()
+        writePrefs({ keyboardHelpMode: 'all', showKeyShortcuts: true }, storage)
+        const prefs = readPrefs(storage)
+        assert.equal(prefs.keyboardHelpMode, 'all')
+        assert.equal(prefs.showKeyShortcuts, true)
+    })
+
+    it('reports the current prefs from globals', () => {
+        globals.keyboardHelpMode = 'white'
+        globals.showKeyShortcuts = true
+        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true })
     })
 
     it('round-trips a valid keyboard help mode', () => {

@@ -4,8 +4,9 @@ import { globals } from './globals.js'
 
 /**
  * @module lib/uiPrefs
- * @desc Persistence of small UI preferences that should survive a reload.
- * Currently only the on-screen keyboard Key labels mode.
+ * @desc Persistence of small UI preferences that should survive a reload:
+ * the on-screen keyboard Key labels mode and the computer-keyboard shortcut
+ * badges.
  */
 
 const STORAGE_KEY = 'onekeyjam.uiPrefs'
@@ -15,6 +16,7 @@ export const KEYBOARD_HELP_MODES = ['off', 'black', 'white', 'all']
 /**
  * @typedef {Object} UiPrefs
  * @property {string} [keyboardHelpMode]
+ * @property {boolean} [showKeyShortcuts]
  */
 
 function defaultStorage() {
@@ -36,13 +38,28 @@ export function readPrefs(storage = defaultStorage()) {
         return {}
     try {
         const raw = storage.getItem(STORAGE_KEY)
-        const prefs = raw ? JSON.parse(raw) : {}
-        if (prefs && KEYBOARD_HELP_MODES.includes(prefs.keyboardHelpMode))
-            return { keyboardHelpMode: prefs.keyboardHelpMode }
-        return {}
+        const stored = raw ? JSON.parse(raw) : {}
+        /** @type {UiPrefs} */
+        const prefs = {}
+        if (stored && KEYBOARD_HELP_MODES.includes(stored.keyboardHelpMode))
+            prefs.keyboardHelpMode = stored.keyboardHelpMode
+        if (stored && typeof stored.showKeyShortcuts === 'boolean')
+            prefs.showKeyShortcuts = stored.showKeyShortcuts
+        return prefs
     }
     catch (error) {
         return {}
+    }
+}
+
+/**
+ * The prefs as they currently are in globals.
+ * @returns {UiPrefs}
+ */
+export function currentPrefs() {
+    return {
+        keyboardHelpMode: globals.keyboardHelpMode,
+        showKeyShortcuts: globals.showKeyShortcuts,
     }
 }
 
@@ -70,6 +87,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
     const prefs = readPrefs(storage)
     if (prefs.keyboardHelpMode)
         globals.keyboardHelpMode = prefs.keyboardHelpMode
+    if (typeof prefs.showKeyShortcuts === 'boolean')
+        globals.showKeyShortcuts = prefs.showKeyShortcuts
 }
 
 /**
@@ -79,7 +98,7 @@ export function loadUiPrefs(storage = defaultStorage()) {
  */
 export function initUiPrefs(storage = defaultStorage()) {
     loadUiPrefs(storage)
-    watch(() => globals.keyboardHelpMode, () => {
-        writePrefs({ keyboardHelpMode: globals.keyboardHelpMode }, storage)
+    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts], () => {
+        writePrefs(currentPrefs(), storage)
     })
 }

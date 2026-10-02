@@ -10,6 +10,13 @@ describe('piano-key-map', () => {
         }
     })
 
+    it('extends into the octave above, stopping at A', () => {
+        const expected = ['I', '9', 'O', '0', 'P', '[', '-', ']', '=', '\\']
+        const actual = expected.map((_, index) => labelForOffset(index + 24))
+        assert.deepEqual(actual, expected)
+        assert.equal(labelForOffset(34), '')
+    })
+
     it('labels the left hand octave as the white and black piano keys', () => {
         const expected = ['Z', 'S', 'X', 'D', 'C', 'V', 'G', 'B', 'H', 'N', 'J', 'M']
         const actual = expected.map((_, offset) => labelForOffset(offset))
@@ -26,7 +33,8 @@ describe('piano-key-map', () => {
         assert.equal(getNoteKeyForCode('Comma').offset, 12)
         assert.equal(getNoteKeyForCode('Comma').primary, false)
         assert.equal(getNoteKeyForCode('KeyL').offset, 13)
-        assert.equal(getNoteKeyForCode('Backslash').offset, 17)
+        assert.equal(getNoteKeyForCode('Slash').offset, 16)
+        assert.equal(getNoteKeyForCode('Slash').primary, false)
     })
 
     it('returns null for keys that are not note keys', () => {

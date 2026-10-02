@@ -52,19 +52,19 @@ export const NOTE_KEYS = [
     { code: 'Comma', offset: 12, primary: false },
     { code: 'KeyL', offset: 13, primary: false },
     { code: 'Period', offset: 14, primary: false },
-    { code: 'Equal', offset: 15, primary: false },
     { code: 'Slash', offset: 16, primary: false },
-    { code: 'Backslash', offset: 17, primary: false },
 
-    // The octave above the right hand
+    // The octave above the right hand, on the physical keys right of P
     { code: 'KeyI', offset: 24, primary: true },
     { code: 'Digit9', offset: 25, primary: true },
     { code: 'KeyO', offset: 26, primary: true },
     { code: 'Digit0', offset: 27, primary: true },
     { code: 'KeyP', offset: 28, primary: true },
-    { code: 'Backquote', offset: 29, primary: true },
-    { code: 'BracketRight', offset: 30, primary: true },
-    { code: 'BracketLeft', offset: 31, primary: true },
+    { code: 'BracketLeft', offset: 29, primary: true },
+    { code: 'Minus', offset: 30, primary: true },
+    { code: 'BracketRight', offset: 31, primary: true },
+    { code: 'Equal', offset: 32, primary: true },
+    { code: 'Backslash', offset: 33, primary: true },
 ]
 
 /** @type {Record<string, string>} */
