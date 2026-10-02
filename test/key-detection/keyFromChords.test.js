@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import assert from 'assert';
 import * as Tonal from '@tonaljs/tonal';
 import { keyFromChords, keyFromNotes } from '../../src/lib/keyFromChords';
@@ -106,10 +105,6 @@ describe('key detection from chords - idea2', () => {
     // tonal conversion
 
     it('misc', () => {
-        const _allnotes = [
-            "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"
-        ]
-
         // const allNotesTonalObjs = allnotes.map(note => Tonal.Note.get(note))
         // console.log('allNotesTonalObjs', allNotesTonalObjs)
 
@@ -129,10 +124,8 @@ describe('key detection from chords - idea2', () => {
 
         assert.equal(Tonal.Note.get('Eb').chroma, Tonal.Note.get('D#').chroma)
 
-        const _interval1 = Tonal.Interval.distance('C', Tonal.Note.get('Eb').name)
-        const _interval2 = Tonal.Interval.distance('C', Tonal.Note.get('D#').name)
-        // console.log('interval1', interval1, Tonal.Interval.get(interval1))
-        // console.log('interval2', interval2, Tonal.Interval.get(interval2))
+        // C to D# is 2A (augmented 2), C to Eb is 2m (minor 2):
+        // console.log('interval1', Tonal.Interval.distance('C', Tonal.Note.get('Eb').name))
 
         /*
         Interesting that the interval C to D# is considered 2A (presumably augmented 2)

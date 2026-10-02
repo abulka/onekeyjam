@@ -22,8 +22,7 @@ describe('Tonal scale parsing', () => {
     });
 
     it('Tonal Scale scaleChords', () => {
-        const _result = Tonal.Scale.scaleChords('major')
-        // console.log('result', result)
+        assert.ok(Tonal.Scale.scaleChords('major').length > 0)
     });
 
     it('Tonal Scale modeNames', () => {
@@ -46,16 +45,6 @@ describe('Tonal scale parsing', () => {
         // chroma ideas:
         // chroma - https://github.com/tonaljs/tonal/issues/284
         // console.log(Tonal.Pcset.chroma(['D', 'E', 'F#', 'G', 'A', 'B', 'C#']));
-
-        function _notesToScales(notes) {  // Experimental
-            const chroma = Tonal.Pcset.chroma(notes)
-            // const result = Tonal.Dictionary.scale.names(chroma)// DOESN'T EXIST
-
-            const scales = Tonal.ScaleType.all()
-                .filter(scaleType => scaleType.chroma === chroma)
-            // .map(scaleType => scaleType.name);
-            return scales
-        }
 
         // Basically this is not supported. You can get some sort of result with the above chroma
         // technique but it's not very useful.  Looks like you have to supply all the notes of the scale?

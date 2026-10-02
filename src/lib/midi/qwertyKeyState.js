@@ -47,10 +47,10 @@ export function wireQwertyKeyState() {
 
     // Ensure CMD-Tab doesn't leave meta (CMD) stuck in true state, thus
     // breaking the ability to jam
-    window.addEventListener("focus", function (_event) {
+    window.addEventListener("focus", function () {
         clearKeyState()
     }, false);
-    window.addEventListener("blur", function (_event) {
+    window.addEventListener("blur", function () {
         clearKeyState()
     }, false);
 }

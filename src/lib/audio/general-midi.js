@@ -11,8 +11,8 @@ export function bootGeneralMidi() {
     soundfont.bootGeneralMidi(audioContext)
 
     // Registered explicitly during boot rather than as an import side effect.
-    document.addEventListener("authorise-gm-cmd", function (_event) {
-        soundfont.ping(audioContext)
+    document.addEventListener("authorise-gm-cmd", function () {
+        soundfont.ping()
     })
 }
 
@@ -59,5 +59,5 @@ export function playGmNote(allowedNote, noteOffInfo, options) {
 }
 
 export function stopAllNotes() {
-    soundfont.stopAllNotes(audioContext);
+    soundfont.stopAllNotes();
 }

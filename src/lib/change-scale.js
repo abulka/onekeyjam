@@ -159,7 +159,7 @@ export function changeScaleFilter(scaleFilter) {
     }
 
     // TODO for now leave this here, but later remove and do this in setActiveScaleFilter
-    reportScaleChange(scaleFilter ? scaleFilter : 'default')  // does various broadcasts
+    reportScaleChange()  // does various broadcasts
 }
 
 /**
@@ -331,7 +331,7 @@ function calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy = 'top 3') 
 // ├┴┐├┬┘│ │├─┤ │││  ├─┤└─┐ │ 
 // └─┘┴└─└─┘┴ ┴─┴┘└─┘┴ ┴└─┘ ┴ 
 
-function reportScaleChange(_msg) {
+function reportScaleChange() {
     // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
     document.broadcastEvent('scale-changed', { notes: globals.currentScaleNotes })
 

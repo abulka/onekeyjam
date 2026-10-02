@@ -81,11 +81,11 @@ export function playGmNote(audioContext, toneType, when, octave, note, pitch, ve
 }
 
 
-export function ping(_audioContext) {
+export function ping() {
     sfBass.play('C2', 0, { duration: 0.1 })
 }
 
-export function stopAllNotes(_audioContext) {
+export function stopAllNotes() {
     // ?
 }
 

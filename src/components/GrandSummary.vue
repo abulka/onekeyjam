@@ -199,7 +199,6 @@ function scaleFilterTableClick(event) {
 
   // scan parents till get to td - for data-scale-filter
   const td = event.target.closest('td')
-  const _scaleFilter = td.getAttribute('data-scale-filter')
   const scaleFilterNote = td.getAttribute('data-scale-filter-note') // C#, D# or F#
 
   // change triggered chord

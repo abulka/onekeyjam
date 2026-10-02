@@ -154,8 +154,10 @@ export function onNoteOff(e) {
         return
     }
 
-    // TODO wasteful to calculate these each time...
-    let _ignoreRhModifiers = [
+    // TODO: right-hand modifier filtering is not wired up yet; this list is kept
+    // until the commented-out check below (see the "rh modifiers" else-if) is enabled.
+    // eslint-disable-next-line no-unused-vars
+    let ignoreRhModifiers = [
         // rh modifiers
         `C#${globals.keyboard.rhJamSoundOctave}`,
         `D#${globals.keyboard.rhJamSoundOctave}`,

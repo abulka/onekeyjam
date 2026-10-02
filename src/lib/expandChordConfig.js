@@ -46,7 +46,7 @@ export function expandChordConfig(config) {
     if (!config.chord) {
         if (!config.chordNotes)
             throw new Error('chord or chordNotes is required')
-        const _success = detectChordAndScalesFromChordNotes(config, config.chordNotes, config.bassNote, config.name)
+        detectChordAndScalesFromChordNotes(config, config.chordNotes, config.bassNote, config.name)
     }
 
     // Fill in chordNotes if not supplied (chordNotes take precedence over the chord name)

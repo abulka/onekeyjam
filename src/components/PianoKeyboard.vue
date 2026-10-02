@@ -1,7 +1,6 @@
 # Adapted from vue2 https://github.com/MicuEmerson/vue-piano/blob/main/src/components/PianoKeyboard.vue
 
 <script setup>
-import { computed } from 'vue'
 import { ref, onUnmounted } from "vue";
 import { watch } from 'vue'
 import { noteObjectToMidiValue } from '../../src/lib/note-tools.js'
@@ -118,18 +117,6 @@ onUnmounted(() => {
 })
 
 // COMPUTED
-
-const _scale = computed(() => {
-    return props.noteConfig.scale;
-})
-
-const _lang = computed(() => {
-    return props.noteConfig.lang;
-})
-
-const _middleOctave = computed(() => {
-    return props.noteConfig.middleOctave;
-})
 
 function classShiftHighlight(noteObject) {
     return noteObject.blackNote.help == 'SHIFT' ? 'key-text-shift-big' : ''

@@ -23,7 +23,6 @@ export default [
       'no-unused-vars': ['warn', {
         args: 'after-used',
         argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
         caughtErrors: 'none',
       }],
       'no-useless-assignment': 'off',

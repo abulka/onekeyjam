@@ -85,7 +85,10 @@ export function parseMidiFile(buffer) {
     return midi
 }
 
-export async function parseMidiUrl(_url) {
+// TODO: parseMidiUrl currently ignores its url argument (its callers pass none)
+// and hard-codes sample paths below; it is effectively unfinished.
+// eslint-disable-next-line no-unused-vars
+export async function parseMidiUrl(url) {
     // load a midi file in the browser
 
     // const midi = await Midi.fromUrl(`${http}${localHost}:8080/midi-files/simple1.mid`)
@@ -115,9 +118,6 @@ export function detectChords(midi) {
     // Clear old chords and analysis
     chords = []
     timeAnalysis = {}
-
-    //the file name decoded from the first track
-    const _name = midi.name
 
     //tracks have notes and controlChanges, channel and instrument e.g. track.instrument.name
     midi.tracks.forEach(track => {

@@ -348,6 +348,8 @@ function _injectOctaves(allowedNotes, strategy, allowedOctave) {
     return allowedNotes;
 }
 
+// Debug helper, called manually (see the commented-out call above).
+// eslint-disable-next-line no-unused-vars
 function _dumpMapping(mappingToAllowed) {
     console.log('mappingToAllowed')
     for (const key in mappingToAllowed) {
