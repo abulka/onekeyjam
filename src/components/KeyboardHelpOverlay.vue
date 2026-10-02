@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { globals } from '@/lib/globals.js'
-import { buildKeyLabels, buildWhiteNoteMappings, chooseTextOrientation } from '@/lib/keyboard-help.js'
+import { buildKeyLabels, buildWhiteNoteMappings, chooseTextOrientation, getBlackKeyDisplay } from '@/lib/keyboard-help.js'
 
 const props = defineProps({
   keyboardEl: { type: Object, default: null },
@@ -86,13 +86,17 @@ const keyLabels = computed(() => {
   })
 
   const minMod = ((geo.min % 12) + 12) % 12
+  const shiftActive = globals.blackShiftState
 
   return raw.map((item) => {
     if (item.isBlack) {
+      const { help, shiftHelp } = getBlackKeyDisplay(item.help, item.shiftHelp, shiftActive)
       const x = geo.wwidth * geo.ko[minMod] + geo.bwidth * (item.semitoneIndex - geo.min) + 1
-      const lines = [item.shiftHelp, item.help].filter(Boolean)
+      const lines = [shiftHelp, help].filter(Boolean)
       return {
         ...item,
+        help,
+        shiftHelp,
         x,
         y: 1,
         width: geo.bwidth,

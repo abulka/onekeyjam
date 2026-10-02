@@ -135,6 +135,22 @@ export function buildKeyLabels(options = {}) {
     return labels
 }
 
+/**
+ * Chooses the text shown on a black key. While the left-hand SHIFT (C#) key is
+ * pressed or pending, keys that have a SHIFT meaning show only that meaning, so
+ * the label fits in both modes. Keys without a SHIFT meaning keep their regular
+ * text.
+ * @param {string} help regular black key meaning
+ * @param {string} shiftHelp meaning while SHIFT is held
+ * @param {boolean} shiftActive whether SHIFT is currently pressed or pending
+ * @returns {{ help: string, shiftHelp: string }}
+ */
+export function getBlackKeyDisplay(help, shiftHelp, shiftActive) {
+    if (shiftActive && shiftHelp)
+        return { help: '', shiftHelp }
+    return { help: help || '', shiftHelp: '' }
+}
+
 let measureCanvas
 
 function measureTextWidth(text, font) {

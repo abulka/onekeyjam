@@ -2,6 +2,14 @@
 import { onMounted, onUnmounted } from "vue";
 import { globals } from '@/lib/globals.js'
 
+function setMagicMode() {
+  globals.bypass = false
+}
+
+function setNormalPiano() {
+  globals.bypass = true
+}
+
 function keyUpListener(e) {
   // console.log('keyup', e.key, e.keyCode, 'this', this, 'meta', e.metaKey, 'ctrl', e.ctrlKey, 'shift', e.shiftKey);  // 'this' is the window
 
@@ -9,10 +17,10 @@ function keyUpListener(e) {
   const shifted = () => e.ctrlKey && e.shiftKey
 
   if (e.key === "1" && normal()) {
-    globals.bypass.value = true  // if want to toggle instead use !bypass.value
+    globals.bypass = true  // if want to toggle instead use !globals.bypass
   }
   if (e.key === "1" && shifted()) {
-    globals.bypass.value = false
+    globals.bypass = false
   }
 }
 
@@ -30,17 +38,28 @@ onUnmounted(() => {
 <template>
 
   <div class="ui one column centered padded grid">
-    <div class="two column centered row andyshade">
-      <div class="right aligned column">✨✨Magic mode (one note chords, white notes conform to scale)</div>
-      <div class="left aligned column">
-        <div class="ui toggle checkbox"
-          title="Bypass filtering, use when playing chords to add to project">
-          <input type="checkbox" v-model="globals.bypass" data-step="bypass-filtering">
-          <label>Bypass (normal piano keyboard) 🎹</label>
+    <div class="one column centered row andyshade">
+      <div class="center aligned column">
+        <div class="ui compact buttons mode-toggle" data-step="bypass-filtering">
+          <button type="button" class="ui button" :class="{ active: !globals.bypass, boldy: !globals.bypass }"
+            title="One note chords, white notes conform to the current scale"
+            @click="setMagicMode()">
+            ✨ Magic mode
+          </button>
+          <button type="button" class="ui button" :class="{ active: globals.bypass, boldy: globals.bypass }"
+            title="Bypass filtering, use when playing chords to add to project"
+            @click="setNormalPiano()">
+            🎹 Normal piano
+          </button>
+        </div>
+        <div class="mode-description">
+          {{ globals.bypass
+            ? 'Bypass filtering: play a normal piano keyboard to add chords to your project.'
+            : 'One note chords, white notes conform to the current scale.' }}
         </div>
       </div>
     </div>
-    <div class="two column centered row">
+    <div class="three column centered row">
       <div class="center aligned column">
         <label class="checkboxLabel"
           title="Left hand: Left Hand Chord Triggers so that you can play notes and chords on the whole keyboard. 🥸 Note this also turns off Scale Filtering.">
@@ -48,15 +67,6 @@ onUnmounted(() => {
           <input type="checkbox" v-model="globals.enableLhChordTriggers" />
         </label>
       </div>
-      <div class="center aligned column">
-        <label class="checkboxLabel"
-          title="Right hand: filter white notes by scale on/off. 🥸 turn this off to play proper jam chords.">
-          White notes C{{globals.keyboard.rhJamSoundOctave}}⇢ conform to current Scale
-          <input type="checkbox" v-model="globals.scaleFilteringEnabled" />
-        </label>
-      </div>
-    </div>
-    <div class="two column centered row">
       <div class="center aligned column">
         <label class="checkboxLabel"
           title="Show the meaning of the black keys and the chord/scale mappings of the white keys on the main keyboard.">
@@ -69,12 +79,28 @@ onUnmounted(() => {
           </select>
         </label>
       </div>
+      <div class="center aligned column">
+        <label class="checkboxLabel"
+          title="Right hand: filter white notes by scale on/off. 🥸 turn this off to play proper jam chords.">
+          White notes C{{globals.keyboard.rhJamSoundOctave}}⇢ conform to current Scale
+          <input type="checkbox" v-model="globals.scaleFilteringEnabled" />
+        </label>
+      </div>
     </div>
   </div>
 
 </template>
 
 <style scoped>
+.mode-toggle {
+  margin-bottom: 0.4rem;
+}
+
+.mode-description {
+  font-size: 0.9rem;
+  color: #555;
+}
+
 .key-labels-select {
   margin-left: 0.4rem;
   padding: 2px 4px;
