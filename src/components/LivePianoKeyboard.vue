@@ -174,11 +174,29 @@ onUnmounted(() => {
 <template>
   <!-- piano keyboard -->
   <div class="ui container mb-4" data-step="piano-keyboard">
-    <p class="keyboard-focus-hint" :class="{ 'keyboard-focus-hint-hidden': keyboardFocused }"
-      role="button" tabindex="0" title="Click to focus the keyboard" @click="focusKeyboard()"
-      @keydown.enter="focusKeyboard()">
-      Click the keyboard to use computer-keyboard shortcuts.
-    </p>
+    <div class="keyboard-hint-row">
+      <p class="keyboard-focus-hint" :class="{ 'keyboard-focus-hint-hidden': keyboardFocused }"
+        role="button" tabindex="0" title="Click to focus the keyboard" @click="focusKeyboard()"
+        @keydown.enter="focusKeyboard()">
+        Click the keyboard to use computer-keyboard shortcuts.
+      </p>
+      <div class="key-labels-group">
+        <label class="key-labels-control"
+          title="Show the meaning of the black keys and the chord/scale mappings of the white keys on the main keyboard.">
+          Key labels
+          <select v-model="globals.keyboardHelpMode" class="key-labels-select">
+            <option value="off">Off</option>
+            <option value="black">Black keys</option>
+            <option value="white">White keys</option>
+            <option value="all">Black + white</option>
+          </select>
+        </label>
+        <label class="shortcuts-checkbox" title="Show the computer-keyboard key on each piano key">
+          <input type="checkbox" v-model="globals.showKeyShortcuts">
+          Show computer keyboard shortcuts
+        </label>
+      </div>
+    </div>
     <div class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }">
       <webaudio-keyboard v-if="isLargeScreen" keys="49" ref="pianoKeyboard" width="1130"></webaudio-keyboard>
       <webaudio-keyboard v-else keys="25" ref="pianoKeyboard" width="710"></webaudio-keyboard>
@@ -202,8 +220,16 @@ onUnmounted(() => {
   outline: 2px solid #2e8b57;
 }
 
+.keyboard-hint-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0 0 0.25rem;
+}
+
 .keyboard-focus-hint {
-  margin: 0 0 0.4rem;
+  margin: 0;
   font-size: 0.9rem;
   font-weight: 600;
   color: #b45309;
@@ -216,5 +242,46 @@ onUnmounted(() => {
 
 .keyboard-focus-hint-hidden {
   visibility: hidden;
+}
+
+.key-labels-group {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-left: auto;
+}
+
+.key-labels-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #333;
+  cursor: pointer;
+}
+
+.key-labels-select {
+  padding: 1px 3px;
+  font-size: 0.78rem;
+  color: #333;
+  background: #fff;
+  border: 1px solid #999;
+  border-radius: 4px;
+}
+
+.shortcuts-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  color: #333;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.shortcuts-checkbox input {
+  margin: 0;
 }
 </style>

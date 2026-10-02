@@ -32,7 +32,7 @@ onUnmounted(() => {
 
   <GrandStatus />
   <div class="mb-3"></div>
-  <div class="ui container mb-4">
+  <div class="ui container mb-1">
     <ScaleFilteringToggles />
   </div>
   <LivePianoKeyboard />

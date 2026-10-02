@@ -1,7 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
 import { labelForOffset } from '@/lib/midi/piano-key-map.js'
-import { globals } from '@/lib/globals.js'
 
 const showShortcuts = ref(false)
 
@@ -50,11 +49,6 @@ onUnmounted(() => {
       Magic mode piano keyboard note meanings
       <button type="button" class="shortcuts-button" title="Show all keyboard shortcuts"
         @click.stop="showShortcuts = true">? Shortcuts</button>
-      <label class="shortcuts-checkbox" title="Show the computer-keyboard key on each piano key"
-        @click.stop>
-        <input type="checkbox" v-model="globals.showKeyShortcuts">
-        Show computer keyboard shortcuts
-      </label>
     </div>
     <div class="content">
 
@@ -267,20 +261,6 @@ onUnmounted(() => {
 
 .shortcuts-button:hover {
   background: #3a5cc0;
-}
-
-.shortcuts-checkbox {
-  margin-left: 0.75rem;
-  font-size: 0.85rem;
-  font-weight: normal;
-  cursor: pointer;
-  user-select: none;
-  white-space: nowrap;
-}
-
-.shortcuts-checkbox input {
-  margin-right: 0.3rem;
-  vertical-align: middle;
 }
 
 .shortcuts-overlay {

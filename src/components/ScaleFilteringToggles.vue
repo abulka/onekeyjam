@@ -37,8 +37,15 @@ onUnmounted(() => {
 
 <template>
 
-  <div class="ui one column centered padded grid">
-    <div class="one column centered row andyshade">
+  <div class="ui one column centered padded stackable grid">
+    <div class="three column centered middle aligned row andyshade">
+      <div class="center aligned column">
+        <label class="checkboxLabel"
+          title="Left hand: Left Hand Chord Triggers so that you can play notes and chords on the whole keyboard. 🥸 Note this also turns off Scale Filtering.">
+          White note C{{globals.keyboard.lhTriggerOctave}}⇢B{{globals.keyboard.rhJamSoundOctave-1}} one finger chords 
+          <input type="checkbox" v-model="globals.enableLhChordTriggers" />
+        </label>
+      </div>
       <div class="center aligned column">
         <div class="ui compact buttons mode-toggle" data-step="bypass-filtering">
           <button type="button" class="ui button" :class="{ active: !globals.bypass, boldy: !globals.bypass }"
@@ -54,30 +61,9 @@ onUnmounted(() => {
         </div>
         <div class="mode-description">
           {{ globals.bypass
-            ? 'Bypass filtering: play a normal piano keyboard to add chords to your project.'
+            ? 'Bypass filtering: play a normal piano keyboard'
             : 'One note chords, white notes conform to the current scale.' }}
         </div>
-      </div>
-    </div>
-    <div class="three column centered row">
-      <div class="center aligned column">
-        <label class="checkboxLabel"
-          title="Left hand: Left Hand Chord Triggers so that you can play notes and chords on the whole keyboard. 🥸 Note this also turns off Scale Filtering.">
-          White note C{{globals.keyboard.lhTriggerOctave}}⇢B{{globals.keyboard.rhJamSoundOctave-1}} one finger chords 
-          <input type="checkbox" v-model="globals.enableLhChordTriggers" />
-        </label>
-      </div>
-      <div class="center aligned column">
-        <label class="checkboxLabel"
-          title="Show the meaning of the black keys and the chord/scale mappings of the white keys on the main keyboard.">
-          Key labels
-          <select v-model="globals.keyboardHelpMode" class="key-labels-select">
-            <option value="off">Off</option>
-            <option value="black">Black keys</option>
-            <option value="white">White keys</option>
-            <option value="all">Black + white</option>
-          </select>
-        </label>
       </div>
       <div class="center aligned column">
         <label class="checkboxLabel"
@@ -92,6 +78,11 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+.ui.grid > .row.andyshade {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+
 .mode-toggle {
   margin-bottom: 0.4rem;
 }
@@ -99,15 +90,6 @@ onUnmounted(() => {
 .mode-description {
   font-size: 0.9rem;
   color: #555;
-}
-
-.key-labels-select {
-  margin-left: 0.4rem;
-  padding: 2px 4px;
-  border-radius: 4px;
-  border: 1px solid #999;
-  background: #fff;
-  color: #333;
 }
 
 .ui.column.OFFLINE {

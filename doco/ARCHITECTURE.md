@@ -121,7 +121,7 @@ and the validation commands.
   trigger white keys get a filled label to distinguish them from the plain
   soloing notes. The `globals.keyboardHelpMode` setting
   (`'off' | 'black' | 'white' | 'all'`, default `'all'`) chooses what to show,
-  controlled by the "Key labels" dropdown in `ScaleFilteringToggles.vue` and
+  controlled by the "Key labels" dropdown in `LivePianoKeyboard.vue` and
   saved in `localStorage` by `src/lib/uiPrefs.js`. Label text and the
   horizontal/vertical fit decision live in `src/lib/keyboard-help.js`.
 - The main keyboard draws a subtle focus outline (green when focused) and
