@@ -144,17 +144,20 @@ const shortcutBadges = computed(() => {
     return []
 
   const minMod = ((geo.min % 12) + 12) % 12
+  const blackBase = geo.wwidth * geo.ko[minMod]
+  const blackKeyX = (semitone) => blackBase + geo.bwidth * (semitone - geo.min) + 1
+  const isBlackAt = (semitone) => geo.kf[((semitone % 12) + 12) % 12] === 1
   const badges = []
   let whiteIndex = 0
 
   for (let i = geo.min; i <= geo.max; i++) {
-    const isBlack = geo.kf[((i % 12) + 12) % 12] === 1
+    const isBlack = isBlackAt(i)
     const offset = i - geo.min
     const label = labelForOffset(offset)
 
     if (isBlack) {
       if (label) {
-        const keyX = geo.wwidth * geo.ko[minMod] + geo.bwidth * offset + 1
+        const keyX = blackKeyX(i)
         badges.push({
           id: `black-${i}`,
           label,
@@ -167,11 +170,30 @@ const shortcutBadges = computed(() => {
     else {
       if (label) {
         const keyX = geo.wwidth * whiteIndex + 1
+        const keyRight = keyX + geo.wwidth - 1
+        // White keys are centred under a neighbouring black key, so nudge the
+        // badge into the clear strip at the top of the key instead.
+        const hasBlackLeft = i - 1 >= geo.min && isBlackAt(i - 1)
+        const hasBlackRight = i + 1 < geo.max && isBlackAt(i + 1)
+        let freeLeft = keyX
+        let freeRight = keyRight
+        if (hasBlackLeft)
+          freeLeft = Math.max(freeLeft, blackKeyX(i - 1) + geo.bwidth)
+        if (hasBlackRight)
+          freeRight = Math.min(freeRight, blackKeyX(i + 1))
+
+        let x
+        if (freeRight - freeLeft >= BADGE_WIDTH)
+          x = freeLeft + (freeRight - freeLeft) / 2 - BADGE_WIDTH / 2
+        else
+          x = keyX + (geo.wwidth - 1) / 2 - BADGE_WIDTH / 2
+        x = Math.max(keyX, Math.min(x, keyRight - BADGE_WIDTH))
+
         badges.push({
           id: `white-${i}`,
           label,
           isBlack: false,
-          x: keyX + (geo.wwidth - 1) / 2 - BADGE_WIDTH / 2,
+          x,
           y: 3,
         })
       }
