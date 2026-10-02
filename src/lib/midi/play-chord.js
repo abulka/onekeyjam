@@ -1,6 +1,7 @@
 import { globals } from "../globals.js"
 import { changeScaleFilter } from "../change-scale.js"
 import { playGmNote, stopGmNote } from "../audio/general-midi"
+import { recordChordNoteOn, recordChordNoteOff } from "./recorder.js"
 
 export function playChord(singleNote, options) {
     /*
@@ -94,6 +95,12 @@ export function playChordNote(noteName, toneType, options, channel, triggerNote,
         else
             pendingNoteOffs[triggerNote].push(noteOffInfo);
     }
+
+    // Capture the note that actually sounds, but only for live chord triggers
+    // (triggerNote is undefined for auditions, which we do not record).
+    if (globals.recording.isRecording && triggerNote !== undefined)
+        recordChordNoteOn(noteName, options.originNote && options.originNote.attack)
+
     if (globals.GM)
         playGmNote(noteName, noteOffInfo, {
             velocity: options.originNote.attack,
@@ -117,6 +124,8 @@ export function playChordOff(singleNote) {
     // Turn off all notes of chord (on channel 2)
     if (singleNote in globals.pendingChordNoteOffs) {
         for (let noteOffInfo of globals.pendingChordNoteOffs[singleNote]) {
+            if (globals.recording.isRecording)
+                recordChordNoteOff(noteOffInfo.allowedNote)
             if (globals.GM)
                 stopGmNote(noteOffInfo)
             else
@@ -135,6 +144,8 @@ export function playChordOff(singleNote) {
         if (noteOffInfo) {
             let oldNote = noteOffInfo.allowedNote
             delete globals.pendingChordBassNoteOffs[singleNote]
+            if (globals.recording.isRecording)
+                recordChordNoteOff(oldNote)
             if (globals.GM)
                 stopGmNote(noteOffInfo)
             else

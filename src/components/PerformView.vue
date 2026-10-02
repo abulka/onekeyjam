@@ -2,7 +2,6 @@
 import { onMounted, onUnmounted } from "vue";
 import { keyDownListener, keyUpListener } from "@/lib/midi/livePianoKeyboardShortcuts"
 import GrandSummary from './GrandSummary.vue'
-import Sequencer from './Sequencer.vue'
 import GrandStatus from './GrandStatus.vue';
 import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
 import KeyboardNoteMeaningsLegend from './KeyboardNoteMeaningsLegend.vue'
@@ -64,14 +63,6 @@ onUnmounted(() => {
       </div>
       <div class="content">
         <ActiveScale />
-      </div>
-
-      <div class="title">
-        <i class="dropdown icon"></i>
-        Chord Sequencer
-      </div>
-      <div class="content">
-        <Sequencer />
       </div>
 
     </div> <!-- end of main accordion -->

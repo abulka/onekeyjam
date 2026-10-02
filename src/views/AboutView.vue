@@ -94,7 +94,6 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
       <ul class="ui list">
         <li><strong>Active Chord</strong> - the chord that is currently sounding, with its notes and bass.</li>
         <li><strong>Active Scale</strong> - the scale the right hand is currently filtered into.</li>
-        <li><strong>Chord Sequencer</strong> - a built-in sequencer that records your left-hand chords and right-hand jam notes on separate tracks.</li>
       </ul>
       <p>
         The status readouts at the top of the page summarise the current chord and
@@ -104,10 +103,27 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
       <figure>
         <img class="screenshot" :src="performanceView" alt="OneKeyJam performance view showing the active chord and active scale" />
         <figcaption class="screenshot-caption">
-          The Perform view, with the active chord, active scale, live keyboard and
-          chord sequencer.
+          The Perform view, with the active chord, active scale and live keyboard.
         </figcaption>
       </figure>
+
+      <!-- Record view -->
+      <h2 class="ui header">The Record view</h2>
+      <p>
+        The <RouterLink to="/record">Record view</RouterLink> is where you capture
+        a performance. Press <strong>Record</strong>, play both hands, then press
+        <strong>Stop</strong>. The left-hand chords (with their bass) and the
+        scale-filtered right-hand solo notes are captured on two separate tracks.
+      </p>
+      <ul class="ui list">
+        <li><strong>Record / Stop</strong> - capture a take, with a live note count.</li>
+        <li><strong>Export MIDI</strong> - download the take as a two-track <code>.mid</code> file to use in a DAW.</li>
+        <li><strong>Chord Sequencer</strong> - a built-in step sequencer for editing left-hand chords and right-hand jam notes by hand.</li>
+      </ul>
+      <p>
+        Recording is free (no quantisation or metronome) and is timed at 120 BPM.
+        The take is held in memory, so export it before reloading the page.
+      </p>
 
       <!-- Features -->
       <h2 class="ui header">Features</h2>

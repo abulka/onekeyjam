@@ -231,6 +231,18 @@ export const globals = reactive({
     channel2: undefined,
     channel3: undefined,
 
+    // Live MIDI recording of a performance. Chords (and bass) go on the
+    // 'chords' track and scale-filtered jam notes go on the 'jam' track.
+    recording: {
+        isRecording: false,
+        bpm: 120,
+        ppq: 480,
+        startedAt: 0,  // audioContext.currentTime when recording started
+        take: { chords: [], jam: [] },  // committed { midi, startTick, durationTicks, velocity }
+        held: { chords: {}, jam: {} },  // noteName -> { midi, velocity, startTick }
+        hasTake: false,  // a take with at least one note is ready to export
+    },
+
     // Records which allowed note to turn off, key is real note, value is allowed note.
     // Needed because looking up current note mappings is often wrong, mapping could have changed.
     pendingNoteOffs: {},

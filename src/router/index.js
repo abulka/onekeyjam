@@ -19,6 +19,11 @@ const router = createRouter({
       component: () => import('../views/PerformView.vue')
     },
     {
+      path: '/record',
+      name: 'record',
+      component: () => import('../views/RecordView.vue')
+    },
+    {
       path: '/about',
       name: 'about',
       // route level code-splitting

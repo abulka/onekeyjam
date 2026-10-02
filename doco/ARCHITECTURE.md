@@ -19,8 +19,8 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
   `mainOneKeyJam()` from `src/lib/main.js`, which starts the one-time MIDI and
   project boot.
 - `src/router/index.js` maps routes to views: `/` (HomeView), `/perform`
-  (PerformView), `/about` (AboutView) and `/research` (ResearchView). The
-  Perform route is lazy loaded.
+  (PerformView), `/record` (RecordView), `/about` (AboutView) and `/research`
+  (ResearchView). The Perform and Record routes are lazy loaded.
 - `src/views/` holds the routed pages. `src/components/` holds the UI widgets
   such as the piano keyboards, chord pickers, scale pickers and status panels.
 - `src/lib/` holds the framework-independent domain logic and the MIDI and
@@ -86,10 +86,19 @@ and the validation commands.
 - Playing a note in the left-hand trigger octave that is in `chordTriggerMap`
   plays the chord and changes the current scale, which rebuilds the scale
   mapping (see `src/lib/midi/play-chord.js` and `src/lib/change-scale.js`).
-- Playing any other note calls `jam()` in `src/lib/midi/jam.js`. If scale filtering
-  is on, the played note is translated through `scaleTriggerMap` to an allowed
+- Playing any other note calls `jam()` in `src/lib/midi/jam.js`. If scale
+  filtering is on, the played note is translated through `scaleTriggerMap` to an allowed
   note; otherwise it is echoed through. Pending note-offs are tracked in
   `globals.pendingNoteOffs` so the correct note can be stopped later.
+- The Record view (`/record`) captures a live performance into the two-track
+  take in `globals.recording`. `src/lib/midi/recorder.js` is driven from the
+  points where the sounding notes are known: `playChordNote`/`playChordOff`
+  record the left-hand chord and bass notes, and `jam`/`jamOff` record the
+  scale-filtered right-hand notes. Timing comes from `audioContext.currentTime`
+  and the pure helpers in `src/lib/midi/timing.js` (120 BPM, 480 PPQ, no
+  quantisation). `src/lib/midi/export-recording.js` turns the take into a
+  two-track `.mid` file with `@tonejs/midi`. The take is kept in memory only;
+  the Chord Sequencer now lives on the Record view rather than the Perform view.
 - Left-hand black keys act as modifiers: `C#` is a shift key, `D#` turns scale
   filtering off and `F#` turns it on, while `G#` and `A#` transpose the chords.
   Right-hand black keys switch scale and transpose as well. See `onNoteOn()` in

@@ -41,6 +41,7 @@ onMounted(() => {
 
         <RouterLink class="item" active-class="active" to="/">OneKeyJam</RouterLink>
         <RouterLink class="item" active-class="active" to="/perform">Perform</RouterLink>
+        <RouterLink class="item" active-class="active" to="/record">Record</RouterLink>
         <RouterLink class="item" active-class="active" to="/about">Help</RouterLink>
         <RouterLink v-if="showResearch" class="item" active-class="active" to="/research">Research</RouterLink>
 

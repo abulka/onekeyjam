@@ -1,6 +1,7 @@
 import { globals } from "../globals.js"
 import { playGmNote, stopGmNote } from "../audio/general-midi.js"
 import { detectChordsBeingPlayed } from "../detectChordsBeingPlayed.js";
+import { recordJamNoteOn, recordJamNoteOff } from "./recorder.js"
 
 export function jam(note) {
     // Avoid playing a jam note when the focus is in the live onscreen piano
@@ -19,6 +20,8 @@ export function jam(note) {
             envelope: undefined
         }
         globals.pendingNoteOffs[note.identifier] = noteOffInfo
+        if (globals.recording.isRecording)
+            recordJamNoteOn(note.identifier, note.attack)
         if (globals.GM)
             playGmNote(note.identifier, noteOffInfo, { velocity: note.attack })
         else
@@ -43,6 +46,9 @@ export function jam(note) {
         globals.currentJamNote.real = note.identifier
         globals.currentJamNote.mapped = allowedNote
 
+        if (globals.recording.isRecording)
+            recordJamNoteOn(allowedNote, note.attack)
+
         if (globals.GM)
             playGmNote(allowedNote, noteOffInfo, { velocity: note.attack })
         else
@@ -59,6 +65,9 @@ export function jamOff(note) {
     if (noteOffInfo) {
         const allowedNote = noteOffInfo.allowedNote
         delete globals.pendingNoteOffs[note.identifier]
+
+        if (globals.recording.isRecording)
+            recordJamNoteOff(allowedNote)
 
         // window.document.querySelector('#currentJamNote').innerHTML = `${note.identifier} -x-> ${allowedNote}`;
         // console.log(`${note.identifier} -x-> ${allowedNote} OFF`, 'pendingNoteOffs', globals.pendingNoteOffs)
