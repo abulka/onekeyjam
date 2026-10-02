@@ -241,6 +241,11 @@ export const globals = reactive({
         take: { chords: [], jam: [] },  // committed { midi, startTick, durationTicks, velocity }
         held: { chords: {}, jam: {} },  // noteName -> { midi, velocity, startTick }
         hasTake: false,  // a take with at least one note is ready to export
+        playback: {
+            isPlaying: false,
+            positionSec: 0,
+            durationSec: 0,
+        },
     },
 
     // Records which allowed note to turn off, key is real note, value is allowed note.

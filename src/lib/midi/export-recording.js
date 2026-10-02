@@ -52,8 +52,9 @@ export function recordingToMidi(take, bpm = 120, ppq = DEFAULT_PPQ) {
     const midi = new Midi()
     midi.header.setTempo(bpm)
     midi.header.timeSignatures.push({ ticks: 0, timeSignature: [4, 4] })
+    // Track 1 is the solo (jam) part, track 2 is the chord part.
+    notesToTrack(midi, take.jam || [], 'Solo')
     notesToTrack(midi, take.chords || [], 'Chords')
-    notesToTrack(midi, take.jam || [], 'Jam')
     setHeaderPpq(midi, ppq)
     return midi.toArray()
 }

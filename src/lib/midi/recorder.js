@@ -3,6 +3,7 @@ import { Note } from '@tonaljs/tonal'
 import { globals } from '../globals.js'
 import { audioContext } from '../audio/general-midi.js'
 import { secondsPerTick, secondsToTicks, recordedNoteDuration } from './timing.js'
+import { stopPlayback, takeDurationSec } from './playback.js'
 
 /**
  * @module lib/midi/recorder
@@ -94,12 +95,15 @@ function finalizeHeld(track, endTick) {
  * @param {number} [now]
  */
 export function startRecording(now) {
+    stopPlayback(true)
     const rec = globals.recording
     rec.take = { chords: [], jam: [] }
     rec.held = { chords: {}, jam: {} }
     rec.startedAt = getNow(now)
     rec.isRecording = true
     rec.hasTake = false
+    rec.playback.durationSec = 0
+    rec.playback.positionSec = 0
 }
 
 /**
@@ -115,16 +119,20 @@ export function stopRecording(now) {
     finalizeHeld('jam', endTick)
     rec.isRecording = false
     rec.hasTake = rec.take.chords.length > 0 || rec.take.jam.length > 0
+    rec.playback.durationSec = takeDurationSec(rec)
 }
 
 /** Discard the current take and stop recording. */
 export function clearTake() {
+    stopPlayback(true)
     const rec = globals.recording
     rec.isRecording = false
     rec.take = { chords: [], jam: [] }
     rec.held = { chords: {}, jam: {} }
     rec.startedAt = 0
     rec.hasTake = false
+    rec.playback.durationSec = 0
+    rec.playback.positionSec = 0
 }
 
 /**

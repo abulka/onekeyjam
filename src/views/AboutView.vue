@@ -117,7 +117,8 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
       </p>
       <ul class="ui list">
         <li><strong>Record / Stop</strong> - capture a take, with a live note count.</li>
-        <li><strong>Export MIDI</strong> - download the take as a two-track <code>.mid</code> file to use in a DAW.</li>
+        <li><strong>Play</strong> - listen back to the take in the browser and scrub through it with the slider.</li>
+        <li><strong>Export MIDI</strong> - download the take as a two-track <code>.mid</code> file (solo first, chords second) to use in a DAW.</li>
         <li><strong>Chord Sequencer</strong> - a built-in step sequencer for editing left-hand chords and right-hand jam notes by hand.</li>
       </ul>
       <p>

@@ -23,13 +23,13 @@ describe('recordingToMidi', () => {
         assert.equal(midi.header.ppq, 480)
         assert.equal(midi.header.tempos[0].bpm, 120)
         assert.equal(midi.tracks.length, 2)
-        assert.deepEqual(midi.tracks.map(track => track.name), ['Chords', 'Jam'])
+        assert.deepEqual(midi.tracks.map(track => track.name), ['Solo', 'Chords'])
     })
 
     it('round-trips note timings and velocities', () => {
         const midi = new Midi(recordingToMidi(take, 120, 480))
-        const chords = midi.tracks[0].notes
-        const jam = midi.tracks[1].notes
+        const solo = midi.tracks[0].notes
+        const chords = midi.tracks[1].notes
 
         assert.equal(chords.length, 3)
         assert.deepEqual(chords.map(n => n.midi).sort((a, b) => a - b), [60, 64, 67])
@@ -37,10 +37,10 @@ describe('recordingToMidi', () => {
         assert.equal(chords[0].durationTicks, 480)
         assert.ok(Math.abs(chords[0].velocity - 0.8) < 0.02)
 
-        assert.equal(jam.length, 1)
-        assert.equal(jam[0].midi, 72)
-        assert.equal(jam[0].ticks, 240)
-        assert.equal(jam[0].durationTicks, 240)
+        assert.equal(solo.length, 1)
+        assert.equal(solo[0].midi, 72)
+        assert.equal(solo[0].ticks, 240)
+        assert.equal(solo[0].durationTicks, 240)
     })
 
     it('handles an empty take', () => {
