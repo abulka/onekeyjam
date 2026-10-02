@@ -91,6 +91,9 @@ function applyConfig() {
   // for a timebase of 16, but at 1920 the lines land a fraction of a pixel
   // apart and merge into a solid grey wash.
   el.grid = Math.max(1, Math.round(tb / 4))
+  // Editing snap: a 16th note, so drawn notes land musically (1 tick at the
+  // pattern panel's timebase of 16, which is what it always used).
+  el.snap = Math.max(1, Math.round(tb / 16))
   el.tempo = finite(props.tempo, 120)
   el.octadj = Number.isFinite(Number(props.octadj)) ? Number(props.octadj) : 0
   el.colnote = props.noteColor
@@ -306,59 +309,66 @@ function emitAudition(row) {
   emit('audition', { midi: row })
 }
 
-function stripRowAt(event) {
+// Returns the row under the pointer when it is on the piano strip or on a note.
+// `edit` is true for note hits, which also begin an edit (so change detection
+// still fires), and false for the strip.
+function auditionRowAt(event) {
   const el = pianoroll.value
   if (!el || !el.canvas || typeof el.hitTest !== 'function')
     return null
   const rect = el.canvas.getBoundingClientRect()
   const hit = el.hitTest({ x: event.clientX - rect.left, y: event.clientY - rect.top })
-  if (!hit || hit.m !== 'y')
+  if (!hit)
     return null
-  return Math.max(0, Math.min(127, Math.floor(hit.n)))
+  const row = Math.max(0, Math.min(127, Math.floor(hit.n)))
+  if (hit.m === 'y')
+    return { row, edit: false }
+  if (hit.m === 'n' || hit.m === 'N' || hit.m === 'B' || hit.m === 'E')
+    return { row, edit: true }
+  return null
 }
 
-// Returns true when the event is on the piano strip (an audition, not an edit).
-function tryAudition(event) {
-  const row = stripRowAt(event)
-  if (row == null)
-    return false
-  stripDragging = true
-  dragRow.value = row
-  emitAudition(row)
-  return true
+function startInteraction(event) {
+  const found = auditionRowAt(event)
+  if (found) {
+    dragRow.value = found.row
+    stripDragging = !found.edit
+    emitAudition(found.row)
+    if (found.edit)
+      interacting = true
+    return
+  }
+  interacting = true
 }
 
 function onPointerDown(event) {
-  if (tryAudition(event))
-    return
-  interacting = true
+  startInteraction(event)
 }
 
 // Some environments dispatch mouse events without a matching pointer event;
 // treating mousedown as the start of an interaction keeps change detection
-// reliable in both cases. The piano strip is handled as an audition instead.
+// reliable in both cases.
 function onMouseDownCapture(event) {
-  if (tryAudition(event))
-    return
-  interacting = true
+  startInteraction(event)
 }
 
 function onTouchStartCapture(event) {
   const touch = event.touches && event.touches[0]
-  if (touch && tryAudition(touch))
-    return
-  interacting = true
+  if (touch)
+    startInteraction(touch)
+  else
+    interacting = true
 }
 
 // Dragging along the strip plays each key it passes over.
 function onPointerMove(event) {
   if (!stripDragging)
     return
-  const row = stripRowAt(event)
-  if (row == null || row === dragRow.value)
+  const found = auditionRowAt(event)
+  if (!found || found.edit || found.row === dragRow.value)
     return
-  dragRow.value = row
-  emitAudition(row)
+  dragRow.value = found.row
+  emitAudition(found.row)
 }
 
 function onPointerUp() {

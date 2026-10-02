@@ -241,6 +241,11 @@ export const globals = reactive({
         take: { chords: [], jam: [] },  // committed { midi, startTick, durationTicks, velocity }
         held: { chords: {}, jam: {} },  // noteName -> { midi, velocity, startTick }
         hasTake: false,  // a take with at least one note is ready to export
+        lastRecordingSeconds: 0,  // wall-clock length of the last recording
+        // When true the recorder ignores incoming notes. Used while the pattern
+        // sequencer loops, so its notes are not captured live (they are merged
+        // into the take on stop instead) and for piano-strip auditions.
+        suppressCapture: false,
         playback: {
             isPlaying: false,
             isScrubbing: false,

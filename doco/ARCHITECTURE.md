@@ -118,6 +118,18 @@ and the validation commands.
   (and vice versa) through the same `live-note` event. `src/lib/sequencer-notes.js`
   holds the pure conversions between take notes and widget notes. The Chord
   Sequencer is now the second `PianoRollPanel` and is full width.
+- The Chord Sequencer is a chord-sequence loop. It can be auditioned (a chord
+  trigger plays its chord, anything else a single note) from the piano strip or
+  by clicking a note, its loop markers can be fitted to the notes, and it is
+  auto-saved to `localStorage` (`onekeyjam.pattern`) so a refresh does not lose
+  it. While it plays, the trigger keys light up on the main keyboard and the
+  panel strips in time with the sound (a `live-note` event tagged
+  `source: 'pattern'`). With "Include in recording" ticked, pressing Record
+  starts the pattern looping; its notes drive chords and scale changes but are
+  not captured live (`globals.recording.suppressCapture`), and on Stop the loop
+  is rendered to fill the take and merged into the Chords track
+  (`patternToTakeNotes`), expanding each chord trigger into its chord notes.
+  The recorder broadcasts `recording-started`/`recording-stopped` for this.
 - Left-hand black keys act as modifiers: `C#` is a shift key, `D#` turns scale
   filtering off and `F#` turns it on, while `G#` and `A#` transpose the chords.
   Right-hand black keys switch scale and transpose as well. See `onNoteOn()` in

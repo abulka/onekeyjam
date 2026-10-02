@@ -160,3 +160,70 @@ export function renderLoopToTicks(notes, loopStart, loopEnd, totalTicks) {
     }
     return out
 }
+
+/**
+ * Turn a looping pattern into take notes that fill a recording.
+ *
+ * The pattern is repeated for as many whole loops as it takes to reach the
+ * take's length, note durations are clipped at the loop end to match how the
+ * widget clips them during playback, and each widget row is mapped to its
+ * sounding MIDI note via `rowToMidi`.
+ *
+ * @param {PanelNote[]} patternNotes widget notes (in the panel's timebase)
+ * @param {object} options
+ * @param {number} [options.ppq] take ticks per quarter note
+ * @param {number} [options.panelTimebase] panel ticks per whole note
+ * @param {number} [options.loopStart] loop start, panel ticks
+ * @param {number} [options.loopEnd] loop end, panel ticks
+ * @param {number} [options.totalTakeTicks] how long the take is, take ticks
+ * @param {(row: number) => Array<{ midi: number, playedMidi?: number }>} [options.rowToNotes] expand a row into the notes it sounds
+ * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi: number }>}
+ */
+export function patternToTakeNotes(patternNotes, {
+    ppq = 480,
+    panelTimebase = 16,
+    loopStart = 0,
+    loopEnd = 0,
+    totalTakeTicks = 0,
+    rowToNotes = undefined,
+} = {}) {
+    if (typeof rowToNotes !== 'function' || totalTakeTicks <= 0 || loopEnd <= loopStart)
+        return []
+
+    const loopLength = loopEnd - loopStart
+    const totalPanelTicks = Math.max(1, Math.round(totalTakeTicks * panelTimebase / (ppq * 4)))
+    // Round up to whole loops so the last repeat is not cut off mid-bar.
+    const loops = Math.max(1, Math.ceil((totalPanelTicks - loopStart) / loopLength))
+    const renderedTotal = loopStart + loops * loopLength
+
+    const clipped = []
+    for (const note of patternNotes || []) {
+        if (note.t < loopStart || note.t >= loopEnd)
+            continue
+        const maxDuration = loopEnd - note.t
+        clipped.push({ ...note, g: Math.max(1, Math.min(note.g, maxDuration)) })
+    }
+
+    const rendered = renderLoopToTicks(clipped, loopStart, loopEnd, renderedTotal)
+    const out = []
+    for (const note of rendered) {
+        const expansions = rowToNotes(note.n)
+        if (!Array.isArray(expansions) || expansions.length === 0)
+            continue
+        const startTick = Math.round(panelTicksToTake(note.t, ppq, panelTimebase))
+        const durationTicks = Math.max(1, Math.round(panelTicksToTake(note.g, ppq, panelTimebase)))
+        const velocity = Math.min(1, Math.max(0, (typeof note.v === 'number' ? note.v : 100) / 127))
+        for (const expansion of expansions) {
+            if (!expansion || typeof expansion.midi !== 'number')
+                continue
+            out.push({
+                midi: expansion.midi,
+                startTick,
+                durationTicks,
+                velocity,
+                playedMidi: typeof expansion.playedMidi === 'number' ? expansion.playedMidi : expansion.midi,
+            })
+        }
+    }
+    return out
+}

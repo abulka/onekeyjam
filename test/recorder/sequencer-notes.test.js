@@ -6,6 +6,7 @@ import {
     panelNotesToTakeNotes,
     fitRange,
     renderLoopToTicks,
+    patternToTakeNotes,
 } from '@/lib/sequencer-notes.js'
 
 describe('sequencer note conversion', () => {
@@ -79,5 +80,72 @@ describe('sequencer note conversion', () => {
     it('ignores notes outside the loop points', () => {
         const notes = [{ t: 2500, n: 60, g: 480, v: 100, f: 0 }]
         assert.deepEqual(renderLoopToTicks(notes, 0, 1920, 4800), [])
+    })
+})
+
+describe('patternToTakeNotes', () => {
+    // Panel timebase 16 and PPQ 480 give 120 take ticks per panel tick; a whole
+    // note (and a 4/4 bar) is 16 panel ticks = 1920 take ticks.
+    const options = { ppq: 480, panelTimebase: 16, rowToNotes: (row) => [{ midi: row }] }
+
+    it('maps a one-bar pattern into the take', () => {
+        const notes = [{ t: 0, n: 60, g: 4, v: 100, f: 0 }]
+        const out = patternToTakeNotes(notes, { ...options, loopStart: 0, loopEnd: 16, totalTakeTicks: 1920 })
+        assert.equal(out.length, 1)
+        assert.deepEqual(out[0], { midi: 60, startTick: 0, durationTicks: 480, velocity: 100 / 127, playedMidi: 60 })
+    })
+
+    it('expands a row into several notes with a shared trigger', () => {
+        const notes = [{ t: 0, n: 60, g: 4, v: 100, f: 0 }]
+        const out = patternToTakeNotes(notes, {
+            ...options,
+            rowToNotes: () => [
+                { midi: 60, playedMidi: 48 },
+                { midi: 64, playedMidi: 48 },
+                { midi: 67, playedMidi: 48 },
+            ],
+            loopStart: 0,
+            loopEnd: 16,
+            totalTakeTicks: 1920,
+        })
+        assert.deepEqual(out.map(n => n.midi), [60, 64, 67])
+        assert.deepEqual(out.map(n => n.playedMidi), [48, 48, 48])
+        assert.deepEqual(out.map(n => n.startTick), [0, 0, 0])
+    })
+
+    it('repeats the loop with whole loops to fill the take', () => {
+        const notes = [{ t: 0, n: 60, g: 4, v: 100, f: 0 }]
+        const out = patternToTakeNotes(notes, { ...options, loopStart: 0, loopEnd: 16, totalTakeTicks: 3840 })
+        assert.deepEqual(out.map(n => n.startTick), [0, 1920])
+    })
+
+    it('clips a note duration at the loop end', () => {
+        const notes = [{ t: 14, n: 60, g: 8, v: 100, f: 0 }]
+        const out = patternToTakeNotes(notes, { ...options, loopStart: 0, loopEnd: 16, totalTakeTicks: 1920 })
+        assert.equal(out.length, 1)
+        assert.equal(out[0].startTick, 14 * 120)
+        assert.equal(out[0].durationTicks, 2 * 120)
+    })
+
+    it('ignores notes outside the loop and skips unmappable rows', () => {
+        const notes = [
+            { t: 20, n: 60, g: 4, v: 100, f: 0 },
+            { t: 0, n: 61, g: 4, v: 100, f: 0 },
+        ]
+        const out = patternToTakeNotes(notes, {
+            ...options,
+            loopStart: 0,
+            loopEnd: 16,
+            totalTakeTicks: 1920,
+            rowToNotes: (row) => (row === 61 ? [] : [{ midi: row }]),
+        })
+        assert.deepEqual(out, [])
+    })
+
+    it('returns nothing for empty or invalid patterns', () => {
+        assert.deepEqual(patternToTakeNotes([], { ...options, loopStart: 0, loopEnd: 16, totalTakeTicks: 1920 }), [])
+        assert.deepEqual(patternToTakeNotes([{ t: 0, n: 60, g: 4 }], { ...options, loopStart: 0, loopEnd: 0, totalTakeTicks: 1920 }), [])
+        assert.deepEqual(patternToTakeNotes([{ t: 0, n: 60, g: 4 }], { ...options, loopStart: 0, loopEnd: 16, totalTakeTicks: 0 }), [])
+        assert.deepEqual(patternToTakeNotes([{ t: 0, n: 60, g: 4 }], { ppq: 480, panelTimebase: 16, loopStart: 0, loopEnd: 16, totalTakeTicks: 1920 }), [])
     })
 })

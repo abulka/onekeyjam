@@ -165,6 +165,16 @@ function noteNameToMidi(noteName) {
 }
 
 /**
+ * @param {string} name
+ */
+function broadcast(name) {
+    // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+    if (typeof document !== 'undefined' && typeof document.broadcastEvent === 'function')
+        // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+        document.broadcastEvent(name, {})
+}
+
+/**
  * @param {number} [velocity]
  * @returns {number}
  */
@@ -211,14 +221,20 @@ function finalizeHeld(track, endTick) {
  */
 export function startRecording(now) {
     stopPlayback(true)
+    // Recording starts from a user gesture; resume the audio context so the
+    // pattern loop and monitored sounds actually run.
+    if (audioContext && audioContext.state === 'suspended' && typeof audioContext.resume === 'function')
+        audioContext.resume()
     const rec = globals.recording
     rec.take = { chords: [], jam: [] }
     rec.held = { chords: {}, jam: {} }
     rec.startedAt = getNow(now)
     rec.isRecording = true
     rec.hasTake = false
+    rec.lastRecordingSeconds = 0
     rec.playback.durationSec = 0
     rec.playback.positionSec = 0
+    broadcast('recording-started')
 }
 
 /**
@@ -233,9 +249,11 @@ export function stopRecording(now) {
     finalizeHeld('chords', endTick)
     finalizeHeld('jam', endTick)
     rec.isRecording = false
+    rec.lastRecordingSeconds = Math.max(0, getNow(now) - rec.startedAt)
     rec.hasTake = rec.take.chords.length > 0 || rec.take.jam.length > 0
     rec.playback.durationSec = takeDurationSec(rec)
     persistTake()
+    broadcast('recording-stopped')
 }
 
 /** Discard the current take and stop recording. */
@@ -272,7 +290,7 @@ export function commitTakeEdit() {
  */
 function recordNoteOn(track, noteName, velocity, now, playedNote) {
     const rec = globals.recording
-    if (!rec.isRecording)
+    if (!rec.isRecording || rec.suppressCapture)
         return
     const midi = noteNameToMidi(noteName)
     if (midi == null)
@@ -299,7 +317,7 @@ function recordNoteOn(track, noteName, velocity, now, playedNote) {
  */
 function recordNoteOff(track, noteName, now) {
     const rec = globals.recording
-    if (!rec.isRecording)
+    if (!rec.isRecording || rec.suppressCapture)
         return
     const held = rec.held[track]
     const entry = held[noteName]

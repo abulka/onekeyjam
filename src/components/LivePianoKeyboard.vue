@@ -125,7 +125,8 @@ function onLiveNote(event) {
   const noteNumber = event.detail.note.number - baseMidi  // map note number to our visual keyboard range
   pianoKeyboard.value?.setNote(event.detail.state, noteNumber)
 
-  if (event.detail.source === 'playback')
+  // Automated lights (playback, pattern, audition) skip the raw live-note readout.
+  if (event.detail.source)
     return
 
   // Live real MIDI keyboard press got us here

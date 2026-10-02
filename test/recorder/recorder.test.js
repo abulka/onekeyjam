@@ -31,6 +31,7 @@ describe('midi recorder', () => {
         clearTake()
         globals.recording.bpm = 120
         globals.recording.ppq = 480
+        globals.recording.suppressCapture = false
     })
 
     afterEach(() => {
@@ -173,5 +174,26 @@ describe('midi recorder', () => {
 
         storage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, chords: [], jam: [] }))
         assert.equal(restoreTake(storage), false)
+    })
+
+    it('ignores notes while capture is suppressed', () => {
+        startRecording(0)
+        globals.recording.suppressCapture = true
+        recordChordNoteOn('C4', 0.8, { now: 0 })
+        recordChordNoteOff('C4', { now: 0.5 })
+        globals.recording.suppressCapture = false
+        stopRecording(0.5)
+
+        assert.equal(globals.recording.take.chords.length, 0)
+        assert.equal(globals.recording.lastRecordingSeconds, 0.5)
+    })
+
+    it('broadcasts recording start and stop', () => {
+        const names = []
+        // @ts-ignore test shim
+        document.broadcastEvent = (name) => names.push(name)
+        startRecording(0)
+        stopRecording(1)
+        assert.deepEqual(names, ['recording-started', 'recording-stopped'])
     })
 })
