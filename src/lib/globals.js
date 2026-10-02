@@ -104,6 +104,7 @@ export const globals = reactive({
     allocateFavourites: true,  // allocate favourites when allocating project.chords -> globals.chordTriggerMap
     scaleFilteringModificationSticky: true,  // whether e.g. 'scale2' is preserved during chord changes
     scaleFilteringEnabled: true,
+    keyboardHelpMode: 'off',  // 'off' | 'black' | 'white' | 'all' - text overlays on the main keyboard
     debugJamChord: false,
     syncChordPickerToJamChord: true,
     syncChordPickerToCurrentTriggeredChord: true,

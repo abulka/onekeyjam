@@ -6,6 +6,7 @@ import { store } from '../lib/globals.js'
 import { Note } from '@/lib/midi/webmidi.js'
 import { indexToNote } from "../lib/note-tools.js"
 import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events"
+import KeyboardHelpOverlay from "./KeyboardHelpOverlay.vue"
 
 // window.matchMedia('(min-width: 700px)')
 const isLargeScreen = computed({
@@ -86,11 +87,19 @@ onUnmounted(() => {
 <template>
   <!-- piano keyboard -->
   <div class="ui container mb-4" data-step="piano-keyboard">
-    <webaudio-keyboard v-if="isLargeScreen" keys="49" ref="pianoKeyboard" width="1130"></webaudio-keyboard>
-    <webaudio-keyboard v-else keys="25" ref="pianoKeyboard" width="710"></webaudio-keyboard>
+    <div class="piano-keyboard-wrap">
+      <webaudio-keyboard v-if="isLargeScreen" keys="49" ref="pianoKeyboard" width="1130"></webaudio-keyboard>
+      <webaudio-keyboard v-else keys="25" ref="pianoKeyboard" width="710"></webaudio-keyboard>
+      <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off'" :keyboard-el="pianoKeyboard"
+        :keys="isLargeScreen ? 49 : 25" />
+    </div>
   </div>
 </template>
 
 <style scoped>
-
+.piano-keyboard-wrap {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
 </style>

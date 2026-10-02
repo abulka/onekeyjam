@@ -4,6 +4,7 @@
 import { ref, onUnmounted } from "vue";
 import { watch } from 'vue'
 import { noteObjectToMidiValue } from '../../src/lib/note-tools.js'
+import { getBlackKeyHelp } from '../../src/lib/keyboard-help.js'
 
 const props = defineProps({
     allKeys: {
@@ -253,77 +254,7 @@ function getMapping(currentNote, octave) {
 }
 
 function getHelp(note, octave, shift = false) {
-    let result = '';
-    if (octave == 3) {  // TODO - make it dynamic and cover the amount of octaves used by lh trigger chords
-        if (shift)
-            switch (note) {
-                case 'C#':
-                    result = ''
-                    break;
-                case 'D#':
-                    result = 'All notes off'
-                    break;
-                case 'F#':
-                    result = 'Add chord'
-                    break;
-                case 'G#':
-                    result = 'Reset transp.'
-                    break;
-                case 'A#':
-                    result = 'Reset transp.'
-                    break;
-
-                default:
-                    break;
-            }
-        else
-            switch (note) {
-                case 'C#':
-                    result = 'SHIFT'
-                    break;
-                case 'D#':
-                    result = 'Scale filter OFF'
-                    break;
-                case 'F#':
-                    result = 'Scale filter ON'
-                    break;
-                case 'G#':
-                    result = 'Trans-pose chords UP'
-                    break;
-                case 'A#':
-                    result = 'Trans-pose chords DOWN'
-                    break;
-
-                default:
-                    break;
-            }
-    }
-    else {
-        if (shift)
-            result = ''
-        else
-            switch (note) {
-                case 'C#':
-                    result = 'Use Scale 1'
-                    break;
-                case 'D#':
-                    result = 'Use Scale 2'
-                    break;
-                case 'F#':
-                    result = 'Use Scale 3'
-                    break;
-                case 'G#':
-                    result = 'Use Scale 4 (notes of chord)'
-                    break;
-                case 'A#':
-                    result = 'Lock current scale'
-                    break;
-
-                default:
-                    break;
-            }
-    }
-    return result
+    return getBlackKeyHelp(note, octave, { shift, lhTriggerOctave: 3 })
 }
 
 regenerate()

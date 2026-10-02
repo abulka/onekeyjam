@@ -109,6 +109,14 @@ and the validation commands.
 - The separate `src/components/PianoKeyboard.vue` component (reachable only from
   the research view) is an older experiment. It highlights keys when computer
   keys are pressed but does not emit events, so it does not produce sound.
+- The main keyboard can show optional text labels on its keys
+  (`src/components/KeyboardHelpOverlay.vue`). It layers absolutely positioned,
+  click-through labels over the `webaudio-keyboard` canvas, reading the canvas's
+  live key geometry, so the shared web component is never modified. The
+  `globals.keyboardHelpMode` setting (`'off' | 'black' | 'white' | 'all'`)
+  chooses what to show, controlled by the "Key labels" dropdown in
+  `ScaleFilteringToggles.vue`. Label text and the horizontal/vertical fit
+  decision live in `src/lib/keyboard-help.js`.
 
 ## Persistence and backend
 

@@ -56,11 +56,34 @@ onUnmounted(() => {
         </label>
       </div>
     </div>
+    <div class="two column centered row">
+      <div class="center aligned column">
+        <label class="checkboxLabel"
+          title="Show the meaning of the black keys and the chord/scale mappings of the white keys on the main keyboard.">
+          Key labels
+          <select v-model="globals.keyboardHelpMode" class="key-labels-select">
+            <option value="off">Off</option>
+            <option value="black">Black keys</option>
+            <option value="white">White keys</option>
+            <option value="all">Black + white</option>
+          </select>
+        </label>
+      </div>
+    </div>
   </div>
 
 </template>
 
 <style scoped>
+.key-labels-select {
+  margin-left: 0.4rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid #999;
+  background: #fff;
+  color: #333;
+}
+
 .ui.column.OFFLINE {
   border-width: 2px;
   border-color: green;
