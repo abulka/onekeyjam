@@ -255,13 +255,16 @@ used as modifiers. The `C#` acts as a SHIFT, so:
 
 ### Config customisations supported
 
-#### Scale filtering off
+#### Scale filtering off/on
 
-MIDI note used to turn off/on rh. scale mapping.
+Two left-hand black keys control rh. scale mapping:
+
+- `D#` turns scale mapping off, so white and black notes play their true
+  meanings.
+- `F#` turns scale mapping back on.
 
 To get out of the scale mapping and be able to play the true meanings of the
-white and black notes, hit this MIDI key. Hitting it again will go back to scale
-filtering.
+white and black notes, hit `D#`. Hit `F#` to go back to scale filtering.
 
 ##### Discussion
 

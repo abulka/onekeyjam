@@ -90,8 +90,8 @@ and the validation commands.
   is on, the played note is translated through `scaleTriggerMap` to an allowed
   note; otherwise it is echoed through. Pending note-offs are tracked in
   `globals.pendingNoteOffs` so the correct note can be stopped later.
-- Left-hand black keys act as modifiers: `C#` is a shift key, and `D#`, `F#`,
-  `G#` and `A#` toggle scale filtering, switch scales or transpose the chords.
+- Left-hand black keys act as modifiers: `C#` is a shift key, `D#` turns scale
+  filtering off and `F#` turns it on, while `G#` and `A#` transpose the chords.
   Right-hand black keys switch scale and transpose as well. See `onNoteOn()` in
   `src/lib/midi/wire-events.js`.
 - MIDI output goes to three channels of the IAC Driver: channel 1 for jam
