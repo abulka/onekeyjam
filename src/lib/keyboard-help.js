@@ -15,8 +15,8 @@ const LEFT_HAND_HELP = {
     'C#': 'SHIFT',
     'D#': 'Scale filter OFF',
     'F#': 'Scale filter ON',
-    'G#': 'Trans-pose chords UP',
-    'A#': 'Trans-pose chords DOWN',
+    'G#': 'Trans-pose chords DOWN',
+    'A#': 'Trans-pose chords UP',
 }
 
 const LEFT_HAND_SHIFT_HELP = {

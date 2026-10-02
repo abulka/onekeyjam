@@ -41,7 +41,8 @@ export function keyDownListener(e) {
       document.broadcastEvent("chord-add", {})  // get params from globals area later
     }
   
-    // Transposition etc. shortcuts ctrl+1, ctrl+2 etc. with and without shift
+    // Transposition etc. shortcuts ctrl+1, ctrl+2 etc. with and without shift.
+    // Match the physical key with e.code, because e.key changes to !/@/#/% when shift is held.
     // Ctrl-1 = bypass all filtering toggle (see src/components/ScaleFilteringToggles.vue)
     // Ctrl-2 = transpose up and down a semitone
     // Ctrl-3 = chord inversion
@@ -51,28 +52,28 @@ export function keyDownListener(e) {
     const normal = () => e.ctrlKey && !e.shiftKey
     const shifted = () => e.ctrlKey && e.shiftKey
   
-    if (e.key === "2" && normal()) {
+    if (e.code === "Digit2" && normal()) {
       document.broadcastEvent("chord-transpose", { direction: 1 })
     }
-    if (e.key === "@" && shifted()) {  // weird, the other don't convert to ! or # but 2 does convert to @
+    if (e.code === "Digit2" && shifted()) {
       document.broadcastEvent("chord-transpose", { direction: -1 })
     }
   
-    if (e.key === "3" && normal()) {
+    if (e.code === "Digit3" && normal()) {
       document.broadcastEvent("chord-invert", { direction: 1 })
     }
-    if (e.key === "3" && shifted()) {
+    if (e.code === "Digit3" && shifted()) {
       document.broadcastEvent("chord-invert", { direction: -1 })
     }
   
-    if (e.key === "5" && normal()) {
+    if (e.code === "Digit5" && normal()) {
       document.broadcastEvent("chord-fifths", { direction: 1 })
     }
-    if (e.key === "5" && shifted()) {
+    if (e.code === "Digit5" && shifted()) {
       document.broadcastEvent("chord-fifths", { direction: -1 })
     }
   
-    // if (e.key === "4" && normal()) {
+    // if (e.code === "Digit4" && normal()) {
     //   console.log('4')
     //   document.broadcastEvent("bypass-all-filtering", { state: true })
     // }

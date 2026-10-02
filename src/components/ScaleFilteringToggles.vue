@@ -16,10 +16,10 @@ function keyUpListener(e) {
   const normal = () => e.ctrlKey && !e.shiftKey
   const shifted = () => e.ctrlKey && e.shiftKey
 
-  if (e.key === "1" && normal()) {
+  if (e.code === "Digit1" && normal()) {
     globals.bypass = true  // if want to toggle instead use !globals.bypass
   }
-  if (e.key === "1" && shifted()) {
+  if (e.code === "Digit1" && shifted()) {
     globals.bypass = false
   }
 }

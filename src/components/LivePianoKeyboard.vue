@@ -1,11 +1,11 @@
 <script setup>
-import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
+import { computed, nextTick, ref, onMounted, onUnmounted, watch } from 'vue'
 import { globals } from '../lib/globals.js'
 import { store } from '../lib/globals.js'
 import { Note } from '@/lib/midi/webmidi.js'
 import { indexToNote } from "../lib/note-tools.js"
 import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events"
+import { getNoteKeyForCode } from "@/lib/midi/piano-key-map.js"
 import KeyboardHelpOverlay from "./KeyboardHelpOverlay.vue"
 
 // window.matchMedia('(min-width: 700px)')
@@ -15,26 +15,31 @@ const isLargeScreen = computed({
 
 const NONOTE = ' '
 let lhCsharpStuckDown = false
-let isLhCsharp = (keyboardIndex) => indexToNote(keyboardIndex, globals.keyboard.lhTriggerOctave) === globals.lhMetaKeys.lhCsharp
+const isLhCsharp = (keyboardIndex) => indexToNote(keyboardIndex, globals.keyboard.lhTriggerOctave) === globals.lhMetaKeys.lhCsharp
 
 const pianoKeyboard = ref(null)
+// Physical keys currently held down, so we can stop the note we started.
+const keysDown = new Map()
 
 function buildRawPianoNoteInfo(note, on, noteNumber, showNoteNumber = true) {
   // sets globals.currentRawLiveNote
   // noteNumber is the piano key index startying with 0 as the first note of the visual keyuboard
   const noteNumberMsg = showNoteNumber ? ` (i=${noteNumber})` : ''
   globals.currentRawLiveNote = on ? `${note}${noteNumberMsg}` : NONOTE
-
 }
 
-function onChange(e) {
-  if (e.note[0]) {
-    const note = indexToNote(e.note[1], globals.keyboard.lhTriggerOctave)
-    const noteNumber = e.note[1]
-    // console.log("Note-On:" + e.note[1], note);
-    buildRawPianoNoteInfo(note, true, noteNumber, false)
+/**
+ * Handle a note on/off for a visual keyboard index. Shared by the widget's
+ * mouse/touch "change" events and our own computer-keyboard handling.
+ * @param {boolean} state true for note on
+ * @param {number} keyboardIndex visual key index, 0 is the first key of the keyboard
+ */
+function handleNote(state, keyboardIndex) {
+  const note = indexToNote(keyboardIndex, globals.keyboard.lhTriggerOctave)
 
-    if (isLhCsharp(e.note[1])) lhCsharpStuckDown = !lhCsharpStuckDown
+  if (state) {
+    buildRawPianoNoteInfo(note, true, keyboardIndex, false)
+    if (isLhCsharp(keyboardIndex)) lhCsharpStuckDown = !lhCsharpStuckDown
     let simulatedEvent = {
       // Note is WebMidi's Note (imported from @/lib/webmidi.js), not Tonal's
       note: new Note(note, { attack: 0.5 })
@@ -43,12 +48,10 @@ function onChange(e) {
     store.inc()   // just for fun
   }
   else {
-    const note = indexToNote(e.note[1], globals.keyboard.lhTriggerOctave)
-    // console.log("Note-Off:" + e.note[1], note);
     globals.currentRawLiveNote = NONOTE
-    if (isLhCsharp(e.note[1]) && lhCsharpStuckDown) {
+    if (isLhCsharp(keyboardIndex) && lhCsharpStuckDown) {
       // Avoid the normal note-off event for lhCsharp meta black key
-      pianoKeyboard.value.setNote(true, e.note[1])  // quickly turn visual keyboard back on
+      pianoKeyboard.value?.setNote(true, keyboardIndex)  // quickly turn visual keyboard back on
       return
     }
     let simulatedEvent = {
@@ -56,6 +59,32 @@ function onChange(e) {
     }
     onNoteOff(simulatedEvent)
   }
+}
+
+// Mouse/touch and other events emitted by the widget
+function onChange(e) {
+  handleNote(!!e.note[0], e.note[1])
+}
+
+// Computer keyboard, handled by us rather than the widget (see piano-key-map.js)
+function onKeyDown(e) {
+  if (e.repeat || e.ctrlKey || e.metaKey || e.altKey)
+    return
+  const key = getNoteKeyForCode(e.code)
+  if (!key || keysDown.has(e.code))
+    return
+  keysDown.set(e.code, key.offset)
+  pianoKeyboard.value?.setNote(true, key.offset)
+  handleNote(true, key.offset)
+}
+
+function onKeyUp(e) {
+  if (!keysDown.has(e.code))
+    return
+  const offset = keysDown.get(e.code)
+  keysDown.delete(e.code)
+  pianoKeyboard.value?.setNote(false, offset)
+  handleNote(false, offset)
 }
 
 function onLiveNote(event) {
@@ -71,13 +100,44 @@ function onLiveNote(event) {
   buildRawPianoNoteInfo(note, event.detail.state, noteNumber, false)
 }
 
+let attachedEl = null
+
+function detachKeyboard() {
+  if (!attachedEl)
+    return
+  attachedEl.removeEventListener('change', onChange)
+  attachedEl.removeEventListener('keydown', onKeyDown)
+  attachedEl.removeEventListener('keyup', onKeyUp)
+  attachedEl = null
+}
+
+async function attachKeyboard() {
+  await nextTick()
+  detachKeyboard()
+  const el = pianoKeyboard.value
+  if (!el)
+    return
+
+  // Take over keyboard input: clear the widget's hard-wired key map so it does
+  // not play notes itself. Mouse/touch and drawing are unaffected.
+  el.keycodes1 = []
+  el.keycodes2 = []
+
+  el.addEventListener('change', onChange)
+  el.addEventListener('keydown', onKeyDown)
+  el.addEventListener('keyup', onKeyUp)
+  attachedEl = el
+}
+
+watch(pianoKeyboard, attachKeyboard)
+
 onMounted(() => {
-  pianoKeyboard.value.addEventListener('change', onChange);
+  attachKeyboard()
   document.addEventListener("live-note", onLiveNote)
 })
 
 onUnmounted(() => {
-  // No need to removeEventListener from pianoKeyboard.value since this ref is null by now
+  detachKeyboard()
   document.removeEventListener("live-note", onLiveNote)
 })
 

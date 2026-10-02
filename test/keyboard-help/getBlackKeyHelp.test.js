@@ -8,8 +8,8 @@ describe('getBlackKeyHelp', () => {
         assert.equal(getBlackKeyHelp('C#', 3, options), 'SHIFT')
         assert.equal(getBlackKeyHelp('D#', 3, options), 'Scale filter OFF')
         assert.equal(getBlackKeyHelp('F#', 3, options), 'Scale filter ON')
-        assert.equal(getBlackKeyHelp('G#', 3, options), 'Trans-pose chords UP')
-        assert.equal(getBlackKeyHelp('A#', 3, options), 'Trans-pose chords DOWN')
+        assert.equal(getBlackKeyHelp('G#', 3, options), 'Trans-pose chords DOWN')
+        assert.equal(getBlackKeyHelp('A#', 3, options), 'Trans-pose chords UP')
     })
 
     it('left hand shift variants', () => {

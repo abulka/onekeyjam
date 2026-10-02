@@ -100,12 +100,17 @@ and the validation commands.
   package (`src/lib/audio/general-midi.js`).
 - The on-screen keyboard is the `webaudio-keyboard` custom element from g200kg
   webaudio-controls, self-hosted from `public/vendor/`. Alongside mouse and
-  touch it maps computer keys to notes (the QWERTY rows), so it
-  can be played without an external MIDI keyboard. It emits the same `change`
-  events that `LivePianoKeyboard.vue` handles in `onChange()`, which means
-  computer-keyboard notes flow through `onNoteOn()` and `onNoteOff()` in
-  `src/lib/midi/wire-events.js` exactly like mouse or MIDI notes. It only responds
-  while the keyboard canvas has focus, so the user must click it first.
+  touch it can map computer keys to notes (the QWERTY rows), so it
+  can be played without an external MIDI keyboard. OneKeyJam takes over that
+  keyboard input in `LivePianoKeyboard.vue`: it clears the widget's hard-wired
+  key codes (`keycodes1`/`keycodes2`) and handles the keys itself using the
+  table in `src/lib/midi/piano-key-map.js`. This keeps the shortcuts under our
+  control (for example Ctrl+digit does not also sound a note) and lets the
+  keyboard shortcut list in `KeyboardNoteMeaningsLegend.vue` be generated from
+  the same table. Both mouse/touch and computer keys flow through the same
+  `handleNote()` and then `onNoteOn()`/`onNoteOff()` in
+  `src/lib/midi/wire-events.js`. The keyboard only responds while its canvas has
+  focus, so the user must click it first.
 - The separate `src/components/PianoKeyboard.vue` component (reachable only from
   the research view) is an older experiment. It highlights keys when computer
   keys are pressed but does not emit events, so it does not produce sound.
