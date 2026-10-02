@@ -21,7 +21,7 @@ export function chordSymbolToScaleName(chordSymbol, variation = 1) {
 
 function convertToChordObj(chordSymbol) {
     // Get rid of confusing '/' in the symbol as it break the recognition
-    let [symbol, bass] = removeBassSlash(chordSymbol);
+    let [symbol, _bass] = removeBassSlash(chordSymbol);
 
     let chordObj = Chord.get(symbol); // analyse the chord symbol properly
     if (chordObj.empty)

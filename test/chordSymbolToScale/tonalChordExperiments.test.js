@@ -6,7 +6,7 @@ describe('tonal experiments', () => {
 
     it('ok not a tonaljs bug, Cm/ma7 is different to Cm', () => {
         // tonal says quality is 'Minor', type is 'minor' or 'minor/major seventh'
-        const chord = 'Cm/ma7'
+        const _chord = 'Cm/ma7'
         const chordObj1 = Tonal.Chord.get('Cm');
         const chordObj2 = Tonal.Chord.get('Cm/ma7');
         assert.equal(chordObj1.quality, chordObj2.quality)

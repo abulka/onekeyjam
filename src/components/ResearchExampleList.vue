@@ -12,7 +12,7 @@ const list = ref([1, 2, 3])
   <button @click="list.reverse()">Reverse List</button>
 
   <ul v-if="show && list.length">
-    <li v-for="item of list">{{ item }}</li>
+    <li v-for="item of list" :key="item">{{ item }}</li>
   </ul>
   <p v-else-if="list.length">List is not empty, but hidden.</p>
   <p v-else>List is empty.</p>

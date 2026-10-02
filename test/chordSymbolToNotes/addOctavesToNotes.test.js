@@ -1,6 +1,5 @@
 import assert from 'assert';
-import * as Tonal from "@tonaljs/tonal";
-import { addOctavesToNotes, isInNextOctave } from "../../src/lib/note-tools.js";
+import { isInNextOctave } from "../../src/lib/note-tools.js";
 
 describe('isInNextOctave', () => {
 

@@ -15,11 +15,11 @@ import { arraysAreEqual } from "../../src/lib/array-tools"
  */
 export function detectChordsBeingPlayed(notes) {
     if (notes != undefined) {
-        lastNotes = currentNotes = notes
+        lastNotes = notes
         analyseNotes(notes)
     }
     else {
-        lastNotes = currentNotes = currentNotesDown()
+        lastNotes = currentNotesDown()
         setTimeout(function () { analyseNotes(); }, 100);
     }
 }
@@ -28,7 +28,6 @@ export function detectChordsBeingPlayed(notes) {
 // Private
 
 
-let currentNotes = []
 let lastNotes = []
 let lastNotesAnalysed = []
 
@@ -99,5 +98,4 @@ function clearDetection() {
     globals.clearCurrentChordBeingJammed()
     lastNotesAnalysed = []
     lastNotes = []
-    currentNotes = []
 }

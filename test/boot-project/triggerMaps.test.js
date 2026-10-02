@@ -1,10 +1,8 @@
 // @ts-check
 
 import assert from 'assert';
-import * as Tonal from "@tonaljs/tonal";
 import { candidatesToTriggerMapDumbDeprecated } from "../../src/lib/triggerMaps"
 import { candidatesToTriggerMapSmart } from "../../src/lib/triggerMaps"
-import { maxChordConfigs } from '../../src/lib/globals-config';
 import { createDefaultMetaProjectConfig } from '../../src/lib/projectConfig';
 
 /** @typedef {import("../../src/lib/typedefs").ChordConfig} ChordConfig */
@@ -99,7 +97,7 @@ describe('trigger maps - smart', () => {
         const song = project.songs['default']
         const allocateFavourites = true
         const sortIds = false
-        let {chordTriggerMap, ids, statistics} = candidatesToTriggerMapSmart(chordConfigs, maxChordConfigs, song, allocateFavourites, sortIds)
+        let {chordTriggerMap, ids} = candidatesToTriggerMapSmart(chordConfigs, maxChordConfigs, song, allocateFavourites, sortIds)
         // console.log('triggerMap', chordTriggerMap)
 
         assert.equal(Object.keys(chordTriggerMap).length, 2);

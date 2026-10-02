@@ -88,7 +88,7 @@ onUnmounted(() => {
 
 })
 
-function firstTriggerNoteForScales(obj) {
+function firstTriggerNoteForScales(_obj) {
   for (var a in globals.scaleTriggerMap) return a; // gets first property
 }
 

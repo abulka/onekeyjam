@@ -21,7 +21,7 @@ export function dragover(event) {
     }
 }
 
-export function dragend(event) {
+export function dragend(_event) {
     let ids = _getIdsOfVisibleTable();
     reAllocateChordsPreserveCurrentChordConfig(ids)
 }

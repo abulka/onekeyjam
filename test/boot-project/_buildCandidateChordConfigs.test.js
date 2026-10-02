@@ -1,7 +1,6 @@
 // @ts-check
 
 import assert from 'assert';
-import * as Tonal from "@tonaljs/tonal";
 import { _buildCandidateChordConfigs } from "../../src/lib/build-project"
 
 /** @typedef {import("../../src/lib/typedefs").ChordConfig} ChordConfig */

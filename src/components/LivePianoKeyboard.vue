@@ -35,8 +35,7 @@ function onChange(e) {
 
     if (isLhCsharp(e.note[1])) lhCsharpStuckDown = !lhCsharpStuckDown
     let simulatedEvent = {
-      // The Note object is from webmidi which is included globally via index.html - this is not the Tonal Note object
-      // eslint-disable-next-line no-undef
+      // Note is WebMidi's Note (imported from @/lib/webmidi.js), not Tonal's
       note: new Note(note, { attack: 0.5 })
     }
     onNoteOn(simulatedEvent)
@@ -52,7 +51,6 @@ function onChange(e) {
       return
     }
     let simulatedEvent = {
-      // eslint-disable-next-line no-undef
       note: new Note(note, { attack: 0.5 })
     }
     onNoteOff(simulatedEvent)

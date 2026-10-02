@@ -84,12 +84,12 @@ function isNotesOfChord() {
     </div>
     <div class="inline-block" v-else>
         <select v-model="selectedScaleTonic">
-            <option v-for="option in tonicOptions" v-bind:value="option.value">
+            <option v-for="option in tonicOptions" :key="option.value" v-bind:value="option.value">
                 {{ option.text }}
             </option>
         </select>
         <select v-model="selectedScale">
-            <option v-for="option in scaleOptions" v-bind:value="option.value">
+            <option v-for="option in scaleOptions" :key="option.value" v-bind:value="option.value">
                 {{ option.text }}
             </option>
         </select>

@@ -22,7 +22,7 @@ describe('Tonal scale parsing', () => {
     });
 
     it('Tonal Scale scaleChords', () => {
-        const result = Tonal.Scale.scaleChords('major')
+        const _result = Tonal.Scale.scaleChords('major')
         // console.log('result', result)
     });
 
@@ -47,7 +47,7 @@ describe('Tonal scale parsing', () => {
         // chroma - https://github.com/tonaljs/tonal/issues/284
         // console.log(Tonal.Pcset.chroma(['D', 'E', 'F#', 'G', 'A', 'B', 'C#']));
 
-        function notesToScales(notes) {  // Experimental
+        function _notesToScales(notes) {  // Experimental
             const chroma = Tonal.Pcset.chroma(notes)
             // const result = Tonal.Dictionary.scale.names(chroma)// DOESN'T EXIST
 
@@ -56,11 +56,6 @@ describe('Tonal scale parsing', () => {
             // .map(scaleType => scaleType.name);
             return scales
         }
-
-        let result = notesToScales(['C', 'Eb', 'G', 'A#', 'C##', 'E#', 'F', 'Ab', 'C'])  // minor?
-        result = notesToScales(['C', 'D', 'E', 'F', 'G', 'A', 'B'])  // major
-        result = notesToScales(['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'])  // minor
-        result = notesToScales(['C', 'D', 'E'])  // not enough notes for a result
 
         // Basically this is not supported. You can get some sort of result with the above chroma
         // technique but it's not very useful.  Looks like you have to supply all the notes of the scale?

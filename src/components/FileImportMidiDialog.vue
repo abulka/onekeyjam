@@ -17,7 +17,7 @@ async function okParse(event) {
     // reader.readAsText(event.target.files[0])  // use the 1st file from the list
     reader.readAsArrayBuffer(event.target.files[0])  // read the data in binary format ArrayBuffer
 
-    reader.onload = function (e) {  // reader.result or e.target.result
+    reader.onload = function (_e) {  // reader.result or e.target.result
         let midi = parseMidiFile(reader.result)  // you can JSON.stringify(midi, undefined, 2) to see the structure
         // console.log(JSON.stringify(midi, undefined, 2))
 
@@ -32,7 +32,7 @@ async function okParse(event) {
     closer()
 }
 
-const importMidiUnrecognisedChords = ref(false)
+const _importMidiUnrecognisedChords = ref(false)
 const modalEl = ref()
 const fileInputEl = ref()
 

@@ -85,7 +85,7 @@ export function parseMidiFile(buffer) {
     return midi
 }
 
-export async function parseMidiUrl(url) {
+export async function parseMidiUrl(_url) {
     // load a midi file in the browser
 
     // const midi = await Midi.fromUrl(`${http}${localHost}:8080/midi-files/simple1.mid`)
@@ -117,7 +117,7 @@ export function detectChords(midi) {
     timeAnalysis = {}
 
     //the file name decoded from the first track
-    const name = midi.name
+    const _name = midi.name
 
     //tracks have notes and controlChanges, channel and instrument e.g. track.instrument.name
     midi.tracks.forEach(track => {

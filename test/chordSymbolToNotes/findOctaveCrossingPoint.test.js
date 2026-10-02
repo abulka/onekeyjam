@@ -1,5 +1,4 @@
 import assert from 'assert';
-import * as Tonal from "@tonaljs/tonal";
 import { findOctaveCrossingPoint } from "../../src/lib/note-tools.js";
 
 describe('findOctaveCrossingPoint', () => {

@@ -10,7 +10,7 @@ const wrapIndex = (index) => index < 12 ? index : index - 12  // just a helper f
 
 const chordNotes = []  // intervals of the notes of all the chords we are processing e.g. 0 is C
 let chordNoteWeights = {}  // how many times a chord note appears in any of the chords that were fed in
-const addChordNote = note => chordNotes.push(Tonal.Note.get(note).chroma)  // add the chroma of the note (interval from C) to the chordNotes array
+const _addChordNote = note => chordNotes.push(Tonal.Note.get(note).chroma)  // add the chroma of the note (interval from C) to the chordNotes array
 
 const intervalToNote = interval => Tonal.Note.transpose("C", Tonal.Interval.fromSemitones(interval))  // convert an interval to a note e.g. 0 -> 'C'
 const intervalsAsNotes = (intervals) => intervals.map(interval => intervalToNote(interval))

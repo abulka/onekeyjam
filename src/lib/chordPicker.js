@@ -91,8 +91,7 @@ export function setChordFromSymbol(chordSymbol) {
 }
 
 export function chordPickerToJammed() {
-    let [symbol, bass] = removeBassSlash(`${globals.chordPicker.currentRoot}${globals.chordPicker.currentChord}`)
-    bass = bass ? bass : globals.chordPicker.currentBass
+    const [symbol] = removeBassSlash(`${globals.chordPicker.currentRoot}${globals.chordPicker.currentChord}`)
 
     globals.currentChordBeingJammed.chordNotes = chordSymbolToNotesInversion(symbol, globals.chordPicker.currentChordInversion)
     globals.currentChordBeingJammed.bass = globals.chordPicker.currentBass

@@ -331,7 +331,7 @@ function calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy = 'top 3') 
 // ├┴┐├┬┘│ │├─┤ │││  ├─┤└─┐ │ 
 // └─┘┴└─└─┘┴ ┴─┴┘└─┘┴ ┴└─┘ ┴ 
 
-function reportScaleChange(msg) {
+function reportScaleChange(_msg) {
     // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
     document.broadcastEvent('scale-changed', { notes: globals.currentScaleNotes })
 

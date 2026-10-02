@@ -106,7 +106,7 @@ describe('key detection from chords - idea2', () => {
     // tonal conversion
 
     it('misc', () => {
-        const allnotes = [
+        const _allnotes = [
             "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B"
         ]
 
@@ -129,8 +129,8 @@ describe('key detection from chords - idea2', () => {
 
         assert.equal(Tonal.Note.get('Eb').chroma, Tonal.Note.get('D#').chroma)
 
-        const interval1 = Tonal.Interval.distance('C', Tonal.Note.get('Eb').name)
-        const interval2 = Tonal.Interval.distance('C', Tonal.Note.get('D#').name)
+        const _interval1 = Tonal.Interval.distance('C', Tonal.Note.get('Eb').name)
+        const _interval2 = Tonal.Interval.distance('C', Tonal.Note.get('D#').name)
         // console.log('interval1', interval1, Tonal.Interval.get(interval1))
         // console.log('interval2', interval2, Tonal.Interval.get(interval2))
 

@@ -10,7 +10,7 @@ Tests for "Novation 61SL MkII Port 1" keyboard config
 
 describe('novation buildNoteMap - One octave', () => {
 
-    const rhNotesScale = ['C', 'D', 'E', 'F', 'G', 'A']
+    const _rhNotesScale = ['C', 'D', 'E', 'F', 'G', 'A']
     const lhTriggerOctave = 2
     const rhJamSoundOctave = 4  
     const numLhTriggers = 7
@@ -31,7 +31,7 @@ describe('novation buildNoteMap - One octave', () => {
 
 describe('novation buildNoteMap - Two octaves', () => {
 
-    const rhNotesScale = ['C', 'D', 'E', 'F', 'G', 'A']
+    const _rhNotesScale = ['C', 'D', 'E', 'F', 'G', 'A']
     const lhTriggerOctave = 2
     const rhJamSoundOctave = 3    
     const numLhTriggers = 14
@@ -51,7 +51,7 @@ describe('novation buildNoteMap - Two octaves', () => {
 
 describe('novation buildNoteMap - Three octaves', () => {
 
-    const rhNotesScale = ['C', 'D', 'E', 'F', 'G', 'A']
+    const _rhNotesScale = ['C', 'D', 'E', 'F', 'G', 'A']
     const lhTriggerOctave = 2
     const rhJamSoundOctave = 4 
     const numLhTriggers = 21

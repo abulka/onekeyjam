@@ -17,17 +17,14 @@ const debug = {
     tonal_chord_detect: false,
 }
 
-export function detectChordAndScalesFromChordNotes(chordConfig, chordNotes, bassNote, name) {
+export function detectChordAndScalesFromChordNotes(chordConfig, chordNotes, _bassNote, name) {
     // Fills in the chord config with the detected chord, symbols and scale info from the chordNotes
     // Avoids filling in `.name`, `.bass` or `.scale{1,2,3}` if they are already set.
     // returns true if succeeded the detection
 
-    // Take into account the bass note when doing the detection, though sometimes this is not a
-    // good thing to do.  Surface this as a granular option in the UI one day - but for now
-    // we'll just ignore the bass note.
+    // The bass note is currently ignored during detection. Surface this as a
+    // granular UI option one day (TODO), but for now just detect from chordNotes.
     let _chordNotes = chordNotes.slice()
-    if (bassNote && false)  // TODO: make this a granular UI option instead of always false.
-        _chordNotes.unshift(bassNote)
 
     /** @type {Array<string>} */
     const detectedChordSymbols = Tonal.Chord.detect(_chordNotes)  // e.g. ['Am#5', 'FM/A'] 

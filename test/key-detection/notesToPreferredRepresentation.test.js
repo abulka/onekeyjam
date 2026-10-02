@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import assert from 'assert';
-import * as Tonal from '@tonaljs/tonal';
 import { notesToPreferredRepresentation } from '../../src/lib/note-tools';
 
 describe('notesToPreferredRepresentation', () => {

@@ -11,10 +11,12 @@ function isPlayingNow(note) {
 </script>
 
 <template>
-    <span v-if="globals.scaleFilteringEnabled && globals.currentScaleNotes && globals.currentScaleNotes.length > 0"
-        v-for="note in globals.currentScaleNotes" class="ui large text pr-2" :class="{ 'blue': isPlayingNow(note) }">
-        <code> {{ note }} </code>
-    </span>
+    <template v-if="globals.scaleFilteringEnabled && globals.currentScaleNotes && globals.currentScaleNotes.length > 0">
+        <span v-for="note in globals.currentScaleNotes" :key="note" class="ui large text pr-2"
+            :class="{ 'blue': isPlayingNow(note) }">
+            <code> {{ note }} </code>
+        </span>
+    </template>
     <span v-else class="ui large text pr-2"><code></code></span>
 
 </template>

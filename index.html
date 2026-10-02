@@ -7,8 +7,19 @@
     <title>OneKeyJam</title>
 
 
-    <!-- jQuery and Fomantic UI are bundled from npm in src/vendor/index.js
-    (previously loaded here from CDN). -->
+    <!-- jQuery + Fomantic UI, pinned to exact versions with SRI integrity.
+    jQuery must load before Fomantic. To bump a version, update both the URL and
+    its integrity hash (openssl dgst -sha384 -binary <file> | openssl base64 -A). -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"
+            integrity="sha384-1H217gwSVyLSIfaLxHbE7dRb3v4mYCKbpQvzx0cegeju1MVsGrX5xXxAvs/HgeFs"
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.4/dist/semantic.min.css"
+          integrity="sha384-b5SW2bA5CBv/WeySOaDac2n4fnB+yd1vfmnWhES5vUjF4ZGsxsNt6sUsq75J1gOa"
+          crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.4/dist/semantic.min.js"
+            integrity="sha384-7q6zpNgldX13QoAOADSjVDfLYLoyGIFtXsqNEH+GbudZMHYj4WkexEnJsuNh/0Ph"
+            crossorigin="anonymous"></script>
 
     <!-- Web MIDI API is imported from the npm package in src/lib/midi/webmidi.js
     (no longer loaded here as a CDN global). -->

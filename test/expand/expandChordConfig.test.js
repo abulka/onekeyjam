@@ -1,5 +1,4 @@
 import assert from 'assert';
-import * as Tonal from "@tonaljs/tonal";
 import { expandChordConfig } from "../../src/lib/expandChordConfig"
 import { fillInChordConfig } from '../../src/lib/fillInChordConfig';
 

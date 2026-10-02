@@ -1,10 +1,8 @@
 import assert from 'assert';
-import * as Tonal from "@tonaljs/tonal";
 import { findTop3MatchingScales } from '../../src/lib/findMatchingScales'
 
 describe('findTop3MatchingScales', () => {
 
-    const chordSymbols = 'CM,Em#5/C';
     const detectedChordSymbols = ['CM', 'Em#5/C']
 
     it('original clever', () => {

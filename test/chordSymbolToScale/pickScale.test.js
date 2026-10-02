@@ -1,5 +1,4 @@
 import assert from 'assert';
-import * as Tonal from "@tonaljs/tonal";
 import { chordSymbolToScaleName } from '../../src/lib/chord-to-scale.js';
 
 describe('chordSymbolToScaleName', () => {

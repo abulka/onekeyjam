@@ -84,7 +84,7 @@ export function candidatesToTriggerMapSmart(chordConfigs, maxChordConfigs, song,
     const chordTriggerMap = {}
     const statistics = {}
     let nextTriggerNoteIndex = 0;
-    let nextTriggerNote;
+    let _nextTriggerNote;
     // console.log('candidatesToTriggerMapSmart', chordConfigs.length, 'maxChordConfigs', maxChordConfigs) // TODO maxChordConfigs debugging 3
     maxChordConfigs = Math.min(maxChordConfigs, chordConfigs.length)
 

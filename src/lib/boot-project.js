@@ -42,7 +42,12 @@ function emptyProject() {  // TODO move this into globals and integrate with glo
 }
 
 export async function bootProject() {
-    // called by initial boot in main.js
+    // Called by the initial boot in src/lib/main.js. This only seeds the empty
+    // project into globals; the orchestrator then calls regen(), keyDetection(),
+    // initChordPlayEvents() and linkProjectToKeyboard() (see src/lib/main.js).
+    // Subsequent project loads go through projectChores() instead, which reruns
+    // regen(), keyDetection() and linkProjectToKeyboard() but not the one-time
+    // initChordPlayEvents().
 
     projectChores2name(
         emptyProject(),     // project data object
@@ -50,13 +55,6 @@ export async function bootProject() {
         undefined,          // currentChordTriggerNote
         'user'                  // userOrFeatured
     )
-
-    // main.js then calls 
-    // regen()
-    // keyDetection()  ** NEW
-    // wireChordPlayEvents()   ** NEW // one time only, no need to wire again
-
-    // linkProjectToKeyboard()  // done every time a new project is loaded
 }
 
 async function setProject(url, project, currentChordTriggerNote) {

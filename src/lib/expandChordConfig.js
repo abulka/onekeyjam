@@ -1,6 +1,6 @@
 // @ts-check
 import * as Tonal from "@tonaljs/tonal";
-import { bassNoteOctave, chordOctave } from './settings.js';  // if running via node, need '../../src/lib/settings.js' or './settings.js' 
+import { bassNoteOctave } from './settings.js';  // if running via node, need '../../src/lib/settings.js' or './settings.js' 
 import { removeBassSlash } from "./removeBassSlash.js";
 import { getRandomArbitary } from './util.js';
 import { chordSymbolToNotes } from './chordSymbolToNotes';
@@ -46,7 +46,7 @@ export function expandChordConfig(config) {
     if (!config.chord) {
         if (!config.chordNotes)
             throw new Error('chord or chordNotes is required')
-        const success = detectChordAndScalesFromChordNotes(config, config.chordNotes, config.bassNote, config.name)
+        const _success = detectChordAndScalesFromChordNotes(config, config.chordNotes, config.bassNote, config.name)
     }
 
     // Fill in chordNotes if not supplied (chordNotes take precedence over the chord name)

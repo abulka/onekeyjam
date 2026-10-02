@@ -132,7 +132,7 @@ function rebuildRadioSymbols(currentChordBeingJammed, chordPickerChordName) {
 
 }
 
-document.addEventListener('chord-add', (e) => {
+document.addEventListener('chord-add', (_e) => {
   chordAction('add', radioPicked.value)
 })
 

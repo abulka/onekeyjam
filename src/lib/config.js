@@ -65,7 +65,7 @@ export let CM9Chord = [
     'B3',
 ]
 
-let BmAdd11Chord = [  // not a Bm11 chord, its just a Bm with an added 11 which is the E
+let _BmAdd11Chord = [  // not a Bm11 chord, its just a Bm with an added 11 which is the E
     'B2',
     'B3',
     'D4',
@@ -86,7 +86,7 @@ export let BmAdd11ChordInversion1 = [  // not a Bm11 chord, its just a Bm with a
 
 // CHORDS
 
-let Dm7b5Chord = [  // Dø7
+let _Dm7b5Chord = [  // Dø7
     'D3',
     'F3',
     'Ab3',
@@ -99,7 +99,7 @@ export let Dm7b5ChordNicerVoicing = [  // https://www.youtube.com/watch?v=x9LNj2
     'D4',
 ]
 
-let G7b9Chord = [ // possibly G7alt though A# Eb involved with alt?
+let _G7b9Chord = [ // possibly G7alt though A# Eb involved with alt?
     'G2',
     // 'Ab2',  // optional, a bit weird
     'B2',
@@ -114,7 +114,7 @@ let G7b9ChordNicerVoicing = [
 ]
 export let G7alt = G7b9ChordNicerVoicing
 
-let CmMaj7Chord = [
+let _CmMaj7Chord = [
     'C3',
     'Eb3',
     'G3',

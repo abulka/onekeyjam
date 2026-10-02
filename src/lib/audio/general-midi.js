@@ -11,7 +11,7 @@ export function bootGeneralMidi() {
     soundfont.bootGeneralMidi(audioContext)
 
     // Registered explicitly during boot rather than as an import side effect.
-    document.addEventListener("authorise-gm-cmd", function (event) {
+    document.addEventListener("authorise-gm-cmd", function (_event) {
         soundfont.ping(audioContext)
     })
 }

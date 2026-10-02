@@ -119,15 +119,15 @@ onUnmounted(() => {
 
 // COMPUTED
 
-const scale = computed(() => {
+const _scale = computed(() => {
     return props.noteConfig.scale;
 })
 
-const lang = computed(() => {
+const _lang = computed(() => {
     return props.noteConfig.lang;
 })
 
-const middleOctave = computed(() => {
+const _middleOctave = computed(() => {
     return props.noteConfig.middleOctave;
 })
 

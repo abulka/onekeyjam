@@ -8,12 +8,13 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
 
 ## Top level pieces
 
-- `index.html` declares the app root and loads the two g200kg custom-element
-  libraries (`webaudio-controls` and `webaudio-pianoroll`) from the self-hosted
-  copies in `public/vendor/`. jQuery and Fomantic UI are bundled from npm by
-  `src/vendor/index.js`. It then boots the app with `/src/main.js`.
-- `src/main.js` creates the Vue app, waits for the Fomantic plugins to register,
-  installs the router and mounts it on `#app`.
+- `index.html` declares the app root, loads jQuery and Fomantic UI from pinned
+  jsDelivr CDN tags with SRI integrity, and loads the two g200kg
+  custom-element libraries (`webaudio-controls` and `webaudio-pianoroll`) from
+  the self-hosted copies in `public/vendor/`. It then boots the app with
+  `/src/main.js`.
+- `src/main.js` creates the Vue app, installs the router and mounts it on
+  `#app`.
 - `src/App.vue` renders the top menu. Its `onMounted()` hook calls
   `mainOneKeyJam()` from `src/lib/main.js`, which starts the one-time MIDI and
   project boot.
@@ -26,8 +27,6 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
   audio plumbing. This is the largest part of the codebase. The hardware MIDI
   runtime is grouped in `src/lib/midi/` and the in-browser sound in
   `src/lib/audio/`; the rest sits flat in `src/lib/`.
-- `src/vendor/index.js` loads jQuery and Fomantic UI from npm and exposes
-  `$`/`jQuery` as globals.
 - `bin/generate-manifests.mjs` scans `public/projects` and `public/keyboards`
   and writes manifest JSON files listing the available files. Static hosting
   cannot list a directory, so the app reads these manifests to discover the
@@ -48,10 +47,11 @@ boundary between the UI layer and the MIDI and audio logic.
 
 ## Boot sequence
 
-1. `index.html` loads the self-hosted vendor scripts, then `/src/main.js`.
-2. `main.js` waits for the bundled jQuery/Fomantic plugins, then mounts the Vue
-   app and sets `globals.boot.status`.
-3. `App.vue` calls `mainOneKeyJam()` in `src/lib/main.js`.
+1. `index.html` loads the pinned jQuery/Fomantic CDN tags and the self-hosted
+   vendor scripts, then `/src/main.js`.
+2. `main.js` mounts the Vue app.
+3. `App.vue` calls `mainOneKeyJam()` in `src/lib/main.js`, which sets
+   `globals.boot.status`.
 4. `wireProjectEvents()` registers the project and keyboard event handlers, then
    `bootGeneralMidi()` prepares the in-browser sounds and `await bootWebMidi()`
    enables WebMidi.js, records the detected keyboards in

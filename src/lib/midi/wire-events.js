@@ -155,7 +155,7 @@ export function onNoteOff(e) {
     }
 
     // TODO wasteful to calculate these each time...
-    let ignoreRhModifiers = [
+    let _ignoreRhModifiers = [
         // rh modifiers
         `C#${globals.keyboard.rhJamSoundOctave}`,
         `D#${globals.keyboard.rhJamSoundOctave}`,

@@ -18,16 +18,16 @@ const vanillaSliders = ref(false)
 
 const timebase = 16;
 
-watch(xrange, (value, prevValue) => {
+watch(xrange, (value, _prevValue) => {
   sequencer.value.xrange = value * timebase;
 })
-watch(xoffset, (value, prevValue) => {
+watch(xoffset, (value, _prevValue) => {
   sequencer.value.xoffset = value * timebase;
 })
-watch(yrange, (value, prevValue) => {
+watch(yrange, (value, _prevValue) => {
   sequencer.value.yrange = value
 })
-watch(yoffset, (value, prevValue) => {
+watch(yoffset, (value, _prevValue) => {
   sequencer.value.yoffset = value
 })
 
@@ -58,35 +58,35 @@ function sequencerResume(e) {
   sequencerPlay(e, 'current')
 }
 
-function sequencerStop(e) {
+function sequencerStop(_e) {
   sequencer.value.stop()
 }
 
-function sequencerSave(e) {
+function sequencerSave(_e) {
   const s = sequencer.value.getMMLString()
   console.log('MML string:', s)
   inputSequencerPersist.value.value = s
 }
 
-function sequencerSaveToProject(e) {
+function sequencerSaveToProject(_e) {
   const s = sequencer.value.getMMLString()
   let entry = getDefaultEntry()
   entry.mml = s
 }
 
-function sequencerLoad(e) {
+function sequencerLoad(_e) {
   const s = inputSequencerPersist.value.value
   sequencer.value.setMMLString(s)
 }
 
-function sequencerPatternAscendingWhiteNotes(e) {
+function sequencerPatternAscendingWhiteNotes(_e) {
   // const s = "t100o4l8c2d2e2f2g2a2b2o5c2d2e2f2g2a2b2o6c2d2e2f2g2a2b2"
   const s = "t100o4l8c4d4e4f4g4a4b4o5c4d4e4f4g4a4b4o6c4d4e4f4g4a4b4o7c4d4e4f4g4a4b4o8c4d4e4f4g4a4b4"
   inputSequencerPersist.value.value = s
   sequencer.value.setMMLString(s)
 }
 
-function sequencerLoadFromProject(e) {
+function sequencerLoadFromProject(_e) {
   const entry = getDefaultEntry()
   sequencer.value.setMMLString(entry.mml)
 }
@@ -107,7 +107,7 @@ function getDefaultEntry() {
   return entry
 }
 
-function sequencerClear(e) {
+function sequencerClear(_e) {
   const s = 't100o4l8'
   sequencer.value.setMMLString(s)
 }

@@ -44,7 +44,7 @@ const noKeySignatureBecauseNoChords = computed({
         <span v-else-if="noKeySignatureBecauseNoFavourites"><i>No favourites Chords</i>
                 <span class="ui small text grey ml-4">Tip: click the heart symbol in the table above</span></span>
         <code v-else>
-            <span v-for="keySignature in agreedUponKeySignatures()" class="mr-3">
+            <span v-for="(keySignature, i) in agreedUponKeySignatures()" :key="i" class="mr-3">
                 <a href="#" @click.prevent="setScaleFromKeySignature(keySignature)">{{ keySignature }}</a>
             </span>
         </code>
@@ -62,12 +62,12 @@ const noKeySignatureBecauseNoChords = computed({
             <!-- <code>{{ globals.keySignatureDetection }}</code> -->
 
             <span class="chords-that-fit-label">Chords Analysed: </span>
-            <span v-for="chord in globals.keySignatureDetection.allChordsInProject">
+            <span v-for="(chord, i) in globals.keySignatureDetection.allChordsInProject" :key="i">
                 <a href="#" @click.prevent="setChordFromSymbol(chord)">{{ chord }}</a> &nbsp;
             </span>
             <br>
             <span class="chords-that-fit-label">Chord Notes Analysed: </span>
-            <span v-for="chord in globals.keySignatureDetection.allChordNotesInProject">
+            <span v-for="(chord, i) in globals.keySignatureDetection.allChordNotesInProject" :key="i">
                 <code class="ml-2"> {{ chord }} </code>
             </span>
             <span v-if="globals.keySignatureDetection.allChordNotesInProject.length == 12" class="ml-1"><span
@@ -75,12 +75,12 @@ const noKeySignatureBecauseNoChords = computed({
             <br>
 
             <span class="chords-that-fit-label">Key Signatures (chords): </span>
-            <span v-for="keySignature in globals.keySignatureDetection.keyFromChords">
+            <span v-for="(keySignature, i) in globals.keySignatureDetection.keyFromChords" :key="i">
                 <a href="#" @click.prevent="setScaleFromKeySignature(keySignature)">{{ keySignature }}</a> &nbsp;
             </span>
             <div v-if="keySignaturesViaNotesIsDifferent()" class="inline-blockZZZ">
                 <span class="chords-that-fit-label">Key Signatures (notes): </span>
-                <span v-for="keySignature in globals.keySignatureDetection.keyFromChordNotes">
+                <span v-for="(keySignature, i) in globals.keySignatureDetection.keyFromChordNotes" :key="i">
                     <a href="#" @click.prevent="setScaleFromKeySignature(keySignature)">{{ keySignature }}</a> &nbsp;
                 </span>
             </div>

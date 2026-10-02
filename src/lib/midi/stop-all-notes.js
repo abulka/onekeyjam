@@ -1,7 +1,7 @@
 import { globals } from "../globals.js"
 import { stopAllNotes as stopAllGmNotes } from "../audio/general-midi.js"
 
-export function stopAllNotes(channel, channel2) {
+export function stopAllNotes(_channel, _channel2) {
 
     if (globals.channel) globals.channel.sendChannelMode("allnotesoff");
     if (globals.channel2) globals.channel2.sendChannelMode("allnotesoff");

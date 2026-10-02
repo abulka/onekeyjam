@@ -5,20 +5,16 @@ import { createApp } from 'vue'
 import { VTour } from '@globalhive/vuejs-tour';
 import '@globalhive/vuejs-tour/dist/style.css';
 
-// jQuery + Fomantic UI (previously loaded from CDN <script> tags).
-import { fomanticReady } from './vendor/index.js'
-import './index.css'  // tailwind - https://tailwindcss.com/docs/guides/vite
-
 import App from './App.vue'
 import router from './router'
+import './index.css'  // tailwind - https://tailwindcss.com/docs/guides/vite
+
+// jQuery and Fomantic UI are loaded from pinned CDN <script>/<link> tags in
+// index.html, so `$` and its plugins are present before this module runs.
 
 const app = createApp(App)
 app.component('VTour', VTour)
 
 app.use(router)
 
-// Mount after Fomantic has registered its jQuery plugins, so component
-// onMounted hooks can call dropdown()/modal()/accordion()/toast().
-fomanticReady
-  .catch(error => console.error('Fomantic UI failed to load:', error))
-  .finally(() => app.mount('#app'))
+app.mount('#app')
