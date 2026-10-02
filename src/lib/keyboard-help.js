@@ -15,8 +15,8 @@ const LEFT_HAND_HELP = {
     'C#': 'SHIFT',
     'D#': 'Scale filter OFF',
     'F#': 'Scale filter ON',
-    'G#': 'Trans-pose chords DOWN',
-    'A#': 'Trans-pose chords UP',
+    'G#': 'Transp chord DOWN',
+    'A#': 'Transp chord UP',
 }
 
 const LEFT_HAND_SHIFT_HELP = {
@@ -28,10 +28,10 @@ const LEFT_HAND_SHIFT_HELP = {
 }
 
 const RIGHT_HAND_HELP = {
-    'C#': 'Use Scale 1',
-    'D#': 'Use Scale 2',
-    'F#': 'Use Scale 3',
-    'G#': 'Use Scale 4 (notes of chord)',
+    'C#': 'Scale 1',
+    'D#': 'Scale 2',
+    'F#': 'Scale 3',
+    'G#': 'Scale 4 (chord notes)',
     'A#': 'Lock current scale',
 }
 
