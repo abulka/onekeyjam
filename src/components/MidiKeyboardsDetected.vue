@@ -1,9 +1,8 @@
 <script setup>
 import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
 import { globals } from '../../src/lib/globals.js'
 import { stringify } from '../lib/prettyjson.js'
-import { requestMidiAccess } from '../../src/lib/boot-webmidi.js'
+import { requestMidiAccess } from '@/lib/midi/boot-webmidi.js'
 
 // keyboard combo select
 const optionsKeyboards = computed({

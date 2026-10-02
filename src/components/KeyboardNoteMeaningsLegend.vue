@@ -1,7 +1,6 @@
 <script setup>
-import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
-import { globals } from '/src/lib/globals.js'
+import { onMounted, onUnmounted } from "vue";
+import { globals } from '@/lib/globals.js'
 
 onMounted(() => {
   $('.ui.accordion.keyboard-note-meanings')

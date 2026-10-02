@@ -45,18 +45,6 @@ export function markAllVisibleChordsAsFavourites() {
 
 }
 
-export function markAllVisibleChordsForBlackList() {
-    const idsVisible = getVisibleIds()
-
-    // BUG as above
-
-    if (arraysAreEqual(idsVisible, globals.project.songs.default.blacklist))  // if all are on, toggle them all off
-        globals.project.songs.default.blacklist = []
-    else
-        globals.project.songs.default.blacklist = getVisibleIds()
-
-}
-
 // utility functions
 
 function getVisibleIds() {

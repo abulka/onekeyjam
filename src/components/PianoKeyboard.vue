@@ -2,7 +2,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onUnmounted } from "vue";
 import { watch } from 'vue'
 import { noteObjectToMidiValue } from '../../src/lib/note-tools.js'
 

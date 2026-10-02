@@ -1,4 +1,4 @@
-import { globals } from '/src/lib/globals.js'
+import { globals } from './globals.js'
 import { sortNotes } from "./note-tools.js"
 
 export function getProjectChordsTriggers() {

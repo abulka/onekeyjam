@@ -1,6 +1,6 @@
 <script setup>
 import { globals } from "../../src/lib/globals.js"
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref } from 'vue'
 import { parseMidiAndAllocateChords } from "../../src/lib/boot-project"
 import { parseMidiUrl, parseMidiFile } from '../../src/lib/parse-midi.js'
 

@@ -20,5 +20,5 @@
     }
   },
   "include": ["src/**/*.js", "src/**/*.d.ts", "test/**/*.js", "bin/**/*.mjs", "server.js", "vite.config.js"],
-  "exclude": ["node_modules", "dist", "research", "src/lib/webaudio-controls.js"]
+  "exclude": ["node_modules", "dist", "research"]
 }

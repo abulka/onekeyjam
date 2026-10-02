@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { _calcJamOctave } from '../../../src/lib/jam-mapping-to-allowed.js'
+import { _calcJamOctave } from '@/lib/midi/jam-mapping-to-allowed.js'
 
 describe('_calcJamOctave', () => {
 

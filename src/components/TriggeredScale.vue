@@ -1,6 +1,4 @@
 <script setup>
-import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
 import { globals } from '../../src/lib/globals.js'
 
 const MAX_NAME_LENGTH = 24;  // though 26 usually fits, but not on Lenovo Duet

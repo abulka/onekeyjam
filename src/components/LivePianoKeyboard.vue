@@ -3,8 +3,9 @@ import { computed } from 'vue'
 import { ref, onMounted, onUnmounted } from "vue";
 import { globals } from '../lib/globals.js'
 import { store } from '../lib/globals.js'
+import { Note } from '@/lib/midi/webmidi.js'
 import { indexToNote } from "../lib/note-tools.js"
-import { onNoteOn, onNoteOff } from "../lib/wire-events"
+import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events"
 
 // window.matchMedia('(min-width: 700px)')
 const isLargeScreen = computed({

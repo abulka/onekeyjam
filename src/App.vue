@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import mainOneKeyJam from '../src/lib/main.js';
+import { globals } from './lib/globals.js';
 
 // The Research view is a development-only playground; hide it from production builds.
 const showResearch = import.meta.env.DEV
@@ -16,9 +17,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <header>
-    <!-- <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" /> -->
+  <div v-if="globals.boot.status === 'error'" class="ui container negative message pad-top">
+    <div class="header">OneKeyJam failed to start</div>
+    <p>{{ globals.boot.message }}</p>
+  </div>
 
+  <header>
     <!-- Main menu -->
     <div class="ui container center aligned pad-top">
 

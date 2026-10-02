@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { globals } from '/src/lib/globals.js'
+import { globals } from '@/lib/globals.js'
 import { chordAddToProjectExact } from "../../src/lib/chordAddToProject.js";
 import { replaceCurrentChordExact } from "../../src/lib/replaceCurrentChord";
 import { chordAddToProject } from "../../src/lib/chordAddToProject.js";

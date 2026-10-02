@@ -57,7 +57,7 @@ function analyseNotes(notes) {
     doDetect(currentNotes);
 }
 
-export function doDetect(currentNotes, retainLastDetectionResult=true) {
+function doDetect(currentNotes, retainLastDetectionResult=true) {
     if (!(currentNotes instanceof Array))
         throw (`currentNotes '${currentNotes}' is not an array?`)
 

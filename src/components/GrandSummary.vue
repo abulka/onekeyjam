@@ -1,10 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import { globals } from '../../src/lib/globals.js'
+import { Note } from '@/lib/midi/webmidi.js'
 import { getProjectChordsTriggers } from "../../src/lib/project-chord-triggers.js"
-import { onNoteOn, onNoteOff } from "../../src/lib/wire-events.js"
+import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events.js"
 import { start, dragover, dragend } from '../../src/lib/drag-drop-table-rows.js'
-import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites, markAllVisibleChordsForBlackList } from '../../src/lib/massOperationsOnChordConfigs'
+import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '../../src/lib/massOperationsOnChordConfigs'
 import { keyDetection } from '../../src/lib/keyDetection';
 import ButtonAudition from '@/components/ButtonAudition.vue'
 

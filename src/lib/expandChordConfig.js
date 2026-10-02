@@ -6,8 +6,8 @@ import { getRandomArbitary } from './util.js';
 import { chordSymbolToNotes } from './chordSymbolToNotes';
 import { scaleNameToNotes, chordNotesToScaleNotes } from './scaleToNotes';
 import { suggestBass } from './note-tools';
-import { detectChordAndScalesFromChordNotes } from './build-project';
-import { findTop3MatchingScales } from './findMatchingScales';
+import { detectChordAndScalesFromChordNotes } from './detectChord.js';
+import { findTop3MatchingScales } from './scaleMatching.js';
 
 /** @typedef {import("./typedefs").ChordConfig} ChordConfig */
 /** @typedef {import("./typedefs").ScaleNotes} ScaleNotes */

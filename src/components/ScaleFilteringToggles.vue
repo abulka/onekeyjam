@@ -1,7 +1,6 @@
 <script setup>
-import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
-import { globals } from '/src/lib/globals.js'
+import { onMounted, onUnmounted } from "vue";
+import { globals } from '@/lib/globals.js'
 
 function keyUpListener(e) {
   // console.log('keyup', e.key, e.keyCode, 'this', this, 'meta', e.metaKey, 'ctrl', e.ctrlKey, 'shift', e.shiftKey);  // 'this' is the window

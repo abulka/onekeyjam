@@ -1,5 +1,4 @@
 <script setup>
-import HelloWorld from '@/components/HelloWorld.vue'
 import ResearchExampleList from '@/components/ResearchExampleList.vue'
 import PianoKeyboardBig from '@/components/PianoKeyboardBig.vue'
 
@@ -10,8 +9,6 @@ import PianoKeyboardBig from '@/components/PianoKeyboardBig.vue'
     <p>This is the Research View</p>
 
     <PianoKeyboardBig />
-
-    <HelloWorld msg="Hello, Andy." />
 
     <ResearchExampleList />
 

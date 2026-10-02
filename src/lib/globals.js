@@ -2,7 +2,7 @@
 import { reactive } from 'vue'
 import { maxChordConfigs } from './globals-config.js'
 import { stringify } from './prettyjson.js'
-import { getProjectForPersistence } from './projectConfig'
+import { getProjectForPersistence } from './projectSerialize.js'
 import { isProduction } from './settings.js'
 
 /** @typedef {import("./typedefs").Chord} Chord */
@@ -196,6 +196,11 @@ export const globals = reactive({
         return (this.chordTriggerMap != undefined && Object.keys(globals.chordTriggerMap).length !== 0)
     },
 
+    boot: {
+        // 'unknown' | 'booting' | 'ready' | 'error'
+        status: 'unknown',
+        message: '',
+    },
     keyboardsDetected: [],  // list of MIDI input keyboard names detected on User's system
     midiAccess: {
         // 'unknown' | 'granted' | 'denied' | 'unsupported' | 'error'

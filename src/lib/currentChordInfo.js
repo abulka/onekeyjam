@@ -1,8 +1,6 @@
-import { globals } from "/src/lib/globals.js"
+import { globals } from "./globals.js"
 import * as Tonal from "@tonaljs/tonal";
-import { removeBassSlash } from "/src/lib/removeBassSlash.js";
-import { getRandomArbitary } from '../../src/lib/util.js';
-import { sanitiseNoteToSharp, createChordSymbol } from '../../src/lib/note-tools.js';
+import { sanitiseNoteToSharp } from '../../src/lib/note-tools.js';
 
 export function currentChordInfo() {
     // returns {chordSymbolNoRoot, bass, rootNote, chordNotes} from the currently triggered chord

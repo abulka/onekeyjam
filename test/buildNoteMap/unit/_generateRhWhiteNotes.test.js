@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { _generateWhiteJamTriggerNotes, maxRealNoteName } from '../../../src/lib/jam-mapping-to-allowed.js'
+import { _generateWhiteJamTriggerNotes, maxRealNoteName } from '@/lib/midi/jam-mapping-to-allowed.js'
 
 describe('_generateWhiteJamTriggerNotes - empty mappings', () => {
 

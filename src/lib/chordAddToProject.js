@@ -3,7 +3,6 @@ import { appendChordTriggerMap } from './triggerMaps';
 import { fillInChordConfig, fillInChordConfig2 } from './fillInChordConfig';
 import { removeBassSlash } from './removeBassSlash.js';
 import { keyDetection } from './keyDetection';
-import { stringify } from './prettyjson';
 
 export function chordAddToProject(currentRoot, currentChord, currentChordInversion, bass) {
     const o = new ChordAddToProjectFromCombo(currentRoot, currentChord, currentChordInversion, bass)

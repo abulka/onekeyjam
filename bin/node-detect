@@ -1,2 +1,0 @@
-# node src/lib/node-test-parse-midi.js
-node --es-module-specifier-resolution=node src/lib/node-test-parse-midi.js

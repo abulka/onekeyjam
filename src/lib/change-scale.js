@@ -1,13 +1,13 @@
 // @ts-check
-import pkg from 'lodash';  // import { uniq } from 'lodash';
+import pkg from 'lodash';  // import, { uniq } from 'lodash';
 const { uniq } = pkg;
 import * as Tonal from "@tonaljs/tonal";
 import { globals } from "./globals.js"
-import { buildNoteMap } from "./jam-mapping-to-allowed.js"
+import { buildNoteMap } from "./midi/jam-mapping-to-allowed.js"
 import { findTop3MatchingScales } from './findMatchingScales'
 import { createChordSymbol } from './note-tools.js';
 import { chordSymbolToScaleNames } from './chord-to-scale.js';
-import { scaleObjToNotes, chordNotesToScaleNotes } from './scaleToNotes';
+import { scaleObjToNotes } from './scaleToNotes';
 
 
 /** @typedef {import("./typedefs").ChordConfig} ChordConfig */

@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { globals } from "../../src/lib/globals.js"
-import { reAllocateChords, reAllocateScales, resetTranspositionsEtc, newProject, loadUserProject, loadFeaturedProject } from '../../src/lib/boot-project'
+import { reAllocateChords, reAllocateScales, newProject, loadUserProject, loadFeaturedProject } from '../../src/lib/boot-project'
+import { resetTranspositionsEtc } from '../../src/lib/resetState'
 import { saveProject, saveProjectAs, downloadProject, downloadMidiChords, downloadMidiChordsForChordMemoryTrigger, uploadProject } from '../../src/lib/projectSave.js'
 
 import Jammer from '@/components/JammerView.vue'

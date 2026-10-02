@@ -1,11 +1,10 @@
 <script setup>
-import { ref, onMounted, watch } from 'vue'
-import { globals } from "/src/lib/globals.js"
-import { indexToNote } from "/src/lib/note-tools.js"
-import { audioContext, playGmNote, stopGmNote } from '/src/lib/general-midi.js'
-import * as soundfont from "/src/lib/general-midi-soundfont-player.js";
-import { onNoteOn, onNoteOff } from "/src/lib/wire-events.js"
-import { stringify } from '/src/lib/prettyjson.js'
+import { ref, watch } from 'vue'
+import { globals } from "@/lib/globals.js"
+import { Note } from '@/lib/midi/webmidi.js'
+import { indexToNote } from "@/lib/note-tools.js"
+import { audioContext } from '@/lib/audio/general-midi.js'
+import { onNoteOn } from "@/lib/midi/wire-events.js"
 
 // declare a ref to hold the element reference
 // the name must match template ref value

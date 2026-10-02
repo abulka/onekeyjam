@@ -7,53 +7,22 @@
     <title>OneKeyJam</title>
 
 
-    <!-- You MUST include jQuery before Fomantic -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
-    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.8.8/dist/semantic.min.js"></script>
+    <!-- jQuery and Fomantic UI are bundled from npm in src/vendor/index.js
+    (previously loaded here from CDN). -->
 
-    <!-- this defines Note as well and new Note is OK unlike tonaljs where Note.get() is the way
-    TODO Need to instead npm install webmidi and import with import {WebMidi} from "webmidi"; 
-    rather than importing into the global namespace like this. -->
-    <script src="https://cdn.jsdelivr.net/npm/webmidi@next/dist/iife/webmidi.iife.js"></script>
+    <!-- Web MIDI API is imported from the npm package in src/lib/midi/webmidi.js
+    (no longer loaded here as a CDN global). -->
 
-    <!-- We now import from npm node_modules  -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/@tonaljs/tonal/browser/tonal.min.js"></script> -->
+    <!-- Tonal is imported from npm node_modules -->
 
-    <!-- clarify which version I am using and need - see my comments
-    https://github.com/g200kg/webaudio-controls/issues/45 -->
-    <!-- <script src="src/lib/webaudio-controls.js"></script> -->
-    <script src="https://g200kg.github.io/webaudio-controls/webaudio-controls.js"></script>
-    <script src="https://g200kg.github.io/webaudio-pianoroll/webaudio-pianoroll.js"></script>
+    <!-- In-browser sound now comes from the npm `soundfont-player` package
+    (see src/lib/audio/general-midi-soundfont-player.js). The old WebAudioFont
+    player and its soundfont data are no longer loaded. -->
 
-    <script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'></script>
-    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0250_SoundBlasterOld_sf2.js'></script> -->
-    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0000_JCLive_sf2_file.js'></script> -->
-    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0180_SoundBlasterOld_sf2.js'></script> -->
-
-    <!-- jam note, e piano 45 -->
-    <script src='https://surikov.github.io/webaudiofontdata/sound/0040_Chaos_sf2_file.js'></script>
-    <!-- New chord - acoustic guitar -->
-    <script src='https://surikov.github.io/webaudiofontdata/sound/0243_JCLive_sf2_file.js'></script>
-    <!-- bass 374 -->
-    <script src='https://surikov.github.io/webaudiofontdata/sound/0321_GeneralUserGS_sf2_file.js'></script>
-
-    <!-- Old unknown - Synth Strings 1: Ensemble - 554 -->
-    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0502_FluidR3_GM_sf2_file.js'></script> -->
-
-    <!-- Old chord sound Synth Strings 1: Ensemble - 559 -->
-    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0500_SBLive_sf2.js'></script> -->
-
-    <!-- New jam - softer - but this somehow affects the bass note - WTF !!!!? -->
-    <!-- <script src='https://surikov.github.io/webaudiofontdata/sound/0020_SBLive_sf2.js'></script> -->
-
-
-    <!-- lodash for unique/de-duplication function but now import directly within 'src/parse-midi.mjs' 
-        using "import _ from 'lodash';" and rely on snowpack to fix things so the browser understand this -->
-    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.21/lodash.min.js" integrity="sha512-WFN04846sdKMIP5LKNphMaWzU7YpMyCU245etK3g/2ARYbPK9Ub18eG+ljU96qKRCWh+quCY7yefSmlkQw1ANQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script> -->
-
-    <!-- for reading midi files. We now import from npm node_modules  -->
-    <!-- <script src="https://unpkg.com/@tonejs/midi"></script> -->
+    <!-- On-screen keyboard and pianoroll custom elements, self-hosted from
+    public/vendor (the g200kg libraries have no npm package). -->
+    <script src="/vendor/webaudio-controls.js"></script>
+    <script src="/vendor/webaudio-pianoroll.js"></script>
 
     <link rel="stylesheet" href="/style/style.css">
 

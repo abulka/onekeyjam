@@ -1,23 +1,14 @@
 <script setup>
-import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
-import { onActivated, onDeactivated } from "vue";
+import { onMounted, onUnmounted } from "vue";
 import { globals } from '../lib/globals.js'
-import { keyDownListener, keyUpListener } from "../lib/livePianoKeyboardShortcuts"
+import { keyDownListener, keyUpListener } from "@/lib/midi/livePianoKeyboardShortcuts"
 import GrandSummary from './GrandSummary.vue'
 import ChordPicker from './ChordPicker.vue'
 import ScalePicker from './ScalePicker.vue'
 import MidiParser from './MidiParser.vue'
 import GrandStatus from './GrandStatus.vue';
-import SongFavouritesDebug from './SongFavouritesDebug.vue';
-import GrandStatusExample from './GrandStatusExample.vue';
-import GrandStatusExample2 from './GrandStatusExample2.vue';
-import ReallocatePanel from './ReallocatePanel.vue';
 import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
 import KeyboardNoteMeaningsLegend from './KeyboardNoteMeaningsLegend.vue'
-import ActiveScale from './ActiveScale.vue'
-import ActiveChord from './ActiveChord.vue'
-import Sequencer from './Sequencer.vue'
 import DebugAdmin from './DebugAdmin.vue'
 import MidiKeyboardsDetected from './MidiKeyboardsDetected.vue'
 import LivePianoKeyboard from './LivePianoKeyboard.vue'

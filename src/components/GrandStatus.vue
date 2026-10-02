@@ -1,8 +1,5 @@
 <script setup>
-import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
-import { globals } from '/src/lib/globals.js'
-import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
+import { globals } from '@/lib/globals.js'
 import DetectedChord from './DetectedChord.vue'
 import DetectedChordDebug from './DetectedChordDebug.vue'
 import JamNote from './JamNote.vue'

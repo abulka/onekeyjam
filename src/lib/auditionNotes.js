@@ -1,6 +1,6 @@
-import { globals } from "/src/lib/globals.js"
+import { globals } from "./globals.js"
 import * as Tonal from "@tonaljs/tonal";
-import { playChordNote, playChordOff } from "/src/lib/play-chord.js"
+import { playChordNote, playChordOff } from "./midi/play-chord.js"
 import { createChordSymbol } from "../../src/lib/note-tools.js"
 import { chordSymbolToNotesInversion } from "../../src/lib/chordSymbolToNotes";
 import { bassNoteOctave } from "../../src/lib/settings.js";

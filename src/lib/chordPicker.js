@@ -2,9 +2,9 @@ import { computed } from 'vue'
 import * as Tonal from "@tonaljs/tonal";
 import { globals } from "../../src/lib/globals.js"
 import { calcAllChordSymbols } from "../../src/lib/calcAllChordSymbols";
-import { sanitiseNoteToSharp, createChordSymbol } from "../../src/lib/note-tools.js"
-import { chordPlay, auditionInfo } from "../../src/lib/auditionNotes"
-import { setActiveScaleFilterToMatchChord, setActiveScaleFilter } from "../../src/lib/change-scale.js"
+import { sanitiseNoteToSharp } from "../../src/lib/note-tools.js"
+import { chordPlay } from "../../src/lib/auditionNotes"
+import { setActiveScaleFilterToMatchChord } from "../../src/lib/change-scale.js"
 import { removeBassSlash } from '../../src/lib/removeBassSlash.js';
 import { chordSymbolToNotesInversion } from "../../src/lib/chordSymbolToNotes";
 import { calcChordInversionNumberAndNewBass } from "../../src/lib/chordInversion";

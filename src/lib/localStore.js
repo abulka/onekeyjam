@@ -75,18 +75,3 @@ export async function saveUserProject(name, data) {
     })
 }
 
-/**
- * Delete a saved project by name.
- * @param {string} name
- * @returns {Promise<void>}
- */
-export async function deleteUserProject(name) {
-    const db = await openDb()
-    return new Promise((resolve, reject) => {
-        const transaction = db.transaction(PROJECT_STORE, 'readwrite')
-        transaction.objectStore(PROJECT_STORE).delete(name)
-        transaction.oncomplete = () => resolve()
-        transaction.onerror = () => reject(transaction.error)
-        transaction.onabort = () => reject(transaction.error)
-    })
-}

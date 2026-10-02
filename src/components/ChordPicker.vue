@@ -1,16 +1,14 @@
 <script setup>
 // @ts-check
 import { computed } from 'vue'
-import { ref, onMounted, watch } from 'vue'
-import * as Tonal from "@tonaljs/tonal";
 import { globals } from "../../src/lib/globals.js"
-import { sanitiseNoteToSharp, createChordSymbol } from "../../src/lib/note-tools.js"
-import { setActiveScaleFilterToMatchChord, setActiveScaleFilter } from "../../src/lib/change-scale.js"
+import { sanitiseNoteToSharp } from "../../src/lib/note-tools.js"
+import { setActiveScaleFilterToMatchChord } from "../../src/lib/change-scale.js"
 import { noteOptions } from "../../src/lib/note-tools";
 import { currentChordInfo } from "../../src/lib/currentChordInfo";
 import { chordPlay, auditionInfo } from "../../src/lib/auditionNotes"
 import { chordPickerToJammed, chordPickerToJammedExtraPrecision } from "../../src/lib/chordPicker";
-import { setChordPicker, setChordSmart, setChordFromSymbol } from "../../src/lib/chordPicker";
+import { setChordPicker, setChordSmart } from "../../src/lib/chordPicker";
 import { chordInvert, nextChord, circleOfFifthTranspose, transpose } from "../../src/lib/chordPicker";
 import { chordOptions } from "../../src/lib/chordPicker";
 import ChordAdd from './ChordAdd.vue'

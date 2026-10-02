@@ -2,9 +2,8 @@
 import { computed } from 'vue'
 import { ref, onMounted, onUnmounted } from "vue";
 import { globals } from '../../src/lib/globals.js'
-import { onActivated, onDeactivated } from "vue";
 import { getProjectChordsTriggers } from "../lib/project-chord-triggers.js"
-import { clearKeyboard, displayScaleOnKeyboard } from "../lib/midi-keyboard-util"
+import { clearKeyboard, displayScaleOnKeyboard } from "@/lib/midi/midi-keyboard-util"
 
 // DUPLICATED FROM src/components/JammerView.vue
 const currentChordConfig = computed({

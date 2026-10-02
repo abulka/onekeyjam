@@ -1,10 +1,11 @@
 // @ts-check
 import { globals } from "./globals.js"
+import { WebMidi } from "./midi/webmidi.js"
 import { changeScaleFilter } from "./change-scale.js" // for testing
-import { wireNoteOnEvents, wireNoteOffEvents, wireCCEvents, calculateRhBlackNoteModifierNotes } from './wire-events.js';
-import { wireQwertyKeyState } from "./qwertyKeyState.js"
+import { wireNoteOnEvents, wireNoteOffEvents, wireCCEvents, calculateRhBlackNoteModifierNotes } from './midi/wire-events.js';
+import { wireQwertyKeyState } from "./midi/qwertyKeyState.js"
 import { emergencyRepairProject } from './emergencyRepairProject.js';
-import { verifyTriggerMap, candidatesToTriggerMapSmart, existingToTriggerMapSmart, resetChordTriggerMap } from './triggerMaps';
+import { verifyTriggerMap, candidatesToTriggerMapSmart, existingToTriggerMapSmart } from './triggerMaps';
 import { openJsonUrl } from "./util.js";
 import { setMaxDisplayed } from './maxChordConfig'
 import { findMatchingScalesForProject } from "./findMatchingScales"
@@ -94,13 +95,6 @@ async function setUserProject(name, project, currentChordTriggerNote) {
 
 
 
-export function loadProjectFromDisk(url) {
-    // 1. Called by combobox select in main UI
-    // 2. Called by reload current project button in main UI
-    if (!url)
-        url = globals.projectUrl
-    document.broadcastEvent("switch-project", { url: url })
-}
 export function loadFeaturedProject(name) {
     // 1. Called by combobox select in main UI
     // 2. Called by reload current project button in main UI
@@ -114,22 +108,6 @@ export function loadUserProject(name) {
     if (!name)
         name = globals.projectLibrary.projectName
     document.broadcastEvent("switch-project", { name })
-}
-
-export function resetTranspositionsEtc() {
-    // 3. Called by button 'reset changes' or when hit piano lh key combination (C# G#) to clear any transpositions etc.
-    resetChordTriggerMap(globals.chordTriggerMap, globals.project.chords)
-    // just in case scale changed
-    changeScaleFilter(globals.currentScaleFilter)
-    // just in case chord changed
-    document.broadcastEvent('chord-changed', { notes: globals.currentLhNotes(), bass: globals.currentBass() })
-
-    $('body')
-        .toast({
-            message: 'Transpositions Reset',
-            displayTime: 1000,
-            class: 'brown',
-        })
 }
 
 export function reAllocateChords() {
@@ -202,52 +180,55 @@ export function newProject() {
     projectChores({ project: globals.project, maxChordConfigs: globals.maxChordConfigs, preserveSongIds: false });
 }
 
-export function loadNeoSoul() {
-    // 8. Called by button - development use only
-    loadFeaturedProject('dope-neo-soul-01')
-}
-
 // ┌─┐┬ ┬┬┌┬┐┌─┐┬ ┬   ┌─┐┬─┐┌─┐ ┬┌─┐┌─┐┌┬┐
 // └─┐││││ │ │  ├─┤───├─┘├┬┘│ │ │├┤ │   │ 
 // └─┘└┴┘┴ ┴ └─┘┴ ┴   ┴  ┴└─└─┘└┘└─┘└─┘ ┴ 
 
 // Event handlers - work around for vue setters not being async and we need to await the json load before linking
 
-document.addEventListener("switch-project", async function (/** @type {CustomEvent} */ event) {
-    if (event.detail.url) {
-        await setProject(
-            event.detail.url,
-            event.detail.project,  // usually undefined
-            event.detail.currentChordTriggerNote,  // usually undefined
-        )
-    }
-    else {
-        if (event.detail.featured)
-            await setFeaturedProject(
-                event.detail.name,
+let _projectEventsWired = false
+export function wireProjectEvents() {
+    // Registered explicitly during boot rather than as an import side effect.
+    if (_projectEventsWired)
+        return
+    _projectEventsWired = true
+
+    document.addEventListener("switch-project", async function (/** @type {CustomEvent} */ event) {
+        if (event.detail.url) {
+            await setProject(
+                event.detail.url,
                 event.detail.project,  // usually undefined
                 event.detail.currentChordTriggerNote,  // usually undefined
             )
-        else
-            await setUserProject(
-                event.detail.name,
-                event.detail.project,  // usually undefined
-                event.detail.currentChordTriggerNote,  // usually undefined
-            )
+        }
+        else {
+            if (event.detail.featured)
+                await setFeaturedProject(
+                    event.detail.name,
+                    event.detail.project,  // usually undefined
+                    event.detail.currentChordTriggerNote,  // usually undefined
+                )
+            else
+                await setUserProject(
+                    event.detail.name,
+                    event.detail.project,  // usually undefined
+                    event.detail.currentChordTriggerNote,  // usually undefined
+                )
 
-    }
-    projectChores({
-        project: event.detail.project,
-        maxChordConfigs: event.detail.maxChordConfigs,
-        preserveSongIds: event.detail.preserveSongIds
-    });
-})
+        }
+        projectChores({
+            project: event.detail.project,
+            maxChordConfigs: event.detail.maxChordConfigs,
+            preserveSongIds: event.detail.preserveSongIds
+        });
+    })
 
-document.addEventListener("switch-keyboard", async function (/** @type {CustomEvent} */ event) {
-    await switchKeyboard(event.detail.name)
-    regen();
-    linkProjectToKeyboard()
-})
+    document.addEventListener("switch-keyboard", async function (/** @type {CustomEvent} */ event) {
+        await switchKeyboard(event.detail.name)
+        regen();
+        linkProjectToKeyboard()
+    })
+}
 
 // ┬  ┌─┐┬ ┬  ┬  ┌─┐┬  ┬┌─┐┬  
 // │  │ ││││  │  │ │└┐┌┘├┤ │  
@@ -334,7 +315,7 @@ export async function bootKeyboard() {
     }
 }
 
-export async function switchKeyboard(name) {
+async function switchKeyboard(name) {
     /** @type {KeyboardConfig} */
     let keyboardConfig = { name: '', rhJamSoundOctave: 4, lhTriggerOctave: 3 }
 

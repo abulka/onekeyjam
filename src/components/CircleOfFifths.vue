@@ -1,7 +1,4 @@
 <script setup>
-import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
-import { globals } from '../../src/lib/globals.js'
 import ButtonChord from "./ButtonChord.vue"
 
 const emit = defineEmits(['chord-from-event'])

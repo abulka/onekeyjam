@@ -1,32 +1,13 @@
 <script setup>
 // @ts-check
-import { computed } from 'vue'
-import { ref, onMounted, watch } from 'vue'
 import * as Tonal from "@tonaljs/tonal";
-import { arraysAreEqual } from "../../src/lib/array-tools"
 import { globals } from "../../src/lib/globals.js"
-import { sanitiseNoteToSharp, createChordSymbol } from "../../src/lib/note-tools.js"
+import { sanitiseNoteToSharp } from "../../src/lib/note-tools.js"
 import { setActiveScaleFilterToMatchChord, setActiveScaleFilter } from "../../src/lib/change-scale.js"
-import { getRandomArbitary } from "../../src/lib/util.js"
-import { auditionNotes } from "../../src/lib/auditionNotes"
-import { bassNoteOctave } from "../../src/lib/settings.js";
-import { calcAllChordSymbols } from "../../src/lib/calcAllChordSymbols";
-import { noteOptions } from "../../src/lib/note-tools";
-import { currentChordInfo } from "../../src/lib/currentChordInfo";
-import { replaceCurrentScale, setScaleToNotesOfChord } from "../../src/lib/replaceCurrentScale";
-import { calcChordInversionNumberAndNewBass } from "../../src/lib/chordInversion";
-import { chordSymbolToNotesInversion } from "../../src/lib/chordSymbolToNotes";
-import { removeBassSlash } from '../../src/lib/removeBassSlash.js';
-import { bassWithOctFromChordNotesWithOct } from "../../src/lib/note-tools"
-import { setChordPicker, setChordSmart, setChordFromSymbol } from "../../src/lib/chordPicker";
-import ButtonChord from "./ButtonChord.vue"
+import { replaceCurrentScale } from "../../src/lib/replaceCurrentScale";
+import { setChordSmart, setChordFromSymbol } from "../../src/lib/chordPicker";
 import ComboScale from "./ComboScale.vue"
-import ChordAdd from './ChordAdd.vue'
 import KeySignature from './KeySignature.vue';
-import CircleOfFifths from './CircleOfFifths.vue';
-import CommonChords from './CommonChords.vue';
-import ButtonAudition from './ButtonAudition.vue'
-import ReallocatePanel from './ReallocatePanel.vue';
 
 // ┌─┐┬ ┬┌─┐┌┐┌┌─┐┌─┐  ┌─┐┌─┐┌─┐┬  ┌─┐  ┌─┐┬┬  ┌─┐┬─┐  ┌─┐┌─┐┌┬┐┌┐ ┌─┐
 // │  ├─┤├─┤││││ ┬├┤   └─┐│  ├─┤│  ├┤   ├┤ ││  ├┤ ├┬┘  │  │ ││││├┴┐│ │

@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { buildNoteMap } from '../../src/lib/jam-mapping-to-allowed.js'
+import { buildNoteMap } from '@/lib/midi/jam-mapping-to-allowed.js'
 
 describe('basic buildNoteMap tests', () => {
 

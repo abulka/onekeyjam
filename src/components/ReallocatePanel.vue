@@ -1,9 +1,6 @@
 <script setup>
-import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
-import { globals } from '/src/lib/globals.js'
-import { reAllocateChords, reAllocateScales, resetTranspositionsEtc } from '../../src/lib/boot-project'
-import { newProject, loadNeoSoul } from '../../src/lib/boot-project'
+import { globals } from '@/lib/globals.js'
+import { reAllocateChords } from '../../src/lib/boot-project'
 
 </script>
 

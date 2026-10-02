@@ -2,12 +2,10 @@
 # Demo https://micuemerson.github.io/vue-piano/
 
 <script setup>
-import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
-import { watch } from 'vue'
+import { ref } from "vue";
 import PianoKeyboard from './PianoKeyboard.vue'
 import { globals } from '../../src/lib/globals.js'
-import { noteObjectToMidiValue, noteObjectToNextWhiteNoteObject } from '../../src/lib/note-tools.js'
+import { noteObjectToNextWhiteNoteObject } from '../../src/lib/note-tools.js'
 
 const whiteNoteColor = "#1eb7eb"
 const blackNoteColor = "#1eb7eb" // "#f9bb2d"

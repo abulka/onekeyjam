@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { _addUnderscore } from '../../../src/lib/jam-mapping-to-allowed.js'
+import { _addUnderscore } from '@/lib/midi/jam-mapping-to-allowed.js'
 
 describe('_addUnderscore', () => {
 

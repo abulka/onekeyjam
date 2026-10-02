@@ -6,19 +6,14 @@
  */
 export {}
 
+// WebMidi (and its Note class) are imported from the npm package in
+// src/lib/webmidi.js, so they are not declared as browser globals here.
+// In-browser sound uses the npm `soundfont-player` package, so the WebAudioFont
+// player and soundfont data globals are gone too.
+
 declare global {
   var $: any
   var jQuery: any
-
-  var WebMidi: any
-  var Note: any
-  var WebAudioFontPlayer: any
-  var webAudioControlsWidgetManager: any
-  var ac: AudioContext
-
-  var _tone_0040_Chaos_sf2_file: any
-  var _tone_0243_JCLive_sf2_file: any
-  var _tone_0321_GeneralUserGS_sf2_file: any
 
   interface Document {
     broadcastEvent(name: string, detail?: any): void

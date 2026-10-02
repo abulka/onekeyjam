@@ -8,12 +8,12 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
 
 ## Top level pieces
 
-- `index.html` loads the third-party browser libraries as global scripts
-  (jQuery and Fomantic UI, the WebMidi.js IIFE build, g200kg webaudio-controls
-  and webaudio-pianoroll, and the WebAudioFont soundfont and player). It then
-  boots the app with `/src/main.js`.
-- `src/main.js` creates the Vue app, installs the router and mounts it on
-  `#app`.
+- `index.html` declares the app root and loads the two g200kg custom-element
+  libraries (`webaudio-controls` and `webaudio-pianoroll`) from the self-hosted
+  copies in `public/vendor/`. jQuery and Fomantic UI are bundled from npm by
+  `src/vendor/index.js`. It then boots the app with `/src/main.js`.
+- `src/main.js` creates the Vue app, waits for the Fomantic plugins to register,
+  installs the router and mounts it on `#app`.
 - `src/App.vue` renders the top menu. Its `onMounted()` hook calls
   `mainOneKeyJam()` from `src/lib/main.js`, which starts the one-time MIDI and
   project boot.
@@ -23,15 +23,19 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
 - `src/views/` holds the routed pages. `src/components/` holds the UI widgets
   such as the piano keyboards, chord pickers, scale pickers and status panels.
 - `src/lib/` holds the framework-independent domain logic and the MIDI and
-  audio plumbing. This is the largest part of the codebase.
+  audio plumbing. This is the largest part of the codebase. The hardware MIDI
+  runtime is grouped in `src/lib/midi/` and the in-browser sound in
+  `src/lib/audio/`; the rest sits flat in `src/lib/`.
+- `src/vendor/index.js` loads jQuery and Fomantic UI from npm and exposes
+  `$`/`jQuery` as globals.
 - `bin/generate-manifests.mjs` scans `public/projects` and `public/keyboards`
   and writes manifest JSON files listing the available files. Static hosting
   cannot list a directory, so the app reads these manifests to discover the
   libraries. It runs automatically before `npm run dev` and `npm run build`.
 - `public/` holds static assets: project JSON in `public/projects/`, keyboard
-  configs in `public/keyboards/`, MIDI files, images and CSS.
-- `test/` holds the Vitest tests. Component tests live beside the components in
-  `src/components/__tests__/` and run under Vitest too.
+  configs in `public/keyboards/`, the self-hosted g200kg libraries in
+  `public/vendor/`, plus MIDI files, images and CSS.
+- `test/` holds the Vitest tests.
 
 ## Shared state
 
@@ -44,11 +48,13 @@ boundary between the UI layer and the MIDI and audio logic.
 
 ## Boot sequence
 
-1. `index.html` loads the vendor scripts, then `/src/main.js`.
-2. `main.js` mounts the Vue app.
+1. `index.html` loads the self-hosted vendor scripts, then `/src/main.js`.
+2. `main.js` waits for the bundled jQuery/Fomantic plugins, then mounts the Vue
+   app and sets `globals.boot.status`.
 3. `App.vue` calls `mainOneKeyJam()` in `src/lib/main.js`.
-4. `bootGeneralMidi()` prepares the in-browser sounds, then `await
-   bootWebMidi()` enables WebMidi.js, records the detected keyboards in
+4. `wireProjectEvents()` registers the project and keyboard event handlers, then
+   `bootGeneralMidi()` prepares the in-browser sounds and `await bootWebMidi()`
+   enables WebMidi.js, records the detected keyboards in
    `globals.keyboardsDetected`, and finds the IAC Driver output channels.
 5. `bootKeyboard()` loads the keyboard config that matches a detected device,
    and `bootProject()` loads the starting (empty) project.
@@ -79,26 +85,26 @@ and the validation commands.
 
 - Playing a note in the left-hand trigger octave that is in `chordTriggerMap`
   plays the chord and changes the current scale, which rebuilds the scale
-  mapping (see `src/lib/play-chord.js` and `src/lib/change-scale.js`).
-- Playing any other note calls `jam()` in `src/lib/jam.js`. If scale filtering
+  mapping (see `src/lib/midi/play-chord.js` and `src/lib/change-scale.js`).
+- Playing any other note calls `jam()` in `src/lib/midi/jam.js`. If scale filtering
   is on, the played note is translated through `scaleTriggerMap` to an allowed
   note; otherwise it is echoed through. Pending note-offs are tracked in
   `globals.pendingNoteOffs` so the correct note can be stopped later.
 - Left-hand black keys act as modifiers: `C#` is a shift key, and `D#`, `F#`,
   `G#` and `A#` toggle scale filtering, switch scales or transpose the chords.
   Right-hand black keys switch scale and transpose as well. See `onNoteOn()` in
-  `src/lib/wire-events.js`.
+  `src/lib/midi/wire-events.js`.
 - MIDI output goes to three channels of the IAC Driver: channel 1 for jam
   notes, channel 2 for chords and channel 3 for bass. When `globals.GM` is
-  true, sounds are instead made in the browser with WebAudioFont
-  (`src/lib/general-midi.js`).
+  true, sounds are instead made in the browser with the npm `soundfont-player`
+  package (`src/lib/audio/general-midi.js`).
 - The on-screen keyboard is the `webaudio-keyboard` custom element from g200kg
-  webaudio-controls. Alongside mouse and touch it maps computer keys to notes
-  (the QWERTY rows, using the keycodes in `src/lib/webaudio-controls.js`), so it
+  webaudio-controls, self-hosted from `public/vendor/`. Alongside mouse and
+  touch it maps computer keys to notes (the QWERTY rows), so it
   can be played without an external MIDI keyboard. It emits the same `change`
   events that `LivePianoKeyboard.vue` handles in `onChange()`, which means
   computer-keyboard notes flow through `onNoteOn()` and `onNoteOff()` in
-  `src/lib/wire-events.js` exactly like mouse or MIDI notes. It only responds
+  `src/lib/midi/wire-events.js` exactly like mouse or MIDI notes. It only responds
   while the keyboard canvas has focus, so the user must click it first.
 - The separate `src/components/PianoKeyboard.vue` component (reachable only from
   the research view) is an older experiment. It highlights keys when computer

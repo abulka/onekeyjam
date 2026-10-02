@@ -1,8 +1,7 @@
 <script setup>
 import { computed } from 'vue'
-import { ref, onMounted, onUnmounted } from "vue";
 import * as Tonal from "@tonaljs/tonal";
-import { globals } from '/src/lib/globals.js'
+import { globals } from '@/lib/globals.js'
 import { detectChordsBeingPlayed } from "../../src/lib/detectChordsBeingPlayed";
 import { stringify } from '../../src/lib/prettyjson.js'
 import ButtonAudition from './ButtonAudition.vue'
