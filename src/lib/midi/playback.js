@@ -24,29 +24,70 @@ let startOffsetSec = 0
 let litNotes = new Set()
 
 /**
+ * @param {typeof globals.recording.take} take
+ * @param {number} positionSec
+ * @returns {Iterable<object>} notes whose span contains the position
+ */
+function notesSpanning(take, positionSec) {
+    const rec = globals.recording
+    const spt = secondsPerTick(rec.bpm, rec.ppq)
+    return [...take.chords, ...take.jam].filter(note => {
+        const startSec = ticksToSeconds(note.startTick, spt)
+        const endSec = ticksToSeconds(note.startTick + note.durationTicks, spt)
+        return positionSec >= startSec && positionSec < endSec
+    })
+}
+
+/**
+ * MIDI numbers of the notes that sound at a position.
+ * @param {typeof globals.recording.take} take
+ * @param {number} positionSec
+ * @returns {Set<number>}
+ */
+export function soundingNotesAt(take, positionSec) {
+    const active = new Set()
+    for (const note of notesSpanning(take, positionSec)) {
+        if (typeof note.midi === 'number')
+            active.add(note.midi)
+    }
+    return active
+}
+
+/**
+ * MIDI numbers of the keys that were played at a position. Notes recorded
+ * before played keys were captured have no `playedMidi` and contribute nothing.
+ * @param {typeof globals.recording.take} take
+ * @param {number} positionSec
+ * @returns {Set<number>}
+ */
+export function playedNotesAt(take, positionSec) {
+    const active = new Set()
+    for (const note of notesSpanning(take, positionSec)) {
+        if (typeof note.playedMidi === 'number')
+            active.add(note.playedMidi)
+    }
+    return active
+}
+
+/**
  * MIDI numbers that should be lit at a given position, for a highlight mode.
- * 'sounding' lights the notes that sound, 'played' the keys that were pressed
- * (not captured yet, so it stays empty), and 'both' the union.
+ * 'sounding' lights the notes that sound, 'played' the keys that were pressed,
+ * and 'both' the union.
  * @param {typeof globals.recording.take} take
  * @param {number} positionSec
  * @param {string} [mode]
  * @returns {Set<number>}
  */
 export function activeNotesAt(take, positionSec, mode = 'sounding') {
-    const rec = globals.recording
-    const spt = secondsPerTick(rec.bpm, rec.ppq)
-    const active = new Set()
-    for (const note of [...take.chords, ...take.jam]) {
-        const startSec = ticksToSeconds(note.startTick, spt)
-        const endSec = ticksToSeconds(note.startTick + note.durationTicks, spt)
-        if (positionSec < startSec || positionSec >= endSec)
-            continue
-        if ((mode === 'sounding' || mode === 'both') && typeof note.midi === 'number')
-            active.add(note.midi)
-        if ((mode === 'played' || mode === 'both') && typeof note.playedMidi === 'number')
-            active.add(note.playedMidi)
+    if (mode === 'played')
+        return playedNotesAt(take, positionSec)
+    if (mode === 'both') {
+        const active = soundingNotesAt(take, positionSec)
+        for (const midi of playedNotesAt(take, positionSec))
+            active.add(midi)
+        return active
     }
-    return active
+    return soundingNotesAt(take, positionSec)
 }
 
 /**
@@ -62,34 +103,69 @@ function broadcastLiveNote(midi, state) {
 }
 
 /**
- * Light or unlight the piano keys for the given playback position. Only the
- * differences are broadcast, so this is cheap to call every frame.
+ * @param {number[]} a
+ * @param {number[]} b
+ * @returns {boolean}
+ */
+function sameKeys(a, b) {
+    if (a.length !== b.length)
+        return false
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i])
+            return false
+    }
+    return true
+}
+
+/**
+ * Publish the played keys so the overlay can tint them. Only updates the
+ * reactive globals when the set actually changes, to avoid needless redraws.
+ * @param {Set<number>} played
+ */
+function publishPlayedKeys(played) {
+    const next = [...played].sort((x, y) => x - y)
+    const current = globals.recording.playback.playedKeys
+    if (!sameKeys(current, next))
+        globals.recording.playback.playedKeys = next
+}
+
+/**
+ * Update the keyboard visuals for the given playback position. The sounding
+ * notes light red through the widget (via `live-note`); the played keys are
+ * published for the blue overlay. Only differences are broadcast, so this is
+ * cheap to call every frame.
  * @param {number} positionSec
  */
 export function syncVisuals(positionSec) {
-    const desired = activeNotesAt(
-        globals.recording.take,
-        positionSec,
-        globals.recording.playback.highlightMode,
-    )
+    const take = globals.recording.take
+    const mode = globals.recording.playback.highlightMode
+
+    // Red highlight: the sounding notes, except in 'played' mode.
+    const red = mode === 'played' ? new Set() : soundingNotesAt(take, positionSec)
     for (const midi of litNotes) {
-        if (!desired.has(midi)) {
+        if (!red.has(midi)) {
             broadcastLiveNote(midi, false)
             litNotes.delete(midi)
         }
     }
-    for (const midi of desired) {
+    for (const midi of red) {
         if (!litNotes.has(midi)) {
             broadcastLiveNote(midi, true)
             litNotes.add(midi)
         }
     }
+
+    // Blue overlay: the played keys, in 'played' and 'both' modes.
+    publishPlayedKeys(mode === 'played' || mode === 'both'
+        ? playedNotesAt(take, positionSec)
+        : new Set())
 }
 
 function clearVisuals() {
     for (const midi of litNotes)
         broadcastLiveNote(midi, false)
     litNotes = new Set()
+    publishPlayedKeys(new Set())
 }
 
 /**

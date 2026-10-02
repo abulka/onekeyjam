@@ -36,7 +36,7 @@ function defaultStorage() {
 
 /**
  * @param {unknown} notes
- * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number }>}
+ * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number }>}
  */
 function sanitizeNotes(notes) {
     if (!Array.isArray(notes))
@@ -47,12 +47,18 @@ function sanitizeNotes(notes) {
             && typeof note.startTick === 'number'
             && typeof note.durationTicks === 'number'
             && typeof note.velocity === 'number')
-        .map(note => ({
-            midi: note.midi,
-            startTick: note.startTick,
-            durationTicks: note.durationTicks,
-            velocity: note.velocity,
-        }))
+        .map(note => {
+            /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number }} */
+            const clean = {
+                midi: note.midi,
+                startTick: note.startTick,
+                durationTicks: note.durationTicks,
+                velocity: note.velocity,
+            }
+            if (typeof note.playedMidi === 'number')
+                clean.playedMidi = note.playedMidi
+            return clean
+        })
 }
 
 /**
@@ -171,16 +177,20 @@ function normaliseVelocity(velocity) {
 /**
  * @param {'chords'|'jam'} track
  * @param {string} noteName
- * @param {{ midi: number, velocity: number, startTick: number }} entry
+ * @param {{ midi: number, velocity: number, startTick: number, playedMidi?: number }} entry
  * @param {number} endTick
  */
 function commit(track, noteName, entry, endTick) {
-    globals.recording.take[track].push({
+    /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number }} */
+    const note = {
         midi: entry.midi,
         startTick: entry.startTick,
         durationTicks: recordedNoteDuration(entry.startTick, endTick),
         velocity: entry.velocity,
-    })
+    }
+    if (typeof entry.playedMidi === 'number')
+        note.playedMidi = entry.playedMidi
+    globals.recording.take[track].push(note)
 }
 
 /**
@@ -244,17 +254,19 @@ export function clearTake() {
 
 /**
  * @param {'chords'|'jam'} track
- * @param {string} noteName
+ * @param {string} noteName note that sounds
  * @param {number} [velocity]
  * @param {number} [now]
+ * @param {string} [playedNote] the key that was pressed, when it differs from the sounding note
  */
-function recordNoteOn(track, noteName, velocity, now) {
+function recordNoteOn(track, noteName, velocity, now, playedNote) {
     const rec = globals.recording
     if (!rec.isRecording)
         return
     const midi = noteNameToMidi(noteName)
     if (midi == null)
         return
+    const playedMidi = playedNote === undefined ? undefined : noteNameToMidi(playedNote)
     const startTick = tickFrom(now)
     const existing = rec.held[track][noteName]
     // Retrigger of a note that is still held: close out the previous note at
@@ -265,6 +277,7 @@ function recordNoteOn(track, noteName, velocity, now) {
         midi,
         velocity: normaliseVelocity(velocity),
         startTick,
+        playedMidi,
     }
 }
 
@@ -286,35 +299,35 @@ function recordNoteOff(track, noteName, now) {
 }
 
 /**
- * @param {string} noteName
+ * @param {string} noteName note that sounds
  * @param {number} [velocity]
- * @param {number} [now]
+ * @param {{ now?: number, playedNote?: string }} [options]
  */
-export function recordChordNoteOn(noteName, velocity, now) {
-    recordNoteOn('chords', noteName, velocity, now)
+export function recordChordNoteOn(noteName, velocity, { now, playedNote } = {}) {
+    recordNoteOn('chords', noteName, velocity, now, playedNote)
 }
 
 /**
  * @param {string} noteName
- * @param {number} [now]
+ * @param {{ now?: number }} [options]
  */
-export function recordChordNoteOff(noteName, now) {
+export function recordChordNoteOff(noteName, { now } = {}) {
     recordNoteOff('chords', noteName, now)
 }
 
 /**
- * @param {string} noteName
+ * @param {string} noteName note that sounds
  * @param {number} [velocity]
- * @param {number} [now]
+ * @param {{ now?: number, playedNote?: string }} [options]
  */
-export function recordJamNoteOn(noteName, velocity, now) {
-    recordNoteOn('jam', noteName, velocity, now)
+export function recordJamNoteOn(noteName, velocity, { now, playedNote } = {}) {
+    recordNoteOn('jam', noteName, velocity, now, playedNote)
 }
 
 /**
  * @param {string} noteName
- * @param {number} [now]
+ * @param {{ now?: number }} [options]
  */
-export function recordJamNoteOff(noteName, now) {
+export function recordJamNoteOff(noteName, { now } = {}) {
     recordNoteOff('jam', noteName, now)
 }

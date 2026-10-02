@@ -117,7 +117,8 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
       </p>
       <ul class="ui list">
         <li><strong>Record / Stop</strong> - capture a take, with a live note count.</li>
-        <li><strong>Play / Pause</strong> - listen back to the take in the browser. Play resumes from the scrub position, the rewind button jumps back to the start, and the notes light up on the piano keyboard as they sound.</li>
+        <li><strong>Play / Pause</strong> - listen back to the take in the browser. Play resumes from the scrub position, the rewind button jumps back to the start, and the keys light up as they sound.</li>
+        <li><strong>Keys</strong> - choose what lights up on the keyboard during playback: the sounding notes (red), the keys you played (blue), or both.</li>
         <li><strong>Export MIDI</strong> - download the take as a two-track <code>.mid</code> file (solo first, chords second) to use in a DAW.</li>
         <li><strong>Chord Sequencer</strong> - a built-in step sequencer for editing left-hand chords and right-hand jam notes by hand.</li>
       </ul>

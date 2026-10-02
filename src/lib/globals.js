@@ -249,6 +249,9 @@ export const globals = reactive({
             // Which keys light up on the piano keyboard during playback:
             // 'sounding' (notes that sound), 'played' (keys pressed) or 'both'.
             highlightMode: 'sounding',
+            // MIDI numbers of the played keys currently tinted during playback
+            // (used by the overlay in 'played' and 'both' modes).
+            playedKeys: [],
         },
     },
 

@@ -6,6 +6,8 @@ import {
     seekPlayback,
     startPlayback,
     activeNotesAt,
+    soundingNotesAt,
+    playedNotesAt,
     syncVisuals,
     previewVisuals,
 } from '@/lib/midi/playback.js'
@@ -75,6 +77,7 @@ describe('playback keyboard highlighting', () => {
         globals.recording.ppq = 480
         globals.recording.take = { chords: [], jam: [] }
         globals.recording.playback.highlightMode = 'sounding'
+        globals.recording.playback.playedKeys = []
         stopPlayback(true)
         liveNoteEvents = []
     })
@@ -135,5 +138,63 @@ describe('playback keyboard highlighting', () => {
         assert.equal(liveNoteEvents[0].note.number, 60)
         assert.equal(globals.recording.playback.positionSec, 0.1)
         assert.equal(globals.recording.playback.isPlaying, false)
+    })
+
+    it('separates sounding notes from played keys', () => {
+        const take = {
+            chords: [{ midi: 64, playedMidi: 48, startTick: 0, durationTicks: 960 }],
+            jam: [{ midi: 72, playedMidi: 66, startTick: 480, durationTicks: 960 }],
+        }
+        assert.deepEqual([...soundingNotesAt(take, 0.1)].sort(), [64])
+        assert.deepEqual([...playedNotesAt(take, 0.1)].sort(), [48])
+        assert.deepEqual([...soundingNotesAt(take, 0.6)].sort(), [64, 72])
+        assert.deepEqual([...playedNotesAt(take, 0.6)].sort(), [48, 66])
+    })
+
+    it('activeNotesAt returns sounding, played or the union per mode', () => {
+        const take = { chords: [{ midi: 64, playedMidi: 48, startTick: 0, durationTicks: 960 }], jam: [] }
+        assert.deepEqual([...activeNotesAt(take, 0.1, 'sounding')], [64])
+        assert.deepEqual([...activeNotesAt(take, 0.1, 'played')], [48])
+        assert.deepEqual([...activeNotesAt(take, 0.1, 'both')].sort(), [48, 64])
+    })
+
+    it('lights the sounding notes red and hides the played overlay in sounding mode', () => {
+        globals.recording.take = { chords: [{ midi: 64, playedMidi: 48, startTick: 0, durationTicks: 960 }], jam: [] }
+        globals.recording.playback.highlightMode = 'sounding'
+        syncVisuals(0.1)
+
+        assert.equal(liveNoteEvents.length, 1)
+        assert.equal(liveNoteEvents[0].note.number, 64)
+        assert.deepEqual(globals.recording.playback.playedKeys, [])
+    })
+
+    it('publishes the played keys and does not light red in played mode', () => {
+        globals.recording.take = { chords: [{ midi: 64, playedMidi: 48, startTick: 0, durationTicks: 960 }], jam: [] }
+        globals.recording.playback.highlightMode = 'played'
+        syncVisuals(0.1)
+
+        assert.deepEqual(globals.recording.playback.playedKeys, [48])
+        assert.equal(liveNoteEvents.length, 0)
+    })
+
+    it('lights sounding red and publishes played keys in both mode', () => {
+        globals.recording.take = { chords: [{ midi: 64, playedMidi: 48, startTick: 0, durationTicks: 960 }], jam: [] }
+        globals.recording.playback.highlightMode = 'both'
+        syncVisuals(0.1)
+
+        assert.deepEqual(globals.recording.playback.playedKeys, [48])
+        assert.equal(liveNoteEvents.length, 1)
+        assert.equal(liveNoteEvents[0].state, true)
+        assert.equal(liveNoteEvents[0].note.number, 64)
+    })
+
+    it('clears the played keys when playback stops', () => {
+        globals.recording.take = { chords: [{ midi: 64, playedMidi: 48, startTick: 0, durationTicks: 960 }], jam: [] }
+        globals.recording.playback.highlightMode = 'played'
+        syncVisuals(0.1)
+        assert.deepEqual(globals.recording.playback.playedKeys, [48])
+
+        stopPlayback(true)
+        assert.deepEqual(globals.recording.playback.playedKeys, [])
     })
 })

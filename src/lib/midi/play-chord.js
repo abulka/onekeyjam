@@ -97,9 +97,10 @@ export function playChordNote(noteName, toneType, options, channel, triggerNote,
     }
 
     // Capture the note that actually sounds, but only for live chord triggers
-    // (triggerNote is undefined for auditions, which we do not record).
+    // (triggerNote is undefined for auditions, which we do not record). The
+    // trigger key is remembered separately so playback can show the keys played.
     if (globals.recording.isRecording && triggerNote !== undefined)
-        recordChordNoteOn(noteName, options.originNote && options.originNote.attack)
+        recordChordNoteOn(noteName, options.originNote && options.originNote.attack, { playedNote: triggerNote })
 
     if (globals.GM)
         playGmNote(noteName, noteOffInfo, {

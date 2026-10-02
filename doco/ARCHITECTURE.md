@@ -98,9 +98,11 @@ and the validation commands.
   and the pure helpers in `src/lib/midi/timing.js` (120 BPM, 480 PPQ, no
   quantisation). `src/lib/midi/playback.js` plays the take back through the
   in-browser General MIDI sounds and supports scrubbing. While it plays (and
-  while the scrubber is dragged) the sounding notes light up on the piano
-  keyboard, re-using the same `live-note` document event that real MIDI input
-  uses. `src/lib/midi/export-recording.js`
+  while the scrubber is dragged) the keys light up: the sounding notes light red
+  through the same `live-note` document event that real MIDI input uses, and the
+  keys that were pressed are drawn in blue by `PlaybackKeysOverlay.vue`. A
+  "Keys" combo chooses between sounding notes, played keys or both;
+  `globals.recording.playback.highlightMode` holds the choice. `src/lib/midi/export-recording.js`
   turns the take into a two-track `.mid` file with `@tonejs/midi`, writing the
   solo part first and the chords second. The latest take is saved to
   `localStorage` (key `onekeyjam.latestTake`) and restored at boot, so a refresh

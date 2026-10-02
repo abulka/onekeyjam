@@ -27,6 +27,11 @@ watch(durationSec, () => {
     scrubValue.value = rec.playback.positionSec || 0
 })
 
+// Re-draw the keyboard when the highlight mode changes while parked.
+watch(() => rec.playback.highlightMode, () => {
+  previewVisuals(rec.playback.positionSec)
+})
+
 function toggleRecord() {
   if (rec.isRecording)
     stopRecording()
@@ -176,9 +181,9 @@ onUnmounted(() => {
               <label class="highlight-mode" title="Which notes light up on the keyboard during playback">
                 Keys
                 <select v-model="rec.playback.highlightMode" :disabled="!rec.hasTake">
-                  <option value="sounding">Sounding notes</option>
-                  <option value="played" disabled>Played keys (soon)</option>
-                  <option value="both" disabled>Sounding + played (soon)</option>
+                  <option value="sounding">Sounding notes (red)</option>
+                  <option value="played">Played keys (blue)</option>
+                  <option value="both">Sounding + played</option>
                 </select>
               </label>
             </div>

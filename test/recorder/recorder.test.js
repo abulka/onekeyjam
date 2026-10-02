@@ -39,8 +39,8 @@ describe('midi recorder', () => {
 
     it('records a chord note with its start tick, duration and velocity', () => {
         startRecording(0)
-        recordChordNoteOn('C4', 0.9, 0)
-        recordChordNoteOff('C4', 0.5)
+        recordChordNoteOn('C4', 0.9, { now: 0 })
+        recordChordNoteOff('C4', { now: 0.5 })
         stopRecording(0.5)
 
         assert.equal(globals.recording.take.chords.length, 1)
@@ -54,8 +54,8 @@ describe('midi recorder', () => {
 
     it('puts jam notes on their own track', () => {
         startRecording(0)
-        recordJamNoteOn('E5', 0.5, 0.25)
-        recordJamNoteOff('E5', 0.5)
+        recordJamNoteOn('E5', 0.5, { now: 0.25 })
+        recordJamNoteOff('E5', { now: 0.5 })
         stopRecording(0.5)
 
         assert.equal(globals.recording.take.chords.length, 0)
@@ -66,9 +66,20 @@ describe('midi recorder', () => {
         assert.equal(note.durationTicks, Math.round(0.25 * 960))
     })
 
+    it('records the played key alongside the sounding note', () => {
+        startRecording(0)
+        recordChordNoteOn('E4', 0.9, { now: 0, playedNote: 'C3' })
+        recordChordNoteOff('E4', { now: 0.5 })
+        stopRecording(0.5)
+
+        const note = globals.recording.take.chords[0]
+        assert.equal(note.midi, 64)      // E4 sounds
+        assert.equal(note.playedMidi, 48) // triggered by C3
+    })
+
     it('finalises notes still held down when recording stops', () => {
         startRecording(0)
-        recordChordNoteOn('G3', 0.7, 0)
+        recordChordNoteOn('G3', 0.7, { now: 0 })
         stopRecording(1)
 
         assert.equal(globals.recording.take.chords.length, 1)
@@ -78,9 +89,9 @@ describe('midi recorder', () => {
 
     it('closes out a note that is retriggered while still held', () => {
         startRecording(0)
-        recordJamNoteOn('C4', 0.5, 0)
-        recordJamNoteOn('C4', 0.5, 0.25)
-        recordJamNoteOff('C4', 0.5)
+        recordJamNoteOn('C4', 0.5, { now: 0 })
+        recordJamNoteOn('C4', 0.5, { now: 0.25 })
+        recordJamNoteOff('C4', { now: 0.5 })
         stopRecording(0.5)
 
         assert.equal(globals.recording.take.jam.length, 2)
@@ -91,7 +102,7 @@ describe('midi recorder', () => {
     })
 
     it('ignores notes when not recording', () => {
-        recordChordNoteOn('C4', 0.9, 0)
+        recordChordNoteOn('C4', 0.9, { now: 0 })
         assert.equal(globals.recording.take.chords.length, 0)
         assert.equal(globals.recording.isRecording, false)
     })
@@ -102,14 +113,14 @@ describe('midi recorder', () => {
         assert.equal(globals.recording.hasTake, false)
 
         startRecording(0)
-        recordJamNoteOn('C4', 0.5, 0)
+        recordJamNoteOn('C4', 0.5, { now: 0 })
         stopRecording(0.5)
         assert.equal(globals.recording.hasTake, true)
     })
 
     it('clears the take', () => {
         startRecording(0)
-        recordJamNoteOn('C4', 0.5, 0)
+        recordJamNoteOn('C4', 0.5, { now: 0 })
         stopRecording(0.5)
         clearTake()
 
@@ -122,9 +133,9 @@ describe('midi recorder', () => {
     it('persists and restores the latest take', () => {
         const storage = fakeStorage()
         startRecording(0)
-        recordChordNoteOn('C4', 0.8, 0)
-        recordChordNoteOff('C4', 0.5)
-        recordJamNoteOn('C5', 0.6, 0.25)
+        recordChordNoteOn('C4', 0.8, { now: 0, playedNote: 'C3' })
+        recordChordNoteOff('C4', { now: 0.5 })
+        recordJamNoteOn('C5', 0.6, { now: 0.25 })
         stopRecording(1)
         persistTake(storage)
 
@@ -136,13 +147,14 @@ describe('midi recorder', () => {
         assert.equal(globals.recording.take.chords.length, 1)
         assert.equal(globals.recording.take.jam.length, 1)
         assert.equal(globals.recording.take.chords[0].midi, 60)
+        assert.equal(globals.recording.take.chords[0].playedMidi, 48)
         assert.ok(globals.recording.playback.durationSec > 0)
     })
 
     it('removes the persisted take when the take is cleared', () => {
         const storage = fakeStorage()
         startRecording(0)
-        recordJamNoteOn('C4', 0.5, 0)
+        recordJamNoteOn('C4', 0.5, { now: 0 })
         stopRecording(0.5)
         persistTake(storage)
         assert.ok(storage.getItem(STORAGE_KEY))

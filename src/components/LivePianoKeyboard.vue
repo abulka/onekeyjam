@@ -7,6 +7,7 @@ import { indexToNote } from "../lib/note-tools.js"
 import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events"
 import { getNoteKeyForCode } from "@/lib/midi/piano-key-map.js"
 import KeyboardHelpOverlay from "./KeyboardHelpOverlay.vue"
+import PlaybackKeysOverlay from "./PlaybackKeysOverlay.vue"
 
 // window.matchMedia('(min-width: 700px)')
 const isLargeScreen = computed({
@@ -203,6 +204,7 @@ onUnmounted(() => {
     <div class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }">
       <webaudio-keyboard v-if="isLargeScreen" keys="49" ref="pianoKeyboard" width="1130"></webaudio-keyboard>
       <webaudio-keyboard v-else keys="25" ref="pianoKeyboard" width="710"></webaudio-keyboard>
+      <PlaybackKeysOverlay :keyboard-el="pianoKeyboard" :keys="isLargeScreen ? 49 : 25" />
       <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off' || globals.showKeyShortcuts" :keyboard-el="pianoKeyboard"
         :keys="isLargeScreen ? 49 : 25" />
     </div>
