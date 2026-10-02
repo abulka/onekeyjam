@@ -70,7 +70,6 @@ onUnmounted(() => {
         <code class="tip">D#</code> [<code class="kb">{{ lhDsharp }}</code>] emergency all notes off
         <code class="tip">F#</code> [<code class="kb">{{ lhFsharp }}</code>] add chord
         <code class="tip">G#</code> [<code class="kb">{{ lhGsharp }}</code>] reset transpositions
-        <code class="tip">A#</code> [<code class="kb">{{ lhAsharp }}</code>] reset transpositions
       <br>
 
       <div class="mt-2"></div>
@@ -119,8 +118,7 @@ onUnmounted(() => {
                 <td>
                   <code class="kb">{{ lhDsharp }}</code> all notes off /
                   <code class="kb">{{ lhFsharp }}</code> add chord /
-                  <code class="kb">{{ lhGsharp }}</code> reset transpositions /
-                  <code class="kb">{{ lhAsharp }}</code> reset transpositions
+                  <code class="kb">{{ lhGsharp }}</code> reset transpositions
                 </td>
                 <td></td>
               </tr>

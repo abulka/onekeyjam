@@ -117,11 +117,16 @@ and the validation commands.
 - The main keyboard can show optional text labels on its keys
   (`src/components/KeyboardHelpOverlay.vue`). It layers absolutely positioned,
   click-through labels over the `webaudio-keyboard` canvas, reading the canvas's
-  live key geometry, so the shared web component is never modified. The
-  `globals.keyboardHelpMode` setting (`'off' | 'black' | 'white' | 'all'`)
-  chooses what to show, controlled by the "Key labels" dropdown in
-  `ScaleFilteringToggles.vue`. Label text and the horizontal/vertical fit
-  decision live in `src/lib/keyboard-help.js`.
+  live key geometry, so the shared web component is never modified. Chord
+  trigger white keys get a filled label to distinguish them from the plain
+  soloing notes. The `globals.keyboardHelpMode` setting
+  (`'off' | 'black' | 'white' | 'all'`, default `'all'`) chooses what to show,
+  controlled by the "Key labels" dropdown in `ScaleFilteringToggles.vue` and
+  saved in `localStorage` by `src/lib/uiPrefs.js`. Label text and the
+  horizontal/vertical fit decision live in `src/lib/keyboard-help.js`.
+- The main keyboard draws a subtle focus outline and shows a hint below it while
+  unfocused, because the computer-keyboard shortcuts only work once it is
+  clicked.
 
 ## Persistence and backend
 

@@ -24,7 +24,7 @@ const LEFT_HAND_SHIFT_HELP = {
     'D#': 'All notes off',
     'F#': 'Add chord',
     'G#': 'Reset transp.',
-    'A#': 'Reset transp.',
+    'A#': '',  // no SHIFT action; SHIFT + G# resets transpositions
 }
 
 const RIGHT_HAND_HELP = {
@@ -79,6 +79,7 @@ export function buildWhiteNoteMappings(chordTriggerMap = {}, scaleTriggerMap = {
  * @param {number[]} [options.kf] key flags, 1 for black keys, indexed by semitone
  * @param {number} [options.lhTriggerOctave]
  * @param {Record<string, string>} [options.whiteNoteMappings]
+ * @param {string[]} [options.chordTriggerNotes] notes that trigger a chord (white keys get kind 'chord')
  * @param {string} [options.keyboardHelpMode] 'off' | 'black' | 'white' | 'all'
  * @returns {Array<object>}
  */
@@ -89,6 +90,7 @@ export function buildKeyLabels(options = {}) {
         kf = [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0],
         lhTriggerOctave = 3,
         whiteNoteMappings = {},
+        chordTriggerNotes = [],
         keyboardHelpMode = 'all',
     } = options
 
@@ -106,9 +108,12 @@ export function buildKeyLabels(options = {}) {
             if (showBlack) {
                 const pitchClass = note.replace(/-?\d+$/, '')
                 const octave = Number((note.match(/-?\d+$/) || ['0'])[0])
+                const isLeftHand = Number(octave) === Number(lhTriggerOctave)
                 labels.push({
                     note,
                     isBlack: true,
+                    isLeftHand,
+                    isShiftKey: isLeftHand && pitchClass === 'C#',
                     semitoneIndex: i,
                     whiteIndex: -1,
                     help: getBlackKeyHelp(pitchClass, octave, { shift: false, lhTriggerOctave }),
@@ -122,8 +127,11 @@ export function buildKeyLabels(options = {}) {
                 labels.push({
                     note,
                     isBlack: false,
+                    isLeftHand: false,
+                    isShiftKey: false,
                     semitoneIndex: i,
                     whiteIndex,
+                    kind: chordTriggerNotes.includes(note) ? 'chord' : 'scale',
                     help: '',
                     shiftHelp: '',
                     mapping: whiteNoteMappings[note] || '',
@@ -137,17 +145,22 @@ export function buildKeyLabels(options = {}) {
 
 /**
  * Chooses the text shown on a black key. While the left-hand SHIFT (C#) key is
- * pressed or pending, keys that have a SHIFT meaning show only that meaning, so
- * the label fits in both modes. Keys without a SHIFT meaning keep their regular
- * text.
+ * pressed or pending, keys that have a SHIFT meaning show only that meaning and
+ * keys without one (such as A#) show nothing, so the label fits in both modes.
+ * The SHIFT key itself keeps its SHIFT label. Right-hand keys pass
+ * `shiftActive` as false, so they are unaffected.
  * @param {string} help regular black key meaning
  * @param {string} shiftHelp meaning while SHIFT is held
- * @param {boolean} shiftActive whether SHIFT is currently pressed or pending
+ * @param {boolean} shiftActive whether SHIFT is pressed/pending for this key
+ * @param {boolean} [isShiftKey] whether this is the SHIFT key itself
  * @returns {{ help: string, shiftHelp: string }}
  */
-export function getBlackKeyDisplay(help, shiftHelp, shiftActive) {
-    if (shiftActive && shiftHelp)
-        return { help: '', shiftHelp }
+export function getBlackKeyDisplay(help, shiftHelp, shiftActive, isShiftKey = false) {
+    if (shiftActive) {
+        if (isShiftKey)
+            return { help: help || '', shiftHelp: '' }
+        return { help: '', shiftHelp: shiftHelp || '' }
+    }
     return { help: help || '', shiftHelp: '' }
 }
 

@@ -8,6 +8,11 @@ import '@globalhive/vuejs-tour/dist/style.css';
 import App from './App.vue'
 import router from './router'
 import './index.css'  // tailwind - https://tailwindcss.com/docs/guides/vite
+import { initUiPrefs } from './lib/uiPrefs.js'
+
+// Restore saved UI preferences before the first render so the keyboard labels
+// start in the user's chosen mode (default: black and white).
+initUiPrefs()
 
 // jQuery and Fomantic UI are loaded from pinned CDN <script>/<link> tags in
 // index.html, so `$` and its plugins are present before this module runs.

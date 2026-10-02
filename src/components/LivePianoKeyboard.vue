@@ -18,8 +18,18 @@ let lhCsharpStuckDown = false
 const isLhCsharp = (keyboardIndex) => indexToNote(keyboardIndex, globals.keyboard.lhTriggerOctave) === globals.lhMetaKeys.lhCsharp
 
 const pianoKeyboard = ref(null)
+const keyboardFocused = ref(false)
 // Physical keys currently held down, so we can stop the note we started.
 const keysDown = new Map()
+
+function updateKeyboardFocus() {
+  keyboardFocused.value = !!pianoKeyboard.value && document.activeElement === pianoKeyboard.value
+}
+
+function onFocusChange() {
+  // focusout fires before the next element receives focus, so defer the check
+  setTimeout(updateKeyboardFocus, 0)
+}
 
 function buildRawPianoNoteInfo(note, on, noteNumber, showNoteNumber = true) {
   // sets globals.currentRawLiveNote
@@ -127,18 +137,23 @@ async function attachKeyboard() {
   el.addEventListener('keydown', onKeyDown)
   el.addEventListener('keyup', onKeyUp)
   attachedEl = el
+  updateKeyboardFocus()
 }
 
 watch(pianoKeyboard, attachKeyboard)
 
 onMounted(() => {
   attachKeyboard()
-  document.addEventListener("live-note", onLiveNote)
+  document.addEventListener('live-note', onLiveNote)
+  document.addEventListener('focusin', onFocusChange)
+  document.addEventListener('focusout', onFocusChange)
 })
 
 onUnmounted(() => {
   detachKeyboard()
   document.removeEventListener("live-note", onLiveNote)
+  document.removeEventListener('focusin', onFocusChange)
+  document.removeEventListener('focusout', onFocusChange)
 })
 
 
@@ -147,12 +162,13 @@ onUnmounted(() => {
 <template>
   <!-- piano keyboard -->
   <div class="ui container mb-4" data-step="piano-keyboard">
-    <div class="piano-keyboard-wrap">
+    <div class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }">
       <webaudio-keyboard v-if="isLargeScreen" keys="49" ref="pianoKeyboard" width="1130"></webaudio-keyboard>
       <webaudio-keyboard v-else keys="25" ref="pianoKeyboard" width="710"></webaudio-keyboard>
       <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off'" :keyboard-el="pianoKeyboard"
         :keys="isLargeScreen ? 49 : 25" />
     </div>
+    <p v-if="!keyboardFocused" class="keyboard-focus-hint">Click the keyboard to use computer-keyboard shortcuts.</p>
   </div>
 </template>
 
@@ -161,5 +177,19 @@ onUnmounted(() => {
   position: relative;
   display: inline-block;
   line-height: 0;
+  outline: 1px solid rgba(0, 0, 0, 0.12);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.piano-keyboard-wrap.keyboard-focused {
+  outline-color: rgba(34, 139, 34, 0.5);
+}
+
+.keyboard-focus-hint {
+  margin: 0.4rem 0 0;
+  font-size: 0.85rem;
+  color: #8a7f6a;
+  font-style: italic;
 }
 </style>

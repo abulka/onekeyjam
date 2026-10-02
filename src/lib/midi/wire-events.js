@@ -98,11 +98,9 @@ export function onNoteOn(e) {
         }
     }
     else if (e.note.identifier === globals.lhMetaKeys.lhAsharp) {  // A#
-        if (globals.blackShiftState)
-            resetTranspositionsEtc()  // clear any transpositions by re-instating original chord config
-        else {
+        // SHIFT + A# is intentionally unused; SHIFT + G# resets transpositions
+        if (!globals.blackShiftState)
             transposeChordTriggerMap(+2)  // currently 2 is ignored, a semitone is used instead
-        }
     }
     // rh modifiers
     else if (globals.scaleFilteringEnabled && modifierKeysCsharp.includes(e.note.identifier)) {

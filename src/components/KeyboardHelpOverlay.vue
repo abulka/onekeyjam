@@ -82,6 +82,7 @@ const keyLabels = computed(() => {
     kf: geo.kf,
     lhTriggerOctave: globals.keyboard.lhTriggerOctave,
     whiteNoteMappings,
+    chordTriggerNotes: Object.keys(globals.chordTriggerMap),
     keyboardHelpMode: globals.keyboardHelpMode,
   })
 
@@ -90,7 +91,7 @@ const keyLabels = computed(() => {
 
   return raw.map((item) => {
     if (item.isBlack) {
-      const { help, shiftHelp } = getBlackKeyDisplay(item.help, item.shiftHelp, shiftActive)
+      const { help, shiftHelp } = getBlackKeyDisplay(item.help, item.shiftHelp, item.isLeftHand && shiftActive, item.isShiftKey)
       const x = geo.wwidth * geo.ko[minMod] + geo.bwidth * (item.semitoneIndex - geo.min) + 1
       const lines = [shiftHelp, help].filter(Boolean)
       return {
@@ -142,7 +143,7 @@ function labelStyle(item) {
       </div>
       <div v-else-if="item.mapping" class="key-label key-label-white"
         :class="{ 'key-label-vertical': item.orientation === 'vertical' }" :style="labelStyle(item)">
-        {{ item.mapping }}
+        <span class="key-label-text" :class="{ 'key-label-chord': item.kind === 'chord' }">{{ item.mapping }}</span>
       </div>
     </template>
   </div>
@@ -174,6 +175,13 @@ function labelStyle(item) {
 .key-label-white {
   color: #333;
   font-family: 'Courier New', Courier, monospace;
+}
+
+.key-label-chord {
+  background-color: #cfe8c8;
+  border: 1px solid #8fbf82;
+  border-radius: 0;
+  padding: 0 3px;
 }
 
 .key-label-vertical {

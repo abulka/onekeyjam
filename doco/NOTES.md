@@ -249,9 +249,9 @@ used as modifiers. The `C#` acts as a SHIFT, so:
 - `G#` transposeChord down a semitone
 - `A#` transposeChord up a semitone
 - SHIFT `D#` stopAllNotes()
-- SHIFT `F#` scaleFilteringModificationSticky toggle
-- SHIFT `G#` reset chord transpose - todo
-- SHIFT `A#` reset chord transpose - todo
+- SHIFT `F#` add the currently jammed chord
+- SHIFT `G#` reset chord transpositions
+- SHIFT `A#` no action (reset is on `G#`/Ab)
 
 ### Config customisations supported
 

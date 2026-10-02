@@ -37,6 +37,19 @@ describe('buildKeyLabels', () => {
         assert.equal(byNote(labels, 'D3').mapping, '')
     })
 
+    it('marks chord trigger white keys distinctly from scale notes', () => {
+        const labels = buildKeyLabels({ ...baseOptions, chordTriggerNotes: ['C3'], whiteNoteMappings: { C3: 'Cmaj7' } })
+        assert.equal(byNote(labels, 'C3').kind, 'chord')
+        assert.equal(byNote(labels, 'D3').kind, 'scale')
+    })
+
+    it('marks left hand black keys and the SHIFT key', () => {
+        const labels = buildKeyLabels(baseOptions)
+        assert.equal(byNote(labels, 'C#3').isLeftHand, true)
+        assert.equal(byNote(labels, 'C#3').isShiftKey, true)
+        assert.equal(byNote(labels, 'D#3').isShiftKey, false)
+    })
+
     it('black mode omits white labels', () => {
         const labels = buildKeyLabels({ ...baseOptions, keyboardHelpMode: 'black' })
         assert(labels.every(label => label.isBlack))

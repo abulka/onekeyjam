@@ -15,8 +15,14 @@ describe('getBlackKeyDisplay', () => {
         assert.equal(result.shiftHelp, 'All notes off')
     })
 
-    it('keeps the regular help when a key has no shift meaning', () => {
-        const result = getBlackKeyDisplay('SHIFT', '', true)
+    it('blanks a left hand key with no SHIFT meaning while SHIFT is active', () => {
+        const result = getBlackKeyDisplay('Trans-pose chords UP', '', true)
+        assert.equal(result.help, '')
+        assert.equal(result.shiftHelp, '')
+    })
+
+    it('keeps the SHIFT label on the SHIFT key while active', () => {
+        const result = getBlackKeyDisplay('SHIFT', '', true, true)
         assert.equal(result.help, 'SHIFT')
         assert.equal(result.shiftHelp, '')
     })
