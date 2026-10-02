@@ -193,3 +193,21 @@ if (detectedChordsAgain.length === 0)
 else if (detectedChordsAgain[0].empty)
     console.warn('  back to chord failed', detectedChordSymbols)
 ```
+
+## webaudio-pianoroll (public/vendor/webaudio-pianoroll.js)
+
+Three small guards were added to the self-hosted g200kg pianoroll to stop rare
+freezes:
+
+- `getMMLString`'s `makeNote` loop now runs `while (l >= 1)`. A note shorter than
+  one unit in the MML 960-per-whole-note scale (which happens at a `timebase` of
+  1920 with a one-tick note) made the previous `while (l > 0)` loop forever.
+- `redrawGrid` and `redrawXRuler` break out if `x` is not finite or after a large
+  iteration count. A zero, negative or NaN `xrange`/`timebase`/`width` made their
+  `for (;;)` loops run forever; `PianoRollPanel.vue` also clamps those values
+  before setting them.
+
+The widget's default `grid` of 4 ticks is only sensible at a `timebase` of 16.
+At the recording panel's `timebase` of 1920 the vertical grid lines landed a
+fraction of a pixel apart and merged into a solid grey background. The panel now
+sets `grid` to `timebase / 4` (one line per quarter note).

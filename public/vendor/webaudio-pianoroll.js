@@ -49,9 +49,9 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
                 markstart:          {type:Number, value:0, observer:'redrawMarker'},
                 markend:            {type:Number, value:16, observer:'redrawMarker'},
                 defvelo:            {type:Number, value:100},
-                collt:              {type:String, value:"#ccc"},
-                coldk:              {type:String, value:"#aaa"},
-                colgrid:            {type:String, value:"#666"},
+                collt:              {type:String, value:"#f4f4f4"},
+                coldk:              {type:String, value:"#e2e2e2"},
+                colgrid:            {type:String, value:"#c8c8c8"},
                 colnote:            {type:String, value:"#f22"},
                 colnotesel:         {type:String, value:"#0f0"},
                 colnoteborder:      {type:String, value:"#000"},
@@ -344,7 +344,9 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
                     [8,"120"],[4,"240"],[2,"480"],[1,"960"]
                 ];
                 l=l*960/tb;
-                while(l>0){
+                // A length below 1 cannot be expressed and, without this guard,
+                // makes the loop below run forever.
+                while(l>=1){
                     for(let j=0;j<ltab.length;++j){
                         while(l>=ltab[j][0]){
                             l-=ltab[j][0];
@@ -1022,11 +1024,15 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
                 this.ctx.fillStyle=this.colgrid;
                 this.ctx.fillRect(this.yruler+this.kbwidth, ys|0, this.swidth,1);
             }
-            for(let t=0;;t+=this.grid){
+            for(let t=0,guard=0;;t+=this.grid,++guard){
                 let x=this.stepw*(t-this.xoffset)+this.yruler+this.kbwidth;
                 this.ctx.fillRect(x|0,this.xruler,1,this.sheight);
                 if(x>=this.width)
                     break;
+                if(!isFinite(x)||guard>100000){
+                    console.warn("webaudio-pianoroll: redrawGrid stopped to avoid a freeze",{stepw:this.stepw,xrange:this.xrange,xoffset:this.xoffset,width:this.width,grid:this.grid});
+                    break;
+                }
             }
         };
         this.semiflag=[6,1,0,1,0,2,1,0,1,0,1,0];
@@ -1042,12 +1048,16 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
                 this.ctx.fillRect(0,this.xruler-1,this.width,1);
                 this.ctx.fillRect(this.width-1,0,1,this.xruler);
                 this.ctx.fillStyle=this.colrulerfg;
-                for(let t=0;;t+=this.timebase){
+                for(let t=0,guard=0;;t+=this.timebase,++guard){
                     let x=(t-this.xoffset)*this.stepw+this.yruler+this.kbwidth;
                     this.ctx.fillRect(x,0,1,this.xruler);
                     this.ctx.fillText(t/this.timebase+1,x+4,this.xruler-8);
                     if(x>=this.width)
                         break;
+                    if(!isFinite(x)||guard>100000){
+                        console.warn("webaudio-pianoroll: redrawXRuler stopped to avoid a freeze",{stepw:this.stepw,timebase:this.timebase,xoffset:this.xoffset,width:this.width});
+                        break;
+                    }
                 }
             }
         };

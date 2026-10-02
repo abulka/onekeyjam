@@ -108,6 +108,16 @@ and the validation commands.
   `localStorage` (key `onekeyjam.latestTake`) and restored at boot, so a refresh
   does not lose it. The Chord Sequencer now lives on the Record view rather than
   the Perform view.
+- The Record view also has a Recording piano roll (`RecordingPianoRoll.vue`),
+  built on the reusable `PianoRollPanel.vue`, which wraps the g200kg
+  `webaudio-pianoroll` widget. It shows the current take, lets the Chords or
+  Solo track be edited (changes are written straight back to the take and
+  saved), follows the playback position with a playhead, and auditions notes
+  when the piano strip is clicked. Clicking and dragging along that strip plays
+  a run of notes, and its keys light up for notes played on the main keyboard
+  (and vice versa) through the same `live-note` event. `src/lib/sequencer-notes.js`
+  holds the pure conversions between take notes and widget notes. The Chord
+  Sequencer is now the second `PianoRollPanel` and is full width.
 - Left-hand black keys act as modifiers: `C#` is a shift key, `D#` turns scale
   filtering off and `F#` turns it on, while `G#` and `A#` transpose the chords.
   Right-hand black keys switch scale and transpose as well. See `onNoteOn()` in

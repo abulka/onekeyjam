@@ -253,6 +253,17 @@ export function clearTake() {
 }
 
 /**
+ * Recompute the derived take state after the recording piano roll edits the
+ * take directly, and save it so the change survives a refresh.
+ */
+export function commitTakeEdit() {
+    const rec = globals.recording
+    rec.hasTake = rec.take.chords.length > 0 || rec.take.jam.length > 0
+    rec.playback.durationSec = takeDurationSec(rec)
+    persistTake()
+}
+
+/**
  * @param {'chords'|'jam'} track
  * @param {string} noteName note that sounds
  * @param {number} [velocity]

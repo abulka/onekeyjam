@@ -123,6 +123,13 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         <li><strong>Chord Sequencer</strong> - a built-in step sequencer for editing left-hand chords and right-hand jam notes by hand.</li>
       </ul>
       <p>
+        The Recording section shows the take in a piano roll. Use the
+        <strong>Chords</strong>, <strong>Solo</strong> and <strong>Both</strong>
+        buttons to view the tracks; Chords and Solo are editable, and changes are
+        written straight back to the recording. Click the piano strip on the left
+        to hear a note.
+      </p>
+      <p>
         Recording is free (no quantisation or metronome) and is timed at 120 BPM.
         The latest take is kept in the browser, so a page refresh does not lose it;
         clear it with the Clear button when you are done.

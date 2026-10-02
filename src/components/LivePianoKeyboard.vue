@@ -60,6 +60,13 @@ function buildRawPianoNoteInfo(note, on, noteNumber, showNoteNumber = true) {
 function handleNote(state, keyboardIndex) {
   const note = indexToNote(keyboardIndex, globals.keyboard.lhTriggerOctave)
 
+  // Mirror notes played on the on-screen keyboard so other views (such as the
+  // sequencer piano strips) can follow along. Black modifier keys are excluded.
+  if (!globals.isLhMetaKey(note)) {
+    // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+    document.broadcastEvent('live-note', { state, note: new Note(note, { attack: 0.5 }) })
+  }
+
   if (state) {
     buildRawPianoNoteInfo(note, true, keyboardIndex, false)
     if (isLhCsharp(keyboardIndex)) lhCsharpStuckDown = !lhCsharpStuckDown

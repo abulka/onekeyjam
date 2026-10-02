@@ -6,6 +6,7 @@ import LivePianoKeyboard from './LivePianoKeyboard.vue'
 import KeyboardNoteMeaningsLegend from './KeyboardNoteMeaningsLegend.vue'
 import RecordControls from './RecordControls.vue'
 import Sequencer from './Sequencer.vue'
+import RecordingPianoRoll from './RecordingPianoRoll.vue'
 
 onMounted(() => {
   console.log('RECORD onMounted')
@@ -36,6 +37,14 @@ onUnmounted(() => {
 
   <div class="ui container">
     <div id="big-accordion-record" class="ui fluid styled accordion" style="background-color: burlywood;">
+
+      <div class="title">
+        <i class="dropdown icon"></i>
+        Recording
+      </div>
+      <div class="content">
+        <RecordingPianoRoll />
+      </div>
 
       <div class="title">
         <i class="dropdown icon"></i>
