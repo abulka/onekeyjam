@@ -178,14 +178,20 @@ onUnmounted(() => {
                 @change="onScrubChange"
               />
               <span class="time">{{ formatTime(durationSec) }}</span>
-              <label class="highlight-mode" title="Which notes light up on the keyboard during playback">
-                Keys
-                <select v-model="rec.playback.highlightMode" :disabled="!rec.hasTake">
-                  <option value="sounding">Sounding notes (red)</option>
-                  <option value="played">Played keys (blue)</option>
-                  <option value="both">Sounding + played</option>
-                </select>
-              </label>
+              <div class="highlight-mode-block">
+                <label class="highlight-mode" title="Which keys light up when playing back this recording">
+                  Keys (playback)
+                  <select v-model="rec.playback.highlightMode" :disabled="!rec.hasTake"
+                    aria-label="Which keys light up when playing back this recording">
+                    <option value="played">Played keys (red)</option>
+                    <option value="sounding">Sounding notes (blue)</option>
+                    <option value="both">Sounding + played</option>
+                  </select>
+                </label>
+                <p class="highlight-caption">
+                  Which keys light up when playing back this recording. Live playing and the sequencer always light the single trigger or solo key.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -258,6 +264,15 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
+.highlight-mode-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  max-width: 22rem;
+  flex: 0 1 auto;
+}
+
 .playback .highlight-mode select {
   padding: 1px 3px;
   font-size: 0.78rem;
@@ -265,5 +280,13 @@ onUnmounted(() => {
   background: #fff;
   border: 1px solid #999;
   border-radius: 4px;
+}
+
+.highlight-caption {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b5a45;
+  text-align: right;
+  line-height: 1.2;
 }
 </style>

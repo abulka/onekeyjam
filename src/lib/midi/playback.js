@@ -118,30 +118,30 @@ function sameKeys(a, b) {
 }
 
 /**
- * Publish the played keys so the overlay can tint them. Only updates the
- * reactive globals when the set actually changes, to avoid needless redraws.
- * @param {Set<number>} played
+ * Publish the sounding notes so the blue overlay can tint them. Only updates
+ * the reactive globals when the set actually changes, to avoid needless redraws.
+ * @param {Set<number>} sounding
  */
-function publishPlayedKeys(played) {
-    const next = [...played].sort((x, y) => x - y)
-    const current = globals.recording.playback.playedKeys
+function publishSoundingKeys(sounding) {
+    const next = [...sounding].sort((x, y) => x - y)
+    const current = globals.recording.playback.soundingKeys
     if (!sameKeys(current, next))
-        globals.recording.playback.playedKeys = next
+        globals.recording.playback.soundingKeys = next
 }
 
 /**
- * Update the keyboard visuals for the given playback position. The sounding
- * notes light red through the widget (via `live-note`); the played keys are
- * published for the blue overlay. Only differences are broadcast, so this is
- * cheap to call every frame.
+ * Update the keyboard visuals for the given playback position. The played keys
+ * light red through the widget (via `live-note`), matching live playing; the
+ * sounding notes are published for the blue overlay. Only differences are
+ * broadcast, so this is cheap to call every frame.
  * @param {number} positionSec
  */
 export function syncVisuals(positionSec) {
     const take = globals.recording.take
     const mode = globals.recording.playback.highlightMode
 
-    // Red highlight: the sounding notes, except in 'played' mode.
-    const red = mode === 'played' ? new Set() : soundingNotesAt(take, positionSec)
+    // Red highlight (the widget): the played keys, except in 'sounding' mode.
+    const red = mode === 'sounding' ? new Set() : playedNotesAt(take, positionSec)
     for (const midi of litNotes) {
         if (!red.has(midi)) {
             broadcastLiveNote(midi, false)
@@ -155,9 +155,9 @@ export function syncVisuals(positionSec) {
         }
     }
 
-    // Blue overlay: the played keys, in 'played' and 'both' modes.
-    publishPlayedKeys(mode === 'played' || mode === 'both'
-        ? playedNotesAt(take, positionSec)
+    // Blue overlay: the sounding notes, in 'sounding' and 'both' modes.
+    publishSoundingKeys(mode === 'sounding' || mode === 'both'
+        ? soundingNotesAt(take, positionSec)
         : new Set())
 }
 
@@ -165,7 +165,7 @@ function clearVisuals() {
     for (const midi of litNotes)
         broadcastLiveNote(midi, false)
     litNotes = new Set()
-    publishPlayedKeys(new Set())
+    publishSoundingKeys(new Set())
 }
 
 /**

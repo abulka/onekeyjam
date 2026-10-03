@@ -2,10 +2,10 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { globals } from '@/lib/globals.js'
 
-// Draws a translucent tint over the keys that were played during playback, so
-// that the blue "played keys" can be shown alongside the widget's red
-// "sounding notes" highlight. Reads its geometry from the shared
-// webaudio-keyboard element, like KeyboardHelpOverlay does.
+// Draws a translucent blue tint over the keys whose notes sound during
+// playback, shown alongside the widget's red "played keys" highlight. Reads its
+// geometry from the shared webaudio-keyboard element, like KeyboardHelpOverlay
+// does.
 
 const props = defineProps({
   keyboardEl: { type: Object, default: null },
@@ -70,8 +70,8 @@ const keyRects = computed(() => {
   if (!geo)
     return []
 
-  const played = globals.recording.playback.playedKeys
-  if (!played || played.length === 0)
+  const sounding = globals.recording.playback.soundingKeys
+  if (!sounding || sounding.length === 0)
     return []
 
   const baseMidi = 12 * (globals.keyboard.lhTriggerOctave + 1)
@@ -90,7 +90,7 @@ const keyRects = computed(() => {
   }
 
   const rects = []
-  for (const midi of played) {
+  for (const midi of sounding) {
     const i = midi - baseMidi
     if (i < geo.min || i > geo.max)
       continue
@@ -121,8 +121,8 @@ const keyRects = computed(() => {
 
 <template>
   <div class="playback-keys-overlay" aria-hidden="true">
-    <div v-for="rect in keyRects" :key="rect.id" class="played-key"
-      :class="{ 'played-key-black': rect.isBlack }"
+    <div v-for="rect in keyRects" :key="rect.id" class="sounding-key"
+      :class="{ 'sounding-key-black': rect.isBlack }"
       :style="{ left: `${rect.x}px`, top: `${rect.y}px`, width: `${rect.width}px`, height: `${rect.height}px` }">
     </div>
   </div>
@@ -135,14 +135,14 @@ const keyRects = computed(() => {
   pointer-events: none;
 }
 
-.played-key {
+.sounding-key {
   position: absolute;
   box-sizing: border-box;
   background: rgba(70, 130, 230, 0.55);
   border: 1px solid rgba(40, 80, 180, 0.8);
 }
 
-.played-key-black {
+.sounding-key-black {
   background: rgba(70, 130, 230, 0.75);
 }
 </style>
