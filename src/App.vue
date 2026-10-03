@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
 import mainOneKeyJam from '../src/lib/main.js';
 import { globals } from './lib/globals.js';
+import DemoIntroDialog from './components/DemoIntroDialog.vue';
 
 // The Research view is a development-only playground; hide it from production builds.
 const showResearch = import.meta.env.DEV
@@ -63,6 +64,9 @@ onMounted(() => {
 
   <!-- this gets replaced by the active routed page  -->
   <RouterView />
+
+  <!-- App-wide modal used by the DEMO quick-start -->
+  <DemoIntroDialog />
 
 </template>
 

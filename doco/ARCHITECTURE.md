@@ -187,6 +187,13 @@ and the validation commands.
   `2 3 5 6 7`), extends into the next octave on `I O P [ ] \` (with `9 0 - =`
   for its black keys), and keeps lower-row aliases (`, L . /`) for the right
   hand. The badges render even when the text labels are off.
+- The DEMO button in the shared menu bar (`src/lib/demo-project.js` plus
+  `DemoIntroDialog.vue`) loads the featured `C Major II-V-I` project, focuses the
+  on-screen keyboard and shows a short welcome with a Jam! button. It waits for
+  the `project-loaded` event (broadcast by the `switch-project` handler) so the
+  message can list the real chord trigger notes and their computer keys. On the
+  Settings view, Jam! first routes to Perform because that is where the keyboard
+  lives. The GrandSummary empty state offers the same action.
 
 ## Persistence and backend
 

@@ -7,6 +7,7 @@ import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events.js"
 import { start, dragover, dragend } from '../../src/lib/drag-drop-table-rows.js'
 import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '../../src/lib/massOperationsOnChordConfigs'
 import { keyDetection } from '../../src/lib/keyDetection';
+import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
 
 let showFavourites = ref(true)  // deprecated
@@ -377,7 +378,11 @@ function generalTableClick(event) {
       </tr>
     </tbody>
   </table>
-  <div v-else class="warn"><p>No Chords or Scales in Project yet.</p></div>
+  <div v-else class="warn">
+    <p>No Chords or Scales in Project yet.
+      <button type="button" class="demo-button" @click="loadDemoProject()">Load demo project</button>
+    </p>
+  </div>
 
   <!-- show favourites, whilst it works, might be a confusing UI paradigm esp. in conjunction with allocate favourites global -->
   <!-- <p><label>Show Favourites <input type="checkbox" v-model="showFavourites" /></label></p> -->
@@ -406,6 +411,24 @@ table.scale-filters td {
 .warn {
   color: brown;
   /* font-weight: bold; */
+}
+
+/* Rounded blue pill, matching the "? Shortcuts" button. */
+.demo-button {
+  margin-left: 0.75rem;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid #2f4fa8;
+  border-radius: 999px;
+  background: #4a6fd4;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  vertical-align: middle;
+}
+
+.demo-button:hover {
+  background: #3a5cc0;
 }
 
 </style>

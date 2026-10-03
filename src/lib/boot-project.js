@@ -219,6 +219,8 @@ export function wireProjectEvents() {
             maxChordConfigs: event.detail.maxChordConfigs,
             preserveSongIds: event.detail.preserveSongIds
         });
+
+        document.broadcastEvent("project-loaded", { name: globals.projectLibrary.projectName });
     })
 
     document.addEventListener("switch-keyboard", async function (/** @type {CustomEvent} */ event) {

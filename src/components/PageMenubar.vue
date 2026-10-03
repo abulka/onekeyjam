@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, useSlots } from 'vue'
 import { globals } from '@/lib/globals.js'
 import { newProject, loadUserProject, loadFeaturedProject } from '@/lib/boot-project'
 import { saveProject, saveProjectAs, downloadProject, downloadMidiChords, downloadMidiChordsForChordMemoryTrigger, uploadProject } from '@/lib/projectSave.js'
+import { loadDemoProject } from '@/lib/demo-project.js'
 import ComboProjectLibrary from '@/components/ComboProjectLibrary.vue'
 import FileImportMidiDialog from '@/components/FileImportMidiDialog.vue'
 
@@ -161,6 +162,7 @@ onUnmounted(() => {
       </div>
 
       <div class="right menu">
+        <a class="item" title="Load a demo project and get started" @click="loadDemoProject()">DEMO</a>
         <a class="item" @click="tutorial()">Start Tour 🧭</a>
         <ComboProjectLibrary ref="fileOpenComponent" userOrFeatured="featured" />
         <div class="item">

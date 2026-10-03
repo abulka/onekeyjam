@@ -168,10 +168,12 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         <li>Use the black keys to switch scale or transpose.</li>
       </ol>
       <p>
-        A guided tour is available from the <strong>Start Tour</strong> item in the
-        menu. To build a project from an existing song, choose
-        <strong>File &rarr; Import MIDI file...</strong> and OneKeyJam will detect
-        the chords and lay them out on the keyboard.
+        In a hurry? Click <strong>DEMO</strong> in the menu bar to load a demo
+        project, focus the keyboard and see a short guide with a
+        <strong>Jam!</strong> button. A guided tour is available from the
+        <strong>Start Tour</strong> item in the menu. To build a project from an
+        existing song, choose <strong>File &rarr; Import MIDI file...</strong> and
+        OneKeyJam will detect the chords and lay them out on the keyboard.
       </p>
 
       <figure>

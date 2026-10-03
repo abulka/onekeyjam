@@ -15,5 +15,9 @@ export function setMaxDisplayed(project, maxChordConfigs = maxChordConfigsDefaul
     const tempMax = project ? project.chords.length : maxChordConfigsDefault;
     const nearestMultipleOfSeven = Math.round(tempMax / 7 + 0.5) * 7;
 
-    document.getElementById("max-chord-configs").max = nearestMultipleOfSeven;
+    // The slider only exists on the Edit view; a project can be loaded from
+    // other views (for example the DEMO button), so guard against it missing.
+    const slider = document.getElementById("max-chord-configs");
+    if (slider)
+        slider.max = nearestMultipleOfSeven;
 }

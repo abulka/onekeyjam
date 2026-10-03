@@ -6,6 +6,7 @@ import { Note } from '@/lib/midi/webmidi.js'
 import { indexToNote } from "../lib/note-tools.js"
 import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events"
 import { getNoteKeyForCode } from "@/lib/midi/piano-key-map.js"
+import { consumePendingKeyboardFocus } from "@/lib/demo-project.js"
 import KeyboardHelpOverlay from "./KeyboardHelpOverlay.vue"
 import PlaybackKeysOverlay from "./PlaybackKeysOverlay.vue"
 
@@ -42,6 +43,12 @@ function focusKeyboard() {
     canvas.focus()
   else
     el.focus()
+}
+
+// The demo intro (and anything else) can ask for keyboard focus by broadcasting.
+function onFocusKeyboardRequest() {
+  consumePendingKeyboardFocus()
+  focusKeyboard()
 }
 
 function buildRawPianoNoteInfo(note, on, noteNumber, showNoteNumber = true) {
@@ -162,6 +169,9 @@ async function attachKeyboard() {
   el.addEventListener('keyup', onKeyUp)
   attachedEl = el
   updateKeyboardFocus()
+  // Focus now if a request was made before this keyboard mounted.
+  if (consumePendingKeyboardFocus())
+    focusKeyboard()
 }
 
 watch(pianoKeyboard, attachKeyboard)
@@ -171,6 +181,7 @@ onMounted(() => {
   document.addEventListener('live-note', onLiveNote)
   document.addEventListener('focusin', onFocusChange)
   document.addEventListener('focusout', onFocusChange)
+  document.addEventListener('focus-keyboard', onFocusKeyboardRequest)
 })
 
 onUnmounted(() => {
@@ -178,6 +189,7 @@ onUnmounted(() => {
   document.removeEventListener("live-note", onLiveNote)
   document.removeEventListener('focusin', onFocusChange)
   document.removeEventListener('focusout', onFocusChange)
+  document.removeEventListener('focus-keyboard', onFocusKeyboardRequest)
 })
 
 
