@@ -51,11 +51,11 @@ describe('trigger maps - simple', () => {
         assert.equal(chordConfig.bass, 'D');
         assert.equal(chordConfig.bassNote, "D2");
         assert.equal(chordConfig.scale1, "g mixolydian");
-        assert.equal(chordConfig.scale2, "");
-        assert.equal(chordConfig.scale3, "");
+        assert.equal(chordConfig.scale2, "G lydian dominant");
+        assert.equal(chordConfig.scale3, "G mixolydian b6");
         assert.deepEqual(chordConfig.scale1Notes, ['G', 'A', 'B', 'C', 'D', 'E', 'F']);
-        assert.deepEqual(chordConfig.scale2Notes, []);
-        assert.deepEqual(chordConfig.scale3Notes, []);
+        assert.notDeepEqual(chordConfig.scale2Notes, []);
+        assert.notDeepEqual(chordConfig.scale3Notes, []);
         assert.deepEqual(chordConfig.scaleNotesOfChord, ['D', 'F', 'G', 'B']);  // the notes of chord G7inversion2 incl. bass note
     });
 });
@@ -119,8 +119,8 @@ describe('trigger maps - smart', () => {
         assert.equal(chordConfig.bass, 'A');
         assert.equal(chordConfig.bassNote, "A2");
         assert.equal(chordConfig.scale1, "A harmonic minor");
-        assert.equal(chordConfig.scale2, "A phrygian");  // used to be '' but now we auto-fill in scales
-        assert.equal(chordConfig.scale3, "A aeolian");  // used to be '' but now we auto-fill in scales
+        assert.equal(chordConfig.scale2, "A aeolian");  // auto-filled with the best scale not already chosen
+        assert.equal(chordConfig.scale3, "A locrian #2");
         assert.deepEqual(chordConfig.scale1Notes, [ 'A',  'B', 'C', 'D',  'E', 'F', 'G#' ]);
         assert.notDeepEqual(chordConfig.scale2Notes, []);  // not empty
         assert.notDeepEqual(chordConfig.scale3Notes, []);  // not empty

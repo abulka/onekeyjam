@@ -85,19 +85,30 @@ export let Dm7b5ChordNicerVoicing = [  // https://www.youtube.com/watch?v=x9LNj2
     'D4',
 ]
 
-let G7b9ChordNicerVoicing = [
+// A true altered dominant shape: b7, b9, 3, b13. The natural 5th is replaced
+// by the b13, so the altered scale fits without clashing.
+export let G7altChordNicerVoicing = [
     'F3',
     'Ab3',
     'B3',
-    'D4',
+    'Eb4',
 ]
-export let G7alt = G7b9ChordNicerVoicing
+export let G7alt = G7altChordNicerVoicing
 
 export let Cm7ChordNicerVoicing = [
     'Eb3',
     'G3',
     'Bb3',
     'C4',
+]
+
+// Rootless minor-major sound: b3, 5, maj7, 9. The 9th avoids the minor 2nd
+// that a root on top (Eb G B C) puts against the major 7th.
+export let CmMaj9ChordNicerVoicing = [
+    'Eb3',
+    'G3',
+    'B3',
+    'D4',
 ]
 
 

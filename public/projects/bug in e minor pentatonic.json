@@ -219,8 +219,8 @@
       "bass": "D#",
       "id": 17,
       "scale1": "D# harmonic minor",
-      "scale2": "D# phrygian",
-      "scale3": "D# aeolian",
+      "scale2": "D# aeolian",
+      "scale3": "D# locrian #2",
       "bassNote": "D#3"
     },
     {
@@ -351,8 +351,8 @@
       "bass": "B",
       "id": 28,
       "scale1": "B harmonic minor",
-      "scale2": "B phrygian",
-      "scale3": "B aeolian",
+      "scale2": "B aeolian",
+      "scale3": "B locrian #2",
       "bassNote": "B2"
     },
     {
@@ -399,8 +399,8 @@
       "bass": "A",
       "id": 32,
       "scale1": "A harmonic minor",
-      "scale2": "A phrygian",
-      "scale3": "A aeolian",
+      "scale2": "A aeolian",
+      "scale3": "A locrian #2",
       "bassNote": "A2"
     },
     {

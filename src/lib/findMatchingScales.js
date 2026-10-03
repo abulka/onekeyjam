@@ -1,6 +1,5 @@
 // @ts-check
 import { globals } from './globals.js';
-import * as Tonal from '@tonaljs/tonal';
 import { expandChordConfig } from './expandChordConfig.js';
 import { updateProjectChordConfig } from './projectConfig';
 import { findTop3MatchingScales } from './scaleMatching.js';
@@ -21,23 +20,17 @@ export { findTop3MatchingScales };
  * @returns Nothing
  */
 export function findMatchingScalesForProject(project, simple = true, updateProjectChords = true) {
-
-    function chordNotesToChordSymbols(chordNotes) {
-        // Converts an array of notes to an array of chord symbols
-        // Returns an array of chord symbols
-        const detectedChordSymbols = Tonal.Chord.detect(chordNotes);
-        if (detectedChordSymbols.length === 0) {
-            throw (`No chord detected for ${chordNotes}`);
-        }
-        return detectedChordSymbols;
-    }
-
     const chordConfigs = Object.values(globals.chordTriggerMap);
     for (let chordConfig of chordConfigs) {
         if (!chordConfig.chordNotes)
             throw (`No chordNotes in ${JSON.stringify(chordConfig)} - chord configs should contain chordNotes`);
-        const detectedChordSymbols = chordNotesToChordSymbols(chordConfig.chordNotes);
-        [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales(detectedChordSymbols, simple);
+        const chordInfo = {
+            symbol: chordConfig.chord,
+            notes: chordConfig.chordNotes,
+            bass: chordConfig.bass ?? chordConfig.bassNote,
+            name: chordConfig.name,
+        };
+        [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([], simple, chordInfo);
         expandChordConfig(chordConfig); // convert scales into scale notes etc. in this chord triggermap chord config
         if (updateProjectChords)
             updateProjectChordConfig(chordConfig)  // update the project config too

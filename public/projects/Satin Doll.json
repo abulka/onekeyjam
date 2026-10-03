@@ -4,29 +4,29 @@
     {
       "name": "DM7 chord",
       "chord": "Dm7",
-      "scale1": "C lydian",
+      "scale1": "D dorian",
       "scale2": "C major",
       "scale3": "C major pentatonic"
     },
     {
       "name": "G7 - dominant chord",
       "chord": "G7",
-      "scale1": "C mixolydian",
-      "scale2": "C dominant",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
       "scale3": "C major pentatonic"
     },
     {
       "name": "EM7 chord",
       "chord": "EM7",
-      "scale1": "C lydian",
-      "scale2": "C major",
-      "scale3": "C major pentatonic"
+      "scale1": "E lydian",
+      "scale2": "E major",
+      "scale3": "E harmonic major"
     },
     {
       "name": "A7 - dominant chord",
       "chord": "A7",
-      "scale1": "C mixolydian",
-      "scale2": "C dominant",
+      "scale1": "A mixolydian",
+      "scale2": "A lydian dominant",
       "scale3": "C major pentatonic"
     },
     {
@@ -40,23 +40,23 @@
     {
       "name": "D7 - dominant chord",
       "chord": "D7",
-      "scale1": "C mixolydian",
-      "scale2": "C dominant",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
       "scale3": "C major pentatonic"
     },
     {
       "name": "Abm7 chord",
       "chord": "Abm7",
-      "scale1": "C lydian",
-      "scale2": "C major",
-      "scale3": "C major pentatonic"
+      "scale1": "Ab dorian",
+      "scale2": "Ab aeolian",
+      "scale3": "Ab minor pentatonic"
     },
     {
       "name": "Db7b9 ?? chord",
       "chord": "Db7b9",
-      "scale1": "C mixolydian",
-      "scale2": "C dominant",
-      "scale3": "C major pentatonic"
+      "scale1": "Db phrygian dominant",
+      "scale2": "Db half-whole diminished",
+      "scale3": "Db mixolydian"
     },
     {
       "name": "C6 ?? chord",
@@ -68,15 +68,15 @@
     {
       "name": "F chord",
       "chord": "FM",
-      "scale1": "C lydian",
+      "scale1": "F lydian",
       "scale2": "C major",
       "scale3": "C major pentatonic"
     },
     {
       "name": "A7b9 chord",
       "chord": "A7b9",
-      "scale1": "C lydian",
-      "scale2": "C major",
+      "scale1": "A phrygian dominant",
+      "scale2": "A half-whole diminished",
       "scale3": "C major pentatonic"
     }
   ],

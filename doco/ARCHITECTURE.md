@@ -218,3 +218,5 @@ and the validation commands.
   deployment options.
 - `doco/implementation-notes.md` records detailed WebMidi.js findings.
 - `doco/chord-scale-ref.md` covers the chord and scale reference material.
+- `doco/MUSIC-THEORY.md` explains the chord-scale matching engine in
+  `src/lib/chordScaleEngine.js`, its scoring rules and the data checkers.

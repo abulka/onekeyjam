@@ -6,27 +6,27 @@
       "name": "Dø7, Dm7b5ChordNicerVoicing - Fm Melodic scale",
       "chordNotes": ["F3", "Ab3", "C4", "D4"],
       "bass": "D3",
-      "scale1": "F melodic minor",
-      "scale2": "",
-      "scale3": ""
+      "scale1": "D locrian #2",
+      "scale2": "F melodic minor",
+      "scale3": "D locrian"
     },
     {
       "id": 2,
-      "name": "G7alt, G7b9ChordNicerVoicing - Abm Melodic scale",
-      "chordNotes": ["F3", "Ab3", "B3", "D4"],
+      "name": "G7alt, G7altChordNicerVoicing - Abm Melodic scale",
+      "chordNotes": ["F3", "Ab3", "B3", "Eb4"],
       "bass": "G3",
-      "scale1": "Ab melodic minor",
-      "scale2": "",
-      "scale3": ""
+      "scale1": "G altered",
+      "scale2": "G phrygian dominant",
+      "scale3": "G whole tone"
     },
     {
       "id": 3,
-      "name": "CmMaj7, Cm7ChordNicerVoicing - Cm Melodic scale",
+      "name": "CmMaj9, CmMaj9ChordNicerVoicing - Cm Melodic scale",
       "bass": "C2",
-      "chordNotes": ["Eb3", "G3", "Bb3", "C4"],
+      "chordNotes": ["Eb3", "G3", "B3", "D4"],
       "scale1": "C melodic minor",
-      "scale2": "",
-      "scale3": ""
+      "scale2": "C harmonic minor",
+      "scale3": "C minor bebop"
     }
   ],
   "options": {},

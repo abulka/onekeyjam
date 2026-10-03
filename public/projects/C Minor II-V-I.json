@@ -6,26 +6,26 @@
       "name": "Dø7 chord - Fm Melodic scale",
       "chord": "Dm7b5ChordNicerVoicing",
       "bass": "D3",
-      "scale1": "C major blues",
+      "scale1": "D locrian #2",
       "scale2": "F melodic minor",
-      "scale3": "C minor blues"
+      "scale3": "D locrian"
     },
     {
       "id": 2,
       "name": "G7alt chord - Abm Melodic scale",
-      "chord": "G7alt",
+      "chord": "G7altChordNicerVoicing",
       "bass": "G3",
-      "scale1": "C major blues",
-      "scale2": "Ab melodic minor",
-      "scale3": "C minor blues"
+      "scale1": "G altered",
+      "scale2": "G phrygian dominant",
+      "scale3": "G whole tone"
     },
     {
       "id": 3,
-      "name": "CmMaj7 chord - Cm Melodic scale",
+      "name": "CmMaj9 chord - Cm Melodic scale",
       "bass": "C2",
-      "chord": "Cm7ChordNicerVoicing",
-      "scale1": "C major blues",
-      "scale2": "C melodic minor",
+      "chord": "CmMaj9ChordNicerVoicing",
+      "scale1": "C melodic minor",
+      "scale2": "C harmonic minor",
       "scale3": "C minor pentatonic"
     }
   ],

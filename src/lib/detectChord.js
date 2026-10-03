@@ -1,7 +1,7 @@
 // @ts-check
 import * as Tonal from '@tonaljs/tonal';
 import { removeBassSlash } from "./removeBassSlash.js";
-import { findTop3MatchingScales } from './scaleMatching.js';
+import { fillMissingScales } from './scaleMatching.js';
 import { globals } from './globals.js';
 
 /**
@@ -60,10 +60,7 @@ export function detectChordAndScalesFromChordNotes(chordConfig, chordNotes, _bas
         return false
     }
 
-    let [scale1, scale2, scale3] = findTop3MatchingScales(detectedChordSymbols);
-    chordConfig.scale1 = chordConfig.scale1 ? chordConfig.scale1 : scale1;
-    chordConfig.scale2 = chordConfig.scale2 ? chordConfig.scale2 : scale2;
-    chordConfig.scale3 = chordConfig.scale3 ? chordConfig.scale3 : scale3;
+    fillMissingScales(chordConfig, { notes: _chordNotes, bass: _bassNote, name });
 
     return true
 }

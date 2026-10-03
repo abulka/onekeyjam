@@ -15,7 +15,7 @@
       "bass": "A#",
       "scale1": "A# minor pentatonic",
       "scale2": "Ab major",
-      "scale3": "Eb major",
+      "scale3": "A# aeolian",
       "id": 0,
       "bassNote": "A#2"
     },
@@ -27,7 +27,7 @@
       "bass": "A#",
       "scale1": "A# minor pentatonic",
       "scale2": "Ab major",
-      "scale3": "Eb major",
+      "scale3": "A# aeolian",
       "id": 1,
       "bassNote": "A#2"
     },
@@ -38,7 +38,7 @@
       "chord": "Cm",
       "bass": "C",
       "scale1": "C minor pentatonic",
-      "scale2": "Ab major",
+      "scale2": "C aeolian",
       "scale3": "Eb major",
       "id": 2,
       "bassNote": "C2"
@@ -50,8 +50,8 @@
       "chord": "D#m",
       "bass": "D#",
       "scale1": "D# minor pentatonic",
-      "scale2": "Ab major",
-      "scale3": "Eb major",
+      "scale2": "D# aeolian",
+      "scale3": "D# dorian",
       "id": 3,
       "bassNote": "D#2"
     }

@@ -15,7 +15,7 @@
       "chordNotes": ["D3", "F3", "G3", "B3"],
       "scale1": "g mixolydian",
       "scale2": "c major pentatonic",
-      "scale3": "f minor"
+      "scale3": "G lydian dominant"
     },
     {
       "id": "3",
@@ -29,8 +29,8 @@
       "id": "4",
       "name": "Db7 chord - tritone substituion of V chord G7",
       "chord": "Db7",
-      "scale1": "g mixolydian",
-      "scale2": "c major pentatonic",
+      "scale1": "Db mixolydian",
+      "scale2": "Db lydian dominant",
       "scale3": ""
     }
   ],

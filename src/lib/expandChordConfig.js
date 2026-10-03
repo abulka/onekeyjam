@@ -7,7 +7,7 @@ import { chordSymbolToNotes } from './chordSymbolToNotes';
 import { scaleNameToNotes, chordNotesToScaleNotes } from './scaleToNotes';
 import { suggestBass } from './note-tools';
 import { detectChordAndScalesFromChordNotes } from './detectChord.js';
-import { findTop3MatchingScales } from './scaleMatching.js';
+import { fillMissingScales } from './scaleMatching.js';
 
 /** @typedef {import("./typedefs").ChordConfig} ChordConfig */
 /** @typedef {import("./typedefs").ScaleNotes} ScaleNotes */
@@ -69,10 +69,7 @@ export function expandChordConfig(config) {
         throw (new Error(`Chord config ${config.id} has no chord and we could not detect it`))
 
     // Auto find matching scales if not supplied - if any entries are blank, they will be filled in
-    const [scale1, scale2, scale3] = findTop3MatchingScales([config.chord])
-    if (!config['scale1']) config.scale1 = scale1
-    if (!config['scale2']) config.scale2 = scale2
-    if (!config['scale3']) config.scale3 = scale3
+    fillMissingScales(config)
 
     // Fill in scale notes, also ensure all scale keys exist
     for (let key of ['scale1', 'scale2', 'scale3']) {

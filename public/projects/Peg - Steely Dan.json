@@ -18,7 +18,7 @@
       "chord": "Cmaj7ChordStartOnB",
       "scale1": "G major",
       "scale2": "A minor pentatonic",
-      "scale3": "A minor blues",
+      "scale3": "C lydian",
       "id": 1,
       "chordNotes": ["B3", "C4", "E4", "G4"],
       "bassNote": "C3"
