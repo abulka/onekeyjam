@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { ref } from "vue";
 import { globals } from '../../src/lib/globals.js'
-import { loadUserProject, loadFeaturedProject } from '../../src/lib/boot-project'
+import { loadUserProject, loadFeaturedProject, loadClassicProject } from '../../src/lib/boot-project'
 
 const modalDialogBoxDiv = ref();
 const showDescriptions = ref(false);
@@ -10,7 +10,13 @@ const props = defineProps(['userOrFeatured'])
 
 // listbox entries
 const options = computed({
-    get: () => props.userOrFeatured == 'user' ? globals.projectLibrary.userProjectNames : globals.projectLibrary.projectNames,
+    get: () => {
+        if (props.userOrFeatured == 'user')
+            return globals.projectLibrary.userProjectNames
+        if (props.userOrFeatured == 'classic')
+            return globals.projectLibrary.classicProjectNames
+        return globals.projectLibrary.projectNames
+    },
 })
 
 const currentProjectDisplay = computed({
@@ -25,7 +31,13 @@ const currentProjectDisplay = computed({
 })
 
 const dialogBoxTitle = computed({
-    get: () => props.userOrFeatured == 'user' ? 'My' : 'Featured'
+    get: () => {
+        if (props.userOrFeatured == 'user')
+            return 'My'
+        if (props.userOrFeatured == 'classic')
+            return 'Classic'
+        return 'Featured'
+    }
 })
 
 function fileOpen() {
@@ -39,7 +51,12 @@ defineExpose({
 function clickOnList(event, name) {
     $('.ui.modal')
         .modal('hide');
-    props.userOrFeatured == 'user' ? loadUserProject(name) : loadFeaturedProject(name)
+    if (props.userOrFeatured == 'user')
+        loadUserProject(name)
+    else if (props.userOrFeatured == 'classic')
+        loadClassicProject(name)
+    else
+        loadFeaturedProject(name)
 }
 
 </script>

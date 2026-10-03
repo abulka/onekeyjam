@@ -2,7 +2,8 @@
 
 OneKeyJam has no backend. Its "database" is:
 
-- static JSON files in `public/projects/` (featured projects) and
+- static JSON files in `public/projects/featured/` and
+  `public/projects/classic/` (featured and classic projects), plus
   `public/keyboards/` (keyboard configs), discovered through generated
   manifests; and
 - user projects saved in the browser with IndexedDB.
@@ -109,7 +110,8 @@ A project can override these in `options.keyboard`.
 
 `bin/generate-manifests.mjs` scans the static folders and writes:
 
-- `public/projects/projects-manifest.json`
+- `public/projects/featured/featured-manifest.json`
+- `public/projects/classic/classic-manifest.json`
 - `public/keyboards/keyboards-manifest.json`
 
 Each entry is `{ text, value, file }`: display name, URL and file name. These
@@ -119,7 +121,8 @@ are generated, so they are not validated and should not be edited by hand.
 
 | Where | What | Module |
 | --- | --- | --- |
-| `public/projects/*.json` | featured projects | `src/lib/projectLibrary.js` |
+| `public/projects/featured/*.json` | featured projects | `src/lib/projectLibrary.js` |
+| `public/projects/classic/*.json` | generated classic projects | `bin/generate-classic-projects.mjs` |
 | `public/keyboards/*.json` | keyboard configs | `src/lib/projectLibrary.js` |
 | IndexedDB `onekeyjam` → `projects` (keyPath `name`) | user projects | `src/lib/localStore.js` |
 | exported/imported `.json` files | backup/move | `src/lib/projectSave.js` |

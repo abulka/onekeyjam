@@ -1,0 +1,53 @@
+{
+  "name": "ii-V-I in B major",
+  "chords": [
+    {
+      "id": 1,
+      "name": "C#m7",
+      "chord": "C#m7",
+      "bass": "C#2",
+      "scale1": "C# dorian",
+      "scale2": "C# aeolian",
+      "scale3": "C# minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "F#7",
+      "chord": "F#7",
+      "bass": "F#2",
+      "scale1": "F# mixolydian",
+      "scale2": "F# lydian dominant",
+      "scale3": "F# mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Bmaj7",
+      "chord": "Bmaj7",
+      "bass": "B2",
+      "scale1": "B major",
+      "scale2": "B lydian",
+      "scale3": "B harmonic major"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "favourites": [
+        1,
+        2,
+        3
+      ],
+      "blacklist": []
+    }
+  }
+}

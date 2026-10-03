@@ -1,0 +1,86 @@
+{
+  "name": "Modal So What in D minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Ebm7",
+      "chord": "Ebm7",
+      "bass": "Eb2",
+      "scale1": "Eb dorian",
+      "scale2": "Eb aeolian",
+      "scale3": "Eb minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "Ebm7",
+      "chord": "Ebm7",
+      "bass": "Eb2",
+      "scale1": "Eb dorian",
+      "scale2": "Eb aeolian",
+      "scale3": "Eb minor pentatonic"
+    },
+    {
+      "id": 5,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "blacklist": []
+    }
+  }
+}

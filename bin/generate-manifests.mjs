@@ -16,9 +16,9 @@ function makeManifest(dir, urlPrefix, options = {}) {
     const fullDir = path.join(root, 'public', dir)
     if (!fs.existsSync(fullDir))
         return []
-    const manifestName = `${dir}-manifest.json`
+    const manifestFile = options.manifestFile ?? `${path.basename(dir)}-manifest.json`
     return fs.readdirSync(fullDir)
-        .filter(file => file.endsWith('.json') && file !== manifestName)
+        .filter(file => file.endsWith('.json') && file !== manifestFile)
         .sort((a, b) => a.localeCompare(b))
         .map(file => {
             let text = file.replace(/\.json$/, '')
@@ -41,16 +41,21 @@ function makeManifest(dir, urlPrefix, options = {}) {
         })
 }
 
-const projects = makeManifest('projects', '/projects')
+const featured = makeManifest('projects/featured', '/projects/featured', { manifestFile: 'featured-manifest.json' })
+const classic = makeManifest('projects/classic', '/projects/classic', { manifestFile: 'classic-manifest.json' })
 const keyboards = makeManifest('keyboards', '/keyboards', { useJsonName: true })
 
 fs.writeFileSync(
-    path.join(root, 'public', 'projects', 'projects-manifest.json'),
-    JSON.stringify(projects, null, 2)
+    path.join(root, 'public', 'projects', 'featured', 'featured-manifest.json'),
+    JSON.stringify(featured, null, 2)
+)
+fs.writeFileSync(
+    path.join(root, 'public', 'projects', 'classic', 'classic-manifest.json'),
+    JSON.stringify(classic, null, 2)
 )
 fs.writeFileSync(
     path.join(root, 'public', 'keyboards', 'keyboards-manifest.json'),
     JSON.stringify(keyboards, null, 2)
 )
 
-console.log(`Generated manifests: ${projects.length} projects, ${keyboards.length} keyboards`)
+console.log(`Generated manifests: ${featured.length} featured projects, ${classic.length} classic projects, ${keyboards.length} keyboards`)

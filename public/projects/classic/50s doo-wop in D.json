@@ -1,0 +1,64 @@
+{
+  "name": "50s doo-wop in D",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Dmaj7",
+      "chord": "Dmaj7",
+      "bass": "D2",
+      "scale1": "D major",
+      "scale2": "D lydian",
+      "scale3": "D harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "Bm7",
+      "chord": "Bm7",
+      "bass": "B2",
+      "scale1": "B dorian",
+      "scale2": "B aeolian",
+      "scale3": "B minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Gmaj7",
+      "chord": "Gmaj7",
+      "bass": "G2",
+      "scale1": "G major",
+      "scale2": "G lydian",
+      "scale3": "G harmonic major"
+    },
+    {
+      "id": 4,
+      "name": "A7",
+      "chord": "A7",
+      "bass": "A2",
+      "scale1": "A mixolydian",
+      "scale2": "A lydian dominant",
+      "scale3": "A mixolydian b6"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "blacklist": []
+    }
+  }
+}

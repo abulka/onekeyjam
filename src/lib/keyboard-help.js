@@ -28,11 +28,11 @@ const LEFT_HAND_SHIFT_HELP = {
 }
 
 const RIGHT_HAND_HELP = {
-    'C#': 'Scale 1',
-    'D#': 'Scale 2',
-    'F#': 'Scale 3',
-    'G#': 'Scale 4 (chord notes)',
-    'A#': 'Lock current scale',
+    'C#': '1',
+    'D#': '2',
+    'F#': '3',
+    'G#': '4',
+    'A#': '5',
 }
 
 /**

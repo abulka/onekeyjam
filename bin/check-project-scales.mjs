@@ -1,19 +1,19 @@
 // @ts-check
-import { readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { findScaleProblems, findSymbolVoicingMismatches, loadJson, projectsDir } from './project-scale-utils.mjs'
+import { findScaleProblems, findSymbolVoicingMismatches, listProjectFiles, loadJson } from './project-scale-utils.mjs'
 
 const strict = process.argv.includes('--strict')
-const files = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
+const requested = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
     .map((file) => file.endsWith('.json') ? file : `${file}.json`)
 
-const targets = files.length > 0
-    ? files
-    : readdirSync(projectsDir).filter((file) => file.endsWith('.json') && !file.endsWith('-manifest.json')).sort()
+const all = listProjectFiles()
+const targets = requested.length > 0
+    ? all.filter(({ file }) => requested.includes(file))
+    : all
 
 let failures = 0
-for (const file of targets) {
-    const project = loadJson(join(projectsDir, file))
+for (const { dir, file } of targets) {
+    const project = loadJson(join(dir, file))
     const problems = findScaleProblems(project)
     const mismatches = findSymbolVoicingMismatches(project)
     if (problems.length === 0 && mismatches.length === 0)

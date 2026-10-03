@@ -1,0 +1,108 @@
+{
+  "name": "12-bar blues in G",
+  "chords": [
+    {
+      "id": 1,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 2,
+      "name": "C7",
+      "chord": "C7",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C lydian dominant",
+      "scale3": "C mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 4,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "C7",
+      "chord": "C7",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C lydian dominant",
+      "scale3": "C mixolydian b6"
+    },
+    {
+      "id": 6,
+      "name": "C7",
+      "chord": "C7",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C lydian dominant",
+      "scale3": "C mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 8,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

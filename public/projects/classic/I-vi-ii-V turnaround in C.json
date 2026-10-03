@@ -1,0 +1,64 @@
+{
+  "name": "I-vi-ii-V turnaround in C",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Cmaj7",
+      "chord": "Cmaj7",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "Am7",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A dorian",
+      "scale2": "A aeolian",
+      "scale3": "A minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "blacklist": []
+    }
+  }
+}

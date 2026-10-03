@@ -303,6 +303,7 @@ function chordShape(chord) {
         hasMinor7: has(10),
         hasMajor7: has(11),
         isDominant: majorThird && has(10),
+        hasSharpEleven: has(6),
         isHalfDim: minorThird && has(6) && has(10),
         isDim7: minorThird && has(6) && has(9),
         isAug: majorThird && has(8),
@@ -328,7 +329,10 @@ function avoidPenalty(srel, chord, shape) {
             if (c === 0)
                 penalty += shape.isDominant ? 4 : (shape.isHalfDim ? 4 : 12);
             else if (c === shape.third)
-                penalty += shape.isMajorQuality ? (shape.isDominant ? 0 : 6) : 6;
+                // The natural 11 over a major third is the textbook avoid note,
+                // but for a plain major chord it is a passing tone, so only
+                // penalise it when the chord actually contains a sharp 11.
+                penalty += shape.isMajorQuality ? (shape.isDominant ? 0 : (shape.hasSharpEleven ? 6 : 0)) : 6;
             else if (c === shape.seventh)
                 penalty += 0;
             else if (c === 6 || c === 7 || c === 8)
@@ -350,14 +354,14 @@ function conventionBonus(type, shape) {
     if (shape.isDominant && type === 'mixolydian') bonus += 3;
     if (shape.isDominant && type === 'lydian dominant') bonus += 3;
     if (shape.isSus && type === 'mixolydian') bonus += 3;
-    if (shape.majorThird && !shape.isDominant && type === 'major') bonus += 3;
+    if (shape.majorThird && !shape.isDominant && type === 'major') bonus += shape.hasSharpEleven ? 3 : 6;
+    if (shape.majorThird && !shape.isDominant && type === 'lydian') bonus += shape.hasSharpEleven ? 6 : 3;
     if (shape.minorThird && shape.hasMinor7 && !shape.isHalfDim && type === 'dorian') bonus += 3;
     if (shape.minorThird && shape.hasMajor7 && type === 'melodic minor') bonus += 3;
     if (shape.isHalfDim && type === 'locrian #2') bonus += 3;
     if (shape.isHalfDim && type === 'locrian') bonus += 3;
     if (shape.isDim7 && type === 'diminished') bonus += 3;
     if (shape.isAug && (type === 'whole tone' || type === 'augmented' || type === 'lydian augmented')) bonus += 5;
-    if (shape.majorThird && shape.hasMajor7 && type === 'lydian') bonus += 3;
     return bonus;
 }
 

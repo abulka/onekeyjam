@@ -1,0 +1,53 @@
+{
+  "name": "ii-V-I in Db major",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Ebm7",
+      "chord": "Ebm7",
+      "bass": "Eb2",
+      "scale1": "Eb dorian",
+      "scale2": "Eb aeolian",
+      "scale3": "Eb minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "Ab7",
+      "chord": "Ab7",
+      "bass": "Ab2",
+      "scale1": "Ab mixolydian",
+      "scale2": "Ab lydian dominant",
+      "scale3": "Ab mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Dbmaj7",
+      "chord": "Dbmaj7",
+      "bass": "Db2",
+      "scale1": "Db major",
+      "scale2": "Db lydian",
+      "scale3": "Db harmonic major"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "favourites": [
+        1,
+        2,
+        3
+      ],
+      "blacklist": []
+    }
+  }
+}

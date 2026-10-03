@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, useSlots } from 'vue'
 import { globals } from '@/lib/globals.js'
-import { newProject, loadUserProject, loadFeaturedProject } from '@/lib/boot-project'
+import { newProject, loadUserProject, loadFeaturedProject, loadClassicProject } from '@/lib/boot-project'
 import { saveProject, saveProjectAs, downloadProject, downloadMidiChords, downloadMidiChordsForChordMemoryTrigger, uploadProject } from '@/lib/projectSave.js'
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ComboProjectLibrary from '@/components/ComboProjectLibrary.vue'
@@ -17,6 +17,7 @@ const hasActions = computed(() => !!slots.actions)
 const menuEl = ref(null)
 const tour = ref(null)
 const fileOpenComponent = ref()
+const fileOpenComponentClassic = ref()
 const fileOpenComponentUser = ref()
 const fileImportMidiDialog = ref()
 
@@ -70,11 +71,21 @@ async function tutorial() {
 }
 
 function reloadCurrentProject() {
-  globals.projectLibrary.projectIsUserOrFeatured == 'user' ? loadUserProject() : loadFeaturedProject()
+  const category = globals.projectLibrary.projectIsUserOrFeatured
+  if (category == 'user')
+    loadUserProject()
+  else if (category == 'classic')
+    loadClassicProject()
+  else
+    loadFeaturedProject()
 }
 
 function fileOpenFeatured() {
   fileOpenComponent.value.fileOpen()
+}
+
+function fileOpenClassic() {
+  fileOpenComponentClassic.value.fileOpen()
 }
 
 function fileOpenUser() {
@@ -95,6 +106,9 @@ function keyDownListener(e) {
   }
   if (e.code === 'KeyF' && e.altKey && !e.metaKey && !e.repeat) {
     fileOpenFeatured()
+  }
+  if (e.code === 'KeyC' && e.altKey && !e.metaKey && !e.repeat) {
+    fileOpenClassic()
   }
 }
 
@@ -130,6 +144,9 @@ onUnmounted(() => {
           <a class="item" @click="fileOpenFeatured()"><i class="file icon"></i>
             <span class="description">alt + f</span>
             Open Featured...</a>
+          <a class="item" @click="fileOpenClassic()"><i class="file icon"></i>
+            <span class="description">alt + c</span>
+            Open Classic...</a>
           <a class="item" :class="{ disabled: !fileSaveAllowed }" @click="saveProject()">
             <span class="description">alt + s</span>
             <i class="save icon"></i>Save</a>
@@ -165,6 +182,9 @@ onUnmounted(() => {
         <a class="item" title="Load a demo project and get started" @click="loadDemoProject()">DEMO</a>
         <a class="item" @click="tutorial()">Start Tour 🧭</a>
         <ComboProjectLibrary ref="fileOpenComponent" userOrFeatured="featured" />
+        <div class="item">
+          <ComboProjectLibrary ref="fileOpenComponentClassic" userOrFeatured="classic" />
+        </div>
         <div class="item">
           <ComboProjectLibrary ref="fileOpenComponentUser" userOrFeatured="user" />
         </div>

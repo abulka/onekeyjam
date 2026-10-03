@@ -1,0 +1,108 @@
+{
+  "name": "Blue Bossa in C minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "Fm7",
+      "chord": "Fm7",
+      "bass": "F2",
+      "scale1": "F dorian",
+      "scale2": "F aeolian",
+      "scale3": "F minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Dm7b5",
+      "chord": "Dm7b5",
+      "bass": "D2",
+      "scale1": "D locrian #2",
+      "scale2": "D locrian",
+      "scale3": "D minor blues"
+    },
+    {
+      "id": 4,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "Ebm7",
+      "chord": "Ebm7",
+      "bass": "Eb2",
+      "scale1": "Eb dorian",
+      "scale2": "Eb aeolian",
+      "scale3": "Eb minor pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "Ab7",
+      "chord": "Ab7",
+      "bass": "Ab2",
+      "scale1": "Ab mixolydian",
+      "scale2": "Ab lydian dominant",
+      "scale3": "Ab mixolydian b6"
+    },
+    {
+      "id": 8,
+      "name": "Dbmaj7",
+      "chord": "Dbmaj7",
+      "bass": "Db2",
+      "scale1": "Db major",
+      "scale2": "Db lydian",
+      "scale3": "Db harmonic major"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

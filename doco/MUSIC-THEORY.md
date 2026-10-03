@@ -168,9 +168,11 @@ The engine penalises the relationships that genuinely sound wrong:
   chords get -4 because the b2 is the classic locrian avoid note but the scale
   is still idiomatic.
 - A semitone above the third:
-  - major third: -6 on major and maj7 chords, where the natural 11 is the
-    textbook avoid note; 0 on dominant chords, where the natural 11 is common
-    modal colour (mixolydian).
+  - major third: -6 on major and maj7 chords that contain a #11, where the
+    natural 11 fights the raised 11; 0 otherwise, because on a plain major
+    chord the natural 11 is a passing tone and ionian stays the home scale;
+    0 on dominant chords, where the natural 11 is common modal colour
+    (mixolydian).
   - minor third: -6, because a major third above a minor third is a modal
     clash (Eb and E in C). This demotes scales such as lydian #9.
 - A semitone below the major third on major and maj7 chords: -12 (the #9
@@ -189,12 +191,12 @@ Small bonuses settle near-ties in favour of idiomatic defaults:
 
 - mixolydian and lydian dominant on dominant chords (+3 each)
 - mixolydian on sus chords (+3)
-- major on non-dominant major-quality chords (+3)
+- major on non-dominant major-quality chords without a #11 (+6)
+- lydian on major-quality chords with a #11 (+6)
 - dorian on m7 (+3)
 - melodic minor on m(maj7) (+3)
 - locrian #2 and locrian on half-diminished (+3 each)
 - diminished on dim7 (+3)
-- lydian on maj7 (+3)
 - whole tone, augmented and lydian augmented on augmented chords (+5 each)
 
 ## Selection
@@ -207,7 +209,8 @@ colour scale. Typical outcomes:
 | Chord | Primary | Second | Third |
 |---|---|---|---|
 | Cm7 | C dorian | C aeolian | C minor pentatonic |
-| Cmaj7 | C lydian | C major | C harmonic major |
+| Cmaj7 | C major | C lydian | C harmonic major |
+| Cmaj7#11 | C lydian | C major | C lydian augmented |
 | C7 | C mixolydian | C lydian dominant | C mixolydian b6 |
 | C7alt | C altered | C whole tone | C phrygian dominant |
 | C7b9 | C phrygian dominant | C half-whole diminished | C mixolydian |

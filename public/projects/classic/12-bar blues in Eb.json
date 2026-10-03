@@ -1,0 +1,108 @@
+{
+  "name": "12-bar blues in Eb",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 2,
+      "name": "Ab7",
+      "chord": "Ab7",
+      "bass": "Ab2",
+      "scale1": "Ab mixolydian",
+      "scale2": "Ab lydian dominant",
+      "scale3": "Ab mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 4,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "Ab7",
+      "chord": "Ab7",
+      "bass": "Ab2",
+      "scale1": "Ab mixolydian",
+      "scale2": "Ab lydian dominant",
+      "scale3": "Ab mixolydian b6"
+    },
+    {
+      "id": 6,
+      "name": "Ab7",
+      "chord": "Ab7",
+      "bass": "Ab2",
+      "scale1": "Ab mixolydian",
+      "scale2": "Ab lydian dominant",
+      "scale3": "Ab mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 8,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

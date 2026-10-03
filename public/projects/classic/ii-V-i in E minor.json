@@ -1,0 +1,53 @@
+{
+  "name": "ii-V-i in E minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "F#m7b5",
+      "chord": "F#m7b5",
+      "bass": "F#2",
+      "scale1": "F# locrian #2",
+      "scale2": "F# locrian",
+      "scale3": "F# minor blues"
+    },
+    {
+      "id": 2,
+      "name": "B7b9",
+      "chord": "B7b9",
+      "bass": "B2",
+      "scale1": "B phrygian dominant",
+      "scale2": "B half-whole diminished",
+      "scale3": "B mixolydian"
+    },
+    {
+      "id": 3,
+      "name": "Em7",
+      "chord": "Em7",
+      "bass": "E2",
+      "scale1": "E dorian",
+      "scale2": "E aeolian",
+      "scale3": "E minor pentatonic"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "favourites": [
+        1,
+        2,
+        3
+      ],
+      "blacklist": []
+    }
+  }
+}

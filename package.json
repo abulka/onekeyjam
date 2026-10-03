@@ -25,7 +25,8 @@
     "typecheck": "tsc --noEmit",
     "validate:data": "node bin/validate-data.mjs",
     "validate:scales": "node bin/check-project-scales.mjs",
-    "regenerate:scales": "node bin/regenerate-project-scales.mjs"
+    "regenerate:scales": "node bin/regenerate-project-scales.mjs",
+    "generate:classic": "node bin/generate-classic-projects.mjs"
   },
   "dependencies": {
     "@globalhive/vuejs-tour": "^3.0.1",

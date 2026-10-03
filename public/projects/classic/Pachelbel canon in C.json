@@ -1,0 +1,108 @@
+{
+  "name": "Pachelbel canon in C",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Cmaj7",
+      "chord": "Cmaj7",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Am7",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A dorian",
+      "scale2": "A aeolian",
+      "scale3": "A minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "Em7",
+      "chord": "Em7",
+      "bass": "E2",
+      "scale1": "E dorian",
+      "scale2": "E aeolian",
+      "scale3": "E minor pentatonic"
+    },
+    {
+      "id": 5,
+      "name": "Fmaj7",
+      "chord": "Fmaj7",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F harmonic major"
+    },
+    {
+      "id": 6,
+      "name": "Cmaj7",
+      "chord": "Cmaj7",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major"
+    },
+    {
+      "id": 7,
+      "name": "Fmaj7",
+      "chord": "Fmaj7",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F harmonic major"
+    },
+    {
+      "id": 8,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

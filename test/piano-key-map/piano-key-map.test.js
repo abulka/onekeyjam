@@ -3,15 +3,19 @@ import { NOTE_KEYS, codeToLabel, getNoteKeyForCode, labelForOffset } from '@/lib
 
 describe('piano-key-map', () => {
 
-    it('covers the two main octaves with a primary key each', () => {
-        for (let offset = 0; offset <= 23; offset++) {
+    it('gives every playable offset exactly one primary key', () => {
+        // The right-hand black keys (13, 15, 18, 20, 22, 25, 27, 30, 32) are the
+        // scale-filter modifiers and are triggered by the 1-5 number keys, so
+        // they deliberately have no note key.
+        const playable = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 17, 19, 21, 23, 24, 26, 28, 29, 31, 33]
+        for (let offset = 0; offset <= 33; offset++) {
             const primary = NOTE_KEYS.filter(key => key.offset === offset && key.primary)
-            assert.equal(primary.length, 1, `offset ${offset} should have exactly one primary key`)
+            assert.equal(primary.length, playable.includes(offset) ? 1 : 0, `offset ${offset} primary key count`)
         }
     })
 
-    it('extends into the octave above, stopping at A', () => {
-        const expected = ['I', '9', 'O', '0', 'P', '[', '-', ']', '=', '\\']
+    it('extends into the octave above with white keys only', () => {
+        const expected = ['I', '', 'O', '', 'P', '[', '', ']', '', '\\']
         const actual = expected.map((_, index) => labelForOffset(index + 24))
         assert.deepEqual(actual, expected)
         assert.equal(labelForOffset(34), '')
@@ -23,8 +27,8 @@ describe('piano-key-map', () => {
         assert.deepEqual(actual, expected)
     })
 
-    it('labels the right hand octave with the upper and number rows', () => {
-        const expected = ['Q', '2', 'W', '3', 'E', 'R', '5', 'T', '6', 'Y', '7', 'U']
+    it('labels the right hand octave with white keys only', () => {
+        const expected = ['Q', '', 'W', '', 'E', 'R', '', 'T', '', 'Y', '', 'U']
         const actual = expected.map((_, index) => labelForOffset(index + 12))
         assert.deepEqual(actual, expected)
     })

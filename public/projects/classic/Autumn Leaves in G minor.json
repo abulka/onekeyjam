@@ -1,0 +1,108 @@
+{
+  "name": "Autumn Leaves in G minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "F7",
+      "chord": "F7",
+      "bass": "F2",
+      "scale1": "F mixolydian",
+      "scale2": "F lydian dominant",
+      "scale3": "F mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Bbmaj7",
+      "chord": "Bbmaj7",
+      "bass": "Bb2",
+      "scale1": "Bb major",
+      "scale2": "Bb lydian",
+      "scale3": "Bb harmonic major"
+    },
+    {
+      "id": 4,
+      "name": "Ebmaj7",
+      "chord": "Ebmaj7",
+      "bass": "Eb2",
+      "scale1": "Eb major",
+      "scale2": "Eb lydian",
+      "scale3": "Eb harmonic major"
+    },
+    {
+      "id": 5,
+      "name": "Am7b5",
+      "chord": "Am7b5",
+      "bass": "A2",
+      "scale1": "A locrian #2",
+      "scale2": "A locrian",
+      "scale3": "A minor blues"
+    },
+    {
+      "id": 6,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "Gm7",
+      "chord": "Gm7",
+      "bass": "G2",
+      "scale1": "G dorian",
+      "scale2": "G aeolian",
+      "scale3": "G minor pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "Gm7",
+      "chord": "Gm7",
+      "bass": "G2",
+      "scale1": "G dorian",
+      "scale2": "G aeolian",
+      "scale3": "G minor pentatonic"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

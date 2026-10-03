@@ -16,8 +16,8 @@ import { chordSymbolToScaleNames } from '../../src/lib/chord-to-scale.js';
 describe('chordScaleEngine - canonical chord scales', () => {
 
     const expectations = {
-        'CM': ['C lydian', 'C major', 'C major pentatonic'],
-        'Cmaj7': ['C lydian', 'C major'],
+        'CM': ['C major', 'C lydian', 'C mixolydian'],
+        'Cmaj7': ['C major', 'C lydian'],
         'Cmaj7#11': ['C lydian'],
         'Cm7': ['C dorian', 'C aeolian', 'C minor pentatonic'],
         'Cm9': ['C dorian'],
@@ -31,7 +31,7 @@ describe('chordScaleEngine - canonical chord scales', () => {
         'C7b9': ['C phrygian dominant', 'C half-whole diminished'],
         'Cmaj7#5': ['C lydian augmented'],
         'Caug': ['C lydian augmented'],
-        'C6': ['C lydian', 'C major'],
+        'C6': ['C major', 'C lydian'],
         'Cm6': ['C melodic minor', 'C dorian'],
         'C13sus4': ['C mixolydian'],
     };
@@ -157,7 +157,7 @@ describe('chordScaleEngine - API shape', () => {
     });
 
     it('compatibleScaleTypesFor ranks the best types first', () => {
-        assert.deepEqual(compatibleScaleTypesFor('Cmaj7').slice(0, 2), ['lydian', 'major']);
+        assert.deepEqual(compatibleScaleTypesFor('Cmaj7').slice(0, 2), ['major', 'lydian']);
     });
 
 });

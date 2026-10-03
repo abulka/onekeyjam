@@ -1,0 +1,53 @@
+{
+  "name": "ii-V-i in D minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Em7b5",
+      "chord": "Em7b5",
+      "bass": "E2",
+      "scale1": "E locrian #2",
+      "scale2": "E locrian",
+      "scale3": "E minor blues"
+    },
+    {
+      "id": 2,
+      "name": "A7b9",
+      "chord": "A7b9",
+      "bass": "A2",
+      "scale1": "A phrygian dominant",
+      "scale2": "A half-whole diminished",
+      "scale3": "A mixolydian"
+    },
+    {
+      "id": 3,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3
+      ],
+      "favourites": [
+        1,
+        2,
+        3
+      ],
+      "blacklist": []
+    }
+  }
+}

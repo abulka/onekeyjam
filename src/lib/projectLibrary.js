@@ -12,7 +12,8 @@ import {
  * user projects. Replaces the previous Firebase backend.
  */
 
-const PROJECTS_MANIFEST = '/projects/projects-manifest.json'
+const FEATURED_MANIFEST = '/projects/featured/featured-manifest.json'
+const CLASSIC_MANIFEST = '/projects/classic/classic-manifest.json'
 const KEYBOARDS_MANIFEST = '/keyboards/keyboards-manifest.json'
 
 async function fetchJson(url) {
@@ -31,17 +32,31 @@ async function fetchManifest(url) {
     }
 }
 
-// Featured projects - the static library in public/projects
+// Featured projects - the static library in public/projects/featured
 
 export async function listFeaturedProjects() {
-    const manifest = await fetchManifest(PROJECTS_MANIFEST)
+    const manifest = await fetchManifest(FEATURED_MANIFEST)
     globals.projects = manifest
     globals.projectLibrary.projectNames = manifest.map(entry => entry.text)
 }
 
 export async function fetchFeaturedProject(name) {
     const entry = globals.projects.find(p => p.text === name)
-    const url = entry ? entry.value : `/projects/${encodeURIComponent(name + '.json')}`
+    const url = entry ? entry.value : `/projects/featured/${encodeURIComponent(name + '.json')}`
+    return fetchJson(url)
+}
+
+// Classic projects - the static library in public/projects/classic
+
+export async function listClassicProjects() {
+    const manifest = await fetchManifest(CLASSIC_MANIFEST)
+    globals.classicProjects = manifest
+    globals.projectLibrary.classicProjectNames = manifest.map(entry => entry.text)
+}
+
+export async function fetchClassicProject(name) {
+    const entry = globals.classicProjects.find(p => p.text === name)
+    const url = entry ? entry.value : `/projects/classic/${encodeURIComponent(name + '.json')}`
     return fetchJson(url)
 }
 

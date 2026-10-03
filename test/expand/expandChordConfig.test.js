@@ -77,8 +77,8 @@ describe('expandChordConfig - .chord missing', () => {
         // but now we expect more...
         assert.equal(chordConfig.chord, 'CM')
         assert.equal(chordConfig.symbols, 'CM,Em#5/C')
-        assert.equal(chordConfig.scale1, 'C lydian')
-        assert.equal(chordConfig.scale2, 'C major')
-        assert.equal(chordConfig.scale3, 'C major pentatonic')
+        assert.equal(chordConfig.scale1, 'C major')
+        assert.equal(chordConfig.scale2, 'C lydian')
+        assert.equal(chordConfig.scale3, 'C mixolydian')
     });
 });

@@ -1,0 +1,302 @@
+[
+  {
+    "text": "12-bar blues in Bb",
+    "value": "/projects/classic/12-bar%20blues%20in%20Bb.json",
+    "file": "12-bar blues in Bb.json"
+  },
+  {
+    "text": "12-bar blues in C",
+    "value": "/projects/classic/12-bar%20blues%20in%20C.json",
+    "file": "12-bar blues in C.json"
+  },
+  {
+    "text": "12-bar blues in Eb",
+    "value": "/projects/classic/12-bar%20blues%20in%20Eb.json",
+    "file": "12-bar blues in Eb.json"
+  },
+  {
+    "text": "12-bar blues in F",
+    "value": "/projects/classic/12-bar%20blues%20in%20F.json",
+    "file": "12-bar blues in F.json"
+  },
+  {
+    "text": "12-bar blues in G",
+    "value": "/projects/classic/12-bar%20blues%20in%20G.json",
+    "file": "12-bar blues in G.json"
+  },
+  {
+    "text": "50s doo-wop in C",
+    "value": "/projects/classic/50s%20doo-wop%20in%20C.json",
+    "file": "50s doo-wop in C.json"
+  },
+  {
+    "text": "50s doo-wop in D",
+    "value": "/projects/classic/50s%20doo-wop%20in%20D.json",
+    "file": "50s doo-wop in D.json"
+  },
+  {
+    "text": "50s doo-wop in F",
+    "value": "/projects/classic/50s%20doo-wop%20in%20F.json",
+    "file": "50s doo-wop in F.json"
+  },
+  {
+    "text": "50s doo-wop in G",
+    "value": "/projects/classic/50s%20doo-wop%20in%20G.json",
+    "file": "50s doo-wop in G.json"
+  },
+  {
+    "text": "All the Things You Are in Ab",
+    "value": "/projects/classic/All%20the%20Things%20You%20Are%20in%20Ab.json",
+    "file": "All the Things You Are in Ab.json"
+  },
+  {
+    "text": "Andalusian cadence in A minor",
+    "value": "/projects/classic/Andalusian%20cadence%20in%20A%20minor.json",
+    "file": "Andalusian cadence in A minor.json"
+  },
+  {
+    "text": "Andalusian cadence in D minor",
+    "value": "/projects/classic/Andalusian%20cadence%20in%20D%20minor.json",
+    "file": "Andalusian cadence in D minor.json"
+  },
+  {
+    "text": "Autumn Leaves in G minor",
+    "value": "/projects/classic/Autumn%20Leaves%20in%20G%20minor.json",
+    "file": "Autumn Leaves in G minor.json"
+  },
+  {
+    "text": "Blue Bossa in C minor",
+    "value": "/projects/classic/Blue%20Bossa%20in%20C%20minor.json",
+    "file": "Blue Bossa in C minor.json"
+  },
+  {
+    "text": "Blue Moon in C",
+    "value": "/projects/classic/Blue%20Moon%20in%20C.json",
+    "file": "Blue Moon in C.json"
+  },
+  {
+    "text": "Blues for Alice in F",
+    "value": "/projects/classic/Blues%20for%20Alice%20in%20F.json",
+    "file": "Blues for Alice in F.json"
+  },
+  {
+    "text": "Circle of fifths in C",
+    "value": "/projects/classic/Circle%20of%20fifths%20in%20C.json",
+    "file": "Circle of fifths in C.json"
+  },
+  {
+    "text": "Days of Wine and Roses in F",
+    "value": "/projects/classic/Days%20of%20Wine%20and%20Roses%20in%20F.json",
+    "file": "Days of Wine and Roses in F.json"
+  },
+  {
+    "text": "Fly Me to the Moon in C",
+    "value": "/projects/classic/Fly%20Me%20to%20the%20Moon%20in%20C.json",
+    "file": "Fly Me to the Moon in C.json"
+  },
+  {
+    "text": "Have You Met Miss Jones in F",
+    "value": "/projects/classic/Have%20You%20Met%20Miss%20Jones%20in%20F.json",
+    "file": "Have You Met Miss Jones in F.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in Bb",
+    "value": "/projects/classic/I-vi-ii-V%20turnaround%20in%20Bb.json",
+    "file": "I-vi-ii-V turnaround in Bb.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in C",
+    "value": "/projects/classic/I-vi-ii-V%20turnaround%20in%20C.json",
+    "file": "I-vi-ii-V turnaround in C.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in D",
+    "value": "/projects/classic/I-vi-ii-V%20turnaround%20in%20D.json",
+    "file": "I-vi-ii-V turnaround in D.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in Eb",
+    "value": "/projects/classic/I-vi-ii-V%20turnaround%20in%20Eb.json",
+    "file": "I-vi-ii-V turnaround in Eb.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in F",
+    "value": "/projects/classic/I-vi-ii-V%20turnaround%20in%20F.json",
+    "file": "I-vi-ii-V turnaround in F.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in G",
+    "value": "/projects/classic/I-vi-ii-V%20turnaround%20in%20G.json",
+    "file": "I-vi-ii-V turnaround in G.json"
+  },
+  {
+    "text": "ii-V-I in A major",
+    "value": "/projects/classic/ii-V-I%20in%20A%20major.json",
+    "file": "ii-V-I in A major.json"
+  },
+  {
+    "text": "ii-V-i in A minor",
+    "value": "/projects/classic/ii-V-i%20in%20A%20minor.json",
+    "file": "ii-V-i in A minor.json"
+  },
+  {
+    "text": "ii-V-I in Ab major",
+    "value": "/projects/classic/ii-V-I%20in%20Ab%20major.json",
+    "file": "ii-V-I in Ab major.json"
+  },
+  {
+    "text": "ii-V-I in B major",
+    "value": "/projects/classic/ii-V-I%20in%20B%20major.json",
+    "file": "ii-V-I in B major.json"
+  },
+  {
+    "text": "ii-V-i in B minor",
+    "value": "/projects/classic/ii-V-i%20in%20B%20minor.json",
+    "file": "ii-V-i in B minor.json"
+  },
+  {
+    "text": "ii-V-I in Bb major",
+    "value": "/projects/classic/ii-V-I%20in%20Bb%20major.json",
+    "file": "ii-V-I in Bb major.json"
+  },
+  {
+    "text": "ii-V-i in Bb minor",
+    "value": "/projects/classic/ii-V-i%20in%20Bb%20minor.json",
+    "file": "ii-V-i in Bb minor.json"
+  },
+  {
+    "text": "ii-V-I in C major",
+    "value": "/projects/classic/ii-V-I%20in%20C%20major.json",
+    "file": "ii-V-I in C major.json"
+  },
+  {
+    "text": "ii-V-i in C minor",
+    "value": "/projects/classic/ii-V-i%20in%20C%20minor.json",
+    "file": "ii-V-i in C minor.json"
+  },
+  {
+    "text": "ii-V-i in C# minor",
+    "value": "/projects/classic/ii-V-i%20in%20C%23%20minor.json",
+    "file": "ii-V-i in C# minor.json"
+  },
+  {
+    "text": "ii-V-I in D major",
+    "value": "/projects/classic/ii-V-I%20in%20D%20major.json",
+    "file": "ii-V-I in D major.json"
+  },
+  {
+    "text": "ii-V-i in D minor",
+    "value": "/projects/classic/ii-V-i%20in%20D%20minor.json",
+    "file": "ii-V-i in D minor.json"
+  },
+  {
+    "text": "ii-V-I in Db major",
+    "value": "/projects/classic/ii-V-I%20in%20Db%20major.json",
+    "file": "ii-V-I in Db major.json"
+  },
+  {
+    "text": "ii-V-I in E major",
+    "value": "/projects/classic/ii-V-I%20in%20E%20major.json",
+    "file": "ii-V-I in E major.json"
+  },
+  {
+    "text": "ii-V-i in E minor",
+    "value": "/projects/classic/ii-V-i%20in%20E%20minor.json",
+    "file": "ii-V-i in E minor.json"
+  },
+  {
+    "text": "ii-V-I in Eb major",
+    "value": "/projects/classic/ii-V-I%20in%20Eb%20major.json",
+    "file": "ii-V-I in Eb major.json"
+  },
+  {
+    "text": "ii-V-i in Eb minor",
+    "value": "/projects/classic/ii-V-i%20in%20Eb%20minor.json",
+    "file": "ii-V-i in Eb minor.json"
+  },
+  {
+    "text": "ii-V-I in F major",
+    "value": "/projects/classic/ii-V-I%20in%20F%20major.json",
+    "file": "ii-V-I in F major.json"
+  },
+  {
+    "text": "ii-V-i in F minor",
+    "value": "/projects/classic/ii-V-i%20in%20F%20minor.json",
+    "file": "ii-V-i in F minor.json"
+  },
+  {
+    "text": "ii-V-I in F# major",
+    "value": "/projects/classic/ii-V-I%20in%20F%23%20major.json",
+    "file": "ii-V-I in F# major.json"
+  },
+  {
+    "text": "ii-V-i in F# minor",
+    "value": "/projects/classic/ii-V-i%20in%20F%23%20minor.json",
+    "file": "ii-V-i in F# minor.json"
+  },
+  {
+    "text": "ii-V-I in G major",
+    "value": "/projects/classic/ii-V-I%20in%20G%20major.json",
+    "file": "ii-V-I in G major.json"
+  },
+  {
+    "text": "ii-V-i in G minor",
+    "value": "/projects/classic/ii-V-i%20in%20G%20minor.json",
+    "file": "ii-V-i in G minor.json"
+  },
+  {
+    "text": "ii-V-i in G# minor",
+    "value": "/projects/classic/ii-V-i%20in%20G%23%20minor.json",
+    "file": "ii-V-i in G# minor.json"
+  },
+  {
+    "text": "Minor ii-V-i with tritone sub in C minor",
+    "value": "/projects/classic/Minor%20ii-V-i%20with%20tritone%20sub%20in%20C%20minor.json",
+    "file": "Minor ii-V-i with tritone sub in C minor.json"
+  },
+  {
+    "text": "Modal So What in D minor",
+    "value": "/projects/classic/Modal%20So%20What%20in%20D%20minor.json",
+    "file": "Modal So What in D minor.json"
+  },
+  {
+    "text": "Pachelbel canon in C",
+    "value": "/projects/classic/Pachelbel%20canon%20in%20C.json",
+    "file": "Pachelbel canon in C.json"
+  },
+  {
+    "text": "Pachelbel canon in D",
+    "value": "/projects/classic/Pachelbel%20canon%20in%20D.json",
+    "file": "Pachelbel canon in D.json"
+  },
+  {
+    "text": "Rhythm Changes in Bb",
+    "value": "/projects/classic/Rhythm%20Changes%20in%20Bb.json",
+    "file": "Rhythm Changes in Bb.json"
+  },
+  {
+    "text": "Secondary dominants in C",
+    "value": "/projects/classic/Secondary%20dominants%20in%20C.json",
+    "file": "Secondary dominants in C.json"
+  },
+  {
+    "text": "Stella by Starlight in Bb",
+    "value": "/projects/classic/Stella%20by%20Starlight%20in%20Bb.json",
+    "file": "Stella by Starlight in Bb.json"
+  },
+  {
+    "text": "Summertime in A minor",
+    "value": "/projects/classic/Summertime%20in%20A%20minor.json",
+    "file": "Summertime in A minor.json"
+  },
+  {
+    "text": "Take the A Train in C",
+    "value": "/projects/classic/Take%20the%20A%20Train%20in%20C.json",
+    "file": "Take the A Train in C.json"
+  },
+  {
+    "text": "There Will Never Be Another You in Eb",
+    "value": "/projects/classic/There%20Will%20Never%20Be%20Another%20You%20in%20Eb.json",
+    "file": "There Will Never Be Another You in Eb.json"
+  }
+]

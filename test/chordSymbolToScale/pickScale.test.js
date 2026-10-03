@@ -11,28 +11,28 @@ describe('chordSymbolToScaleName', () => {
 
     it('Major chords - plain', () => {
         const chord = 'CM';
-        assert.equal('C lydian', chordSymbolToScaleName(chord, 1))
-        assert.equal('C major', chordSymbolToScaleName(chord, 2))
-        assert.equal('C major pentatonic', chordSymbolToScaleName(chord, 3))
+        assert.equal('C major', chordSymbolToScaleName(chord, 1))
+        assert.equal('C lydian', chordSymbolToScaleName(chord, 2))
+        assert.equal('C mixolydian', chordSymbolToScaleName(chord, 3))
     });
 
     it('Major 7 chords', () => {
         const chord = 'Cmaj7';
-        assert.equal('C lydian', chordSymbolToScaleName(chord, 1))
-        assert.equal('C major', chordSymbolToScaleName(chord, 2))
+        assert.equal('C major', chordSymbolToScaleName(chord, 1))
+        assert.equal('C lydian', chordSymbolToScaleName(chord, 2))
         assert.equal('C harmonic major', chordSymbolToScaleName(chord, 3))
     });
 
     it('Major 9 chords', () => {
         // quality: 'Major', type: 'major ninth'
         const chord = 'Cmaj9';
-        assert.equal('C lydian', chordSymbolToScaleName(chord, 1))
-        assert.equal('C major', chordSymbolToScaleName(chord, 2))
+        assert.equal('C major', chordSymbolToScaleName(chord, 1))
+        assert.equal('C lydian', chordSymbolToScaleName(chord, 2))
         assert.equal('C harmonic major', chordSymbolToScaleName(chord, 3))
     });
 
     it('Major 9 #11th chords', () => {
-        // The #11 rules out C major, so lydian is the parent scale.
+        // The #11 rules out the plain major scale, so lydian is the parent scale.
         const chord = 'Cmaj9#11';
         assert.equal('C lydian', chordSymbolToScaleName(chord, 1))
         assert.equal('C major', chordSymbolToScaleName(chord, 2))
@@ -42,8 +42,8 @@ describe('chordSymbolToScaleName', () => {
     it('Major 13th chords', () => {
         // quality: 'Major', type: 'major thirteenth'
         const chord = 'Cmaj13';
-        assert.equal('C lydian', chordSymbolToScaleName(chord, 1))
-        assert.equal('C major', chordSymbolToScaleName(chord, 2))
+        assert.equal('C major', chordSymbolToScaleName(chord, 1))
+        assert.equal('C lydian', chordSymbolToScaleName(chord, 2))
         assert.equal('C bebop major', chordSymbolToScaleName(chord, 3))
     });
 
@@ -110,8 +110,8 @@ describe('chordSymbolToScaleName', () => {
     it('C6 chord', () => {
         // quality: 'Major' type: 'sixth'
         const chord = 'C6'
-        assert.equal('C lydian', chordSymbolToScaleName(chord, 1))
-        assert.equal('C major', chordSymbolToScaleName(chord, 2))
+        assert.equal('C major', chordSymbolToScaleName(chord, 1))
+        assert.equal('C lydian', chordSymbolToScaleName(chord, 2))
         assert.equal('C major pentatonic', chordSymbolToScaleName(chord, 3))
     });
 
@@ -233,9 +233,9 @@ describe('chordSymbolToScaleName', () => {
 
     it('Add 2 - same as add 9', () => {
         const chord = 'Cadd2'
-        assert.equal('C lydian', chordSymbolToScaleName(chord, 1))
-        assert.equal('C major', chordSymbolToScaleName(chord, 2))
-        assert.equal('C major pentatonic', chordSymbolToScaleName(chord, 3))
+        assert.equal('C major', chordSymbolToScaleName(chord, 1))
+        assert.equal('C lydian', chordSymbolToScaleName(chord, 2))
+        assert.equal('C mixolydian', chordSymbolToScaleName(chord, 3))
     });
 
 });

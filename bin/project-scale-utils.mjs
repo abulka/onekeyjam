@@ -1,12 +1,33 @@
 // @ts-check
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as chordDb from '../src/lib/config.js'
 import { checkScaleAgainstChord, chordSymbolVoicingMismatch } from '../src/lib/chordScaleEngine.js'
 
 export const root = fileURLToPath(new URL('..', import.meta.url))
-export const projectsDir = join(root, 'public/projects')
+export const projectDirs = [
+    join(root, 'public/projects/featured'),
+    join(root, 'public/projects/classic'),
+]
+
+/** List every project file across the static libraries. */
+export function listProjectFiles() {
+    const files = []
+    for (const dir of projectDirs) {
+        let names = []
+        try {
+            names = readdirSync(dir)
+        } catch (e) {
+            continue
+        }
+        for (const file of names) {
+            if (file.endsWith('.json') && !file.endsWith('-manifest.json'))
+                files.push({ dir, file })
+        }
+    }
+    return files.sort((a, b) => a.file.localeCompare(b.file))
+}
 
 /** @param {string} path */
 export function loadJson(path) {

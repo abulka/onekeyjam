@@ -1,11 +1,11 @@
 // @ts-check
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { chordScaleNamesFor } from '../src/lib/chordScaleEngine.js'
-import { findScaleProblems, findSymbolVoicingMismatches, chordInfoFor, projectsDir } from './project-scale-utils.mjs'
+import { findScaleProblems, findSymbolVoicingMismatches, chordInfoFor, listProjectFiles } from './project-scale-utils.mjs'
 
 const write = process.argv.includes('--write')
-const files = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
+const requested = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
     .map((file) => file.endsWith('.json') ? file : `${file}.json`)
 
 /*
@@ -21,10 +21,6 @@ const SKIP_FILES = new Set([
     'Fmaj7 Dm6 Em7 C6.json',
     'Adam Neely crazy chord.json',
 ])
-
-const targets = files.length > 0
-    ? files
-    : readdirSync(projectsDir).filter((file) => file.endsWith('.json') && !file.endsWith('-manifest.json')).sort()
 
 /**
  * Replace the scale values in the original JSON text by occurrence index, so
@@ -60,20 +56,25 @@ function applyChangesPreservingFormat(text, chords, changesByChord) {
     return result
 }
 
+const all = listProjectFiles()
+const targets = requested.length > 0
+    ? all.filter(({ file }) => requested.includes(file))
+    : all
+
 let changedFiles = 0
 let changedChords = 0
 let skipped = 0
 
-for (const file of targets) {
+for (const { dir, file } of targets) {
     if (SKIP_FILES.has(file)) {
         skipped++
         continue
     }
-    const filePath = join(projectsDir, file)
+    const filePath = join(dir, file)
     const originalText = readFileSync(filePath, 'utf8')
     const project = JSON.parse(originalText)
     const problems = findScaleProblems(project)
-    if (problems.length === 0)
+    if (problems.length === 0 && findSymbolVoicingMismatches(project).length === 0)
         continue
 
     const flagged = new Map()

@@ -1,0 +1,108 @@
+{
+  "name": "Have You Met Miss Jones in F",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Fmaj7",
+      "chord": "Fmaj7",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "Fm7",
+      "chord": "Fm7",
+      "bass": "F2",
+      "scale1": "F dorian",
+      "scale2": "F aeolian",
+      "scale3": "F minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Bb7",
+      "chord": "Bb7",
+      "bass": "Bb2",
+      "scale1": "Bb mixolydian",
+      "scale2": "Bb lydian dominant",
+      "scale3": "Bb mixolydian b6"
+    },
+    {
+      "id": 4,
+      "name": "Ebmaj7",
+      "chord": "Ebmaj7",
+      "bass": "Eb2",
+      "scale1": "Eb major",
+      "scale2": "Eb lydian",
+      "scale3": "Eb harmonic major"
+    },
+    {
+      "id": 5,
+      "name": "Em7b5",
+      "chord": "Em7b5",
+      "bass": "E2",
+      "scale1": "E locrian #2",
+      "scale2": "E locrian",
+      "scale3": "E minor blues"
+    },
+    {
+      "id": 6,
+      "name": "A7",
+      "chord": "A7",
+      "bass": "A2",
+      "scale1": "A mixolydian",
+      "scale2": "A lydian dominant",
+      "scale3": "A mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

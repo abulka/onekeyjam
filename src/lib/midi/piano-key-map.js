@@ -34,18 +34,15 @@ export const NOTE_KEYS = [
     { code: 'KeyJ', offset: 10, primary: true },
     { code: 'KeyM', offset: 11, primary: true },
 
-    // Upper / number rows: the right-hand octave
+    // Upper row: the right-hand white keys. The right-hand black keys are the
+    // scale-filter modifiers and are triggered by the 1-5 number keys, so the
+    // number row is not part of the note map.
     { code: 'KeyQ', offset: 12, primary: true },
-    { code: 'Digit2', offset: 13, primary: true },
     { code: 'KeyW', offset: 14, primary: true },
-    { code: 'Digit3', offset: 15, primary: true },
     { code: 'KeyE', offset: 16, primary: true },
     { code: 'KeyR', offset: 17, primary: true },
-    { code: 'Digit5', offset: 18, primary: true },
     { code: 'KeyT', offset: 19, primary: true },
-    { code: 'Digit6', offset: 20, primary: true },
     { code: 'KeyY', offset: 21, primary: true },
-    { code: 'Digit7', offset: 22, primary: true },
     { code: 'KeyU', offset: 23, primary: true },
 
     // Lower-row aliases for the right-hand octave (kept for parity with the widget)
@@ -56,14 +53,10 @@ export const NOTE_KEYS = [
 
     // The octave above the right hand, on the physical keys right of P
     { code: 'KeyI', offset: 24, primary: true },
-    { code: 'Digit9', offset: 25, primary: true },
     { code: 'KeyO', offset: 26, primary: true },
-    { code: 'Digit0', offset: 27, primary: true },
     { code: 'KeyP', offset: 28, primary: true },
     { code: 'BracketLeft', offset: 29, primary: true },
-    { code: 'Minus', offset: 30, primary: true },
     { code: 'BracketRight', offset: 31, primary: true },
-    { code: 'Equal', offset: 32, primary: true },
     { code: 'Backslash', offset: 33, primary: true },
 ]
 

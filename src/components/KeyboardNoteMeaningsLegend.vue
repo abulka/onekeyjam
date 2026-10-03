@@ -18,11 +18,6 @@ const lhDsharp = keyLabel(3)
 const lhFsharp = keyLabel(6)
 const lhGsharp = keyLabel(8)
 const lhAsharp = keyLabel(10)
-const rhCsharp = keyLabel(13)
-const rhDsharp = keyLabel(15)
-const rhFsharp = keyLabel(18)
-const rhGsharp = keyLabel(20)
-const rhAsharp = keyLabel(22)
 
 function onKeyDown(e) {
   if (e.key === 'Escape')
@@ -73,25 +68,24 @@ onUnmounted(() => {
       <br>
 
       <div class="mt-2"></div>
-      Black notes: <b>R Hand</b>:
-        <code class="tip">C#</code> [<code class="kb">{{ rhCsharp }}</code>] scale1
-        <code class="tip">D#</code> [<code class="kb">{{ rhDsharp }}</code>] scale2
-        <code class="tip">F#</code> [<code class="kb">{{ rhFsharp }}</code>] scale3
-        <code class="tip">G#</code> [<code class="kb">{{ rhGsharp }}</code>] scale notes of chord
-        <code class="tip">A#</code> [<code class="kb">{{ rhAsharp }}</code>] lock current scale
+      Black notes: <b>R Hand</b> (any octave):
+        <code class="tip">C#</code> [<code class="kb">1</code>] scale1
+        <code class="tip">D#</code> [<code class="kb">2</code>] scale2
+        <code class="tip">F#</code> [<code class="kb">3</code>] scale3
+        <code class="tip">G#</code> [<code class="kb">4</code>] scale notes of chord
+        <code class="tip">A#</code> [<code class="kb">5</code>] lock current scale
       <br>
-      <span class="text-muted">Click the on-screen keyboard first so it has focus, then use the keys in [brackets].</span>
+      <span class="text-muted">The 1-5 number keys switch the scale from anywhere (no need to focus the keyboard).</span>
       <br>
       <span class="text-muted">Right hand aliases on the lower row:
         <code class="kb">,</code> C <code class="kb">L</code> C# <code class="kb">.</code> D
-        <code class="kb">/</code> E
-        (same notes as <code class="kb">Q</code> <code class="kb">2</code> <code class="kb">W</code>
+        <code class="kb">/</code> E (same notes as <code class="kb">Q</code> <code class="kb">W</code>
         <code class="kb">E</code>).</span>
       <br>
       <span class="text-muted">Higher octave:
-        <code class="kb">I</code> C <code class="kb">9</code> C# <code class="kb">O</code> D
-        <code class="kb">0</code> D# <code class="kb">P</code> E <code class="kb">[</code> F
-        <code class="kb">-</code> F# <code class="kb">]</code> G <code class="kb">=</code> G#
+        <code class="kb">I</code> C <code class="kb">O</code> D
+        <code class="kb">P</code> E <code class="kb">[</code> F
+        <code class="kb">]</code> G
         <code class="kb">\</code> A.</span>
 
     </div>
@@ -140,15 +134,15 @@ onUnmounted(() => {
                 <td>play current scale notes</td>
               </tr>
               <tr>
-                <td>Right hand black</td>
+                <td>Right hand black (any octave)</td>
                 <td>
-                  <code class="kb">{{ rhCsharp }}</code> scale1 /
-                  <code class="kb">{{ rhDsharp }}</code> scale2 /
-                  <code class="kb">{{ rhFsharp }}</code> scale3 /
-                  <code class="kb">{{ rhGsharp }}</code> notes of chord /
-                  <code class="kb">{{ rhAsharp }}</code> lock current scale
+                  <code class="kb">1</code> scale1 /
+                  <code class="kb">2</code> scale2 /
+                  <code class="kb">3</code> scale3 /
+                  <code class="kb">4</code> notes of chord /
+                  <code class="kb">5</code> lock current scale
                 </td>
-                <td></td>
+                <td>work anywhere, no focus needed</td>
               </tr>
               <tr>
                 <td>Lower-row aliases</td>
@@ -187,6 +181,7 @@ onUnmounted(() => {
               <tr><td><code class="kb">F3</code> (hold)</td><td>step to and play the next left-hand chord</td></tr>
               <tr><td><code class="kb">F4</code></td><td>previous left-hand chord</td></tr>
               <tr><td><code class="kb">F5</code></td><td>add the currently jammed chord</td></tr>
+              <tr><td><code class="kb">1</code> <code class="kb">2</code> <code class="kb">3</code> <code class="kb">4</code> <code class="kb">5</code></td><td>scale1 / scale2 / scale3 / notes of chord / lock scale (any page, any octave)</td></tr>
               <tr><td><code class="kb">Ctrl+1</code> / <code class="kb">Ctrl+Shift+1</code></td><td>normal piano / magic mode</td></tr>
               <tr><td><code class="kb">Ctrl+2</code> / <code class="kb">Ctrl+Shift+2</code></td><td>transpose up / down a semitone</td></tr>
               <tr><td><code class="kb">Ctrl+3</code> / <code class="kb">Ctrl+Shift+3</code></td><td>invert chord up / down</td></tr>
@@ -206,7 +201,7 @@ onUnmounted(() => {
 
           <h4>Notes</h4>
           <ul class="shortcuts-notes">
-            <li>The number row skips <code class="kb">4</code> and <code class="kb">8</code> because there is no black key between E–F or B–C.</li>
+            <li>The number keys <code class="kb">1</code>-<code class="kb">5</code> are reserved for switching scales, on every octave. The right-hand white notes are played with the letter keys.</li>
             <li>On Mac laptops the function keys may need <code class="kb">Fn</code>, or enable "use F1, F2, etc. keys as standard function keys".</li>
             <li><code class="kb">F5</code> reloads the page on Windows and Linux.</li>
             <li>The on-screen keyboard must be clicked first so it has focus before the letter and number shortcuts work.</li>

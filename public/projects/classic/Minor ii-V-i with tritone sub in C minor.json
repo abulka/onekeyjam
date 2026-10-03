@@ -1,0 +1,86 @@
+{
+  "name": "Minor ii-V-i with tritone sub in C minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Dm7b5",
+      "chord": "Dm7b5",
+      "bass": "D2",
+      "scale1": "D locrian #2",
+      "scale2": "D locrian",
+      "scale3": "D minor blues"
+    },
+    {
+      "id": 2,
+      "name": "Db7",
+      "chord": "Db7",
+      "bass": "Db2",
+      "scale1": "Db mixolydian",
+      "scale2": "Db lydian dominant",
+      "scale3": "Db mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "Dm7b5",
+      "chord": "Dm7b5",
+      "bass": "D2",
+      "scale1": "D locrian #2",
+      "scale2": "D locrian",
+      "scale3": "D minor blues"
+    },
+    {
+      "id": 5,
+      "name": "G7b9",
+      "chord": "G7b9",
+      "bass": "G2",
+      "scale1": "G phrygian dominant",
+      "scale2": "G half-whole diminished",
+      "scale3": "G mixolydian"
+    },
+    {
+      "id": 6,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "blacklist": []
+    }
+  }
+}

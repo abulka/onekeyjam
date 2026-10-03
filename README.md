@@ -37,10 +37,15 @@ sound in the browser.
 
 ## Using the app
 
-1. Open the app and choose **File -> Open Featured...** to load a demo project.
+1. Open the app and choose **File -> Open Featured...** or
+   **File -> Open Classic...** to load a demo project. The classic library holds
+   ii-V-I progressions in every key, turnarounds, blues and jazz standard
+   changes.
 2. Play the highlighted left-hand keys to trigger chords.
 3. Play anywhere to the right to jam - the notes are filtered to fit the chord.
-4. Use the black keys to switch scale or transpose.
+4. Press `1` `2` `3` `4` `5` from anywhere to switch scale1/scale2/scale3, the
+   chord notes, or lock the scale. The black keys do the same on a MIDI
+   keyboard, and transpose stays on the black keys.
 
 A guided tour is available from the **Start Tour** item in the menu. To build a
 project from an existing MIDI file, choose **File -> Import MIDI file...** and
@@ -67,12 +72,15 @@ keyboard with your computer keyboard instead.
    white keys of the chord trigger octave (`C3` to `B3` by default).
 3. The black keys `s d g h j` in that octave are the chord modifiers (`C#`,
    `D#`, `F#`, `G#`, `A#`). Hold `s` as a shift key, and use the others to
-   switch scales or transpose the chords.
-4. Play solo notes with the upper row, `q w e r t y u i`. These land in the jam
+   switch scale filtering off/on or transpose the chords.
+4. Play solo notes with the upper row, `q w e r t y u`. These land in the jam
    octave (`C4` upward by default) and are filtered into the current scale.
+5. Press `1` `2` `3` `4` `5` at any time to switch scale1, scale2, scale3, the
+   chord notes or lock the scale. These work on every page and every octave and
+   do not need the keyboard to have focus.
 
-The keys only work while the on-screen keyboard has focus, so if typing does
-nothing, click the keyboard first. The octaves follow the keyboard config
+The note keys only work while the on-screen keyboard has focus, so if typing
+does nothing, click the keyboard first. The octaves follow the keyboard config
 (`lhTriggerOctave`, `rhJamSoundOctave`), so a different project or keyboard may
 shift the notes that each key plays.
 

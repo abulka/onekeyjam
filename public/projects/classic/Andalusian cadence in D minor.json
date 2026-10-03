@@ -1,0 +1,64 @@
+{
+  "name": "Andalusian cadence in D minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Dm",
+      "chord": "Dm",
+      "bass": "D2",
+      "scale1": "D aeolian",
+      "scale2": "D dorian",
+      "scale3": "D minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C mixolydian"
+    },
+    {
+      "id": 3,
+      "name": "Bb",
+      "chord": "Bb",
+      "bass": "Bb2",
+      "scale1": "Bb major",
+      "scale2": "Bb lydian",
+      "scale3": "Bb mixolydian"
+    },
+    {
+      "id": 4,
+      "name": "A7",
+      "chord": "A7",
+      "bass": "A2",
+      "scale1": "A mixolydian",
+      "scale2": "A lydian dominant",
+      "scale3": "A mixolydian b6"
+    }
+  ],
+  "options": {},
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "blacklist": []
+    }
+  }
+}

@@ -4,6 +4,7 @@ import { WebMidi } from "./midi/webmidi.js"
 import { changeScaleFilter } from "./change-scale.js" // for testing
 import { wireNoteOnEvents, wireNoteOffEvents, wireCCEvents, calculateRhBlackNoteModifierNotes } from './midi/wire-events.js';
 import { wireQwertyKeyState } from "./midi/qwertyKeyState.js"
+import { wireScaleFilterShortcuts } from "./midi/scaleFilterShortcuts.js"
 import { emergencyRepairProject } from './emergencyRepairProject.js';
 import { verifyTriggerMap, candidatesToTriggerMapSmart, existingToTriggerMapSmart } from './triggerMaps';
 import { openJsonUrl } from "./util.js";
@@ -13,8 +14,8 @@ import { detectChords } from './parse-midi.js';
 import { buildProject } from './build-project.js';
 import { keyDetection } from "./keyDetection"
 import { deletePendingChordConfigs } from './massOperationsOnChordConfigs'
-import { fetchFeaturedProject, fetchUserProject } from './projectLibrary';
-import { listKeyboardConfigs, fetchKeyboardConfig, listFeaturedProjects, listUserProjects } from './projectLibrary';
+import { fetchFeaturedProject, fetchClassicProject, fetchUserProject } from './projectLibrary';
+import { listKeyboardConfigs, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listUserProjects } from './projectLibrary';
 
 /** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
 /** @typedef {import("./typedefs").KeyboardConfig} KeyboardConfig */
@@ -80,6 +81,17 @@ async function setFeaturedProject(name, project, currentChordTriggerNote) {
     projectChores2name(project, name, currentChordTriggerNote, 'featured');
 }
 
+async function setClassicProject(name, project, currentChordTriggerNote) {
+    // Pass in a project name or a project object
+    if (name)
+        project = await fetchClassicProject(name)
+    else
+        if (!project)
+            throw ('No project specified')
+
+    projectChores2name(project, name, currentChordTriggerNote, 'classic');
+}
+
 async function setUserProject(name, project, currentChordTriggerNote) {
     // Pass in a locally saved project name or a project object
     if (name)
@@ -98,7 +110,14 @@ export function loadFeaturedProject(name) {
     // 2. Called by reload current project button in main UI
     if (!name)
         name = globals.projectLibrary.projectName
-    document.broadcastEvent("switch-project", { name, featured: true })
+    document.broadcastEvent("switch-project", { name, category: 'featured' })
+}
+export function loadClassicProject(name) {
+    // 1. Called by the classic combobox in the File menu
+    // 2. Called by reload current project button in main UI
+    if (!name)
+        name = globals.projectLibrary.projectName
+    document.broadcastEvent("switch-project", { name, category: 'classic' })
 }
 export function loadUserProject(name) {
     // 1. Called by combobox select in main UI
@@ -200,8 +219,14 @@ export function wireProjectEvents() {
             )
         }
         else {
-            if (event.detail.featured)
+            if (event.detail.category === 'featured')
                 await setFeaturedProject(
+                    event.detail.name,
+                    event.detail.project,  // usually undefined
+                    event.detail.currentChordTriggerNote,  // usually undefined
+                )
+            else if (event.detail.category === 'classic')
+                await setClassicProject(
                     event.detail.name,
                     event.detail.project,  // usually undefined
                     event.detail.currentChordTriggerNote,  // usually undefined
@@ -389,6 +414,7 @@ export function linkProjectToKeyboard() {
     }
 
     wireQwertyKeyState()
+    wireScaleFilterShortcuts()
 
     calculateLhBlackNoteModifierNotes()
     calculateRhBlackNoteModifierNotes()
@@ -407,6 +433,7 @@ export function linkProjectToKeyboard() {
 
     // This used to be done in wireGuiEvents() but that is gone now, so do here.
     listFeaturedProjects()
+    listClassicProjects()
     listUserProjects()
 }
 

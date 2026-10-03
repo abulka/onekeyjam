@@ -112,7 +112,7 @@
 
 /**
  * An entry in the generated library manifests
- * (`projects-manifest.json`, `keyboards-manifest.json`).
+ * (`featured-manifest.json`, `classic-manifest.json`, `keyboards-manifest.json`).
  * @typedef {object} ManifestEntry
  * @property {string} text display name
  * @property {string} value URL to the JSON file

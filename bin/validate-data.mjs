@@ -17,12 +17,15 @@ const targets = [
     {
         label: 'project',
         schema: loadJson(join(root, 'schemas/project.schema.json')),
-        dir: join(root, 'public/projects'),
+        dirs: [
+            join(root, 'public/projects/featured'),
+            join(root, 'public/projects/classic'),
+        ],
     },
     {
         label: 'keyboard',
         schema: loadJson(join(root, 'schemas/keyboard.schema.json')),
-        dir: join(root, 'public/keyboards'),
+        dirs: [join(root, 'public/keyboards')],
     },
 ]
 
@@ -31,18 +34,24 @@ let checked = 0
 
 for (const target of targets) {
     const validate = ajv.compile(target.schema)
-    const files = readdirSync(target.dir)
-        .filter((file) => file.endsWith('.json') && !file.endsWith('-manifest.json'))
-        .sort()
+    for (const dir of target.dirs) {
+        let files = []
+        try {
+            files = readdirSync(dir)
+        } catch (e) {
+            continue
+        }
+        files = files.filter((file) => file.endsWith('.json') && !file.endsWith('-manifest.json')).sort()
 
-    for (const file of files) {
-        checked++
-        const data = loadJson(join(target.dir, file))
-        if (!validate(data)) {
-            failures++
-            console.error(`✗ ${target.label}: ${file}`)
-            for (const err of validate.errors ?? []) {
-                console.error(`    ${err.instancePath || '/'} ${err.message}`)
+        for (const file of files) {
+            checked++
+            const data = loadJson(join(dir, file))
+            if (!validate(data)) {
+                failures++
+                console.error(`✗ ${target.label}: ${file}`)
+                for (const err of validate.errors ?? []) {
+                    console.error(`    ${err.instancePath || '/'} ${err.message}`)
+                }
             }
         }
     }
