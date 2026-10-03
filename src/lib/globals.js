@@ -89,7 +89,8 @@ export const globals = reactive({
     },
 
     get superUser() {
-        // Debug panels are only shown in development builds
+        // Some developer-only extras (such as config dumps) are shown only in
+        // development builds. The Settings view's Debug section is always shown.
         return !isProduction
     },
 

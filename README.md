@@ -102,7 +102,7 @@ Then open http://localhost:8080/index.html.
 
 ## Project structure
 
-- `src/views/` - the routed pages (home, perform, about, research).
+- `src/views/` - the routed pages (edit/home, perform, settings, about, research).
 - `src/components/` - the UI widgets, such as the keyboards and pickers.
 - `src/lib/` - the framework-independent domain logic and MIDI/audio plumbing.
 - `public/projects/` - featured project JSON.
@@ -146,7 +146,7 @@ Main view, where you can edit your project.
 
 ![OneKeyJam performance view](doco/images/onekeyjam-performance-view.png)
 
-Performance view, where you can play your project.
+Performance view, where you can play and record your project.
 
 ![OneKeyJam sequencer](doco/images/onekeyjam-screenshot-2-sequencer.png)
 

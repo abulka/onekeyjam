@@ -1,6 +1,8 @@
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { keyDownListener, keyUpListener } from "@/lib/midi/livePianoKeyboardShortcuts"
+import { globals } from '@/lib/globals.js'
+import PageMenubar from './PageMenubar.vue'
 import GrandSummary from './GrandSummary.vue'
 import GrandStatus from './GrandStatus.vue';
 import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
@@ -8,6 +10,27 @@ import KeyboardNoteMeaningsLegend from './KeyboardNoteMeaningsLegend.vue'
 import ActiveScale from './ActiveScale.vue'
 import ActiveChord from './ActiveChord.vue'
 import LivePianoKeyboard from './LivePianoKeyboard.vue'
+import RecordControls from './RecordControls.vue'
+import RecordingPianoRoll from './RecordingPianoRoll.vue'
+import Sequencer from './Sequencer.vue'
+
+const recorder = ref(null)
+const sequencer = ref(null)
+
+function playChordSequencer() {
+  if (sequencer.value?.isPlaying)
+    sequencer.value.stop()
+  else
+    sequencer.value?.playIfHasNotes()
+}
+
+function toggleRecord() {
+  recorder.value?.toggleRecord()
+}
+
+function exportTake() {
+  recorder.value?.exportTake()
+}
 
 onMounted(() => {
   console.log('PERFORM onMounted')
@@ -29,6 +52,19 @@ onUnmounted(() => {
 
 <template>
 
+  <PageMenubar>
+    <template #actions>
+      <a class="item" :class="{ disabled: !sequencer?.hasNotes }" @click="playChordSequencer()">
+        {{ sequencer?.isPlaying ? 'Stop Chord Sequencer' : 'Play Chord Sequencer' }}
+      </a>
+      <a class="item" @click="toggleRecord()">{{ globals.recording.isRecording ? 'Stop Recording' : 'Record' }}</a>
+      <a class="item" :class="{ disabled: !globals.recording.hasTake }" @click="exportTake()">Export MIDI</a>
+    </template>
+  </PageMenubar>
+
+  <!-- A bit of spacing -->
+  <div class="mb-4"></div>
+
   <GrandStatus />
   <div class="mb-3"></div>
   <div class="ui container mb-1">
@@ -38,16 +74,44 @@ onUnmounted(() => {
   <div class="ui container mb-4">
     <KeyboardNoteMeaningsLegend />
   </div>
-  <div class="ui container">
-    <GrandSummary />
-  </div>
-
 
   <br>
 
   <!-- accordion -->
   <div class="ui container">
     <div id="big-accordion-perform" class="ui fluid styled accordion" style="background-color: burlywood;">
+
+      <div class="title">
+        <i class="dropdown icon"></i>
+        Record
+      </div>
+      <div class="content">
+        <RecordControls ref="recorder" />
+      </div>
+
+      <div class="title">
+        <i class="dropdown icon"></i>
+        Recording Sequencer
+      </div>
+      <div class="content">
+        <RecordingPianoRoll />
+      </div>
+
+      <div class="title">
+        <i class="dropdown icon"></i>
+        Chord Sequencer
+      </div>
+      <div class="content">
+        <Sequencer ref="sequencer" />
+      </div>
+
+      <div class="title">
+        <i class="dropdown icon"></i>
+        Chord / Scale Table
+      </div>
+      <div class="content">
+        <GrandSummary />
+      </div>
 
       <div class="title">
         <i class="dropdown icon"></i>

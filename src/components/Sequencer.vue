@@ -22,9 +22,29 @@ const panel = ref(null)
 const inputSequencerPersist = ref(null)
 const includeInRecording = ref(false)
 
+// Exposed state: whether the widget is playing, and whether the pattern has any
+// notes (so the Perform page's Actions menu can label and gate its items).
+const isPlaying = ref(false)
+const noteCount = ref(0)
+const hasNotes = computed(() => noteCount.value > 0)
+
 let patternPlaying = false
 let saveTimer = null
 let visualTimers = []
+
+function refreshNoteCount() {
+  noteCount.value = panel.value ? panel.value.getNotes().length : 0
+}
+
+// The widget applies MML on its next tick, so recount just after the call.
+function scheduleCountRefresh() {
+  setTimeout(refreshNoteCount, 0)
+}
+
+function onPanelChange() {
+  refreshNoteCount()
+  scheduleSave()
+}
 
 function clearVisualTimers() {
   for (const id of visualTimers)
@@ -131,6 +151,7 @@ function sequencerPlay(e, from = 'beginning') {
     // Light the played key on the main keyboard and the strips, in time.
     scheduleLiveNote(TonalNote.midi(allowedNote), options.t, options.g)
   }, starttick)
+  isPlaying.value = true
 }
 
 function sequencerResume(e) {
@@ -139,8 +160,17 @@ function sequencerResume(e) {
 
 function sequencerStop() {
   panel.value.stop()
+  isPlaying.value = false
   clearVisualTimers()
   saveNow()
+}
+
+/** Play the pattern from the beginning, but only if it has any notes. */
+function playIfHasNotes() {
+  refreshNoteCount()
+  if (!hasNotes.value)
+    return
+  sequencerPlay(null, 'beginning')
 }
 
 // ── Persistence ────────────────────────────────────────────────────────────
@@ -176,6 +206,7 @@ function loadFromProject() {
     : PANEL_TIMEBASE * DEFAULT_BARS
   panel.value.setLoop(start, end)
   includeInRecording.value = !!entry.enabled
+  scheduleCountRefresh()
 }
 
 function getDefaultEntry() {
@@ -212,6 +243,7 @@ function sequencerSave() {
 function sequencerLoad() {
   panel.value.setMML(inputSequencerPersist.value.value)
   saveNow()
+  scheduleCountRefresh()
 }
 
 function sequencerPatternAscendingWhiteNotes() {
@@ -219,6 +251,7 @@ function sequencerPatternAscendingWhiteNotes() {
   inputSequencerPersist.value.value = s
   panel.value.setMML(s)
   saveNow()
+  scheduleCountRefresh()
 }
 
 // ── Pattern actions ────────────────────────────────────────────────────────
@@ -246,6 +279,7 @@ function clearPatternAndLoop() {
   panel.value.setMML('t100o4l8')
   panel.value.setLoop(0, PANEL_TIMEBASE * DEFAULT_BARS)
   clearPattern()
+  scheduleCountRefresh()
 }
 
 // ── Recording integration ──────────────────────────────────────────────────
@@ -265,6 +299,7 @@ function stopPatternForRecording() {
     return
   patternPlaying = false
   panel.value.stop()
+  isPlaying.value = false
   clearVisualTimers()
 }
 
@@ -322,16 +357,21 @@ onMounted(() => {
   else {
     loadFromProject()
   }
+  scheduleCountRefresh()
   document.addEventListener('recording-started', onRecordingStarted)
   document.addEventListener('recording-stopped', onRecordingStopped)
 })
 
 onUnmounted(() => {
+  // Persist the latest edits before the component is torn down.
+  saveNow()
   clearTimeout(saveTimer)
   clearVisualTimers()
   document.removeEventListener('recording-started', onRecordingStarted)
   document.removeEventListener('recording-stopped', onRecordingStopped)
 })
+
+defineExpose({ playIfHasNotes, stop: sequencerStop, resume: sequencerResume, isPlaying, hasNotes, noteCount })
 </script>
 
 <template>
@@ -348,7 +388,7 @@ onUnmounted(() => {
     :min-width="500"
     :row-offset="rowOffset"
     @audition="onAudition"
-    @change="scheduleSave"
+    @change="onPanelChange"
   />
 
   <br>

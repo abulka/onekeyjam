@@ -96,6 +96,9 @@ onUnmounted(() => {
     stopRecording()
   stopPlayback(true)
 })
+
+// Exposed so the Perform page's Actions menu can drive the same controls.
+defineExpose({ toggleRecord, exportTake })
 </script>
 
 <template>

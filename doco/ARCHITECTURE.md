@@ -18,9 +18,17 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
 - `src/App.vue` renders the top menu. Its `onMounted()` hook calls
   `mainOneKeyJam()` from `src/lib/main.js`, which starts the one-time MIDI and
   project boot.
-- `src/router/index.js` maps routes to views: `/` (HomeView), `/perform`
-  (PerformView), `/record` (RecordView), `/about` (AboutView) and `/research`
-  (ResearchView). The Perform and Record routes are lazy loaded.
+- `src/router/index.js` maps routes to views: `/` (HomeView, shown as "Edit"),
+  `/perform` (PerformView), `/settings` (SettingsView), `/about` (AboutView) and
+  `/research` (ResearchView). `/record` redirects to `/perform`. The Perform and
+  Settings routes are lazy loaded. `SettingsView.vue` holds the MIDI Keyboard
+  Config (`MidiKeyboardsDetected.vue`) and Debug (`DebugAdmin.vue`) sections.
+  `src/components/PageMenubar.vue` is the shared second-level menu bar (File
+  menu, guided tour, project library and keyboard shortcuts); it is used by the
+  Edit, Perform and Settings views, with the Edit and Perform views supplying
+  their own Actions items through a slot. The Start Tour button and project name
+  are right-aligned, and the tour only uses the steps whose targets exist on the
+  current page.
 - `src/views/` holds the routed pages. `src/components/` holds the UI widgets
   such as the piano keyboards, chord pickers, scale pickers and status panels.
 - `src/lib/` holds the framework-independent domain logic and the MIDI and
@@ -90,8 +98,10 @@ and the validation commands.
   filtering is on, the played note is translated through `scaleTriggerMap` to an allowed
   note; otherwise it is echoed through. Pending note-offs are tracked in
   `globals.pendingNoteOffs` so the correct note can be stopped later.
-- The Record view (`/record`) captures a live performance into the two-track
-  take in `globals.recording`. `src/lib/midi/recorder.js` is driven from the
+- The Perform view captures a live performance into the two-track take in
+  `globals.recording`. Recording and playing live share one page, so the Chord
+  Sequencer can loop and merge into a take without any background instance.
+  `src/lib/midi/recorder.js` is driven from the
   points where the sounding notes are known: `playChordNote`/`playChordOff`
   record the left-hand chord and bass notes, and `jam`/`jamOff` record the
   scale-filtered right-hand notes. Timing comes from `audioContext.currentTime`
@@ -106,18 +116,20 @@ and the validation commands.
   turns the take into a two-track `.mid` file with `@tonejs/midi`, writing the
   solo part first and the chords second. The latest take is saved to
   `localStorage` (key `onekeyjam.latestTake`) and restored at boot, so a refresh
-  does not lose it. The Chord Sequencer now lives on the Record view rather than
-  the Perform view.
-- The Record view also has a Recording piano roll (`RecordingPianoRoll.vue`),
-  built on the reusable `PianoRollPanel.vue`, which wraps the g200kg
-  `webaudio-pianoroll` widget. It shows the current take, lets the Chords or
-  Solo track be edited (changes are written straight back to the take and
-  saved), follows the playback position with a playhead, and auditions notes
-  when the piano strip is clicked. Clicking and dragging along that strip plays
-  a run of notes, and its keys light up for notes played on the main keyboard
-  (and vice versa) through the same `live-note` event. `src/lib/sequencer-notes.js`
-  holds the pure conversions between take notes and widget notes. The Chord
-  Sequencer is now the second `PianoRollPanel` and is full width.
+  does not lose it. The Perform view's Actions menu offers Record/Stop and
+  Export MIDI, driven through the exposed methods on `RecordControls.vue`.
+- The Perform view's accordions are, in order: Record (`RecordControls.vue`),
+  Recording Sequencer (`RecordingPianoRoll.vue`), Chord Sequencer
+  (`Sequencer.vue`), Chord / Scale Table (`GrandSummary.vue`), Active Chord and
+  Active Scale. The Recording Sequencer is the take's piano roll, built on the
+  reusable `PianoRollPanel.vue`, which wraps the g200kg `webaudio-pianoroll`
+  widget. It shows the current take, lets the Chords or Solo track be edited
+  (changes are written straight back to the take and saved), follows the playback
+  position with a playhead, and auditions notes when the piano strip is clicked.
+  Clicking and dragging along that strip plays a run of notes, and its keys light
+  up for notes played on the main keyboard (and vice versa) through the same
+  `live-note` event. `src/lib/sequencer-notes.js` holds the pure conversions
+  between take notes and widget notes.
 - The Chord Sequencer is a chord-sequence loop. It can be auditioned (a chord
   trigger plays its chord, anything else a single note) from the piano strip or
   by clicking a note, its loop markers can be fitted to the notes, and it is

@@ -1,6 +1,5 @@
 <script setup>
 import { onMounted, onUnmounted } from "vue";
-import { globals } from '../lib/globals.js'
 import { keyDownListener, keyUpListener } from "@/lib/midi/livePianoKeyboardShortcuts"
 import GrandSummary from './GrandSummary.vue'
 import ChordPicker from './ChordPicker.vue'
@@ -9,8 +8,6 @@ import MidiParser from './MidiParser.vue'
 import GrandStatus from './GrandStatus.vue';
 import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
 import KeyboardNoteMeaningsLegend from './KeyboardNoteMeaningsLegend.vue'
-import DebugAdmin from './DebugAdmin.vue'
-import MidiKeyboardsDetected from './MidiKeyboardsDetected.vue'
 import LivePianoKeyboard from './LivePianoKeyboard.vue'
 
 onMounted(() => {
@@ -18,14 +15,15 @@ onMounted(() => {
   window.addEventListener('keyup', keyUpListener);
   window.addEventListener('keydown', keyDownListener);
 
-  // Wire up fomantic events using jquery 
+  // Wire up fomantic events using jquery, scoped to this view's accordion so
+  // the shared menubar can initialise its own dropdowns.
   $("#big-accordion")  // For nested accordions you only need to initialize the parent accordion.
     .accordion({ exclusive: false })
-  $('.ui.dropdown')
+  $("#big-accordion .ui.dropdown")
     .dropdown({ action: 'select' })  // select means activates menu but does not change current text
-  $('.ui.dropdown.chordpicker')
+  $("#big-accordion .ui.dropdown.chordpicker")
     .dropdown({ fullTextSearch: true, ignoreCase: false, ignoreSearchCase: false })
-  $('.tabular.menu .item').tab()
+  $("#big-accordion .tabular.menu .item").tab()
 
 });
 
@@ -100,39 +98,12 @@ onUnmounted(() => {
 
 
 
-      <!-- <div class="title">
-        <i class="dropdown icon"></i>
-        Chord Sequencer
-      </div>
-      <div class="content">
-        <Sequencer />
-      </div> -->
-
-
       <div class="title">
         <i class="dropdown icon"></i>
         Import Midi File
       </div>
       <div class="content">
         <MidiParser />
-      </div>
-
-
-      <div class="title">
-        <i class="dropdown icon"></i>
-        MIDI Keyboard Config
-      </div>
-      <div class="content">
-        <MidiKeyboardsDetected />
-      </div>
-
-
-      <div v-if="globals.superUser" class="title">
-        <i class="dropdown icon"></i>
-        Debug
-      </div>
-      <div class="content" v-if="globals.superUser">
-        <DebugAdmin />
       </div>
 
 

@@ -38,7 +38,7 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         of the UI and drilling in reveals all sorts of features, such as:
       </p>
 
-      <h3 class="ui header">Main view accordions</h3>
+      <h3 class="ui header">Edit view accordions</h3>
       <ul class="ui list">
         <li>
           <strong>Edit Chords</strong> - add, edit and audition the chords in your
@@ -51,11 +51,11 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
           <strong>Import MIDI File</strong> - load a MIDI file and OneKeyJam finds
           the chords inside it and lays them out across the keyboard.
         </li>
-        <li>
-          <strong>MIDI Keyboard Config</strong> - see the MIDI keyboards that have
-          been detected and how they are mapped.
-        </li>
       </ul>
+      <p>
+        MIDI keyboard setup and the debug panels live on the
+        <RouterLink to="/settings">Settings view</RouterLink>.
+      </p>
 
       <h3 class="ui header">File menu</h3>
       <p>
@@ -86,18 +86,28 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
       <!-- Perform view -->
       <h2 class="ui header">The Perform view</h2>
       <p>
-        The <RouterLink to="/perform">Perform view</RouterLink> is a focused
-        playing screen. It shows the active chord and the active scale as you
-        play, together with a live piano keyboard, the scale-filtering toggles and
-        the note-meanings legend. Expand the accordions underneath to reach:
+        The <RouterLink to="/perform">Perform view</RouterLink> is where you play
+        and record. It shows the active chord and the active scale as you go,
+        together with a live piano keyboard, the scale-filtering toggles and the
+        note-meanings legend. The <strong>File</strong> menu is the same as on the
+        Edit view, while the <strong>Actions</strong> menu offers
+        <strong>Play Chord Sequencer</strong>, <strong>Record</strong> and
+        <strong>Export MIDI</strong>. Expand the accordions underneath to reach:
       </p>
       <ul class="ui list">
+        <li><strong>Record</strong> - capture a take: press Record, play both hands, then press Stop. The left-hand chords (with their bass) and the scale-filtered right-hand solo notes are captured on two separate tracks. The panel also has the play/pause scrubber, the playback key-highlight choice, Export MIDI and Clear.</li>
+        <li><strong>Recording Sequencer</strong> - shows the captured take in a piano roll. Use the Chords, Solo and Both buttons to view the tracks; Chords and Solo are editable, and changes are written straight back to the take. Click the piano strip on the left to hear a note.</li>
+        <li><strong>Chord Sequencer</strong> - draw a chord-sequence loop; audition it from the piano strip or by clicking a note (a chord trigger plays its chord), fit the loop to the notes, and clear it. Tick <strong>Include in recording</strong> to loop it while you record a solo, and it is merged into the take on Stop.</li>
+        <li><strong>Chord / Scale Table</strong> - the chords and their scale filters at a glance; click a row to trigger the chord.</li>
         <li><strong>Active Chord</strong> - the chord that is currently sounding, with its notes and bass.</li>
         <li><strong>Active Scale</strong> - the scale the right hand is currently filtered into.</li>
       </ul>
       <p>
         The status readouts at the top of the page summarise the current chord and
-        scale at a glance, so you always know what you are playing over.
+        scale at a glance, so you always know what you are playing over. Recording
+        is free (no quantisation or metronome) and is timed at 120 BPM. The latest
+        take is kept in the browser, so a page refresh does not lose it; clear it
+        with the Clear button when you are done.
       </p>
 
       <figure>
@@ -106,34 +116,6 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
           The Perform view, with the active chord, active scale and live keyboard.
         </figcaption>
       </figure>
-
-      <!-- Record view -->
-      <h2 class="ui header">The Record view</h2>
-      <p>
-        The <RouterLink to="/record">Record view</RouterLink> is where you capture
-        a performance. Press <strong>Record</strong>, play both hands, then press
-        <strong>Stop</strong>. The left-hand chords (with their bass) and the
-        scale-filtered right-hand solo notes are captured on two separate tracks.
-      </p>
-      <ul class="ui list">
-        <li><strong>Record / Stop</strong> - capture a take, with a live note count.</li>
-        <li><strong>Play / Pause</strong> - listen back to the take in the browser. Play resumes from the scrub position, the rewind button jumps back to the start, and the keys light up as they sound.</li>
-        <li><strong>Keys (playback)</strong> - choose what lights up on the keyboard when playing back the recording: the keys you played (red), the sounding notes (blue), or both. Live playing and the sequencer always light the single trigger or solo key.</li>
-        <li><strong>Export MIDI</strong> - download the take as a two-track <code>.mid</code> file (solo first, chords second) to use in a DAW.</li>
-        <li><strong>Chord Sequencer</strong> - draw a chord-sequence loop; audition it from the piano strip or by clicking a note (a chord trigger plays its chord), fit the loop to the notes, and clear it. Tick <strong>Include in recording</strong> to loop it while you record a solo, and it is merged into the take on Stop.</li>
-      </ul>
-      <p>
-        The Recording section shows the take in a piano roll. Use the
-        <strong>Chords</strong>, <strong>Solo</strong> and <strong>Both</strong>
-        buttons to view the tracks; Chords and Solo are editable, and changes are
-        written straight back to the recording. Click the piano strip on the left
-        to hear a note.
-      </p>
-      <p>
-        Recording is free (no quantisation or metronome) and is timed at 120 BPM.
-        The latest take is kept in the browser, so a page refresh does not lose it;
-        clear it with the Clear button when you are done.
-      </p>
 
       <!-- Features -->
       <h2 class="ui header">Features</h2>
@@ -193,9 +175,9 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
       </p>
 
       <figure>
-        <img class="screenshot" :src="mainView" alt="OneKeyJam main view, where you edit your project" />
+        <img class="screenshot" :src="mainView" alt="OneKeyJam edit view, where you edit your project" />
         <figcaption class="screenshot-caption">
-          The main view, where you edit your project: one-finger chords, scale
+          The Edit view, where you edit your project: one-finger chords, scale
           filters and the piano keyboard.
         </figcaption>
       </figure>

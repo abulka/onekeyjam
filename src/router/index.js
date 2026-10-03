@@ -20,8 +20,12 @@ const router = createRouter({
     },
     {
       path: '/record',
-      name: 'record',
-      component: () => import('../views/RecordView.vue')
+      redirect: '/perform'
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: () => import('../views/SettingsView.vue')
     },
     {
       path: '/about',
