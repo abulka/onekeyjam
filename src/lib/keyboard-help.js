@@ -1,5 +1,6 @@
 // @ts-check
 import { indexToNote } from './note-tools.js'
+import { pianoKeyLabelForOffset } from './midi/piano-key-map.js'
 
 /**
  * @module lib/keyboard-help
@@ -28,6 +29,19 @@ const LEFT_HAND_SHIFT_HELP = {
 }
 
 const RIGHT_HAND_HELP = {
+    'C#': 'Scale 1',
+    'D#': 'Scale 2',
+    'F#': 'Scale 3',
+    'G#': 'Scale 4 (chord notes)',
+    'A#': 'Lock current scale',
+}
+
+/**
+ * Badge shown on a right-hand black key while scale filtering is on. These are
+ * the computer keys that switch scale1/2/3/notesOfChord/lock.
+ * @type {Record<string, string>}
+ */
+export const RIGHT_HAND_SCALE_BADGE = {
     'C#': '1',
     'D#': '2',
     'F#': '3',
@@ -81,6 +95,8 @@ export function buildWhiteNoteMappings(chordTriggerMap = {}, scaleTriggerMap = {
  * @param {Record<string, string>} [options.whiteNoteMappings]
  * @param {string[]} [options.chordTriggerNotes] notes that trigger a chord (white keys get kind 'chord')
  * @param {string} [options.keyboardHelpMode] 'off' | 'black' | 'white' | 'all'
+ * @param {{baseIndex: number, octaveShift: number}} [options.piano] when set, label keys with the traditional piano mapping
+ * @param {boolean} [options.scaleFilteringEnabled] when false, right-hand black keys show no scale help
  * @returns {Array<object>}
  */
 export function buildKeyLabels(options = {}) {
@@ -92,6 +108,8 @@ export function buildKeyLabels(options = {}) {
         whiteNoteMappings = {},
         chordTriggerNotes = [],
         keyboardHelpMode = 'all',
+        piano = null,
+        scaleFilteringEnabled = true,
     } = options
 
     const showBlack = keyboardHelpMode === 'black' || keyboardHelpMode === 'all'
@@ -104,11 +122,31 @@ export function buildKeyLabels(options = {}) {
         const isBlack = kf[((i % 12) + 12) % 12] === 1
         const note = indexToNote(i - min, lhTriggerOctave)
 
+        const pianoLabel = piano
+            ? pianoKeyLabelForOffset((i - min) - piano.baseIndex - 12 * piano.octaveShift)
+            : ''
+
         if (isBlack) {
             if (showBlack) {
                 const pitchClass = note.replace(/-?\d+$/, '')
                 const octave = Number((note.match(/-?\d+$/) || ['0'])[0])
-                const isLeftHand = Number(octave) === Number(lhTriggerOctave)
+                const isLeftHand = !piano && Number(octave) === Number(lhTriggerOctave)
+                let help
+                let shiftHelp
+                if (piano) {
+                    help = pianoLabel
+                    shiftHelp = ''
+                }
+                else {
+                    help = getBlackKeyHelp(pitchClass, octave, { shift: false, lhTriggerOctave })
+                    shiftHelp = getBlackKeyHelp(pitchClass, octave, { shift: true, lhTriggerOctave })
+                    // With scale filtering off the right-hand black keys are
+                    // ordinary notes, so the scale help does not apply.
+                    if (!isLeftHand && !scaleFilteringEnabled) {
+                        help = ''
+                        shiftHelp = ''
+                    }
+                }
                 labels.push({
                     note,
                     isBlack: true,
@@ -116,8 +154,8 @@ export function buildKeyLabels(options = {}) {
                     isShiftKey: isLeftHand && pitchClass === 'C#',
                     semitoneIndex: i,
                     whiteIndex: -1,
-                    help: getBlackKeyHelp(pitchClass, octave, { shift: false, lhTriggerOctave }),
-                    shiftHelp: getBlackKeyHelp(pitchClass, octave, { shift: true, lhTriggerOctave }),
+                    help,
+                    shiftHelp,
                     mapping: '',
                 })
             }
@@ -131,10 +169,10 @@ export function buildKeyLabels(options = {}) {
                     isShiftKey: false,
                     semitoneIndex: i,
                     whiteIndex,
-                    kind: chordTriggerNotes.includes(note) ? 'chord' : 'scale',
+                    kind: !piano && chordTriggerNotes.includes(note) ? 'chord' : 'scale',
                     help: '',
                     shiftHelp: '',
-                    mapping: whiteNoteMappings[note] || '',
+                    mapping: piano ? pianoLabel : (whiteNoteMappings[note] || ''),
                 })
             }
             whiteIndex++

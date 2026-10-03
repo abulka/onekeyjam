@@ -148,6 +148,11 @@ and the validation commands.
   scale1/scale2/scale3, the chord notes and lock from any page via
   `src/lib/midi/scaleFilterShortcuts.js`. See `onNoteOn()` in
   `src/lib/midi/wire-events.js`.
+- Normal piano mode (`globals.bypass`) switches the computer keyboard to the
+  standard Ableton/Logic layout (`a s d f g h j k l ;` white, `w e t y u o p`
+  black, `z`/`x` octave shift) defined in `src/lib/midi/piano-key-map.js`, and
+  replaces the magic overlays with the letter overlay. The `1`-`5` shortcuts are
+  inactive there.
 - MIDI output goes to three channels of the IAC Driver: channel 1 for jam
   notes, channel 2 for chords and channel 3 for bass. When `globals.GM` is
   true, sounds are instead made in the browser with the npm `soundfont-player`

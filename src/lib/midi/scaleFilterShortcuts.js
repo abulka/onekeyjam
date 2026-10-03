@@ -29,6 +29,10 @@ function onKeyDown(e) {
         return
     if (isTypingTarget(e.target))
         return
+    // The number keys are only scale shortcuts in magic mode. In normal piano
+    // mode scale filtering is off, and digits should do nothing.
+    if (!globals.scaleFilteringEnabled)
+        return
     if (!e.code || !e.code.startsWith('Digit'))
         return
     const digit = Number(e.code.slice(5))

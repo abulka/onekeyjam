@@ -24,6 +24,32 @@ const keyboardFocused = ref(false)
 // Physical keys currently held down, so we can stop the note we started.
 const keysDown = new Map()
 
+const PIANO_OCTAVE = 12
+// Normal piano mode uses the Ableton/Logic computer-keyboard layout.
+const isPianoMode = () => globals.bypass
+const keyboardKeyCount = computed(() => isLargeScreen.value ? 49 : 25)
+// Index of the A/C key of the piano mapping: the right-hand sound octave.
+const pianoBaseIndex = () => PIANO_OCTAVE * (globals.getRhJamSoundOctave() - globals.getLhTriggerOctave())
+
+/**
+ * Resolve a note key to a widget index, applying the piano octave shift.
+ * @param {{ offset: number }} key
+ */
+function resolveKeyboardIndex(key) {
+  if (!isPianoMode())
+    return key.offset
+  return pianoBaseIndex() + key.offset + PIANO_OCTAVE * globals.computerKeyboard.octaveShift
+}
+
+/**
+ * The number-row keys. In magic mode with scale filtering on these are the 1-5
+ * scale shortcuts (and the rest are unused), so they must not sound a note.
+ * @param {string} code
+ */
+function isNumberRowCode(code) {
+  return code.startsWith('Digit') || code === 'Minus' || code === 'Equal'
+}
+
 function updateKeyboardFocus() {
   keyboardFocused.value = !!pianoKeyboard.value && document.activeElement === pianoKeyboard.value
 }
@@ -76,7 +102,7 @@ function handleNote(state, keyboardIndex) {
 
   if (state) {
     buildRawPianoNoteInfo(note, true, keyboardIndex, false)
-    if (isLhCsharp(keyboardIndex)) lhCsharpStuckDown = !lhCsharpStuckDown
+    if (!isPianoMode() && isLhCsharp(keyboardIndex)) lhCsharpStuckDown = !lhCsharpStuckDown
     let simulatedEvent = {
       // Note is WebMidi's Note (imported from @/lib/webmidi.js), not Tonal's
       note: new Note(note, { attack: 0.5 })
@@ -86,7 +112,7 @@ function handleNote(state, keyboardIndex) {
   }
   else {
     globals.currentRawLiveNote = NONOTE
-    if (isLhCsharp(keyboardIndex) && lhCsharpStuckDown) {
+    if (!isPianoMode() && isLhCsharp(keyboardIndex) && lhCsharpStuckDown) {
       // Avoid the normal note-off event for lhCsharp meta black key
       pianoKeyboard.value?.setNote(true, keyboardIndex)  // quickly turn visual keyboard back on
       return
@@ -107,21 +133,45 @@ function onChange(e) {
 function onKeyDown(e) {
   if (e.repeat || e.ctrlKey || e.metaKey || e.altKey)
     return
-  const key = getNoteKeyForCode(e.code)
+
+  // In normal piano mode Z / X shift the computer keyboard by an octave.
+  if (isPianoMode()) {
+    if (e.code === 'KeyZ') {
+      e.preventDefault()
+      globals.computerKeyboard.octaveShift = Math.max(-4, globals.computerKeyboard.octaveShift - 1)
+      return
+    }
+    if (e.code === 'KeyX') {
+      e.preventDefault()
+      globals.computerKeyboard.octaveShift = Math.min(5, globals.computerKeyboard.octaveShift + 1)
+      return
+    }
+  }
+
+  // While scale filtering is on, the number row is the 1-5 scale shortcuts in
+  // magic mode, so do not also play a note. When filtering is off these keys
+  // play as right-hand black notes.
+  if (!isPianoMode() && globals.scaleFilteringEnabled && isNumberRowCode(e.code))
+    return
+
+  const key = getNoteKeyForCode(e.code, isPianoMode() ? 'piano' : 'magic')
   if (!key || keysDown.has(e.code))
     return
-  keysDown.set(e.code, key.offset)
-  pianoKeyboard.value?.setNote(true, key.offset)
-  handleNote(true, key.offset)
+  const index = resolveKeyboardIndex(key)
+  keysDown.set(e.code, index)
+  if (index >= 0 && index < keyboardKeyCount.value)
+    pianoKeyboard.value?.setNote(true, index)
+  handleNote(true, index)
 }
 
 function onKeyUp(e) {
   if (!keysDown.has(e.code))
     return
-  const offset = keysDown.get(e.code)
+  const index = keysDown.get(e.code)
   keysDown.delete(e.code)
-  pianoKeyboard.value?.setNote(false, offset)
-  handleNote(false, offset)
+  if (index >= 0 && index < keyboardKeyCount.value)
+    pianoKeyboard.value?.setNote(false, index)
+  handleNote(false, index)
 }
 
 function onLiveNote(event) {

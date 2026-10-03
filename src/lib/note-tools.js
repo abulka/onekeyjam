@@ -111,16 +111,18 @@ export function isInNextOctave(note1, note2) {
 }
 
 export function indexToNote(index, startOctave = 3) {
-    // Converts keyboard number (0-24) to note
+    // Converts keyboard number to note. A normalised modulo keeps negative
+    // (off-screen) indices working, e.g. -1 -> B2 and -12 -> C2.
     const keyboardNotes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
-    return `${keyboardNotes[index % 12]}${(Math.floor(index / 12) + startOctave)}`
+    const pitchClass = keyboardNotes[((index % 12) + 12) % 12]
+    return `${pitchClass}${(Math.floor(index / 12) + startOctave)}`
 }
 
 export function indexToWhiteNote(index) {
     // Converts keyboard number (0-nn) to white note e.g. 'C', subsequent octaves become 'C_2' etc
     const keyboardNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
     const numNotes = keyboardNotes.length
-    let note = keyboardNotes[index % numNotes]
+    let note = keyboardNotes[((index % numNotes) + numNotes) % numNotes]
     let octaveOffset = Math.floor(index / numNotes)
     return (octaveOffset > 0) ? `${note}_${octaveOffset + 1}` : note
 }

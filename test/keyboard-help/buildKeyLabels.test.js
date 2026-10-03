@@ -68,4 +68,21 @@ describe('buildKeyLabels', () => {
         const labels = buildKeyLabels({ ...baseOptions, lhTriggerOctave: 2 })
         assert.equal(byNote(labels, 'C#2').help, 'SHIFT')
     })
+
+    it('shows the scale labels on right-hand black keys', () => {
+        const labels = buildKeyLabels({ ...baseOptions, max: 22 })
+        assert.equal(byNote(labels, 'C#4').help, 'Scale 1')
+        assert.equal(byNote(labels, 'D#4').help, 'Scale 2')
+        assert.equal(byNote(labels, 'F#4').help, 'Scale 3')
+        assert.equal(byNote(labels, 'G#4').help, 'Scale 4 (chord notes)')
+        assert.equal(byNote(labels, 'A#4').help, 'Lock current scale')
+    })
+
+    it('hides right-hand black help when scale filtering is off', () => {
+        const labels = buildKeyLabels({ ...baseOptions, max: 22, scaleFilteringEnabled: false })
+        assert.equal(byNote(labels, 'C#4').help, '')
+        assert.equal(byNote(labels, 'A#4').help, '')
+        // left hand modifiers are unaffected
+        assert.equal(byNote(labels, 'C#3').help, 'SHIFT')
+    })
 })

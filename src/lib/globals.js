@@ -217,6 +217,9 @@ export const globals = reactive({
         lhTriggerOctave: 3,
         rhJamSoundOctave: 4,
     },
+    computerKeyboard: {     // normal-piano computer-keyboard state
+        octaveShift: 0,
+    },
     keyboardsAvailable: [],  // list of keyboard config names from the static manifest
     keyboardsManifest: [],   // keyboard manifest entries { text, value, file }
 

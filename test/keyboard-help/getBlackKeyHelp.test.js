@@ -21,13 +21,13 @@ describe('getBlackKeyHelp', () => {
         assert.equal(getBlackKeyHelp('A#', 3, options), '')  // SHIFT + A# has no action
     })
 
-    it('right hand octaves show the scale switch shortcut numbers', () => {
+    it('right hand octaves show the scale switch labels', () => {
         const options = { lhTriggerOctave: 3 }
-        assert.equal(getBlackKeyHelp('C#', 4, options), '1')
-        assert.equal(getBlackKeyHelp('D#', 4, options), '2')
-        assert.equal(getBlackKeyHelp('F#', 5, options), '3')
-        assert.equal(getBlackKeyHelp('G#', 6, options), '4')
-        assert.equal(getBlackKeyHelp('A#', 7, options), '5')
+        assert.equal(getBlackKeyHelp('C#', 4, options), 'Scale 1')
+        assert.equal(getBlackKeyHelp('D#', 4, options), 'Scale 2')
+        assert.equal(getBlackKeyHelp('F#', 5, options), 'Scale 3')
+        assert.equal(getBlackKeyHelp('G#', 6, options), 'Scale 4 (chord notes)')
+        assert.equal(getBlackKeyHelp('A#', 7, options), 'Lock current scale')
     })
 
     it('right hand shift variants are empty', () => {
@@ -36,7 +36,7 @@ describe('getBlackKeyHelp', () => {
 
     it('respects a custom left hand octave', () => {
         assert.equal(getBlackKeyHelp('D#', 2, { lhTriggerOctave: 2 }), 'Scale filter OFF')
-        assert.equal(getBlackKeyHelp('D#', 3, { lhTriggerOctave: 2 }), '2')
+        assert.equal(getBlackKeyHelp('D#', 3, { lhTriggerOctave: 2 }), 'Scale 2')
     })
 
     it('unknown notes return an empty string', () => {

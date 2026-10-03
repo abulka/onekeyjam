@@ -1,8 +1,9 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { globals } from '@/lib/globals.js'
-import { buildKeyLabels, buildWhiteNoteMappings, chooseTextOrientation, getBlackKeyDisplay } from '@/lib/keyboard-help.js'
+import { buildKeyLabels, buildWhiteNoteMappings, chooseTextOrientation, getBlackKeyDisplay, RIGHT_HAND_SCALE_BADGE } from '@/lib/keyboard-help.js'
 import { labelForOffset } from '@/lib/midi/piano-key-map.js'
+import { indexToNote } from '@/lib/note-tools.js'
 
 const props = defineProps({
   keyboardEl: { type: Object, default: null },
@@ -79,6 +80,7 @@ const keyLabels = computed(() => {
   if (!geo)
     return []
 
+  const pianoMode = globals.bypass
   const whiteNoteMappings = buildWhiteNoteMappings(globals.chordTriggerMap, globals.scaleTriggerMap)
   const raw = buildKeyLabels({
     min: geo.min,
@@ -88,12 +90,16 @@ const keyLabels = computed(() => {
     whiteNoteMappings,
     chordTriggerNotes: Object.keys(globals.chordTriggerMap),
     keyboardHelpMode: globals.keyboardHelpMode,
+    piano: pianoMode
+      ? { baseIndex: 12 * (globals.getRhJamSoundOctave() - globals.getLhTriggerOctave()), octaveShift: globals.computerKeyboard.octaveShift }
+      : null,
+    scaleFilteringEnabled: globals.scaleFilteringEnabled,
   })
 
   const minMod = ((geo.min % 12) + 12) % 12
   const shiftActive = globals.blackShiftState
-  // Keep the bottom of the black key clear for the shortcut badge
-  const blackReserve = globals.showKeyShortcuts ? BADGE_HEIGHT + 4 : 2
+  // Keep the bottom of the black key clear for the shortcut badge (magic mode only)
+  const blackReserve = (globals.showKeyShortcuts && !globals.bypass) ? BADGE_HEIGHT + 4 : 2
 
   return raw.map((item) => {
     if (item.isBlack) {
@@ -137,7 +143,9 @@ function labelStyle(item) {
 
 // Small coloured badges showing the computer keyboard key for each piano key.
 const shortcutBadges = computed(() => {
-  if (!globals.showKeyShortcuts)
+  // In normal piano mode the key letters are the main labels, so no magic
+  // computer-key badges are drawn.
+  if (globals.bypass || !globals.showKeyShortcuts)
     return []
   const geo = geometry.value
   if (!geo)
@@ -156,11 +164,22 @@ const shortcutBadges = computed(() => {
     const label = labelForOffset(offset)
 
     if (isBlack) {
-      if (label) {
+      let badgeLabel = label
+      // While scale filtering is on, the right-hand black keys are the 1-5
+      // scale shortcuts rather than notes, so badge them 1-5.
+      if (globals.scaleFilteringEnabled) {
+        const note = indexToNote(i - geo.min, globals.keyboard.lhTriggerOctave)
+        const pitchClass = note.replace(/-?\d+$/, '')
+        const octave = Number((note.match(/-?\d+$/) || ['0'])[0])
+        const isLeftHand = Number(octave) === Number(globals.keyboard.lhTriggerOctave)
+        if (!isLeftHand)
+          badgeLabel = RIGHT_HAND_SCALE_BADGE[pitchClass] || ''
+      }
+      if (badgeLabel) {
         const keyX = blackKeyX(i)
         badges.push({
           id: `black-${i}`,
-          label,
+          label: badgeLabel,
           isBlack: true,
           x: keyX + geo.bwidth / 2 - BADGE_WIDTH / 2,
           y: geo.bheight - BADGE_HEIGHT - 1,

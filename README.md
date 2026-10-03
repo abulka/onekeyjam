@@ -77,12 +77,30 @@ keyboard with your computer keyboard instead.
    octave (`C4` upward by default) and are filtered into the current scale.
 5. Press `1` `2` `3` `4` `5` at any time to switch scale1, scale2, scale3, the
    chord notes or lock the scale. These work on every page and every octave and
-   do not need the keyboard to have focus.
+   do not need the keyboard to have focus. While scale filtering is on the
+   number row is only these shortcuts; when you switch scale filtering off the
+   number row plays the right-hand black notes again (`2 3 5 6 7`, plus
+   `9 0 - =` for the next octave).
 
 The note keys only work while the on-screen keyboard has focus, so if typing
 does nothing, click the keyboard first. The octaves follow the keyboard config
 (`lhTriggerOctave`, `rhJamSoundOctave`), so a different project or keyboard may
 shift the notes that each key plays.
+
+#### Normal piano mode
+
+Switch to **Normal piano** (the toggle next to Magic mode) to turn the keyboard
+into an ordinary piano with no one-finger chords and no scale filtering. The
+computer keyboard then uses the standard Ableton Live / Logic Pro layout:
+
+- White notes: `a s d f g h j k l ;`
+- Black notes: `w e t y u o p`
+- `z` / `x` shift the computer keyboard down / up an octave (it starts on
+  middle C). Notes outside the visible keyboard still sound, so you can keep
+  shifting a few octaves in either direction.
+
+The magic-mode overlays are replaced by these letters, and the `1`-`5` scale
+shortcuts are inactive while Normal piano mode is on.
 
 ## Quick start
 

@@ -18,6 +18,32 @@
  * @property {boolean} primary Whether this is the key shown in the legend for its offset
  */
 
+/**
+ * The standard Ableton Live / Logic Pro computer-keyboard layout used in
+ * Normal piano mode: A S D F G H J K L ; are the white keys and
+ * W E T Y U O P are the black keys, with Z / X shifting octave.
+ * @type {NoteKey[]}
+ */
+export const PIANO_NOTE_KEYS = [
+    { code: 'KeyA', offset: 0, primary: true },
+    { code: 'KeyW', offset: 1, primary: true },
+    { code: 'KeyS', offset: 2, primary: true },
+    { code: 'KeyE', offset: 3, primary: true },
+    { code: 'KeyD', offset: 4, primary: true },
+    { code: 'KeyF', offset: 5, primary: true },
+    { code: 'KeyT', offset: 6, primary: true },
+    { code: 'KeyG', offset: 7, primary: true },
+    { code: 'KeyY', offset: 8, primary: true },
+    { code: 'KeyH', offset: 9, primary: true },
+    { code: 'KeyU', offset: 10, primary: true },
+    { code: 'KeyJ', offset: 11, primary: true },
+    { code: 'KeyK', offset: 12, primary: true },
+    { code: 'KeyO', offset: 13, primary: true },
+    { code: 'KeyL', offset: 14, primary: true },
+    { code: 'KeyP', offset: 15, primary: true },
+    { code: 'Semicolon', offset: 16, primary: true },
+]
+
 /** @type {NoteKey[]} */
 export const NOTE_KEYS = [
     // Lower / home rows: the left-hand octave, plus lower-row aliases for the next octave
@@ -34,15 +60,20 @@ export const NOTE_KEYS = [
     { code: 'KeyJ', offset: 10, primary: true },
     { code: 'KeyM', offset: 11, primary: true },
 
-    // Upper row: the right-hand white keys. The right-hand black keys are the
-    // scale-filter modifiers and are triggered by the 1-5 number keys, so the
-    // number row is not part of the note map.
+    // Upper row: right-hand white keys on letters and right-hand black keys on
+    // the number row. While scale filtering is on the number row becomes the
+    // 1-5 scale shortcuts; while it is off these keys play as black notes.
     { code: 'KeyQ', offset: 12, primary: true },
+    { code: 'Digit2', offset: 13, primary: true },
     { code: 'KeyW', offset: 14, primary: true },
+    { code: 'Digit3', offset: 15, primary: true },
     { code: 'KeyE', offset: 16, primary: true },
     { code: 'KeyR', offset: 17, primary: true },
+    { code: 'Digit5', offset: 18, primary: true },
     { code: 'KeyT', offset: 19, primary: true },
+    { code: 'Digit6', offset: 20, primary: true },
     { code: 'KeyY', offset: 21, primary: true },
+    { code: 'Digit7', offset: 22, primary: true },
     { code: 'KeyU', offset: 23, primary: true },
 
     // Lower-row aliases for the right-hand octave (kept for parity with the widget)
@@ -53,10 +84,14 @@ export const NOTE_KEYS = [
 
     // The octave above the right hand, on the physical keys right of P
     { code: 'KeyI', offset: 24, primary: true },
+    { code: 'Digit9', offset: 25, primary: true },
     { code: 'KeyO', offset: 26, primary: true },
+    { code: 'Digit0', offset: 27, primary: true },
     { code: 'KeyP', offset: 28, primary: true },
     { code: 'BracketLeft', offset: 29, primary: true },
+    { code: 'Minus', offset: 30, primary: true },
     { code: 'BracketRight', offset: 31, primary: true },
+    { code: 'Equal', offset: 32, primary: true },
     { code: 'Backslash', offset: 33, primary: true },
 ]
 
@@ -92,14 +127,20 @@ export function codeToLabel(code) {
 
 /** @type {Map<string, NoteKey>} */
 const KEY_BY_CODE = new Map(NOTE_KEYS.map(key => [key.code, key]))
+/** @type {Map<string, NoteKey>} */
+const PIANO_KEY_BY_CODE = new Map(PIANO_NOTE_KEYS.map(key => [key.code, key]))
+/** @type {Map<number, string>} */
+const PIANO_LABEL_BY_OFFSET = new Map(PIANO_NOTE_KEYS.map(key => [key.offset, codeToLabel(key.code)]))
 
 /**
  * Looks up the note key for a KeyboardEvent.code, if any.
  * @param {string} code
+ * @param {'magic'|'piano'} [mode='magic']
  * @returns {NoteKey|null}
  */
-export function getNoteKeyForCode(code) {
-    return KEY_BY_CODE.get(code) || null
+export function getNoteKeyForCode(code, mode = 'magic') {
+    const map = mode === 'piano' ? PIANO_KEY_BY_CODE : KEY_BY_CODE
+    return map.get(code) || null
 }
 
 /**
@@ -110,4 +151,14 @@ export function getNoteKeyForCode(code) {
 export function labelForOffset(offset) {
     const key = NOTE_KEYS.find(candidate => candidate.offset === offset && candidate.primary)
     return key ? codeToLabel(key.code) : ''
+}
+
+/**
+ * The computer key label for a semitone offset in the piano mapping, or '' if
+ * that semitone has no key. Offsets run 0 (C) to 16 (E of the next octave).
+ * @param {number} offset
+ * @returns {string}
+ */
+export function pianoKeyLabelForOffset(offset) {
+    return PIANO_LABEL_BY_OFFSET.get(offset) || ''
 }

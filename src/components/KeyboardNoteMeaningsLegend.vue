@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
+import { globals } from '@/lib/globals.js'
 import { labelForOffset } from '@/lib/midi/piano-key-map.js'
 
 const showShortcuts = ref(false)
@@ -41,52 +42,71 @@ onUnmounted(() => {
   <div class="ui accordion keyboard-note-meanings">
     <div class="title">
       <i class="dropdown icon"></i>
-      Magic mode piano keyboard note meanings
+      {{ globals.bypass ? 'Normal piano keyboard note meanings' : 'Magic mode piano keyboard note meanings' }}
       <button type="button" class="shortcuts-button" title="Show all keyboard shortcuts"
         @click.stop="showShortcuts = true">? Shortcuts</button>
     </div>
     <div class="content">
 
-      White notes:
-        <b>L Hand</b> [<code class="kb">{{ lhWhiteKeys }}</code>]: trigger Chords
-        <span class="ml-4"><b>R Hand</b> [<code class="kb">{{ rhWhiteKeys }}</code>]: trigger notes of current
-          Scale</span>
-      <br>
+      <template v-if="globals.bypass">
+        <b>Normal piano mode</b> - the computer keyboard plays like a normal piano:
+        <div class="mt-2"></div>
+        White notes: <code class="kb">A</code> <code class="kb">S</code> <code class="kb">D</code>
+        <code class="kb">F</code> <code class="kb">G</code> <code class="kb">H</code>
+        <code class="kb">J</code> <code class="kb">K</code> <code class="kb">L</code>
+        <code class="kb">;</code>
+        <br>
+        Black notes: <code class="kb">W</code> <code class="kb">E</code> <code class="kb">T</code>
+        <code class="kb">Y</code> <code class="kb">U</code> <code class="kb">O</code>
+        <code class="kb">P</code>
+        <br>
+        <span class="text-muted">This is the standard Ableton / Logic computer-keyboard layout.
+          Press <code class="kb">Z</code> / <code class="kb">X</code> to shift the computer keyboard down / up an
+          octave. The on-screen keyboard must be focused first.</span>
+      </template>
 
-      <div class="mt-2"></div>
-      Black notes: <b>L Hand</b>:
-        <code class="tip">C#</code> [<code class="kb">{{ lhCsharp }}</code>] <span class="meta">shift</span>
-        <code class="tip">D#</code> [<code class="kb">{{ lhDsharp }}</code>] scale filt. off
-        <code class="tip">F#</code> [<code class="kb">{{ lhFsharp }}</code>] scale filt. on
-        <code class="tip">G#</code> [<code class="kb">{{ lhGsharp }}</code>] transpose down
-        <code class="tip">A#</code> [<code class="kb">{{ lhAsharp }}</code>] transpose up
-      <br>
-      <span class="ml-6"><span class="meta">shift</span> (hold <code class="tip">C#</code>) <b>+</b>:</span>
-        <code class="tip">D#</code> [<code class="kb">{{ lhDsharp }}</code>] emergency all notes off
-        <code class="tip">F#</code> [<code class="kb">{{ lhFsharp }}</code>] add chord
-        <code class="tip">G#</code> [<code class="kb">{{ lhGsharp }}</code>] reset transpositions
-      <br>
+      <template v-else>
+        White notes:
+          <b>L Hand</b> [<code class="kb">{{ lhWhiteKeys }}</code>]: trigger Chords
+          <span class="ml-4"><b>R Hand</b> [<code class="kb">{{ rhWhiteKeys }}</code>]: trigger notes of current
+            Scale</span>
+        <br>
 
-      <div class="mt-2"></div>
-      Black notes: <b>R Hand</b> (any octave):
-        <code class="tip">C#</code> [<code class="kb">1</code>] scale1
-        <code class="tip">D#</code> [<code class="kb">2</code>] scale2
-        <code class="tip">F#</code> [<code class="kb">3</code>] scale3
-        <code class="tip">G#</code> [<code class="kb">4</code>] scale notes of chord
-        <code class="tip">A#</code> [<code class="kb">5</code>] lock current scale
-      <br>
-      <span class="text-muted">The 1-5 number keys switch the scale from anywhere (no need to focus the keyboard).</span>
-      <br>
-      <span class="text-muted">Right hand aliases on the lower row:
-        <code class="kb">,</code> C <code class="kb">L</code> C# <code class="kb">.</code> D
-        <code class="kb">/</code> E (same notes as <code class="kb">Q</code> <code class="kb">W</code>
-        <code class="kb">E</code>).</span>
-      <br>
-      <span class="text-muted">Higher octave:
-        <code class="kb">I</code> C <code class="kb">O</code> D
-        <code class="kb">P</code> E <code class="kb">[</code> F
-        <code class="kb">]</code> G
-        <code class="kb">\</code> A.</span>
+        <div class="mt-2"></div>
+        Black notes: <b>L Hand</b>:
+          <code class="tip">C#</code> [<code class="kb">{{ lhCsharp }}</code>] <span class="meta">shift</span>
+          <code class="tip">D#</code> [<code class="kb">{{ lhDsharp }}</code>] scale filt. off
+          <code class="tip">F#</code> [<code class="kb">{{ lhFsharp }}</code>] scale filt. on
+          <code class="tip">G#</code> [<code class="kb">{{ lhGsharp }}</code>] transpose down
+          <code class="tip">A#</code> [<code class="kb">{{ lhAsharp }}</code>] transpose up
+        <br>
+        <span class="ml-6"><span class="meta">shift</span> (hold <code class="tip">C#</code>) <b>+</b>:</span>
+          <code class="tip">D#</code> [<code class="kb">{{ lhDsharp }}</code>] emergency all notes off
+          <code class="tip">F#</code> [<code class="kb">{{ lhFsharp }}</code>] add chord
+          <code class="tip">G#</code> [<code class="kb">{{ lhGsharp }}</code>] reset transpositions
+        <br>
+
+        <div class="mt-2"></div>
+        Black notes: <b>R Hand</b> (any octave):
+          <code class="tip">C#</code> [<code class="kb">1</code>] scale1
+          <code class="tip">D#</code> [<code class="kb">2</code>] scale2
+          <code class="tip">F#</code> [<code class="kb">3</code>] scale3
+          <code class="tip">G#</code> [<code class="kb">4</code>] scale notes of chord
+          <code class="tip">A#</code> [<code class="kb">5</code>] lock current scale
+        <br>
+        <span class="text-muted">The 1-5 number keys switch the scale from anywhere (no need to focus the keyboard).</span>
+        <br>
+        <span class="text-muted">Right hand aliases on the lower row:
+          <code class="kb">,</code> C <code class="kb">L</code> C# <code class="kb">.</code> D
+          <code class="kb">/</code> E (same notes as <code class="kb">Q</code> <code class="kb">W</code>
+          <code class="kb">E</code>).</span>
+        <br>
+        <span class="text-muted">Higher octave:
+          <code class="kb">I</code> C <code class="kb">O</code> D
+          <code class="kb">P</code> E <code class="kb">[</code> F
+          <code class="kb">]</code> G
+          <code class="kb">\</code> A.</span>
+      </template>
 
     </div>
   </div>
