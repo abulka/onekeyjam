@@ -57,7 +57,14 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         <RouterLink to="/settings">Settings view</RouterLink>.
       </p>
 
-      <h3 class="ui header">File menu</h3>
+      <h3 class="ui header">Menu bar</h3>
+      <p>
+        The <strong>File</strong> menu, <strong>DEMO</strong>, <strong>Start
+        Tour</strong> and the current project name appear on the Edit, Perform and
+        Settings views. The <strong>Actions</strong> menu changes with the view:
+        the Edit view has project actions, while the Perform view has playing and
+        recording actions. The Help view has no menu bar.
+      </p>
       <p>
         Use the <strong>File</strong> menu to open and save projects. It includes
         <em>New</em>, <em>Open</em>, <em>Open Featured</em>, <em>Save</em>,
@@ -66,7 +73,7 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         machines), and <em>Download MIDI Chords</em> in a couple of formats.
       </p>
 
-      <h3 class="ui header">Actions menu</h3>
+      <h3 class="ui header">Edit view Actions menu</h3>
       <ul class="ui list">
         <li><strong>Reallocate Chords</strong> - shuffle the chord triggers across the keyboard.</li>
         <li><strong>Find Matching Scales</strong> - suggest scales that fit the chords.</li>
@@ -76,7 +83,8 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
 
       <h3 class="ui header">And there is more</h3>
       <ul class="ui list">
-        <li><strong>Start Tour</strong> - a guided tour of the main controls.</li>
+        <li><strong>DEMO</strong> - load the C Major II-V-I demo project, focus the keyboard and show a short getting-started guide with a <strong>Jam!</strong> button.</li>
+        <li><strong>Start Tour</strong> - a guided tour of the controls on the current view.</li>
         <li>The chord and scale pickers, with search and audition buttons.</li>
         <li>The <strong>Circle of Fifths</strong> helper.</li>
         <li>The <strong>keyboard note meanings</strong> legend, which explains what every key does.</li>
@@ -87,12 +95,13 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
       <h2 class="ui header">The Perform view</h2>
       <p>
         The <RouterLink to="/perform">Perform view</RouterLink> is where you play
-        and record. It shows the active chord and the active scale as you go,
-        together with a live piano keyboard, the scale-filtering toggles and the
-        note-meanings legend. The <strong>File</strong> menu is the same as on the
-        Edit view, while the <strong>Actions</strong> menu offers
-        <strong>Play Chord Sequencer</strong>, <strong>Record</strong> and
-        <strong>Export MIDI</strong>. Expand the accordions underneath to reach:
+        and record; playing and recording share one page. It shows the active
+        chord and the active scale as you go, together with a live piano keyboard,
+        the scale-filtering toggles and the note-meanings legend. The
+        <strong>File</strong> menu is the same as on the Edit view, while the
+        <strong>Actions</strong> menu offers <strong>Play Chord
+        Sequencer</strong>, <strong>Record</strong> and <strong>Export
+        MIDI</strong>. Expand the accordions underneath to reach:
       </p>
       <ul class="ui list">
         <li><strong>Record</strong> - capture a take: press Record, play both hands, then press Stop. The left-hand chords (with their bass) and the scale-filtered right-hand solo notes are captured on two separate tracks. The panel also has the play/pause scrubber, the playback key-highlight choice, Export MIDI and Clear.</li>
@@ -216,24 +225,20 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
 
       <!-- Sequencer & features screenshots -->
       <h2 class="ui header">More screenshots</h2>
-      <div class="ui two column stackable grid">
-        <div class="column">
-          <figure>
-            <img class="screenshot" :src="sequencerView" alt="OneKeyJam built-in sequencer" />
-            <figcaption class="screenshot-caption">
-              The built-in sequencer, with left-hand chords on one track and
-              right-hand jam notes on another.
-            </figcaption>
-          </figure>
-        </div>
-        <div class="column">
-          <h3 class="ui header">Features at a glance</h3>
-          <div class="features-scroll">
-            <img :src="featuresView" alt="A summary of OneKeyJam features" />
-          </div>
-          <p class="screenshot-caption">A quick visual summary of the main features.</p>
-        </div>
+
+      <figure>
+        <img class="screenshot" :src="sequencerView" alt="OneKeyJam built-in sequencer" />
+        <figcaption class="screenshot-caption">
+          The Chord Sequencer: draw a looping chord sequence on the piano roll,
+          then play it back over your playing.
+        </figcaption>
+      </figure>
+
+      <h3 class="ui header">Features at a glance</h3>
+      <div class="features-scroll">
+        <img :src="featuresView" alt="A summary of OneKeyJam features" />
       </div>
+      <p class="screenshot-caption">A quick visual summary of the main features.</p>
 
       <!-- Free to use -->
       <h2 class="ui header">Free to use</h2>
