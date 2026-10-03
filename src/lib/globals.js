@@ -107,6 +107,7 @@ export const globals = reactive({
     scaleFilteringEnabled: true,
     keyboardHelpMode: 'all',  // 'off' | 'black' | 'white' | 'all' - text overlays on the main keyboard
     showKeyShortcuts: false,  // show the computer-keyboard key badges on the main keyboard
+    showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
     debugJamChord: false,
     syncChordPickerToJamChord: true,
     syncChordPickerToCurrentTriggeredChord: true,

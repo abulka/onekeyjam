@@ -1,12 +1,19 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import PageMenubar from '@/components/PageMenubar.vue'
 import MidiKeyboardsDetected from '@/components/MidiKeyboardsDetected.vue'
 import DebugAdmin from '@/components/DebugAdmin.vue'
+import { registerAccordion } from '@/lib/accordionState.js'
+import { globals } from '@/lib/globals.js'
+
+let stopAccordion = () => {}
 
 onMounted(() => {
+  stopAccordion = registerAccordion(document.querySelector('#big-accordion-settings'), 'settings')
   $('#big-accordion-settings').accordion({ exclusive: false })
 })
+
+onUnmounted(() => stopAccordion())
 </script>
 
 <template>
@@ -20,11 +27,22 @@ onMounted(() => {
       <div id="big-accordion-settings" class="ui fluid styled accordion" style="background-color: burlywood;"
         data-step="settings">
 
-        <div class="active title">
+        <div class="title">
+          <i class="dropdown icon"></i>
+          Preferences
+        </div>
+        <div class="content">
+          <label class="checkboxLabel" title="Show the welcome message when a demo project is loaded">
+            <input type="checkbox" v-model="globals.showWelcomeDialog" />
+            Show the welcome message when opening a demo project
+          </label>
+        </div>
+
+        <div class="title">
           <i class="dropdown icon"></i>
           MIDI Keyboard Config
         </div>
-        <div class="active content">
+        <div class="content">
           <MidiKeyboardsDetected />
         </div>
 

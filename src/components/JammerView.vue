@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted } from "vue";
 import { keyDownListener, keyUpListener } from "@/lib/midi/livePianoKeyboardShortcuts"
+import { registerAccordion } from "@/lib/accordionState.js"
 import GrandSummary from './GrandSummary.vue'
 import ChordPicker from './ChordPicker.vue'
 import ScalePicker from './ScalePicker.vue'
@@ -10,6 +11,8 @@ import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
 import KeyboardNoteMeaningsLegend from './KeyboardNoteMeaningsLegend.vue'
 import LivePianoKeyboard from './LivePianoKeyboard.vue'
 
+let stopAccordion = () => {}
+
 onMounted(() => {
   console.log('JAMMER onMounted')
   window.addEventListener('keyup', keyUpListener);
@@ -17,6 +20,7 @@ onMounted(() => {
 
   // Wire up fomantic events using jquery, scoped to this view's accordion so
   // the shared menubar can initialise its own dropdowns.
+  stopAccordion = registerAccordion(document.querySelector('#big-accordion'), 'jammer')
   $("#big-accordion")  // For nested accordions you only need to initialize the parent accordion.
     .accordion({ exclusive: false })
   $("#big-accordion .ui.dropdown")
@@ -32,6 +36,7 @@ onUnmounted(() => {
   // Tip: All jquery events will automatically be unbound when the component is unmounted.
   window.removeEventListener("keyup", keyUpListener);
   window.removeEventListener('keydown', keyDownListener);
+  stopAccordion();
 });
 
 </script>

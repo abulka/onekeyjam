@@ -49,11 +49,13 @@ onUnmounted(() => {
       <div class="center aligned column">
         <div class="ui compact buttons mode-toggle" data-step="bypass-filtering">
           <button type="button" class="ui button" :class="{ active: !globals.bypass, boldy: !globals.bypass }"
+            :aria-pressed="!globals.bypass"
             title="One note chords, white notes conform to the current scale"
             @click="setMagicMode()">
             ✨ Magic mode
           </button>
           <button type="button" class="ui button" :class="{ active: globals.bypass, boldy: globals.bypass }"
+            :aria-pressed="globals.bypass"
             title="Bypass filtering, use when playing chords to add to project"
             @click="setNormalPiano()">
             🎹 Normal piano
@@ -87,9 +89,31 @@ onUnmounted(() => {
   margin-bottom: 0.4rem;
 }
 
+.mode-toggle .ui.button {
+  background: #efe3cf;
+  color: #5b4326;
+  border: 1px solid #c9a86a;
+  box-shadow: none;
+}
+
+.mode-toggle .ui.button:hover {
+  background: #e7d5b5;
+  color: #3a2c1a;
+}
+
+.mode-toggle .ui.button.active {
+  background: #4a6fd4;
+  border-color: #2f4fa8;
+  color: #fff;
+}
+
+.mode-toggle .ui.button.active:hover {
+  background: #3a5cc0;
+}
+
 .mode-description {
   font-size: 0.9rem;
-  color: #555;
+  color: #5b4326;
 }
 
 .ui.column.OFFLINE {

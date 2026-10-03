@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
 import { keyDownListener, keyUpListener } from "@/lib/midi/livePianoKeyboardShortcuts"
+import { registerAccordion } from "@/lib/accordionState.js"
 import { globals } from '@/lib/globals.js'
 import PageMenubar from './PageMenubar.vue'
 import GrandSummary from './GrandSummary.vue'
@@ -32,12 +33,15 @@ function exportTake() {
   recorder.value?.exportTake()
 }
 
+let stopAccordion = () => {}
+
 onMounted(() => {
   console.log('PERFORM onMounted')
   window.addEventListener('keyup', keyUpListener);
   window.addEventListener('keydown', keyDownListener);
 
   // Wire up fomantic events using jquery 
+  stopAccordion = registerAccordion(document.querySelector('#big-accordion-perform'), 'perform')
   $("#big-accordion-perform")  // For nested accordions you only need to initialize the parent accordion.
     .accordion({ exclusive: false })
 });
@@ -46,6 +50,7 @@ onUnmounted(() => {
   // console.log('PERFORM onUnmounted')
   window.removeEventListener("keyup", keyUpListener);
   window.removeEventListener('keydown', keyDownListener);
+  stopAccordion();
 });
 
 </script>

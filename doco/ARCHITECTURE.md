@@ -200,7 +200,15 @@ and the validation commands.
   the `project-loaded` event (broadcast by the `switch-project` handler) so the
   message can list the real chord trigger notes and their computer keys. On the
   Settings view, Jam! first routes to Perform because that is where the keyboard
-  lives. The GrandSummary empty state offers the same action.
+  lives. The GrandSummary empty state offers the same action. The welcome has a
+  "Don't show again" checkbox; the choice is persisted as
+  `globals.showWelcomeDialog` by `src/lib/uiPrefs.js` and can be turned back on
+  in the Settings view's Preferences section.
+- Fomantic accordion sections remember whether they are open through
+  `src/lib/accordionState.js`, which snapshots the `.active` classes of every
+  title (including nested accordions) and restores them when a view is shown
+  again. The state lives in memory only, so it survives page navigation but not
+  a full reload.
 
 ## Persistence and backend
 

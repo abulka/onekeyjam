@@ -1,6 +1,7 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { globals } from '@/lib/globals.js'
 import { requestKeyboardFocus } from '@/lib/demo-project.js'
 
 // The quick-start welcome shown after the DEMO button loads a featured project.
@@ -13,7 +14,16 @@ const intro = ref({ triggerNotes: 'C D E F', chordKeys: 'Z X C V', soloKeys: 'Q 
 const route = useRoute()
 const router = useRouter()
 
+// Backed by the persisted preference: checking "Don't show again" turns the
+// welcome off until it is re-enabled in Settings > Preferences.
+const dontShowAgain = computed({
+  get: () => !globals.showWelcomeDialog,
+  set: (value) => { globals.showWelcomeDialog = !value },
+})
+
 function onShowIntro(event) {
+  if (!globals.showWelcomeDialog)
+    return
   if (event.detail)
     intro.value = event.detail
   show.value = true
@@ -73,6 +83,11 @@ onUnmounted(() => {
             Using the computer keyboard? Click the on-screen keyboard first to focus it.
           </li>
         </ul>
+
+        <label class="demo-intro-dont-show">
+          <input type="checkbox" v-model="dontShowAgain" />
+          Don't show again
+        </label>
 
         <div class="demo-intro-actions">
           <button type="button" class="demo-jam-button" @click="jam()">Jam!</button>
@@ -147,6 +162,15 @@ onUnmounted(() => {
   margin-bottom: 0.45rem;
   line-height: 1.35;
   font-size: 0.92rem;
+}
+
+.demo-intro-dont-show {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
 
 .demo-intro-actions {

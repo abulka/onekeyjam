@@ -34,6 +34,24 @@ describe('uiPrefs', () => {
         assert.equal(readPrefs(bad).showKeyShortcuts, undefined)
     })
 
+    it('defaults the welcome dialog to shown', () => {
+        assert.equal(globals.showWelcomeDialog, true)
+    })
+
+    it('reads and validates the welcome dialog flag', () => {
+        const off = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showWelcomeDialog: false }) })
+        assert.equal(readPrefs(off).showWelcomeDialog, false)
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showWelcomeDialog: 'no' }) })
+        assert.equal(readPrefs(bad).showWelcomeDialog, undefined)
+    })
+
+    it('loads the welcome dialog flag into globals', () => {
+        const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showWelcomeDialog: false }) })
+        loadUiPrefs(storage)
+        assert.equal(globals.showWelcomeDialog, false)
+        globals.showWelcomeDialog = true
+    })
+
     it('loads the shortcut badge flag into globals', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showKeyShortcuts: true }) })
         loadUiPrefs(storage)
@@ -52,7 +70,9 @@ describe('uiPrefs', () => {
     it('reports the current prefs from globals', () => {
         globals.keyboardHelpMode = 'white'
         globals.showKeyShortcuts = true
-        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true })
+        globals.showWelcomeDialog = false
+        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true, showWelcomeDialog: false })
+        globals.showWelcomeDialog = true
     })
 
     it('round-trips a valid keyboard help mode', () => {

@@ -2,8 +2,11 @@
 import { onMounted, onUnmounted, ref } from "vue";
 import { globals } from '@/lib/globals.js'
 import { labelForOffset } from '@/lib/midi/piano-key-map.js'
+import { registerAccordion } from '@/lib/accordionState.js'
 
 const showShortcuts = ref(false)
+const legendEl = ref(null)
+let stopAccordion = () => {}
 
 function keyLabel(offset) {
   return labelForOffset(offset)
@@ -26,25 +29,27 @@ function onKeyDown(e) {
 }
 
 onMounted(() => {
-  $('.ui.accordion.keyboard-note-meanings')
+  stopAccordion = registerAccordion(legendEl.value, 'keyboard-note-meanings')
+  $(legendEl.value)
     .accordion({ exclusive: false })
   window.addEventListener('keydown', onKeyDown)
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', onKeyDown)
+  stopAccordion()
 })
 
 </script>
 
 <template>
 
-  <div class="ui accordion keyboard-note-meanings">
+  <div ref="legendEl" class="ui accordion keyboard-note-meanings">
     <div class="title">
       <i class="dropdown icon"></i>
       {{ globals.bypass ? 'Normal piano keyboard note meanings' : 'Magic mode piano keyboard note meanings' }}
       <button type="button" class="shortcuts-button" title="Show all keyboard shortcuts"
-        @click.stop="showShortcuts = true">? Shortcuts</button>
+        @click.stop="showShortcuts = true">Shortcuts help</button>
     </div>
     <div class="content">
 
@@ -206,6 +211,8 @@ onUnmounted(() => {
               <tr><td><code class="kb">Ctrl+2</code> / <code class="kb">Ctrl+Shift+2</code></td><td>transpose up / down a semitone</td></tr>
               <tr><td><code class="kb">Ctrl+3</code> / <code class="kb">Ctrl+Shift+3</code></td><td>invert chord up / down</td></tr>
               <tr><td><code class="kb">Ctrl+5</code> / <code class="kb">Ctrl+Shift+5</code></td><td>circle of fifths up / down</td></tr>
+              <tr><td><code class="kb">Z</code> / <code class="kb">X</code></td><td>shift the on-screen keyboard down / up an octave (normal piano mode, keyboard focused)</td></tr>
+              <tr><td><code class="kb">Esc</code></td><td>close this help or the welcome message</td></tr>
             </tbody>
           </table>
 
@@ -216,11 +223,13 @@ onUnmounted(() => {
               <tr><td><code class="kb">Alt+O</code></td><td>open a project</td></tr>
               <tr><td><code class="kb">Alt+S</code></td><td>save project</td></tr>
               <tr><td><code class="kb">Alt+F</code></td><td>open a featured project</td></tr>
+              <tr><td><code class="kb">Alt+C</code></td><td>open a classic project</td></tr>
             </tbody>
           </table>
 
           <h4>Notes</h4>
           <ul class="shortcuts-notes">
+            <li><strong>Magic mode</strong> (default) turns one left-hand white key into a chord and filters the right hand into the current scale. <strong>Normal piano</strong> plays a plain piano keyboard for recording or adding your own chords. Switch with the Magic / Normal buttons, or <code class="kb">Ctrl+1</code> / <code class="kb">Ctrl+Shift+1</code>.</li>
             <li>The number keys <code class="kb">1</code>-<code class="kb">5</code> are reserved for switching scales, on every octave. The right-hand white notes are played with the letter keys.</li>
             <li>On Mac laptops the function keys may need <code class="kb">Fn</code>, or enable "use F1, F2, etc. keys as standard function keys".</li>
             <li><code class="kb">F5</code> reloads the page on Windows and Linux.</li>
@@ -247,18 +256,18 @@ onUnmounted(() => {
 }
 
 .kb {
-  background-color: #f3f4f6;
-  border: 1px solid #cbd5e1;
+  background-color: #fdf6e3;
+  border: 1px solid #c9a86a;
   border-bottom-width: 2px;
   border-radius: 4px;
   padding: 0 0.3em;
   margin: 0 0.1em;
   font-size: 0.9em;
-  color: #1f2937;
+  color: #3a2c1a;
 }
 
 .text-muted {
-  color: #6b7280;
+  color: #7a6547;
   font-size: 0.9em;
 }
 
@@ -291,8 +300,9 @@ onUnmounted(() => {
 }
 
 .shortcuts-panel {
-  background: #fff;
-  color: #1f2937;
+  background: #f5e6c8;
+  color: #3a2c1a;
+  border: 1px solid #c9a86a;
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   width: min(720px, 100%);
@@ -306,12 +316,15 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1.25rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #d8bd92;
+  background: #efdcb8;
+  border-radius: 8px 8px 0 0;
 }
 
 .shortcuts-header h3 {
   margin: 0;
   font-size: 1.2rem;
+  color: #3a2c1a;
 }
 
 .shortcuts-close {
@@ -319,7 +332,7 @@ onUnmounted(() => {
   background: transparent;
   font-size: 1.2rem;
   cursor: pointer;
-  color: #6b7280;
+  color: #6b5233;
 }
 
 .shortcuts-body {
@@ -330,6 +343,7 @@ onUnmounted(() => {
 .shortcuts-body h4 {
   margin: 1rem 0 0.5rem;
   font-size: 1rem;
+  color: #5b4326;
 }
 
 .shortcuts-body h4:first-child {
@@ -345,20 +359,20 @@ onUnmounted(() => {
 .shortcuts-table td {
   padding: 0.3rem 0.5rem;
   vertical-align: top;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid rgba(180, 150, 100, 0.35);
   font-size: 0.9rem;
 }
 
 .shortcuts-table td:first-child {
   white-space: nowrap;
-  color: #374151;
+  color: #5b4326;
 }
 
 .shortcuts-notes {
   margin: 0.5rem 0 0;
   padding-left: 1.25rem;
   font-size: 0.9rem;
-  color: #4b5563;
+  color: #5b4326;
 }
 
 .shortcuts-notes li {

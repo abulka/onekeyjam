@@ -17,6 +17,7 @@ export const KEYBOARD_HELP_MODES = ['off', 'black', 'white', 'all']
  * @typedef {Object} UiPrefs
  * @property {string} [keyboardHelpMode]
  * @property {boolean} [showKeyShortcuts]
+ * @property {boolean} [showWelcomeDialog]
  */
 
 function defaultStorage() {
@@ -45,6 +46,8 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.keyboardHelpMode = stored.keyboardHelpMode
         if (stored && typeof stored.showKeyShortcuts === 'boolean')
             prefs.showKeyShortcuts = stored.showKeyShortcuts
+        if (stored && typeof stored.showWelcomeDialog === 'boolean')
+            prefs.showWelcomeDialog = stored.showWelcomeDialog
         return prefs
     }
     catch (error) {
@@ -60,6 +63,7 @@ export function currentPrefs() {
     return {
         keyboardHelpMode: globals.keyboardHelpMode,
         showKeyShortcuts: globals.showKeyShortcuts,
+        showWelcomeDialog: globals.showWelcomeDialog,
     }
 }
 
@@ -89,6 +93,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.keyboardHelpMode = prefs.keyboardHelpMode
     if (typeof prefs.showKeyShortcuts === 'boolean')
         globals.showKeyShortcuts = prefs.showKeyShortcuts
+    if (typeof prefs.showWelcomeDialog === 'boolean')
+        globals.showWelcomeDialog = prefs.showWelcomeDialog
 }
 
 /**
@@ -98,7 +104,7 @@ export function loadUiPrefs(storage = defaultStorage()) {
  */
 export function initUiPrefs(storage = defaultStorage()) {
     loadUiPrefs(storage)
-    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts], () => {
+    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts, globals.showWelcomeDialog], () => {
         writePrefs(currentPrefs(), storage)
     })
 }

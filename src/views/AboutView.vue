@@ -163,7 +163,7 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
           keyboard, then play chords with the lower row (<code>z x c v b n m</code>)
           and solo notes with the upper row (<code>q w e r t y u</code>). The black
           keys are <code>s d g h j</code> on the left and <code>2 3 5 6 7</code> on
-          the right. Open <strong>? Shortcuts</strong> next to the keyboard note
+          the right. Open <strong>Shortcuts help</strong> next to the keyboard note
           meanings for the full list, including function keys and Ctrl shortcuts.
         </li>
       </ul>
