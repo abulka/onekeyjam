@@ -2,7 +2,7 @@ import assert from 'assert'
 import { isTypingTarget } from '@/lib/is-typing-target.js'
 
 /*
- * Only genuine text entry should pause the computer-keyboard piano. Tuning
+ * Only genuine text entry should pause the computer-keyboard piano. Policy
  * controls such as selects, checkboxes and buttons must not pause it.
  */
 
@@ -22,7 +22,7 @@ describe('isTypingTarget', () => {
         assert.equal(isTypingTarget(element('textarea')), true)
     })
 
-    it('does not treat tuning controls as typing targets', () => {
+    it('does not treat policy controls as typing targets', () => {
         assert.equal(isTypingTarget(element('select')), false)
         assert.equal(isTypingTarget(element('input', { type: 'checkbox' })), false)
         assert.equal(isTypingTarget(element('input', { type: 'radio' })), false)

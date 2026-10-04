@@ -3,7 +3,7 @@
 This document is the home for the right-hand scale policy work: what each
 control does, why it exists musically, its default, and what is still planned.
 The theory behind chord-scale matching lives in `doco/MUSIC-THEORY.md`; this
-file covers the runtime policies, their tuning and their UI.
+file covers the runtime policies, their options and their UI.
 
 ## What a policy is
 
@@ -40,18 +40,18 @@ defaults preserve the sound of the original engine.
 
 | Phase | Feature | Status |
 |---|---|---|
-| 1 | Shuffle tuning: pool, dwell, change chance, reroll, ranking cache | Done |
+| 1 | Shuffle options: pool, dwell, change chance, reroll, ranking cache | Done |
 | 2 | Progression context: dominant resolutions and a two-chord ii-V-I | Done |
 | 3 | History strip and UI polish (README) | Done |
 | 4 | Phrase-aware bias from the last solo note | Done |
 | 5 | Modulation: declared per-chord and per-section keys | Planned |
 | 5b | Automatic local key inference (experimental, off by default) | Planned |
 
-## Phase 1: shuffle tuning
+## Phase 1: shuffle options
 
-The controls live in an inline **Tuning** expander beside the `Scales` select.
+The controls live in an inline **Options** expander beside the `Scales` select.
 The button shows and hides the row, and the row shows the controls for the
-active mode (shuffle tuning, follow context, phrase, history and preset). All
+active mode (shuffle options, follow context, phrase, history and preset). All
 values are persisted in `uiPrefs` and default to the original behaviour.
 
 - **Pool** (3-8, default 6). How many engine-ranked candidates the draw is
@@ -70,7 +70,7 @@ values are persisted in `uiPrefs` and default to the original behaviour.
   click, so you do not have to tune each value. Shuffle presets are
   **Balanced** (the defaults), **Steady**, **Adventurous** and
   **Phrase-aware**; follow presets are **Simple**, **Progression**,
-  **Lyrical** and **Resolve**. Hand-tuning any value moves the selector to
+  **Lyrical** and **Resolve**. Hand-adjusting any value moves the selector to
   `Custom`.
 
 The drawn rank is cached with the ranked candidates per chord, key, colour and
@@ -100,7 +100,7 @@ before it. `progressionBonus()` in `src/lib/autoScale.js` applies:
   ii-V (a minor seventh or half-diminished chord a fifth above the dominant)
   gets an extra bonus and the reason `ii-V-I into <root>: major`.
 
-The **Context** control sits in the Tuning expander when `follow` is selected
+The **Context** control sits in the Options expander when `follow` is selected
 and chooses `1 chord` (default) or `2 chords`. One chord keeps the original
 behaviour; two chords adds the chain rule. The rules are candidate-specific:
 they decide between the stored alternatives that already fit the chord, so
@@ -108,7 +108,7 @@ they can never force a scale that clashes.
 
 ## Phase 3: history strip
 
-A `History` checkbox in the Tuning expander shows a strip of the last four
+A `History` checkbox in the Options expander shows a strip of the last four
 chord-to-scale choices above the grid, newest first. Each entry shows the
 chord, an arrow, the scale and a small badge naming the policy that chose it
 (`manual`, `follow` or `shuffle`); a scale that uses notes outside the project
@@ -129,7 +129,7 @@ last sounding solo note (recorded in a small ring buffer in
   penalised.
 
 The bonus is scaled by the strength. A `Phrase` checkbox and a
-low/medium/high `Strength` select sit in the Tuning expander for both follow
+low/medium/high `Strength` select sit in the Options expander for both follow
 and shuffle, and both are off or neutral by default. Phrase bias only nudges
 the choice between scales that already fit the chord.
 
@@ -161,14 +161,14 @@ Edit and Perform views, and appears when a project is loaded.
 | `Scales` select | scale settings row | Chooses `manual`, `follow history` or `shuffle`. |
 | `auto: <scale>` chip | scale settings row | The live scale when a policy chose one that is not a stored slot. |
 | Reason line | scale settings row | Short explanation of the last automatic choice. |
-| `Tuning` button | scale settings row | Shows or hides the advanced tuning panel. |
+| `Options` button | scale settings row | Shows or hides the advanced options panel. |
 | `Key: <key>` | scale settings row, far right | The resolved project key, in prominent text. |
-| `Preset` | Tuning panel, follow/shuffle | One-click tuning presets for the active mode; shows `Custom` when the values are hand-tuned. |
-| `Pool`, `Dwell`, `Change` | Tuning panel, shuffle | Shuffle tuning values. |
-| `Reroll` | Tuning panel, shuffle, far right | Draws a new scale for the current chord now. |
-| `Context` | Tuning panel, follow | One or two previous chords. |
-| `Phrase`, `Strength` | Tuning panel, follow/shuffle | Phrase-aware bias. |
-| `History` | Tuning panel | Shows the recent chord-to-scale strip. |
+| `Preset` | Options panel, follow/shuffle | One-click policy presets for the active mode; shows `Custom` when the values are hand-tuned. |
+| `Pool`, `Dwell`, `Change` | Options panel, shuffle | Shuffle option values. |
+| `Reroll` | Options panel, shuffle, far right | Draws a new scale for the current chord now. |
+| `Context` | Options panel, follow | One or two previous chords. |
+| `Phrase`, `Strength` | Options panel, follow/shuffle | Phrase-aware bias. |
+| `History` | Options panel | Shows the recent chord-to-scale strip. |
 | `Recent:` strip | above the grid | Last four chord-to-scale choices with a policy badge. |
 | `closest` tag / dashed cell | grid, current row | The nearest stored scale when the live scale is not a stored slot. |
 
@@ -178,9 +178,9 @@ The presets are defined in `POLICY_PRESETS` in `src/lib/autoScale.js`. Shuffle:
 Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
 (two chords plus phrase bias) and **Resolve** (one chord, strong phrase bias).
 
-### Phase 1 - shuffle tuning
+### Phase 1 - shuffle options
 
-1. Load a demo, set `Scales` to `shuffle`, click `Tuning`.
+1. Load a demo, set `Scales` to `shuffle`, click `Options`.
 2. Set `Pool` to 3. Trigger chords; the grid should always highlight exactly
    one stored cell, and the chip should name one of `scale1/2/3`.
 3. Set `Pool` to 6 and `Dwell` to 3. Trigger the same chord three times: the
@@ -193,7 +193,7 @@ Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
 
 ### Phase 2 - progression context
 
-1. Set `Scales` to `follow history`, open `Tuning`, set `Context` to `2 chords`.
+1. Set `Scales` to `follow history`, open `Options`, set `Context` to `2 chords`.
 2. On the C Major II-V-I demo trigger `C3` (Dm7), `D3` (G7), `E3` (Cmaj7):
    the reason on the Cmaj7 should read `ii-V-I into C: major`.
 3. Set `Context` to `1 chord` and repeat: the third reason should no longer
@@ -203,16 +203,16 @@ Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
 
 ### Phase 3 - history strip
 
-1. Open `Tuning` and tick `History`. Trigger a few chords.
+1. Open `Options` and tick `History`. Trigger a few chords.
 2. The strip above the grid should show the last four `chord -> scale` pairs,
    newest first, each with a `manual`/`follow`/`shuffle` badge. A scale outside
    the project key is tinted amber.
-3. Close the `Tuning` panel: the strip stays visible.
+3. Close the `Options` panel: the strip stays visible.
 4. Untick `History`: the strip disappears. Reload the page: the choice persists.
 
 ### Phase 4 - phrase bias
 
-1. Set `Scales` to `follow history`, open `Tuning`, set `Pool`/`Context` aside,
+1. Set `Scales` to `follow history`, open `Options`, set `Pool`/`Context` aside,
    and tick `Phrase`.
 2. Play a solo note that is the third or seventh of the next chord, then
    trigger that chord. With `Phrase` on, the chosen stored scale should contain
@@ -242,6 +242,6 @@ Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
 - `src/lib/midi/play-chord.js` - applies the policy per chord trigger and
   records history.
 - `src/components/GrandSummary.vue` - the `Scales` select, the live `auto:`
-  chip, the closest-stored marker and the Tuning expander.
+  chip, the closest-stored marker and the Options expander.
 - `src/lib/globals.js` - `scaleFiltering.policy`, `policyOptions`, dwell state.
-- `src/lib/uiPrefs.js` - session persistence of the policy and its tuning.
+- `src/lib/uiPrefs.js` - session persistence of the policy and its options.

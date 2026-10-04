@@ -336,7 +336,7 @@ export function setAutoScaleFilter(scaleTonic, scaleType, scaleNotes = [], scale
 
 /**
  * Apply the active follow/shuffle policy to the current chord, if any.
- * For shuffle this honours the dwell and change-chance tuning: the drawn rank
+ * For shuffle this honours the dwell and change-chance options: the drawn rank
  * is held for a number of triggers and redrawn only at a boundary.
  * @param {{force?: boolean, rng?: () => number}} [options] force redraws now.
  * @returns {boolean} true when a policy choice was applied
@@ -346,14 +346,14 @@ export function applyScalePolicy(options = {}) {
         return false
     const policy = globals.scaleFiltering.policy
     const state = globals.scaleFiltering
-    const tuning = state.policyOptions
+    const policyOptions = state.policyOptions
     const rng = options.rng ?? Math.random
 
     let mode = 'draw'
     if (policy === 'shuffle' && !options.force) {
         if (state.shuffleDwellRemaining > 0 && state.shuffleRank != null)
             mode = 'hold'
-        else if (state.shuffleRank != null && rng() >= (tuning?.changeChance ?? 1))
+        else if (state.shuffleRank != null && rng() >= (policyOptions?.changeChance ?? 1))
             mode = 'steady'
     }
     const heldRank = mode === 'draw' ? null : state.shuffleRank
@@ -372,7 +372,7 @@ export function applyScalePolicy(options = {}) {
             state.shuffleDwellRemaining = Math.max(0, state.shuffleDwellRemaining - 1)
         else {
             state.shuffleRank = decision.rank ?? null
-            state.shuffleDwellRemaining = Math.max(0, (tuning?.dwell ?? 1) - 1)
+            state.shuffleDwellRemaining = Math.max(0, (policyOptions?.dwell ?? 1) - 1)
         }
         setAutoScaleFilter(decision.tonic ?? '', decision.scaleType ?? '', decision.notes ?? [], decision.scaleTypes ?? [], decision.reason)
     }

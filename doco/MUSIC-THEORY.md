@@ -379,7 +379,7 @@ chord and scale pairs). The control above the chord/scale grid offers
 **manual** (the default slot behaviour), **follow history** and **shuffle**;
 the choice is remembered per browser session through `uiPrefs`.
 
-The shuffle policy has tuning controls (pool, dwell, change chance, reroll),
+The shuffle policy has options (pool, dwell, change chance, reroll),
 and the roadmap for further context, phrase and modulation features, lives in
 `doco/SCALE-POLICIES.md`. This section keeps the theory.
 

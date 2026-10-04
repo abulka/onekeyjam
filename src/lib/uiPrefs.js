@@ -39,7 +39,7 @@ export const HELP_PAGES = ['overview', 'tutorial']
  */
 
 /**
- * Validate and clamp the stored policy tuning.
+ * Validate and clamp the stored policy options.
  * @param {*} stored
  * @returns {PolicyOptions}
  */

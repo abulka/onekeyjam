@@ -5,7 +5,7 @@ import { applyScalePolicy, rerollShuffleScale } from '@/lib/change-scale.js'
 import { samePitchClasses, resetChordHistory } from '@/lib/autoScale.js'
 
 /*
- * Shuffle tuning: the drawn rank is held for the dwell (by rank, so each new
+ * Shuffle options: the drawn rank is held for the dwell (by rank, so each new
  * chord still gets a fitting scale), a change chance decides whether a dwell
  * boundary redraws, and Reroll forces a fresh draw. See doco/SCALE-POLICIES.md.
  */
@@ -17,7 +17,7 @@ function configFor(id, chord, chordNotes, scales) {
     return config
 }
 
-describe('shuffle policy tuning', () => {
+describe('shuffle policy options', () => {
 
     beforeEach(() => {
         document.broadcastEvent = () => { }

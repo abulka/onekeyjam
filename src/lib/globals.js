@@ -130,7 +130,7 @@ export const globals = reactive({
     scaleFilteringEnabled: true,
     keyboardHelpMode: 'all',  // 'off' | 'black' | 'white' | 'all' - text overlays on the main keyboard
     showKeyShortcuts: false,  // show the computer-keyboard key badges on the main keyboard
-    showScaleAdvanced: false,  // show the advanced follow/shuffle tuning controls above the grid
+    showScaleAdvanced: false,  // show the advanced follow/shuffle policy options above the grid
     showScaleHistory: false,  // show the recent chord-to-scale strip above the grid
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
     showFavouriteBinColumns: false,  // show the favourite and bin columns in the chord/scale table
@@ -154,7 +154,7 @@ export const globals = reactive({
         autoScaleNotes: [],
         autoReason: '',  // short explanation of the last automatic scale choice
 
-        // Tuning for the follow and shuffle policies. See doco/SCALE-POLICIES.md.
+        // Options for the follow and shuffle policies. See doco/SCALE-POLICIES.md.
         policyOptions: {
             poolSize: 6,        // shuffle: ranked candidates to draw from (3-8)
             dwell: 1,           // shuffle: chord triggers to hold the drawn rank

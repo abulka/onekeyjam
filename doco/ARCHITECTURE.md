@@ -121,7 +121,7 @@ and the validation commands.
   applies the decision, and `globals.chordHistory` holds the recent chord and
   scale pairs. Follow and shuffle can sound a scale that is not a stored slot;
   it is held in `globals.scaleFiltering.autoScaleName/Notes` and shown as
-  `(auto)`. Shuffle's tuning (pool, dwell, change chance, reroll) lives in
+  `(auto)`. Shuffle's options (pool, dwell, change chance, reroll) live in
   `globals.scaleFiltering.policyOptions` and is persisted in `uiPrefs`; the
   ranked candidates are cached per chord, key, colour and pool size. The policy
   is remembered in `uiPrefs`, and the control sits above the chord/scale grid

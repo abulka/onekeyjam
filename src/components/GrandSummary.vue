@@ -59,7 +59,7 @@ const scalePreset = computed({
   },
 })
 
-/** Return focus to the page after a tuning control so note input resumes. */
+/** Return focus to the page after a policy control so note input resumes. */
 function releaseControlFocus(event) {
   const el = event?.target
   if (el && typeof el.blur === 'function')
@@ -436,9 +436,10 @@ function generalTableClick(event) {
       </select>
     </span>
     <button class="advanced-toggle" type="button"
-      title="Show or hide the tuning controls for the follow and shuffle scale policies"
+      title="Scale policy options for the follow and shuffle modes"
+      :aria-expanded="globals.showScaleAdvanced ? 'true' : 'false'"
       @click="releaseControlFocus($event); globals.showScaleAdvanced = !globals.showScaleAdvanced">
-      {{ globals.showScaleAdvanced ? 'Hide tuning' : 'Tuning' }}
+      {{ globals.showScaleAdvanced ? 'Hide options' : 'Options' }}
     </button>
     <span v-if="globals.scaleFiltering.autoScaleName" class="auto-live-chip"
       :title="globals.scaleFiltering.autoReason || 'The live scale chosen by the follow or shuffle policy'">
@@ -450,11 +451,11 @@ function generalTableClick(event) {
     </span>
   </div>
 
-  <!-- advanced tuning for the follow/shuffle policies -->
+  <!-- scale policy options for the follow/shuffle modes -->
   <div v-if="globals.isProjectLoaded && globals.showScaleAdvanced" class="scale-advanced ui small" @change="releaseControlFocus">
     <label v-if="globals.scaleFiltering.policy !== 'manual'" class="advanced-field">Preset
       <select v-model="scalePreset"
-        title="Presets: one-click tuning for the active mode. Pick one, then fine-tune the values; saving a custom combination shows as Custom.">
+        title="Presets: one-click options for the active mode. Pick one, then fine-tune the values; saving a custom combination shows as Custom.">
         <option value="custom" disabled>Custom</option>
         <option v-for="preset in presetsForMode" :key="preset.name" :value="preset.name">{{ preset.label }}</option>
       </select>
@@ -799,7 +800,7 @@ table.scale-filters td {
   font-size: 1.2rem;
 }
 
-/* Small button that reveals the follow/shuffle tuning controls. */
+/* Small button that reveals the follow/shuffle policy options. */
 .advanced-toggle {
   padding: 0.05rem 0.5rem;
   border: 1px solid #b9a98e;
@@ -814,7 +815,7 @@ table.scale-filters td {
   background: #e6d7bd;
 }
 
-/* Advanced policy tuning row, shown under the scale settings. */
+/* Scale policy options row, shown under the scale settings. */
 .scale-advanced {
   display: flex;
   align-items: center;

@@ -115,7 +115,7 @@ example `ii-V into G: diatonic dominant` or
 `shuffle: rank 2 of 6, 3 common tones`. Treat the mode like the colour and
 Solo in key: a performance setting you choose before you start.
 
-Press **Tuning** next to the Scales control for the policy controls. For
+Press **Options** next to the Scales control for the policy controls. For
 shuffle you can set the **Pool** of alternatives, the **Dwell** (how many
 chords to hold a choice), the **Change** chance and **Reroll**; for follow you
 can set the **Context** to one or two chords. The **Phrase** option biases the
@@ -245,12 +245,12 @@ Why this helps:
 
 ### What the controls are
 
-Open the **Tuning** button beside the **Scales** dropdown to reveal these. They
+Open the **Options** button beside the **Scales** dropdown to reveal these. They
 only appear when the project is loaded.
 
 | Control | Mode | Benefit | Default |
 |---|---|---|---|
-| `Preset` | both | One-click tuning for the active mode. Choose a starting point, then fine-tune. | Balanced / Simple |
+| `Preset` | both | One-click options for the active mode. Choose a starting point, then fine-tune. | Balanced / Simple |
 | `Pool` (3-8) | shuffle | How many alternatives the draw uses. 3 = the stored scales only; 8 = more colour. | 6 |
 | `Dwell` (1-4) | shuffle | How many chords to hold one draw before changing. Longer is steadier. | 1 |
 | `Change` (0-100%) | shuffle | The chance of a new draw at each boundary. Lower keeps a colour longer. | 100% |
@@ -279,14 +279,14 @@ it just tells you what the app chose and why.
 Use the demo projects so you always hear a known progression.
 
 **Follow and the progression context.** Load **C Major II-V-I**, set `Scales`
-to `follow history`, open `Tuning` and set `Context` to `2 chords`. Play the
+to `follow history`, open `Options` and set `Context` to `2 chords`. Play the
 trigger keys `C3` (Dm7), `D3` (G7), `E3` (Cmaj7). The reason above the grid on
 the Cmaj7 should read `ii-V-I into C: major`. Set `Context` back to `1 chord`
 and repeat: the Cmaj7 reason changes to a plain resolution. Now play `F3`
 (Db7, the tritone substitute) then `E3`, and listen for the lydian-dominant
 resolution.
 
-**Shuffle tuning.** Set `Scales` to `shuffle`, `Pool` to `3`. Play any trigger
+**Shuffle options.** Set `Scales` to `shuffle`, `Pool` to `3`. Play any trigger
 key: the grid should always highlight exactly one stored scale, and the chip
 names one of that chord's scale1/2/3. Raise `Pool` to `6`: the chip often names
 a colour that is not in the grid, and the nearest cell gets the dashed
@@ -307,7 +307,7 @@ that is the third or seventh of the next chord, then trigger that chord. With
 turn it off and repeat to hear the difference. Set `Strength` to `high` for a
 stronger pull.
 
-**History strip.** Open `Tuning` and tick `History`. Play a few chords and
+**History strip.** Open `Options` and tick `History`. Play a few chords and
 watch the `Recent:` strip list the last four `chord -> scale` choices, each
 with a `manual`, `follow` or `shuffle` badge. This is the best way to learn
 what the policy is doing.

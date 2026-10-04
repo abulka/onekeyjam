@@ -24,7 +24,7 @@ export const SCALE_POLICIES = ['manual', 'follow', 'shuffle']
 export const HISTORY_LIMIT = 8
 
 /**
- * Named tuning presets for the follow and shuffle policies. Each preset lists
+ * Named policy presets for the follow and shuffle policies. Each preset lists
  * the option values it sets; the UI matches the current options to a preset
  * and shows "Custom" when they do not match. Applying a preset merges its
  * options into globals.scaleFiltering.policyOptions. See doco/SCALE-POLICIES.md.
