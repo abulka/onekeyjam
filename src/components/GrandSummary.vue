@@ -1,8 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { globals } from '../../src/lib/globals.js'
-import { setSoloMode, setScalePolicy } from '../../src/lib/change-scale.js'
-import { samePitchClasses, closestScaleIndex } from '../../src/lib/autoScale.js'
+import { setSoloMode, setScalePolicy, rerollShuffleScale, applyScalePolicy } from '../../src/lib/change-scale.js'
+import { samePitchClasses, closestScaleIndex, pitchClassSet, POLICY_PRESETS } from '../../src/lib/autoScale.js'
 import { applyProjectKeySettings } from '../../src/lib/projectScaleSettings.js'
 import { scaleAnnotation, PROJECT_COLOURS } from '../../src/lib/chordScaleEngine.js'
 import { Note } from '@/lib/midi/webmidi.js'
@@ -11,7 +11,7 @@ import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events.js"
 import { start, dragover, dragend } from '../../src/lib/drag-drop-table-rows.js'
 import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '../../src/lib/massOperationsOnChordConfigs'
 import { keyDetection } from '../../src/lib/keyDetection';
-import { projectKeyName } from '../../src/lib/projectKey.js';
+import { projectKeyName, projectKeyNotes } from '../../src/lib/projectKey.js';
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
 
@@ -38,12 +38,52 @@ const scalePolicy = computed({
   set: (value) => setScalePolicy(value),
 })
 
+// Presets for the active policy, and a selector that shows "Custom" when the
+// current options do not match any preset.
+const presetsForMode = computed(() => POLICY_PRESETS[globals.scaleFiltering.policy] ?? [])
+const scalePreset = computed({
+  get: () => {
+    const options = globals.scaleFiltering.policyOptions
+    const match = presetsForMode.value.find((preset) =>
+      Object.entries(preset.options).every(([key, value]) => options[key] === value))
+    return match ? match.name : 'custom'
+  },
+  set: (value) => {
+    if (value === 'custom')
+      return
+    const preset = presetsForMode.value.find((candidate) => candidate.name === value)
+    if (!preset)
+      return
+    Object.assign(globals.scaleFiltering.policyOptions, preset.options)
+    applyScalePolicy()
+  },
+})
+
+/** Return focus to the page after a tuning control so note input resumes. */
+function releaseControlFocus(event) {
+  const el = event?.target
+  if (el && typeof el.blur === 'function')
+    el.blur()
+}
+
 // keyModeActive is true while the project key scale is actually sounding; a
 // temporary 1-4 scale switch clears it until the next chord trigger.
 const keyModeActive = computed(() => globals.scaleFiltering.keyModeActive)
 const soloKeyName = computed(() => {
   const key = globals.getProjectKey()
   return key ? projectKeyName(key) : ''
+})
+
+// The last few chord-to-scale choices, newest first, for the history strip.
+const scaleHistoryEntries = computed(() => {
+  const key = globals.getProjectKey()
+  const keyPcs = key ? pitchClassSet(projectKeyNotes(key)) : null
+  return globals.chordHistory.slice(-4).reverse().map((entry) => ({
+    chordName: entry.chordName,
+    scaleName: entry.scaleName,
+    policy: entry.policy ?? 'manual',
+    outOfKey: keyPcs ? [...entry.scalePcs].some((pc) => !keyPcs.has(pc)) : false,
+  }))
 })
 
 function configGrandSummary() {
@@ -368,7 +408,7 @@ function generalTableClick(event) {
   <!-- <ReallocatePanel /> -->
   <!-- <br> -->
 
-  <div v-if="globals.isProjectLoaded" class="scale-settings ui small">
+  <div v-if="globals.isProjectLoaded" class="scale-settings ui small" @change="releaseControlFocus">
     <label class="checkboxLabel"
       title="Solo in key: while the chords change, the right hand stays on the project key scale instead of switching to each chord's scale. You cannot play a wrong note. The 1-4 shortcuts still switch temporarily; press 0 or Shift+Bb on a MIDI keyboard to toggle this. Set it before you start playing.">
       <input type="checkbox" v-model="soloInKey" /> Solo in key
@@ -395,13 +435,96 @@ function generalTableClick(event) {
         <option value="shuffle">shuffle</option>
       </select>
     </span>
+    <button class="advanced-toggle" type="button"
+      title="Show or hide the tuning controls for the follow and shuffle scale policies"
+      @click="releaseControlFocus($event); globals.showScaleAdvanced = !globals.showScaleAdvanced">
+      {{ globals.showScaleAdvanced ? 'Hide tuning' : 'Tuning' }}
+    </button>
     <span v-if="globals.scaleFiltering.autoScaleName" class="auto-live-chip"
       :title="globals.scaleFiltering.autoReason || 'The live scale chosen by the follow or shuffle policy'">
       auto: {{ globals.scaleFiltering.autoScaleName }}
     </span>
     <span v-if="globals.scaleFiltering.autoReason" class="auto-reason">{{ globals.scaleFiltering.autoReason }}</span>
-    <span v-if="projectKey" class="ml-3 ui small text grey">
+    <span v-if="projectKey" class="project-key">
       Key: <code>{{ projectKeyName(projectKey) }}</code>
+    </span>
+  </div>
+
+  <!-- advanced tuning for the follow/shuffle policies -->
+  <div v-if="globals.isProjectLoaded && globals.showScaleAdvanced" class="scale-advanced ui small" @change="releaseControlFocus">
+    <label v-if="globals.scaleFiltering.policy !== 'manual'" class="advanced-field">Preset
+      <select v-model="scalePreset"
+        title="Presets: one-click tuning for the active mode. Pick one, then fine-tune the values; saving a custom combination shows as Custom.">
+        <option value="custom" disabled>Custom</option>
+        <option v-for="preset in presetsForMode" :key="preset.name" :value="preset.name">{{ preset.label }}</option>
+      </select>
+    </label>
+    <template v-if="globals.scaleFiltering.policy === 'shuffle'">
+      <label class="advanced-field">Pool
+        <select v-model.number="globals.scaleFiltering.policyOptions.poolSize"
+          title="Shuffle pool: how many ranked candidates the draw is taken from. 3 uses only the stored scale1/2/3, so the grid always highlights exactly; larger pools offer more colour and more live auto scales.">
+          <option v-for="n in [3, 4, 5, 6, 7, 8]" :key="n" :value="n">{{ n }}</option>
+        </select>
+      </label>
+      <label class="advanced-field">Dwell
+        <select v-model.number="globals.scaleFiltering.policyOptions.dwell"
+          title="Dwell: how many chord triggers to hold the drawn rank before redrawing. Each new chord still gets a fitting scale of that rank; a longer dwell is steadier and less busy.">
+          <option v-for="n in [1, 2, 3, 4]" :key="n" :value="n">{{ n }}</option>
+        </select>
+      </label>
+      <label class="advanced-field">Change
+        <select v-model.number="globals.scaleFiltering.policyOptions.changeChance"
+          title="Change chance: the probability of drawing a new rank at a dwell boundary. Lower values keep the current colour for longer.">
+          <option :value="1">100%</option>
+          <option :value="0.75">75%</option>
+          <option :value="0.5">50%</option>
+          <option :value="0.25">25%</option>
+          <option :value="0">0%</option>
+        </select>
+      </label>
+    </template>
+    <template v-else-if="globals.scaleFiltering.policy === 'follow'">
+      <label class="advanced-field">Context
+        <select v-model.number="globals.scaleFiltering.policyOptions.contextChords"
+          title="Progression context: how many previous chords to consider. Two chords recognises a full ii-V-I and other chains; one chord uses only the chord just played.">
+          <option :value="1">1 chord</option>
+          <option :value="2">2 chords</option>
+        </select>
+      </label>
+    </template>
+    <span v-else class="advanced-hint">Select follow or shuffle to tune the scale policy.</span>
+    <template v-if="globals.scaleFiltering.policy !== 'manual'">
+      <label class="advanced-field checkbox-field"
+        title="Phrase: bias the next chord's scale by the last solo note you played, so the phrase resolves instead of being cut off.">
+        <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.phraseBias" /> Phrase
+      </label>
+      <label class="advanced-field" v-if="globals.scaleFiltering.policyOptions.phraseBias">Strength
+        <select v-model.number="globals.scaleFiltering.policyOptions.phraseStrength"
+          title="How strongly the last solo note influences the choice. Low is a gentle nudge, high insists on the resolution.">
+          <option :value="0.5">low</option>
+          <option :value="1">medium</option>
+          <option :value="2">high</option>
+        </select>
+      </label>
+    </template>
+    <label class="advanced-field checkbox-field"
+      title="Show a strip of the last few chord-to-scale choices above the grid.">
+      <input type="checkbox" v-model="globals.showScaleHistory" /> History
+    </label>
+    <button v-if="globals.scaleFiltering.policy === 'shuffle'" class="advanced-button" type="button"
+      title="Draw a new scale for the current chord now"
+      @click="releaseControlFocus($event); rerollShuffleScale()">Reroll</button>
+  </div>
+
+  <!-- recent chord-to-scale choices -->
+  <div v-if="globals.isProjectLoaded && globals.showScaleHistory && scaleHistoryEntries.length" class="scale-history ui small">
+    <span class="history-label">Recent:</span>
+    <span v-for="(entry, i) in scaleHistoryEntries" :key="i" class="history-item">
+      <span class="history-chord">{{ entry.chordName }}</span>
+      <span class="history-arrow">→</span>
+      <span class="history-scale" :class="{ 'history-out': entry.outOfKey }"
+        :title="entry.outOfKey ? 'This scale uses notes outside the project key' : 'This scale fits the project key'">{{ entry.scaleName }}</span>
+      <span class="history-badge" :class="'history-badge-' + entry.policy">{{ entry.policy }}</span>
     </span>
   </div>
 
@@ -663,6 +786,143 @@ table.scale-filters td {
   cursor: pointer;
 }
 
+/* Project key, pushed to the right so it does not shift as controls change. */
+.project-key {
+  margin-left: auto;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #5a3d1a;
+  white-space: nowrap;
+}
+
+.project-key code {
+  font-size: 1.2rem;
+}
+
+/* Small button that reveals the follow/shuffle tuning controls. */
+.advanced-toggle {
+  padding: 0.05rem 0.5rem;
+  border: 1px solid #b9a98e;
+  border-radius: 999px;
+  background: #efe3cf;
+  color: #6b5a45;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.advanced-toggle:hover {
+  background: #e6d7bd;
+}
+
+/* Advanced policy tuning row, shown under the scale settings. */
+.scale-advanced {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 0.4rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px dashed #b9915a;
+  border-radius: 6px;
+  background: #e9cf9f;
+}
+
+.scale-advanced .advanced-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #4a3418;
+}
+
+.advanced-button {
+  padding: 0.05rem 0.6rem;
+  border: 1px solid #2f4fa8;
+  border-radius: 999px;
+  background: #4a6fd4;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.advanced-button:hover {
+  background: #3a5cc0;
+}
+
+.advanced-button.subtle {
+  border-color: #b9a98e;
+  background: #efe3cf;
+  color: #6b5a45;
+}
+
+.advanced-button.subtle:hover {
+  background: #e6d7bd;
+}
+
+.advanced-hint {
+  color: #8a6d3b;
+  font-style: italic;
+}
+
+/* Recent chord-to-scale strip. */
+.scale-history {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  color: #6b5a45;
+}
+
+.history-label {
+  font-weight: bold;
+}
+
+.history-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.05rem 0.4rem;
+  border: 1px solid #bfa06a;
+  border-radius: 6px;
+  background: #e9cf9f;
+}
+
+.history-chord {
+  font-weight: bold;
+}
+
+.history-arrow {
+  color: #a58a63;
+}
+
+.history-scale.history-out {
+  color: #b26a00;
+}
+
+.history-badge {
+  font-size: 0.62rem;
+  line-height: 1.3;
+  padding: 0 0.25rem;
+  border-radius: 3px;
+  border: 1px solid #d9c9b0;
+  background: #efe3cf;
+  color: #6b5a45;
+  text-transform: lowercase;
+}
+
+.history-badge-follow {
+  background: #dce4f7;
+  color: #2f4fa8;
+  border-color: #b9c9ee;
+}
+
+.history-badge-shuffle {
+  background: #fbeecb;
+  color: #8a6d1a;
+  border-color: #e6cf8b;
+}
+
 /* Tiny annotations under a scale in the grid. */
 .scale-tags {
   display: flex;
@@ -726,9 +986,9 @@ table.scale-filters td {
 
 /* Short explanation of the last follow/shuffle scale choice. */
 .auto-reason {
-  color: #4a6fd4;
+  color: #2f4fa8;
   font-style: italic;
-  font-size: 0.8rem;
+  font-size: 1.05rem;
 }
 
 /* The live scale chosen by the follow or shuffle policy. */
@@ -738,7 +998,7 @@ table.scale-filters td {
   background: #dce4f7;
   color: #2f4fa8;
   border: 1px solid #b9c9ee;
-  font-size: 0.78rem;
+  font-size: 1rem;
   font-weight: bold;
 }
 

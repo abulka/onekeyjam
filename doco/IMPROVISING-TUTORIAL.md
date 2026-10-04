@@ -115,6 +115,15 @@ example `ii-V into G: diatonic dominant` or
 `shuffle: rank 2 of 6, 3 common tones`. Treat the mode like the colour and
 Solo in key: a performance setting you choose before you start.
 
+Press **Tuning** next to the Scales control for the policy controls. For
+shuffle you can set the **Pool** of alternatives, the **Dwell** (how many
+chords to hold a choice), the **Change** chance and **Reroll**; for follow you
+can set the **Context** to one or two chords. The **Phrase** option biases the
+next scale by the last solo note so phrases resolve, and **History** shows a
+strip of the last four chord-to-scale choices. All of it is optional; the
+defaults behave like the plain mode. Section 4b explains each control, its
+benefit and how to try it.
+
 ### Step 4: check scale filtering and learn the trigger keys
 
 In the Perform view, make sure the scale-filtering switch is on (the left-hand
@@ -205,6 +214,112 @@ This works on every song in this tutorial.
 
 If you get lost, press `5` to lock the current scale, `4` for the chord notes to
 re-orient, then `1` to carry on.
+
+---
+
+## 4b. The scale policy engine: follow and shuffle
+
+Everything in section 3 is manual: you press `1`, `2`, `3` and the right hand
+follows. The **Scales** dropdown next to Solo in key lets the changes choose
+for you, which is where a lot of the "professional" sound comes from. There are
+three modes:
+
+- **manual** (the default): you stay in charge of the scale1/2/3 slots.
+- **follow history**: for each chord the app picks the stored scale that
+  continues the scale you just played and fits the function of the progression.
+- **shuffle**: for each chord the app draws a fresh scale from the top-ranked
+  alternatives, keeping some continuity but always surprising you a little.
+
+Why this helps:
+
+- **The changes steer the colour.** Follow hears a ii-V, a tritone substitute,
+  a backdoor dominant or a full ii-V-I and picks the idiomatic scale, so the
+  solo sounds intentional instead of accidentally outside.
+- **Variety on demand.** Shuffle is a safe way to hear colours you would not
+  have reached for; every choice still fits the chord, so you cannot play a
+  wrong note.
+- **Phrases resolve.** The phrase bias follows your last solo note, so a line
+  does not get cut off by the next chord.
+- **Nothing is a trap.** You can always override with `1`-`4` or a grid click,
+  and the app goes back to the policy on the next chord you play.
+
+### What the controls are
+
+Open the **Tuning** button beside the **Scales** dropdown to reveal these. They
+only appear when the project is loaded.
+
+| Control | Mode | Benefit | Default |
+|---|---|---|---|
+| `Preset` | both | One-click tuning for the active mode. Choose a starting point, then fine-tune. | Balanced / Simple |
+| `Pool` (3-8) | shuffle | How many alternatives the draw uses. 3 = the stored scales only; 8 = more colour. | 6 |
+| `Dwell` (1-4) | shuffle | How many chords to hold one draw before changing. Longer is steadier. | 1 |
+| `Change` (0-100%) | shuffle | The chance of a new draw at each boundary. Lower keeps a colour longer. | 100% |
+| `Reroll` | shuffle | Draw a new scale for the current chord right now. | - |
+| `Context` (1-2) | follow | Whether to look one chord back or two, so a full ii-V-I is recognised. | 1 chord |
+| `Phrase` + `Strength` | either | Bias the next scale by your last solo note so the line resolves. | off |
+| `History` | either | Show the last four chord-to-scale choices above the grid. | off |
+
+The presets are the easiest way in. For **shuffle** they are **Balanced**
+(the defaults), **Steady** (few colours, held longer), **Adventurous** (more
+colour, changing often) and **Phrase-aware** (listens to your last note). For
+**follow** they are **Simple** (one chord), **Progression** (two chords),
+**Lyrical** (two chords plus phrase) and **Resolve** (strong phrase bias). The
+selector shows `Custom` once you change any value by hand, so you always know
+when you have moved away from a preset.
+
+Above the grid you also get the live read-outs: an `auto: <scale>` chip when a
+policy chose a scale that is not one of the stored slots, a short reason line
+(for example `ii-V-I into C: major` or `shuffle: holding rank 1 of 4`), and,
+when a shuffled scale is not a stored slot, a dashed `closest` marker on the
+nearest stored scale in that row. None of this changes the notes you can play;
+it just tells you what the app chose and why.
+
+### How to try each feature (smoke tests)
+
+Use the demo projects so you always hear a known progression.
+
+**Follow and the progression context.** Load **C Major II-V-I**, set `Scales`
+to `follow history`, open `Tuning` and set `Context` to `2 chords`. Play the
+trigger keys `C3` (Dm7), `D3` (G7), `E3` (Cmaj7). The reason above the grid on
+the Cmaj7 should read `ii-V-I into C: major`. Set `Context` back to `1 chord`
+and repeat: the Cmaj7 reason changes to a plain resolution. Now play `F3`
+(Db7, the tritone substitute) then `E3`, and listen for the lydian-dominant
+resolution.
+
+**Shuffle tuning.** Set `Scales` to `shuffle`, `Pool` to `3`. Play any trigger
+key: the grid should always highlight exactly one stored scale, and the chip
+names one of that chord's scale1/2/3. Raise `Pool` to `6`: the chip often names
+a colour that is not in the grid, and the nearest cell gets the dashed
+`closest` marker. Set `Dwell` to `3` and play the same chord three times: the
+reason says `holding rank ...` for consecutive triggers, then changes. Set
+`Change` to `0%`: the rank stops changing. Press `Reroll` to force a new draw.
+
+**Presets.** With `shuffle` selected, choose `Steady` from the `Preset`
+dropdown and play: the scale should hold for longer and change rarely. Choose
+`Adventurous`: it changes almost every chord. With `follow history` selected,
+compare `Simple`, `Progression` and `Lyrical`, and listen for the ii-V-I and
+the phrase resolution. After you move any value by hand the dropdown shows
+`Custom`, and picking a preset again restores a known combination.
+
+**Phrase bias.** Set `follow history`, tick `Phrase`, and play a long solo note
+that is the third or seventh of the next chord, then trigger that chord. With
+`Phrase` on the chosen scale contains your note (watch which cell is bolded);
+turn it off and repeat to hear the difference. Set `Strength` to `high` for a
+stronger pull.
+
+**History strip.** Open `Tuning` and tick `History`. Play a few chords and
+watch the `Recent:` strip list the last four `chord -> scale` choices, each
+with a `manual`, `follow` or `shuffle` badge. This is the best way to learn
+what the policy is doing.
+
+**Manual override.** Set `Scales` to `shuffle` or `follow history`, click a
+scale cell in a chord row, then play that chord's trigger key again. The
+clicked scale sounds immediately, but the policy resumes on the next trigger:
+the `auto:` chip reappears and the scale may change. A manual pick is a
+one-shot override, never a lock.
+
+The full developer reference, including the theory and the exact scoring, is in
+`doco/SCALE-POLICIES.md`.
 
 ---
 

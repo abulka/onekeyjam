@@ -2,6 +2,7 @@ import { globals } from "../globals.js"
 import { playGmNote, stopGmNote } from "../audio/general-midi.js"
 import { detectChordsBeingPlayed } from "../detectChordsBeingPlayed.js";
 import { recordJamNoteOn, recordJamNoteOff } from "./recorder.js"
+import { recordSoloNote } from "../autoScale.js"
 
 export function jam(note) {
     // Avoid playing a jam note when the focus is in the live onscreen piano
@@ -20,6 +21,7 @@ export function jam(note) {
             envelope: undefined
         }
         globals.pendingNoteOffs[note.identifier] = noteOffInfo
+        recordSoloNote(note.identifier)
         if (globals.recording.isRecording)
             recordJamNoteOn(note.identifier, note.attack, { playedNote: note.identifier })
         if (globals.GM)
@@ -46,6 +48,7 @@ export function jam(note) {
         globals.currentJamNote.real = note.identifier
         globals.currentJamNote.mapped = allowedNote
 
+        recordSoloNote(allowedNote)
         if (globals.recording.isRecording)
             recordJamNoteOn(allowedNote, note.attack, { playedNote: note.identifier })
 

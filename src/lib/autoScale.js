@@ -23,6 +23,27 @@ import { scaleNameToNotes } from './scaleToNotes.js'
 export const SCALE_POLICIES = ['manual', 'follow', 'shuffle']
 export const HISTORY_LIMIT = 8
 
+/**
+ * Named tuning presets for the follow and shuffle policies. Each preset lists
+ * the option values it sets; the UI matches the current options to a preset
+ * and shows "Custom" when they do not match. Applying a preset merges its
+ * options into globals.scaleFiltering.policyOptions. See doco/SCALE-POLICIES.md.
+ */
+export const POLICY_PRESETS = {
+    shuffle: [
+        { name: 'balanced', label: 'Balanced', options: { poolSize: 6, dwell: 1, changeChance: 1, phraseBias: false, phraseStrength: 1 } },
+        { name: 'steady', label: 'Steady', options: { poolSize: 3, dwell: 3, changeChance: 0.5, phraseBias: false, phraseStrength: 1 } },
+        { name: 'adventurous', label: 'Adventurous', options: { poolSize: 8, dwell: 1, changeChance: 1, phraseBias: false, phraseStrength: 1 } },
+        { name: 'phrase-aware', label: 'Phrase-aware', options: { poolSize: 6, dwell: 2, changeChance: 0.75, phraseBias: true, phraseStrength: 1 } },
+    ],
+    follow: [
+        { name: 'simple', label: 'Simple', options: { contextChords: 1, phraseBias: false, phraseStrength: 1 } },
+        { name: 'progression', label: 'Progression', options: { contextChords: 2, phraseBias: false, phraseStrength: 1 } },
+        { name: 'lyrical', label: 'Lyrical', options: { contextChords: 2, phraseBias: true, phraseStrength: 1 } },
+        { name: 'resolve', label: 'Resolve', options: { contextChords: 1, phraseBias: true, phraseStrength: 2 } },
+    ],
+}
+
 const mod12 = (n) => ((n % 12) + 12) % 12
 
 /**
@@ -47,6 +68,7 @@ const mod12 = (n) => ((n % 12) + 12) % 12
  * @property {ChordShape} shape
  * @property {Set<number>} scalePcs
  * @property {string} scaleName
+ * @property {string} [policy] which policy or a manual pick chose the scale
  */
 
 /**
@@ -57,6 +79,7 @@ const mod12 = (n) => ((n % 12) + 12) % 12
  * @property {'scale1'|'scale2'|'scale3'} [slot]
  * @property {string} [tonic]
  * @property {string} [scaleType]
+ * @property {number} [rank] 0-based shuffle rank that was drawn or held
  * @property {Array<string>} [notes]
  * @property {Array<string>} [scaleTypes]
  */
@@ -194,13 +217,17 @@ const MINOR_II_V_TYPES = new Set(['altered', 'phrygian dominant', 'half-whole di
  * @param {string} name candidate scale name
  * @param {ChordShape|undefined} current
  * @param {ChordShape|undefined} previous
+ * @param {ChordShape|undefined} [previous2] the chord before previous
+ * @param {number} [contextChords] 1 or 2, how many previous chords to use
  * @returns {{bonus: number, reason: string}}
  */
-export function progressionBonus(name, current, previous) {
+export function progressionBonus(name, current, previous, previous2, contextChords = 1) {
     if (!current || !previous)
         return { bonus: 0, reason: '' }
     const type = Tonal.Scale.get(name).type
     const motion = mod12(current.rootChroma - previous.rootChroma)
+
+    // Dominant approaching a dominant: the existing ii-V rule.
     if (motion === 5 && current.isDominant) {
         if (previous.isHalfDim) {
             if (MINOR_II_V_TYPES.has(type))
@@ -215,7 +242,70 @@ export function progressionBonus(name, current, previous) {
                 return { bonus: 1, reason: '' }
         }
     }
+
+    // Two-chord context: a full ii-V resolving into a major tonic.
+    if (contextChords >= 2 && previous2 && current.isMajorQuality && previous.isDominant) {
+        const iiMotion = mod12(previous.rootChroma - previous2.rootChroma)
+        if (iiMotion === 5 && (previous2.isMinorish || previous2.isHalfDim) && type === 'major')
+            return { bonus: 4, reason: `ii-V-I into ${current.root}: major` }
+    }
+
+    // A dominant resolving down a fifth, a semitone (tritone substitute) or a
+    // whole tone (backdoor) into its target. Prefer the target's home scale.
+    if (previous.isDominant && (current.isMajorQuality || (current.minorThird && !current.isDominant))) {
+        if (current.isMajorQuality) {
+            if (type === 'major') {
+                const reason = motion === 11
+                    ? `tritone-sub resolution into ${current.root}: major`
+                    : motion === 2
+                        ? `backdoor resolution into ${current.root}: major`
+                        : `dominant resolution into ${current.root}: major`
+                return { bonus: 3, reason }
+            }
+            if (type === 'lydian')
+                return { bonus: 1, reason: '' }
+        }
+        else {
+            if (type === 'dorian')
+                return { bonus: 2, reason: `dominant resolution into ${current.root}: dorian` }
+            if (type === 'aeolian')
+                return { bonus: 1, reason: '' }
+        }
+    }
+
     return { bonus: 0, reason: '' }
+}
+
+/**
+ * How well a candidate resolves the phrase. When enabled, a scale that keeps
+ * or lands on the last sounding solo note is preferred, especially when that
+ * note is a chord tone or guide tone of the new chord; a scale that leaves the
+ * note unresolved, or where the note is a hard semitone clash, is penalised.
+ * @param {{pcs: Set<number>}} candidate
+ * @param {*} context from buildContext()
+ * @returns {number}
+ */
+export function phraseBonus(candidate, context) {
+    if (!context.phraseBias || context.lastSoloPc === undefined)
+        return 0
+    const shape = context.current
+    if (!shape)
+        return 0
+    const pc = context.lastSoloPc
+    const inChord = shape.intervals.some((interval) => mod12(shape.rootChroma + interval) === pc)
+    const inGuide = shape.guidePcs.has(pc)
+    // The b9 against the root is a hard clash on a major or minor chord; on a
+    // dominant it is an available tension, so it is not penalised.
+    const semitoneAboveRoot = mod12(shape.rootChroma + 1) === pc
+    const hardClash = semitoneAboveRoot && !shape.isDominant && !inChord
+    let bonus = 0
+    if (candidate.pcs.has(pc))
+        bonus += inGuide ? 2 : inChord ? 1.5 : 1
+    else
+        bonus -= inGuide ? 1.5 : inChord ? 1 : 0.5
+    if (hardClash)
+        bonus -= 2
+    return bonus * (context.phraseStrength ?? 1)
 }
 
 /**
@@ -238,8 +328,9 @@ export function continuityScore(candidate, context) {
             weight += 0.5
         score += weight
     }
-    const { bonus, reason } = progressionBonus(candidate.name, context.current, context.previous)
+    const { bonus, reason } = progressionBonus(candidate.name, context.current, context.previous, context.previous2, context.contextChords ?? 1)
     score += bonus
+    score += phraseBonus(candidate, context)
     const common = commonToneCount(candidate.pcs, previousPcs)
     if (previousPcs.size > 0 && !setsEqual(candidate.pcs, previousPcs))
         score += 0.5
@@ -295,6 +386,7 @@ export function chooseShuffleCandidate(candidates, context, rng = Math.random) {
         const seen = recent.some((set) => setsEqual(candidate.pcs, set))
         let weight = 1 + 1 / (i + 1)
         weight *= 1 + 0.1 * common
+        weight *= Math.max(0.2, 1 + 0.15 * phraseBonus(candidate, context))
         weight *= seen ? 0.35 : 1.15
         weights.push(weight)
         total += weight
@@ -328,16 +420,64 @@ function chordInfo(config) {
     }
 }
 
+/** Shuffle candidates are recomputed lazily and cached by chord, key and pool. */
+const shuffleCandidateCache = new Map()
+
+export function clearScaleRankingCache() {
+    shuffleCandidateCache.clear()
+}
+
+/** @param {number|undefined} value @returns {number} */
+function clampPoolSize(value) {
+    const n = Math.round(Number(value))
+    if (!Number.isFinite(n))
+        return 6
+    return Math.min(8, Math.max(3, n))
+}
+
+/**
+ * The normalised ranked candidates for a chord, cached because re-ranking the
+ * scale dictionary on every trigger is wasteful.
+ * @param {ChordConfig} config
+ * @param {number} poolSize
+ * @param {{tonic?:string, type?:string, colour?:string}|undefined} key
+ */
+function rankedCandidatesFor(config, poolSize, key) {
+    const keyName = key ? `${key.tonic} ${key.type} ${key.colour ?? ''}` : ''
+    const cacheKey = [poolSize, keyName, config.chord, (config.chordNotes ?? []).join(',')].join('|')
+    const cached = shuffleCandidateCache.get(cacheKey)
+    if (cached)
+        return cached
+    const ranked = rankScales(chordInfo(config), poolSize, key)
+    const candidates = ranked.map((suggestion) => ({
+        name: suggestion.name,
+        type: suggestion.type,
+        notes: suggestion.notes,
+        pcs: pitchClassSet(suggestion.notes),
+    }))
+    shuffleCandidateCache.set(cacheKey, candidates)
+    return candidates
+}
+
 /** @param {ChordShape} current */
 function buildContext(current) {
     const history = globals.chordHistory
     const last = history[history.length - 1]
+    const secondLast = history.length >= 2 ? history[history.length - 2] : undefined
+    const lastSolo = globals.recentSoloNotes[globals.recentSoloNotes.length - 1]
     return {
         current,
         previous: last ? last.shape : undefined,
+        previous2: secondLast ? secondLast.shape : undefined,
         previousScalePcs: last ? last.scalePcs : new Set(),
         previousScaleName: last ? last.scaleName : '',
+        previous2ScalePcs: secondLast ? secondLast.scalePcs : new Set(),
         recentScaleSets: history.slice(-3).map((entry) => entry.scalePcs),
+        contextChords: globals.scaleFiltering.policyOptions?.contextChords ?? 1,
+        lastSoloPc: lastSolo ? lastSolo.pc : undefined,
+        lastSoloName: lastSolo ? lastSolo.name : '',
+        phraseBias: globals.scaleFiltering.policyOptions?.phraseBias ?? false,
+        phraseStrength: globals.scaleFiltering.policyOptions?.phraseStrength ?? 1,
     }
 }
 
@@ -345,9 +485,11 @@ function buildContext(current) {
  * Decide the scale for a chord trigger under the active policy.
  * @param {ChordConfig} chordConfig
  * @param {string} [policy]
+ * @param {{rng?: () => number, heldRank?: number|null}} [options] heldRank
+ * holds a previously drawn shuffle rank; rng is injectable for tests.
  * @returns {ScaleDecision|null} null when the normal manual behaviour applies
  */
-export function chooseScaleForChord(chordConfig, policy = globals.scaleFiltering.policy) {
+export function chooseScaleForChord(chordConfig, policy = globals.scaleFiltering.policy, options = {}) {
     if (!chordConfig || policy === 'manual')
         return null
     const current = chordShapeFor(chordConfig)
@@ -375,16 +517,27 @@ export function chooseScaleForChord(chordConfig, policy = globals.scaleFiltering
     }
 
     if (policy === 'shuffle') {
-        const ranked = rankScales(chordInfo(chordConfig), 6, globals.getProjectKey() ?? undefined)
-        if (ranked.length === 0)
+        const poolSize = clampPoolSize(globals.scaleFiltering.policyOptions?.poolSize)
+        const key = globals.getProjectKey() ?? undefined
+        const candidates = rankedCandidatesFor(chordConfig, poolSize, key)
+        if (candidates.length === 0)
             return null
-        const candidates = ranked.map((suggestion) => ({
-            name: suggestion.name,
-            notes: suggestion.notes,
-            pcs: pitchClassSet(suggestion.notes),
-        }))
         const context = buildContext(current)
-        const { index, reason } = chooseShuffleCandidate(candidates, context)
+        const heldRank = Number.isInteger(options.heldRank) && options.heldRank >= 0 && options.heldRank < candidates.length
+            ? options.heldRank
+            : null
+        let index
+        let reason
+        if (heldRank != null) {
+            index = heldRank
+            const common = commonToneCount(candidates[index].pcs, context.previousScalePcs)
+            reason = `shuffle: holding rank ${index + 1} of ${candidates.length}, ${common} common tones`
+        }
+        else {
+            const picked = chooseShuffleCandidate(candidates, context, options.rng ?? Math.random)
+            index = picked.index
+            reason = picked.reason
+        }
         const chosen = candidates[index]
         const scaleObj = Tonal.Scale.get(chosen.name)
         if (scaleObj.empty)
@@ -394,8 +547,9 @@ export function chooseScaleForChord(chordConfig, policy = globals.scaleFiltering
             name: chosen.name,
             tonic: scaleObj.tonic,
             scaleType: scaleObj.type,
-            notes: chosen.notes,
-            scaleTypes: ranked.map((suggestion) => suggestion.type),
+            notes: chosen.notes.slice(),
+            scaleTypes: candidates.map((candidate) => candidate.type),
+            rank: index,
             reason,
         }
     }
@@ -422,6 +576,26 @@ function soundingScaleName() {
 
 export function resetChordHistory() {
     globals.chordHistory = []
+    globals.recentSoloNotes = []
+    globals.scaleFiltering.shuffleRank = null
+    globals.scaleFiltering.shuffleDwellRemaining = 0
+    clearScaleRankingCache()
+}
+
+/** Recent solo notes kept for the phrase-aware bias. */
+const SOLO_HISTORY_LIMIT = 4
+
+/**
+ * Record a sounding right-hand solo note for the phrase-aware bias.
+ * @param {string} noteName a note name, with or without an octave
+ */
+export function recordSoloNote(noteName) {
+    const chroma = chromaOf(noteName)
+    if (chroma === undefined)
+        return
+    globals.recentSoloNotes.push({ pc: chroma, name: noteName })
+    while (globals.recentSoloNotes.length > SOLO_HISTORY_LIMIT)
+        globals.recentSoloNotes.shift()
 }
 
 /**
@@ -441,6 +615,7 @@ export function recordChordHistory() {
         shape,
         scalePcs: pitchClassSet(globals.currentScaleNotes),
         scaleName: soundingScaleName(),
+        policy: globals.scaleFiltering.manualScaleNote ? 'manual' : globals.scaleFiltering.policy,
     }
     const history = globals.chordHistory
     const last = history[history.length - 1]

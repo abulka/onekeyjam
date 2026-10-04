@@ -23,7 +23,45 @@ export const HELP_PAGES = ['overview', 'tutorial']
  * @property {boolean} [showFavouriteBinColumns]
  * @property {string} [helpPage]
  * @property {string} [scalePolicy]
+ * @property {boolean} [scaleAdvanced]
+ * @property {boolean} [scaleHistory]
+ * @property {PolicyOptions} [policyOptions]
  */
+
+/**
+ * @typedef {Object} PolicyOptions
+ * @property {number} [poolSize]
+ * @property {number} [dwell]
+ * @property {number} [changeChance]
+ * @property {number} [contextChords]
+ * @property {boolean} [phraseBias]
+ * @property {number} [phraseStrength]
+ */
+
+/**
+ * Validate and clamp the stored policy tuning.
+ * @param {*} stored
+ * @returns {PolicyOptions}
+ */
+function readPolicyOptions(stored) {
+    /** @type {PolicyOptions} */
+    const options = {}
+    if (!stored || typeof stored !== 'object')
+        return options
+    if (Number.isFinite(stored.poolSize))
+        options.poolSize = Math.min(8, Math.max(3, Math.round(stored.poolSize)))
+    if (Number.isFinite(stored.dwell))
+        options.dwell = Math.min(4, Math.max(1, Math.round(stored.dwell)))
+    if (Number.isFinite(stored.changeChance))
+        options.changeChance = Math.min(1, Math.max(0, stored.changeChance))
+    if (Number.isFinite(stored.contextChords))
+        options.contextChords = stored.contextChords >= 2 ? 2 : 1
+    if (typeof stored.phraseBias === 'boolean')
+        options.phraseBias = stored.phraseBias
+    if (Number.isFinite(stored.phraseStrength))
+        options.phraseStrength = Math.min(2, Math.max(0.5, stored.phraseStrength))
+    return options
+}
 
 function defaultStorage() {
     try {
@@ -59,6 +97,15 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.helpPage = stored.helpPage
         if (stored && SCALE_POLICIES.includes(stored.scalePolicy))
             prefs.scalePolicy = stored.scalePolicy
+        if (stored && typeof stored.scaleAdvanced === 'boolean')
+            prefs.scaleAdvanced = stored.scaleAdvanced
+        if (stored && typeof stored.scaleHistory === 'boolean')
+            prefs.scaleHistory = stored.scaleHistory
+        if (stored && stored.policyOptions) {
+            const options = readPolicyOptions(stored.policyOptions)
+            if (Object.keys(options).length > 0)
+                prefs.policyOptions = options
+        }
         return prefs
     }
     catch (error) {
@@ -78,6 +125,9 @@ export function currentPrefs() {
         showFavouriteBinColumns: globals.showFavouriteBinColumns,
         helpPage: globals.helpPage,
         scalePolicy: globals.scaleFiltering.policy,
+        scaleAdvanced: globals.showScaleAdvanced,
+        scaleHistory: globals.showScaleHistory,
+        policyOptions: { ...globals.scaleFiltering.policyOptions },
     }
 }
 
@@ -115,6 +165,12 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.helpPage = prefs.helpPage
     if (prefs.scalePolicy)
         globals.scaleFiltering.policy = prefs.scalePolicy
+    if (typeof prefs.scaleAdvanced === 'boolean')
+        globals.showScaleAdvanced = prefs.scaleAdvanced
+    if (typeof prefs.scaleHistory === 'boolean')
+        globals.showScaleHistory = prefs.scaleHistory
+    if (prefs.policyOptions)
+        Object.assign(globals.scaleFiltering.policyOptions, prefs.policyOptions)
 }
 
 /**
@@ -124,7 +180,22 @@ export function loadUiPrefs(storage = defaultStorage()) {
  */
 export function initUiPrefs(storage = defaultStorage()) {
     loadUiPrefs(storage)
-    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts, globals.showWelcomeDialog, globals.showFavouriteBinColumns, globals.helpPage, globals.scaleFiltering.policy], () => {
+    watch(() => [
+        globals.keyboardHelpMode,
+        globals.showKeyShortcuts,
+        globals.showWelcomeDialog,
+        globals.showFavouriteBinColumns,
+        globals.helpPage,
+        globals.scaleFiltering.policy,
+        globals.showScaleAdvanced,
+        globals.showScaleHistory,
+        globals.scaleFiltering.policyOptions.poolSize,
+        globals.scaleFiltering.policyOptions.dwell,
+        globals.scaleFiltering.policyOptions.changeChance,
+        globals.scaleFiltering.policyOptions.contextChords,
+        globals.scaleFiltering.policyOptions.phraseBias,
+        globals.scaleFiltering.policyOptions.phraseStrength,
+    ], () => {
         writePrefs(currentPrefs(), storage)
     })
 }

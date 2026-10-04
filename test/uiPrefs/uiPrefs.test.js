@@ -76,6 +76,17 @@ describe('uiPrefs', () => {
         assert.equal(readPrefs(storage).showFavouriteBinColumns, true)
     })
 
+    it('reads, loads and round-trips the scale history flag', () => {
+        const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scaleHistory: true }) })
+        assert.equal(readPrefs(storage).scaleHistory, true)
+        loadUiPrefs(storage)
+        assert.equal(globals.showScaleHistory, true)
+        globals.showScaleHistory = false
+        const roundTrip = fakeStorage()
+        writePrefs({ scaleHistory: true }, roundTrip)
+        assert.equal(readPrefs(roundTrip).scaleHistory, true)
+    })
+
     it('loads the shortcut badge flag into globals', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showKeyShortcuts: true }) })
         loadUiPrefs(storage)
@@ -98,10 +109,64 @@ describe('uiPrefs', () => {
         globals.showFavouriteBinColumns = true
         globals.helpPage = 'tutorial'
         globals.scaleFiltering.policy = 'manual'
-        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true, showWelcomeDialog: false, showFavouriteBinColumns: true, helpPage: 'tutorial', scalePolicy: 'manual' })
+        globals.showScaleAdvanced = false
+        globals.scaleFiltering.policyOptions.poolSize = 6
+        globals.scaleFiltering.policyOptions.dwell = 1
+        globals.scaleFiltering.policyOptions.changeChance = 1
+        globals.scaleFiltering.policyOptions.contextChords = 1
+        globals.scaleFiltering.policyOptions.phraseBias = false
+        globals.scaleFiltering.policyOptions.phraseStrength = 1
+        globals.showScaleHistory = false
+        assert.deepEqual(currentPrefs(), {
+            keyboardHelpMode: 'white',
+            showKeyShortcuts: true,
+            showWelcomeDialog: false,
+            showFavouriteBinColumns: true,
+            helpPage: 'tutorial',
+            scalePolicy: 'manual',
+            scaleAdvanced: false,
+            scaleHistory: false,
+            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, contextChords: 1, phraseBias: false, phraseStrength: 1 },
+        })
         globals.showWelcomeDialog = true
         globals.showFavouriteBinColumns = false
         globals.helpPage = 'overview'
+    })
+
+    it('reads, validates and clamps the shuffle tuning', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { poolSize: 8, dwell: 3, changeChance: 0.5, contextChords: 2 } }) })
+        assert.deepEqual(readPrefs(good).policyOptions, { poolSize: 8, dwell: 3, changeChance: 0.5, contextChords: 2 })
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { poolSize: 99, dwell: 0, changeChance: 5, contextChords: 5 } }) })
+        assert.deepEqual(readPrefs(bad).policyOptions, { poolSize: 8, dwell: 1, changeChance: 1, contextChords: 2 })
+    })
+
+    it('loads the shuffle tuning and advanced flag into globals', () => {
+        const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scaleAdvanced: true, policyOptions: { poolSize: 4, dwell: 2, changeChance: 0.25 } }) })
+        loadUiPrefs(storage)
+        assert.equal(globals.showScaleAdvanced, true)
+        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, contextChords: 1, phraseBias: false, phraseStrength: 1 })
+        globals.showScaleAdvanced = false
+        globals.scaleFiltering.policyOptions.poolSize = 6
+        globals.scaleFiltering.policyOptions.dwell = 1
+        globals.scaleFiltering.policyOptions.changeChance = 1
+    })
+
+    it('round-trips the shuffle tuning', () => {
+        const storage = fakeStorage()
+        writePrefs({ policyOptions: { poolSize: 5, dwell: 4, changeChance: 0.75 } }, storage)
+        assert.deepEqual(readPrefs(storage).policyOptions, { poolSize: 5, dwell: 4, changeChance: 0.75 })
+    })
+
+    it('reads, clamps and loads the phrase bias', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { phraseBias: true, phraseStrength: 2 } }) })
+        assert.deepEqual(readPrefs(good).policyOptions, { phraseBias: true, phraseStrength: 2 })
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { phraseBias: 'yes', phraseStrength: 9 } }) })
+        assert.deepEqual(readPrefs(bad).policyOptions, { phraseStrength: 2 })
+        loadUiPrefs(good)
+        assert.equal(globals.scaleFiltering.policyOptions.phraseBias, true)
+        assert.equal(globals.scaleFiltering.policyOptions.phraseStrength, 2)
+        globals.scaleFiltering.policyOptions.phraseBias = false
+        globals.scaleFiltering.policyOptions.phraseStrength = 1
     })
 
     it('reads, validates and loads the Help page', () => {

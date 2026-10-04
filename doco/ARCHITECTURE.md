@@ -121,8 +121,12 @@ and the validation commands.
   applies the decision, and `globals.chordHistory` holds the recent chord and
   scale pairs. Follow and shuffle can sound a scale that is not a stored slot;
   it is held in `globals.scaleFiltering.autoScaleName/Notes` and shown as
-  `(auto)`. The policy is remembered in `uiPrefs`, and the control sits above
-  the chord/scale grid in `GrandSummary.vue`, next to Solo in key and Colour.
+  `(auto)`. Shuffle's tuning (pool, dwell, change chance, reroll) lives in
+  `globals.scaleFiltering.policyOptions` and is persisted in `uiPrefs`; the
+  ranked candidates are cached per chord, key, colour and pool size. The policy
+  is remembered in `uiPrefs`, and the control sits above the chord/scale grid
+  in `GrandSummary.vue`, next to Solo in key and Colour. The roadmap and full
+  control reference are in `doco/SCALE-POLICIES.md`.
 - Changing the project key in the Key Detection section, or the colour above
   the scale grid, goes through `applyProjectKeySettings()` in
   `src/lib/projectScaleSettings.js`, which saves the setting, re-ranks every

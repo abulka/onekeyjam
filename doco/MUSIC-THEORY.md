@@ -379,6 +379,10 @@ chord and scale pairs). The control above the chord/scale grid offers
 **manual** (the default slot behaviour), **follow history** and **shuffle**;
 the choice is remembered per browser session through `uiPrefs`.
 
+The shuffle policy has tuning controls (pool, dwell, change chance, reroll),
+and the roadmap for further context, phrase and modulation features, lives in
+`doco/SCALE-POLICIES.md`. This section keeps the theory.
+
 ### Follow history
 
 Follow scores the chord's three stored scales and sounds the best
@@ -389,12 +393,16 @@ continuation. The score combines:
   seventh) of the new chord, and half a point when it was a guide tone of the
   previous chord. Continuity therefore keeps the line smooth and aims at the
   notes that identify the harmony.
-- **Progression function.** When the new chord is a dominant whose root is a
-  fourth above the previous chord (a ii-V), mixolydian is preferred after a
-  minor seventh chord and the altered family (altered, phrygian dominant,
-  half-whole diminished, mixolydian b6) after a half-diminished chord. This
-  resolves the major ii-V versus the minor ii-V that a single chord cannot
-  distinguish.
+- **Progression function.** The chord before the new one, and optionally the
+  one before that, tells the engine which function is in force. A dominant a
+  fourth above the previous chord is a ii-V: mixolydian is preferred after a
+  minor seventh chord, the altered family after a half-diminished chord. A
+  dominant resolving down a fifth (V-I or a secondary dominant), down a
+  semitone (tritone substitute) or up a whole tone (backdoor) into a major
+  chord prefers the major home scale, and into a minor chord it prefers dorian
+  then aeolian. With the `Context` control set to two chords, a full ii-V-I
+  adds a chain bonus. This resolves the major ii-V versus the minor ii-V, and
+  the colour of a resolution, that a single chord cannot distinguish.
 - **A small novelty point** for a candidate that does not repeat the previous
   pitch set, so an available colour alternative is not ignored forever.
 

@@ -27,6 +27,12 @@ sound in the browser.
   every chord scale automatically.
 - **Solo in key** - flip one switch to keep the right hand on the project key
   scale while the chords change, the way many improvisers think.
+- **Scale policies** - let the changes choose the scale for you. `follow
+  history` continues the scale you just played and follows the chord function
+  (ii-V, tritone substitute, backdoor, a full ii-V-I); `shuffle` draws a live
+  scale from the top-ranked alternatives for variety. Tune the pool, dwell and
+  change chance, reroll, bias by your last solo note, and watch the recent
+  chord-to-scale strip. See `doco/SCALE-POLICIES.md`.
 - **Key awareness demo** - a featured project that walks through a tritone
   substitute, a backdoor dominant and a borrowed bVI so you can hear the
   difference the key awareness makes.

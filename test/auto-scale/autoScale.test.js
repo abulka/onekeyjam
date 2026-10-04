@@ -1,6 +1,7 @@
 import assert from 'assert'
 import {
     SCALE_POLICIES,
+    POLICY_PRESETS,
     HISTORY_LIMIT,
     pitchClassSet,
     commonToneCount,
@@ -9,6 +10,7 @@ import {
     chordShapeFor,
     progressionBonus,
     continuityScore,
+    phraseBonus,
     chooseFollowCandidate,
     chooseShuffleCandidate,
     chooseScaleForChord,
@@ -49,6 +51,30 @@ describe('autoScale policies', () => {
 
     it('exposes the three policies', () => {
         assert.deepEqual(SCALE_POLICIES, ['manual', 'follow', 'shuffle'])
+    })
+
+    describe('policy presets', () => {
+        const KNOWN_OPTIONS = new Set(['poolSize', 'dwell', 'changeChance', 'contextChords', 'phraseBias', 'phraseStrength'])
+
+        it('only set known option keys with real values', () => {
+            for (const [mode, presets] of Object.entries(POLICY_PRESETS)) {
+                assert.ok(SCALE_POLICIES.includes(mode), `${mode} is not a policy`)
+                assert.ok(presets.length > 0)
+                for (const preset of presets) {
+                    assert.equal(typeof preset.name, 'string')
+                    assert.equal(typeof preset.label, 'string')
+                    for (const [key, value] of Object.entries(preset.options)) {
+                        assert.ok(KNOWN_OPTIONS.has(key), `${mode}/${preset.name} sets unknown ${key}`)
+                        assert.notEqual(value, undefined)
+                    }
+                }
+            }
+        })
+
+        it('has a balanced shuffle preset that matches the defaults', () => {
+            const balanced = POLICY_PRESETS.shuffle.find((preset) => preset.name === 'balanced')
+            assert.deepEqual(balanced.options, { poolSize: 6, dwell: 1, changeChance: 1, phraseBias: false, phraseStrength: 1 })
+        })
     })
 
     describe('pitch classes and shapes', () => {
@@ -135,6 +161,66 @@ describe('autoScale policies', () => {
 
         it('does nothing without a previous chord', () => {
             assert.deepEqual(progressionBonus('G mixolydian', gDominant(), undefined), { bonus: 0, reason: '' })
+        })
+
+        const cMajor = () => chordShapeFor(configFor('Cmaj7', ['C3', 'E3', 'G3', 'B3'], ['C major', 'C lydian', 'C harmonic major']))
+        const aMinor7 = () => chordShapeFor(configFor('Am7', ['A2', 'C3', 'E3', 'G3'], ['A dorian', 'A aeolian', 'A minor pentatonic']))
+        const bbDominant = () => chordShapeFor(configFor('Bb7', ['Bb2', 'D3', 'F3', 'Ab3'], ['Bb mixolydian', 'Bb lydian dominant', 'Bb mixolydian b6']))
+        const dbDominant = () => chordShapeFor(configFor('Db7', ['Db3', 'F3', 'Ab3', 'Cb4'], ['Db lydian dominant', 'Db mixolydian', 'Db mixolydian b6']))
+        const eDominant = () => chordShapeFor(configFor('E7', ['E3', 'G#3', 'B3', 'D4'], ['E mixolydian', 'E lydian dominant', 'E mixolydian b6']))
+
+        it('prefers the major home scale when a dominant resolves into it', () => {
+            assert.equal(progressionBonus('C major', cMajor(), gDominant()).bonus, 3)
+            assert.ok(progressionBonus('C lydian', cMajor(), gDominant()).bonus > 0)
+        })
+
+        it('recognises tritone-substitute and backdoor resolutions', () => {
+            assert.match(progressionBonus('C major', cMajor(), dbDominant()).reason, /tritone-sub/)
+            assert.match(progressionBonus('C major', cMajor(), bbDominant()).reason, /backdoor/)
+        })
+
+        it('prefers dorian when a dominant resolves into a minor tonic', () => {
+            assert.equal(progressionBonus('A dorian', aMinor7(), eDominant()).bonus, 2)
+        })
+
+        it('adds a chain bonus for a full ii-V-I with two-chord context', () => {
+            const oneChord = progressionBonus('C major', cMajor(), gDominant(), dMinor7(), 1).bonus
+            const twoChords = progressionBonus('C major', cMajor(), gDominant(), dMinor7(), 2).bonus
+            assert.ok(twoChords > oneChord, `${twoChords} should beat ${oneChord}`)
+            assert.match(progressionBonus('C major', cMajor(), gDominant(), dMinor7(), 2).reason, /ii-V-I/)
+        })
+    })
+
+    describe('phrase bias', () => {
+        const g7 = () => chordShapeFor(configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6']))
+
+        it('rewards a candidate that keeps a guide tone of the new chord', () => {
+            const context = { current: g7(), phraseBias: true, phraseStrength: 1, lastSoloPc: 11 }
+            const withB = phraseBonus({ pcs: pitchClassSet(['G', 'A', 'B', 'C', 'D', 'E', 'F']) }, context)
+            const withoutB = phraseBonus({ pcs: pitchClassSet(['G', 'A', 'Bb', 'C', 'D', 'Eb', 'F']) }, context)
+            assert.equal(withB, 2)
+            assert.ok(withB > withoutB)
+        })
+
+        it('is inert when disabled or without a note', () => {
+            assert.equal(phraseBonus({ pcs: pitchClassSet(['C']) }, { current: g7(), phraseBias: false, phraseStrength: 1, lastSoloPc: 0 }), 0)
+            assert.equal(phraseBonus({ pcs: pitchClassSet(['C']) }, { current: g7(), phraseBias: true, phraseStrength: 1 }), 0)
+        })
+
+        it('penalises a b9 against a major root', () => {
+            const cMaj = chordShapeFor(configFor('Cmaj7', ['C3', 'E3', 'G3', 'B3'], ['C major', 'C lydian', 'C harmonic major']))
+            const bonus = phraseBonus(
+                { pcs: pitchClassSet(['D']) },
+                { current: cMaj, phraseBias: true, phraseStrength: 1, lastSoloPc: 1 },
+            )
+            assert.ok(bonus < 0)
+        })
+
+        it('scales with the strength', () => {
+            const candidate = { pcs: pitchClassSet(['G', 'A', 'B', 'C', 'D', 'E', 'F']) }
+            const weak = phraseBonus(candidate, { current: g7(), phraseBias: true, phraseStrength: 0.5, lastSoloPc: 11 })
+            const strong = phraseBonus(candidate, { current: g7(), phraseBias: true, phraseStrength: 2, lastSoloPc: 11 })
+            assert.ok(strong > weak)
         })
     })
 
@@ -285,6 +371,32 @@ describe('autoScale policies', () => {
             assert.ok(decision.scaleTypes.length > 0)
             assert.match(decision.reason, /shuffle/)
         })
+
+        it('holds a supplied shuffle rank', () => {
+            globals.chordHistory = []
+            const g7 = configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])
+            const decision = chooseScaleForChord(g7, 'shuffle', { heldRank: 2 })
+            assert.equal(decision.rank, 2)
+            assert.match(decision.reason, /holding rank 3/)
+        })
+
+        it('ignores an out-of-range held rank and draws instead', () => {
+            globals.chordHistory = []
+            const g7 = configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])
+            const decision = chooseScaleForChord(g7, 'shuffle', { heldRank: 99 })
+            assert.ok(decision.rank >= 0 && decision.rank < 6)
+            assert.doesNotMatch(decision.reason, /holding/)
+        })
+
+        it('honours a pool size of three', () => {
+            globals.chordHistory = []
+            globals.scaleFiltering.policyOptions.poolSize = 3
+            const g7 = configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])
+            const decision = chooseScaleForChord(g7, 'shuffle', { rng: () => 0.999 })
+            assert.equal(decision.scaleTypes.length, 3)
+            assert.ok(decision.rank >= 0 && decision.rank < 3)
+            globals.scaleFiltering.policyOptions.poolSize = 6
+        })
     })
 
     describe('chord history', () => {
@@ -349,6 +461,26 @@ describe('autoScale policies', () => {
             recordChordHistory()
             resetChordHistory()
             assert.equal(globals.chordHistory.length, 0)
+        })
+
+        it('resets the shuffle dwell state on demand', () => {
+            globals.scaleFiltering.shuffleRank = 2
+            globals.scaleFiltering.shuffleDwellRemaining = 3
+            resetChordHistory()
+            assert.equal(globals.scaleFiltering.shuffleRank, null)
+            assert.equal(globals.scaleFiltering.shuffleDwellRemaining, 0)
+        })
+
+        it('records the policy that chose the scale', () => {
+            globals.scaleFiltering.policy = 'shuffle'
+            globals.scaleFiltering.manualScaleNote = ''
+            recordChordHistory()
+            assert.equal(globals.chordHistory[0].policy, 'shuffle')
+            globals.scaleFiltering.manualScaleNote = 'G3'
+            recordChordHistory()
+            assert.equal(globals.chordHistory[0].policy, 'manual')
+            globals.scaleFiltering.policy = 'manual'
+            globals.scaleFiltering.manualScaleNote = ''
         })
     })
 })

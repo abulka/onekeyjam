@@ -336,12 +336,29 @@ export function setAutoScaleFilter(scaleTonic, scaleType, scaleNotes = [], scale
 
 /**
  * Apply the active follow/shuffle policy to the current chord, if any.
+ * For shuffle this honours the dwell and change-chance tuning: the drawn rank
+ * is held for a number of triggers and redrawn only at a boundary.
+ * @param {{force?: boolean, rng?: () => number}} [options] force redraws now.
  * @returns {boolean} true when a policy choice was applied
  */
-export function applyScalePolicy() {
+export function applyScalePolicy(options = {}) {
     if (globals.scaleFiltering.frozen)
         return false
-    const decision = chooseScaleForChord(globals.currentChordConfig())
+    const policy = globals.scaleFiltering.policy
+    const state = globals.scaleFiltering
+    const tuning = state.policyOptions
+    const rng = options.rng ?? Math.random
+
+    let mode = 'draw'
+    if (policy === 'shuffle' && !options.force) {
+        if (state.shuffleDwellRemaining > 0 && state.shuffleRank != null)
+            mode = 'hold'
+        else if (state.shuffleRank != null && rng() >= (tuning?.changeChance ?? 1))
+            mode = 'steady'
+    }
+    const heldRank = mode === 'draw' ? null : state.shuffleRank
+
+    const decision = chooseScaleForChord(globals.currentChordConfig(), policy, { heldRank, rng })
     if (!decision)
         return false
     if (decision.type === 'slot') {
@@ -350,9 +367,27 @@ export function applyScalePolicy() {
         // changeScaleFilter() clears the auto state, so set the reason after it.
         globals.scaleFiltering.autoReason = decision.reason
     }
-    else
+    else {
+        if (mode === 'hold')
+            state.shuffleDwellRemaining = Math.max(0, state.shuffleDwellRemaining - 1)
+        else {
+            state.shuffleRank = decision.rank ?? null
+            state.shuffleDwellRemaining = Math.max(0, (tuning?.dwell ?? 1) - 1)
+        }
         setAutoScaleFilter(decision.tonic ?? '', decision.scaleType ?? '', decision.notes ?? [], decision.scaleTypes ?? [], decision.reason)
+    }
     return true
+}
+
+/**
+ * Force a fresh shuffle draw for the current chord and reset its dwell.
+ */
+export function rerollShuffleScale() {
+    if (globals.scaleFiltering.policy !== 'shuffle')
+        return
+    if (globals.scaleFiltering.frozen || globals.soloMode === 'key')
+        return
+    applyScalePolicy({ force: true })
 }
 
 /**
@@ -364,8 +399,11 @@ export function setScalePolicy(policy) {
     if (!SCALE_POLICIES.includes(policy))
         policy = 'manual'
     globals.scaleFiltering.policy = policy
-    // Choosing a policy releases any manual per-chord pick so it can act now.
+    // Choosing a policy releases any manual per-chord pick so it can act now,
+    // and starts the shuffle dwell fresh.
     globals.scaleFiltering.manualScaleNote = ''
+    globals.scaleFiltering.shuffleRank = null
+    globals.scaleFiltering.shuffleDwellRemaining = 0
     if (!globals.isProjectLoaded)
         return
     if (policy === 'manual') {

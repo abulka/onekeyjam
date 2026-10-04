@@ -84,21 +84,23 @@ describe('manual scale picks vs the follow/shuffle policy', () => {
         assert.equal(globals.scaleFiltering.manualScaleNote, 'D3')
     })
 
-    it('keeps the manual pick when the same chord is re-triggered', () => {
+    it('lets the policy resume when the same chord is re-triggered', () => {
         clickCell('D3', 'D#6')
+        assert.equal(globals.scaleFiltering.manualScaleNote, 'D3')
         triggerChord('D3')
         assert.equal(globals.currentChordTriggerNote, 'D3')
-        assert.equal(globals.currentScaleFilter, 'scale2')
-        assert.equal(globals.scaleFiltering.autoScaleNotes.length, 0, 'policy must not override the pick')
+        assert.equal(globals.scaleFiltering.manualScaleNote, '', 'a re-trigger releases the manual pick')
+        assert.ok(globals.scaleFiltering.autoScaleNotes.length > 0, 'shuffle chooses again on the same chord')
     })
 
-    it('keeps the manual pick under the follow policy too', () => {
+    it('lets the follow policy resume when the same chord is re-triggered', () => {
         globals.scaleFiltering.policy = 'follow'
         clickCell('D3', 'F#6')  // scale3, on the F# cell
         assert.equal(globals.currentScaleFilter, 'scale3')
-        triggerChord('D3')
-        assert.equal(globals.currentScaleFilter, 'scale3')
         assert.equal(globals.scaleFiltering.manualScaleNote, 'D3')
+        triggerChord('D3')
+        assert.equal(globals.scaleFiltering.manualScaleNote, '', 'a re-trigger releases the manual pick')
+        assert.ok(['scale1', 'scale2', 'scale3'].includes(globals.currentScaleFilter))
     })
 
     it('resumes the policy when a different chord is triggered', () => {

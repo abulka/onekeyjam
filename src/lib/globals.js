@@ -43,6 +43,9 @@ export const globals = reactive({
     // Recent chord triggers and the scale each sounded, newest last. Bounded by
     // autoScale.js. Used by the follow and shuffle scale policies.
     chordHistory: [],
+    // Recent right-hand solo notes (pitch classes), newest last. Bounded by
+    // autoScale.js and used by the phrase-aware bias when it is enabled.
+    recentSoloNotes: [],
     get currentProjectScaleName() {  // access as a property without the () call
         return this.currentChordConfig()[this.currentScaleFilter]
     },
@@ -127,6 +130,8 @@ export const globals = reactive({
     scaleFilteringEnabled: true,
     keyboardHelpMode: 'all',  // 'off' | 'black' | 'white' | 'all' - text overlays on the main keyboard
     showKeyShortcuts: false,  // show the computer-keyboard key badges on the main keyboard
+    showScaleAdvanced: false,  // show the advanced follow/shuffle tuning controls above the grid
+    showScaleHistory: false,  // show the recent chord-to-scale strip above the grid
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
     showFavouriteBinColumns: false,  // show the favourite and bin columns in the chord/scale table
     helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial'
@@ -148,6 +153,18 @@ export const globals = reactive({
         autoScaleName: '',  // live auto/shuffle scale when it is not a stored slot
         autoScaleNotes: [],
         autoReason: '',  // short explanation of the last automatic scale choice
+
+        // Tuning for the follow and shuffle policies. See doco/SCALE-POLICIES.md.
+        policyOptions: {
+            poolSize: 6,        // shuffle: ranked candidates to draw from (3-8)
+            dwell: 1,           // shuffle: chord triggers to hold the drawn rank
+            changeChance: 1,    // shuffle: chance to redraw at a dwell boundary (0-1)
+            contextChords: 1,   // follow: how many previous chords to consider (1-2)
+            phraseBias: false,  // follow/shuffle: bias by the last solo note
+            phraseStrength: 1,  // phrase bias strength (0.5 low, 1 medium, 2 high)
+        },
+        shuffleRank: null,          // shuffle: rank index currently held (0-based)
+        shuffleDwellRemaining: 0,   // shuffle: chord triggers left before a redraw
         // Chord trigger note for which the player explicitly picked a scale
         // (grid click, 1-4 shortcut or MIDI black key). While it matches the
         // current chord, the follow/shuffle policy leaves the pick alone.
