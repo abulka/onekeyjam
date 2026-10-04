@@ -108,6 +108,7 @@ export function onNoteOn(e) {
     else if (globals.scaleFilteringEnabled && modifierKeysCsharp.includes(e.note.identifier)) {
         globals.scaleFiltering.frozen = false
         globals.currentScaleFilter = 'scale1'
+        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
         changeScaleFilter()  // if no params, will use globals.currentScaleFilter scale
     }
     else if (globals.scaleFilteringEnabled && modifierKeysDsharp.includes(e.note.identifier)) {
@@ -120,11 +121,13 @@ export function onNoteOn(e) {
         // in scale, you need to set globals.currentScaleFilter.
         globals.scaleFiltering.frozen = false
         globals.currentScaleFilter = 'scale2'
+        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
         changeScaleFilter('scale2')
     }
     else if (globals.scaleFilteringEnabled && modifierKeysFsharp.includes(e.note.identifier)) {
         globals.scaleFiltering.frozen = false
         globals.currentScaleFilter = 'scale3'
+        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
         changeScaleFilter('scale3')
     }
     else if (globals.scaleFilteringEnabled && modifierKeysGsharp.includes(e.note.identifier)) {
@@ -132,6 +135,7 @@ export function onNoteOn(e) {
         // changeScaleFilter()
         globals.scaleFiltering.frozen = false
         globals.currentScaleFilter = 'notesOfChord'  // permanent change
+        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
         changeScaleFilter()
     }
     else if (globals.scaleFilteringEnabled && modifierKeysAsharp.includes(e.note.identifier)) {

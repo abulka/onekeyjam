@@ -25,7 +25,7 @@ const LEFT_HAND_SHIFT_HELP = {
     'D#': 'All notes off',
     'F#': 'Add chord',
     'G#': 'Reset transp.',
-    'A#': '',  // no SHIFT action; SHIFT + G# resets transpositions
+    'A#': 'Solo in key',
 }
 
 const RIGHT_HAND_HELP = {
@@ -184,7 +184,7 @@ export function buildKeyLabels(options = {}) {
 /**
  * Chooses the text shown on a black key. While the left-hand SHIFT (C#) key is
  * pressed or pending, keys that have a SHIFT meaning show only that meaning and
- * keys without one (such as A#) show nothing, so the label fits in both modes.
+ * keys without one show nothing, so the label fits in both modes.
  * The SHIFT key itself keeps its SHIFT label. Right-hand keys pass
  * `shiftActive` as false, so they are unaffected.
  * @param {string} help regular black key meaning

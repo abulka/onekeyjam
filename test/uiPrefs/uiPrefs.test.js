@@ -52,6 +52,30 @@ describe('uiPrefs', () => {
         globals.showWelcomeDialog = true
     })
 
+    it('defaults the favourite/bin columns to hidden', () => {
+        assert.equal(globals.showFavouriteBinColumns, false)
+    })
+
+    it('reads and validates the favourite/bin columns flag', () => {
+        const on = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showFavouriteBinColumns: true }) })
+        assert.equal(readPrefs(on).showFavouriteBinColumns, true)
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showFavouriteBinColumns: 'yes' }) })
+        assert.equal(readPrefs(bad).showFavouriteBinColumns, undefined)
+    })
+
+    it('loads the favourite/bin columns flag into globals', () => {
+        const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showFavouriteBinColumns: true }) })
+        loadUiPrefs(storage)
+        assert.equal(globals.showFavouriteBinColumns, true)
+        globals.showFavouriteBinColumns = false
+    })
+
+    it('round-trips the favourite/bin columns flag', () => {
+        const storage = fakeStorage()
+        writePrefs({ showFavouriteBinColumns: true }, storage)
+        assert.equal(readPrefs(storage).showFavouriteBinColumns, true)
+    })
+
     it('loads the shortcut badge flag into globals', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showKeyShortcuts: true }) })
         loadUiPrefs(storage)
@@ -71,10 +95,12 @@ describe('uiPrefs', () => {
         globals.keyboardHelpMode = 'white'
         globals.showKeyShortcuts = true
         globals.showWelcomeDialog = false
+        globals.showFavouriteBinColumns = true
         globals.helpPage = 'tutorial'
         globals.scaleFiltering.policy = 'manual'
-        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true, showWelcomeDialog: false, helpPage: 'tutorial', scalePolicy: 'manual' })
+        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true, showWelcomeDialog: false, showFavouriteBinColumns: true, helpPage: 'tutorial', scalePolicy: 'manual' })
         globals.showWelcomeDialog = true
+        globals.showFavouriteBinColumns = false
         globals.helpPage = 'overview'
     })
 

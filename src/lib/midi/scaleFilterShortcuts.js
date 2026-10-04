@@ -33,6 +33,7 @@ function onKeyDown(e) {
         e.preventDefault()
         globals.scaleFiltering.frozen = false
         globals.currentScaleFilter = SCALE_FILTERS[digit - 1]
+        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
         changeScaleFilter(SCALE_FILTERS[digit - 1])
     }
     else if (digit === 5) {

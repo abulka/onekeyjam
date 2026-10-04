@@ -18,7 +18,7 @@ describe('getBlackKeyHelp', () => {
         assert.equal(getBlackKeyHelp('D#', 3, options), 'All notes off')
         assert.equal(getBlackKeyHelp('F#', 3, options), 'Add chord')
         assert.equal(getBlackKeyHelp('G#', 3, options), 'Reset transp.')
-        assert.equal(getBlackKeyHelp('A#', 3, options), '')  // SHIFT + A# has no action
+        assert.equal(getBlackKeyHelp('A#', 3, options), 'Solo in key')
     })
 
     it('right hand octaves show the scale switch labels', () => {

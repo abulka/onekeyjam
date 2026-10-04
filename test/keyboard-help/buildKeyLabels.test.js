@@ -31,6 +31,12 @@ describe('buildKeyLabels', () => {
         assert.equal(byNote(labels, 'D#3').shiftHelp, 'All notes off')
     })
 
+    it('gives the left hand A# a SHIFT meaning for Solo in key', () => {
+        const labels = buildKeyLabels({ ...baseOptions, max: 11 })
+        assert.equal(byNote(labels, 'A#3').help, 'Transp chord UP')
+        assert.equal(byNote(labels, 'A#3').shiftHelp, 'Solo in key')
+    })
+
     it('white labels carry the mapping for their note', () => {
         const labels = buildKeyLabels({ ...baseOptions, whiteNoteMappings: { C3: 'Cmaj7' } })
         assert.equal(byNote(labels, 'C3').mapping, 'Cmaj7')

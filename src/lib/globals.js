@@ -128,6 +128,7 @@ export const globals = reactive({
     keyboardHelpMode: 'all',  // 'off' | 'black' | 'white' | 'all' - text overlays on the main keyboard
     showKeyShortcuts: false,  // show the computer-keyboard key badges on the main keyboard
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
+    showFavouriteBinColumns: false,  // show the favourite and bin columns in the chord/scale table
     helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial'
     debugJamChord: false,
     syncChordPickerToJamChord: true,
@@ -147,6 +148,10 @@ export const globals = reactive({
         autoScaleName: '',  // live auto/shuffle scale when it is not a stored slot
         autoScaleNotes: [],
         autoReason: '',  // short explanation of the last automatic scale choice
+        // Chord trigger note for which the player explicitly picked a scale
+        // (grid click, 1-4 shortcut or MIDI black key). While it matches the
+        // current chord, the follow/shuffle policy leaves the pick alone.
+        manualScaleNote: '',
 
         // These should always match the currentScaleName caused by lh trigger note chord changes
         // unless frozen is true. UI combo reflects this info. jamming map always respects this.

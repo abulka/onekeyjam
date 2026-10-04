@@ -433,9 +433,11 @@ spellings and parent-scale names (for example `G altered` against
 
 This is a description of behaviour, not a fourth mode. The locked scale (`5`)
 always wins and pauses both policies. Solo in key (`0`) keeps the key scale, as
-before. A manual `1`-`4` press applies immediately and pauses the policy for
-that chord; the next chord trigger resumes it. The policies never switch the
-scale during a chord, only on a chord trigger.
+before. A manual `1`-`4` press, a click on a scale cell in the table, or a
+right-hand black key applies immediately and pauses the policy for that chord.
+Re-triggering the same chord keeps the player's choice; moving to a different
+chord resumes the policy. The policies never switch the scale during a chord,
+only on a chord trigger.
 
 ## Checking stored scales
 

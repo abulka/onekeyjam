@@ -437,9 +437,9 @@ function generalTableClick(event) {
           </table>
         </th>
 
-        <th><button @click="markAllVisibleChordsAsFavourites(); if (globals.keySignatureDetection.fromFavouritesOnly) keyDetection()" class="circular compact mini transparent ui icon button" title="Add all to favourites"> <i class="heart icon"></i> </button></th>
+        <th v-if="globals.showFavouriteBinColumns"><button @click="markAllVisibleChordsAsFavourites(); if (globals.keySignatureDetection.fromFavouritesOnly) keyDetection()" class="circular compact mini transparent ui icon button" title="Add all to favourites"> <i class="heart icon"></i> </button></th>
         <!-- <th><button @click="markAllVisibleChordsForBlackList()" class="circular compact mini transparent ui icon button" title="Add all to blacklist"> <i class="thumbs down icon"></i> </button></th> -->
-        <th><button @click="markAllVisibleChordsForDeletion()" class="circular compact mini transparent ui icon button" title="Mark all to be deleted - then Actions/Reallocate Chords to apply"> <i class="trash icon"></i> </button></th>
+        <th v-if="globals.showFavouriteBinColumns"><button @click="markAllVisibleChordsForDeletion()" class="circular compact mini transparent ui icon button" title="Mark all to be deleted - then Actions/Reallocate Chords to apply"> <i class="trash icon"></i> </button></th>
 
       </tr>
     </thead>
@@ -583,9 +583,9 @@ function generalTableClick(event) {
           </table>
 
         </td>
-        <td><input type="checkbox" v-model="info.favourite" /></td>
+        <td v-if="globals.showFavouriteBinColumns"><input type="checkbox" v-model="info.favourite" /></td>
         <!-- <td><input type="checkbox" v-model="info.blackListed" /></td> -->
-        <td><input type="checkbox" v-model="info.todelete" /></td>
+        <td v-if="globals.showFavouriteBinColumns"><input type="checkbox" v-model="info.todelete" /></td>
       </tr>
     </tbody>
   </table>

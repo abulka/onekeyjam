@@ -20,6 +20,7 @@ export const HELP_PAGES = ['overview', 'tutorial']
  * @property {string} [keyboardHelpMode]
  * @property {boolean} [showKeyShortcuts]
  * @property {boolean} [showWelcomeDialog]
+ * @property {boolean} [showFavouriteBinColumns]
  * @property {string} [helpPage]
  * @property {string} [scalePolicy]
  */
@@ -52,6 +53,8 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.showKeyShortcuts = stored.showKeyShortcuts
         if (stored && typeof stored.showWelcomeDialog === 'boolean')
             prefs.showWelcomeDialog = stored.showWelcomeDialog
+        if (stored && typeof stored.showFavouriteBinColumns === 'boolean')
+            prefs.showFavouriteBinColumns = stored.showFavouriteBinColumns
         if (stored && HELP_PAGES.includes(stored.helpPage))
             prefs.helpPage = stored.helpPage
         if (stored && SCALE_POLICIES.includes(stored.scalePolicy))
@@ -72,6 +75,7 @@ export function currentPrefs() {
         keyboardHelpMode: globals.keyboardHelpMode,
         showKeyShortcuts: globals.showKeyShortcuts,
         showWelcomeDialog: globals.showWelcomeDialog,
+        showFavouriteBinColumns: globals.showFavouriteBinColumns,
         helpPage: globals.helpPage,
         scalePolicy: globals.scaleFiltering.policy,
     }
@@ -105,6 +109,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.showKeyShortcuts = prefs.showKeyShortcuts
     if (typeof prefs.showWelcomeDialog === 'boolean')
         globals.showWelcomeDialog = prefs.showWelcomeDialog
+    if (typeof prefs.showFavouriteBinColumns === 'boolean')
+        globals.showFavouriteBinColumns = prefs.showFavouriteBinColumns
     if (prefs.helpPage)
         globals.helpPage = prefs.helpPage
     if (prefs.scalePolicy)
@@ -118,7 +124,7 @@ export function loadUiPrefs(storage = defaultStorage()) {
  */
 export function initUiPrefs(storage = defaultStorage()) {
     loadUiPrefs(storage)
-    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts, globals.showWelcomeDialog, globals.helpPage, globals.scaleFiltering.policy], () => {
+    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts, globals.showWelcomeDialog, globals.showFavouriteBinColumns, globals.helpPage, globals.scaleFiltering.policy], () => {
         writePrefs(currentPrefs(), storage)
     })
 }

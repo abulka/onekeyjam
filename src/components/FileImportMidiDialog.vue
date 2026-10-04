@@ -77,8 +77,13 @@ defineExpose({
             <input ref="fileInputEl" type="file" @change="okParse($event)" value="">
 
             <div class="ui checkbox mt-2">
-                <input type="checkbox" id="cb1" class="hidden">
+                <input type="checkbox" id="cb1" v-model="globals.importMidiUnrecognisedChords">
                 <label for="cb1">Import unrecognised chords</label>
+            </div>
+
+            <div class="ui checkbox mt-2">
+                <input type="checkbox" id="cb2" v-model="globals.showFavouriteBinColumns">
+                <label for="cb2">Show favourite and bin columns in the chord/scale table</label>
             </div>
 
         </div>

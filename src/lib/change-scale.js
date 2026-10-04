@@ -192,6 +192,7 @@ export function applyKeyScale() {
         return false
     setActiveScaleFilter(scaleObj.tonic, scaleObj.type)
     globals.scaleFiltering.keyModeActive = true
+    globals.scaleFiltering.manualScaleNote = ''
     reportScaleChange()
     return true
 }
@@ -363,6 +364,8 @@ export function setScalePolicy(policy) {
     if (!SCALE_POLICIES.includes(policy))
         policy = 'manual'
     globals.scaleFiltering.policy = policy
+    // Choosing a policy releases any manual per-chord pick so it can act now.
+    globals.scaleFiltering.manualScaleNote = ''
     if (!globals.isProjectLoaded)
         return
     if (policy === 'manual') {
@@ -426,6 +429,7 @@ function _setActiveScaleFilter(scaleNotes) {
 
 function clearActiveScaleFilter() {
     clearAutoScaleState()
+    globals.scaleFiltering.manualScaleNote = ''
     globals.scaleFiltering.scaleTonic = ''
     globals.scaleFiltering.scaleType = ''
     globals.scaleFiltering.scaleTypesMatchingCurrentChord

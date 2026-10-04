@@ -62,13 +62,27 @@ function changeChordTriggerNoteAndThusScale(singleNote, options = {}) {
     if (options.silent && singleNote === globals.currentChordTriggerNote)
         return;
 
+    const chordChanged = singleNote !== globals.currentChordTriggerNote;
     globals.currentChordTriggerNote = singleNote;
+    // A manual pick applies to one chord only: moving to a different chord
+    // releases it so the follow/shuffle policy can choose again.
+    if (chordChanged)
+        globals.scaleFiltering.manualScaleNote = '';
 
     // Solo mode 'key': the right hand stays on the project key scale while the
     // chords change. A user's explicit scale1/2/3 pick is temporary and the
     // next chord trigger returns to the key scale. If no key can be resolved,
     // fall through to the per-chord behaviour.
     if (globals.soloMode === 'key' && !globals.scaleFiltering.frozen && applyKeyScale()) {
+        recordChordHistory();
+        return;
+    }
+
+    // The player clicked this chord's cell (or used a 1-4 shortcut): keep the
+    // chosen scale and do not let the follow/shuffle policy replace it while
+    // the same chord keeps sounding.
+    if (globals.scaleFiltering.manualScaleNote && globals.scaleFiltering.manualScaleNote === singleNote) {
+        changeScaleFilter(globals.currentScaleFilter);
         recordChordHistory();
         return;
     }
