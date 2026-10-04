@@ -115,31 +115,40 @@ export function clearProjectKey(project) {
 }
 
 /**
- * Detect a major/minor key from the project's chords, best first.
+ * Detect the major/minor keys that fit the project's chords, best first.
  * Chord symbols are preferred; the sounding notes are the fallback.
  * @param {Project} [project]
- * @returns {ProjectKey|undefined}
+ * @returns {Array<ProjectKey>}
  */
-export function detectProjectKey(project) {
+export function detectProjectKeys(project) {
     if (!project || !Array.isArray(project.chords) || project.chords.length === 0)
-        return undefined;
+        return [];
     const options = { useHitWeight: true, usePenalty: true };
     const symbols = project.chords
         .map((chordConfig) => chordConfig.chord)
         .filter((symbol) => symbol && !Tonal.Chord.get(symbol).empty);
 
-    let [name] = symbols.length > 0 ? keyFromChords(symbols, options) : [];
-    if (!name) {
+    let names = symbols.length > 0 ? keyFromChords(symbols, options) : [];
+    if (names.length === 0) {
         const chordsAsNotes = project.chords
             .map((chordConfig) => chordConfig.chordNotes)
             .filter((notes) => Array.isArray(notes) && notes.length > 0)
             .map((notes) => notes.map((note) => Tonal.Note.get(note).pc));
-        [name] = chordsAsNotes.length > 0 ? keyFromNotes(chordsAsNotes, options) : [];
+        names = chordsAsNotes.length > 0 ? keyFromNotes(chordsAsNotes, options) : [];
     }
-    if (!name)
-        return undefined;
-    const [tonic, ...typeParts] = name.split(' ');
-    return normalizeKey({ tonic, type: typeParts.join(' '), source: 'detected' });
+    return names.map((name) => {
+        const [tonic, ...typeParts] = name.split(' ');
+        return normalizeKey({ tonic, type: typeParts.join(' '), source: 'detected' });
+    }).filter((key) => key !== undefined);
+}
+
+/**
+ * The best (first) detected major/minor key, if any.
+ * @param {Project} [project]
+ * @returns {ProjectKey|undefined}
+ */
+export function detectProjectKey(project) {
+    return detectProjectKeys(project)[0];
 }
 
 /**
@@ -153,4 +162,75 @@ export function resolveProjectKey(project) {
     if (!key)
         return undefined;
     return { ...key, colour: projectColour(project) };
+}
+
+/** @param {string} type */
+function normaliseType(type) {
+    return type === 'aeolian' || type === 'minor' ? 'minor' : type === 'ionian' ? 'major' : type;
+}
+
+/**
+ * Do two keys describe the same pitch and mode? Enharmonic tonics match.
+ * @param {ProjectKey} [a] @param {ProjectKey} [b]
+ */
+export function keysMatch(a, b) {
+    if (!a || !b)
+        return false;
+    const chromaA = Tonal.Note.chroma(a.tonic);
+    const chromaB = Tonal.Note.chroma(b.tonic);
+    if (Number.isNaN(chromaA) || Number.isNaN(chromaB) || chromaA !== chromaB)
+        return false;
+    return normaliseType(a.type) === normaliseType(b.type);
+}
+
+/**
+ * Describe where the project key comes from, covering every combination of
+ * declared key, detected key and whether the project has any chords yet.
+ * @param {Project} [project]
+ * @returns {{label: string, title: string}}
+ */
+export function describeProjectKey(project) {
+    const declared = declaredProjectKey(project);
+    const detectedKeys = detectProjectKeys(project);
+    const hasChords = !!(project && Array.isArray(project.chords) && project.chords.length > 0);
+    const detectedNames = detectedKeys.map((key) => `${key.tonic} ${key.type}`).join(', ');
+
+    if (!declared && detectedKeys.length === 0) {
+        return hasChords
+            ? { label: '(no key detected)', title: 'No key could be detected from the chords' }
+            : { label: '(no chords yet, default key)', title: 'Add chords, or set a key, to detect one' };
+    }
+
+    if (!declared)
+        return { label: '(detected)', title: `Detected from the chords: ${detectedNames}` };
+
+    // Only a declared key from here on.
+    const declaredName = `${declared.tonic} ${declared.type}`;
+    if (detectedKeys.length === 0) {
+        if (!hasChords)
+            return { label: '(set by project, no chords yet)', title: `Set to ${declaredName}` };
+        if (!['major', 'minor'].includes(normaliseType(declared.type)))
+            return { label: '(set by project, modal key)', title: `Set to ${declaredName}; only major/minor keys are detected` };
+        return { label: '(set by project)', title: `Set to ${declaredName}; nothing could be detected` };
+    }
+
+    const matchIndex = detectedKeys.findIndex((key) => keysMatch(declared, key));
+    const topName = `${detectedKeys[0].tonic} ${detectedKeys[0].type}`;
+
+    // Two ticks when the key is the detection's top choice, one tick when it is
+    // a lower-ranked but still valid detected key.
+    if (matchIndex === 0) {
+        return declared.source === 'detected'
+            ? { label: '✅✅ (detected, saved)', title: `Matches the top detected key ${topName}. Detected keys: ${detectedNames}` }
+            : { label: '✅✅ (set by project, matches detected)', title: `Set to ${declaredName}, the top detected key. Detected keys: ${detectedNames}` };
+    }
+    if (matchIndex > 0) {
+        return declared.source === 'detected'
+            ? { label: '✅ (saved detection, another detected key)', title: `Saved as ${declaredName}, a detected key, but the top choice is ${topName}. Detected keys: ${detectedNames}` }
+            : { label: '✅ (set by project, another detected key)', title: `Set to ${declaredName}. It is a detected key, but the top choice is ${topName}. Detected keys: ${detectedNames}` };
+    }
+
+    return declared.source === 'detected'
+        ? { label: '⚠️ (saved detection, now differs)', title: `Saved as ${declaredName}; the detection now gives ${detectedNames}` }
+        : { label: '⚠️ (set by project, differs from detected)', title: `Set to ${declaredName}; the detected keys are ${detectedNames}` };
 }

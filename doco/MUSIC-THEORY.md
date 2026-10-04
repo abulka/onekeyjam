@@ -351,7 +351,12 @@ gives the notes of the current chord, until the next chord trigger returns to
 the key. The toggle lives directly above the chord/scale grid on the Edit and
 Perform views, next to the colour selector, and the project key lives in its
 own Key Detection section on the Edit view. These are set-up decisions rather
-than things to change mid-performance.
+than things to change mid-performance. While the key scale is sounding, a
+`Solo in key → C major` badge appears above the grid, the stored scale names
+dim, and their out-of-key tags are struck through, because every chord is
+filtered to the key. Press `0` (or hold the left-hand `C#` shift and press
+`A#`/`Bb` on a MIDI keyboard) to toggle the mode, with a toast naming the key
+scale.
 
 The grid also labels each stored scale: a tiny **out of key** tag when the
 scale uses notes outside the project key, and a **jazz** or **adventurous** tag

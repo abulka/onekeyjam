@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { globals } from '../../src/lib/globals.js'
 import { keyDetection } from '../../src/lib/keyDetection';
 import { arraysAreEqual } from "../../src/lib/array-tools"
-import { declaredProjectKey, projectKeyName } from '../../src/lib/projectKey.js'
+import { declaredProjectKey, projectKeyName, describeProjectKey } from '../../src/lib/projectKey.js'
 import { applyProjectKeySettings } from '../../src/lib/projectScaleSettings.js'
 import { sanitiseNoteToSharp } from '../../src/lib/note-tools.js'
 import { setChordFromSymbol } from '../../src/lib/chordPicker.js'
@@ -12,6 +12,14 @@ import ComboScale from './ComboScale.vue'
 const currentKey = computed(() => globals.getProjectKey())
 
 const keyIsDeclared = computed(() => !!declaredProjectKey(globals.project))
+
+// The entry shown next to the combo, and a clear explanation of where the key
+// came from. An empty project has no detected key yet, so the combo's default
+// is labelled as such rather than as "(set)".
+const keyDisplayName = computed(() => currentKey.value ? projectKeyName(currentKey.value) : 'C major')
+
+// Describes every combination of declared key, detected key and chord presence.
+const keyDescription = computed(() => describeProjectKey(globals.project))
 
 // 'minor' is an alias of aeolian; offer the friendly name and the common modes.
 const keyTypes = ['major', 'minor', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'locrian']
@@ -81,9 +89,9 @@ const noKeySignatureBecauseNoChords = computed({
         <ComboScale :tonic="sanitiseNoteToSharp(currentKey?.tonic ?? 'C')"
             :scale-type="currentKey?.type ?? 'major'" :scale-types="keyTypes"
             @set-scale="setProjectKeyFromEvent($event)" />
-        <span v-if="currentKey" class="ml-2 ui small text grey">
-            <code>{{ projectKeyName(currentKey) }}</code>
-            <i>{{ keyIsDeclared ? '(set)' : '(detected)' }}</i>
+        <span class="ml-2 ui small text grey">
+            <code>{{ keyDisplayName }}</code>
+            <strong class="key-source-badge" :title="keyDescription.title">{{ keyDescription.label }}</strong>
         </span>
     </p>
 
@@ -92,7 +100,7 @@ const noKeySignatureBecauseNoChords = computed({
         automatically; the Solo in key and colour controls sit above the scale grid.
     </p>
 
-    <p v-if="declaredKeyDisagrees" class="ui small text-orange!">
+    <p v-if="declaredKeyDisagrees" class="ui small text-red-500!">
         The declared key <code>{{ projectKeyName(currentKey) }}</code> is not among the detected keys.
         <a href="#" @click.prevent="useDetectedKey()">Use the detected key</a>.
     </p>
@@ -216,5 +224,10 @@ const noKeySignatureBecauseNoChords = computed({
 <style scoped>
 .chords-that-fit-label {
     font-size: small;
+}
+
+.key-source-badge {
+    margin-left: 0.5em;
+    color: #6b5a45;
 }
 </style>

@@ -89,6 +89,7 @@ onUnmounted(() => {
           <code class="tip">D#</code> [<code class="kb">{{ lhDsharp }}</code>] emergency all notes off
           <code class="tip">F#</code> [<code class="kb">{{ lhFsharp }}</code>] add chord
           <code class="tip">G#</code> [<code class="kb">{{ lhGsharp }}</code>] reset transpositions
+          <code class="tip">A#</code> [<code class="kb">{{ lhAsharp }}</code>] toggle Solo in key
         <br>
 
         <div class="mt-2"></div>
@@ -99,7 +100,8 @@ onUnmounted(() => {
           <code class="tip">G#</code> [<code class="kb">4</code>] scale notes of chord
           <code class="tip">A#</code> [<code class="kb">5</code>] lock current scale
         <br>
-        <span class="text-muted">The 1-5 number keys switch the scale from anywhere (no need to focus the keyboard).</span>
+        <span class="text-muted">The 1-5 number keys switch the scale, and 0 toggles Solo in key, from anywhere (no need
+          to focus the keyboard).</span>
         <br>
         <span class="text-muted">Right hand aliases on the lower row:
           <code class="kb">,</code> C <code class="kb">L</code> C# <code class="kb">.</code> D
@@ -149,7 +151,8 @@ onUnmounted(() => {
                 <td>
                   <code class="kb">{{ lhDsharp }}</code> all notes off /
                   <code class="kb">{{ lhFsharp }}</code> add chord /
-                  <code class="kb">{{ lhGsharp }}</code> reset transpositions
+                  <code class="kb">{{ lhGsharp }}</code> reset transpositions /
+                  <code class="kb">{{ lhAsharp }}</code> toggle Solo in key
                 </td>
                 <td></td>
               </tr>
@@ -207,6 +210,7 @@ onUnmounted(() => {
               <tr><td><code class="kb">F4</code></td><td>previous left-hand chord</td></tr>
               <tr><td><code class="kb">F5</code></td><td>add the currently jammed chord</td></tr>
               <tr><td><code class="kb">1</code> <code class="kb">2</code> <code class="kb">3</code> <code class="kb">4</code> <code class="kb">5</code></td><td>scale1 / scale2 / scale3 / notes of chord / lock scale (any page, any octave)</td></tr>
+              <tr><td><code class="kb">0</code></td><td>toggle Solo in key (magic mode, filtering on)</td></tr>
               <tr><td><code class="kb">Ctrl+1</code> / <code class="kb">Ctrl+Shift+1</code></td><td>normal piano / magic mode</td></tr>
               <tr><td><code class="kb">Ctrl+2</code> / <code class="kb">Ctrl+Shift+2</code></td><td>transpose up / down a semitone</td></tr>
               <tr><td><code class="kb">Ctrl+3</code> / <code class="kb">Ctrl+Shift+3</code></td><td>invert chord up / down</td></tr>
@@ -230,7 +234,7 @@ onUnmounted(() => {
           <h4>Notes</h4>
           <ul class="shortcuts-notes">
             <li><strong>Magic mode</strong> (default) turns one left-hand white key into a chord and filters the right hand into the current scale. <strong>Normal piano</strong> plays a plain piano keyboard for recording or adding your own chords. Switch with the Magic / Normal buttons, or <code class="kb">Ctrl+1</code> / <code class="kb">Ctrl+Shift+1</code>.</li>
-            <li>The number keys <code class="kb">1</code>-<code class="kb">5</code> are reserved for switching scales, on every octave. The right-hand white notes are played with the letter keys.</li>
+            <li>The number keys <code class="kb">1</code>-<code class="kb">5</code> are reserved for switching scales, on every octave, and <code class="kb">0</code> toggles <strong>Solo in key</strong>. The right-hand white notes are played with the letter keys.</li>
             <li>On Mac laptops the function keys may need <code class="kb">Fn</code>, or enable "use F1, F2, etc. keys as standard function keys".</li>
             <li><code class="kb">F5</code> reloads the page on Windows and Linux.</li>
             <li>The on-screen keyboard must be clicked first so it has focus before the letter and number shortcuts work.</li>

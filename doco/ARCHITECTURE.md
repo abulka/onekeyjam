@@ -178,9 +178,10 @@ and the validation commands.
   (`patternToTakeNotes`), expanding each chord trigger into its chord notes.
   The recorder broadcasts `recording-started`/`recording-stopped` for this.
 - Left-hand black keys act as modifiers: `C#` is a shift key, `D#` turns scale
-  filtering off and `F#` turns it on, while `G#` and `A#` transpose the chords.
-  Right-hand black keys switch scale as well. The computer keys `1`-`5` switch
-  scale1/scale2/scale3, the chord notes and lock from any page via
+  filtering off and `F#` turns it on, while `G#` and `A#` transpose the chords
+  and Shift+A#/Bb toggles Solo in key. Right-hand black keys switch scale as
+  well. The computer keys `1`-`5` switch scale1/scale2/scale3, the chord notes
+  and lock from any page, and `0` toggles Solo in key, via
   `src/lib/midi/scaleFilterShortcuts.js`. See `onNoteOn()` in
   `src/lib/midi/wire-events.js`.
 - Normal piano mode (`globals.bypass`) switches the computer keyboard to the

@@ -2,7 +2,7 @@ import { globals } from "../globals.js"
 import { playChord, playChordOff } from "./play-chord.js"
 import { transposeChordTriggerMap } from "../transpose"
 import { stopAllNotes } from "./stop-all-notes.js"
-import { changeScaleFilter } from "../change-scale.js"
+import { changeScaleFilter, toggleSoloMode } from "../change-scale.js"
 import { jam, jamOff } from "./jam.js"
 import { resetTranspositionsEtc } from "../resetState.js"
 
@@ -98,8 +98,10 @@ export function onNoteOn(e) {
         }
     }
     else if (e.note.identifier === globals.lhMetaKeys.lhAsharp) {  // A#
-        // SHIFT + A# is intentionally unused; SHIFT + G# resets transpositions
-        if (!globals.blackShiftState)
+        // SHIFT + A# (Shift+Bb) toggles Solo in key; SHIFT + G# resets transpositions
+        if (globals.blackShiftState)
+            toggleSoloMode()
+        else
             transposeChordTriggerMap(+2)  // currently 2 is ignored, a semitone is used instead
     }
     // rh modifiers

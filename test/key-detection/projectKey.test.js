@@ -11,7 +11,10 @@ import {
     setProjectKey,
     clearProjectKey,
     detectProjectKey,
+    detectProjectKeys,
     resolveProjectKey,
+    describeProjectKey,
+    keysMatch,
 } from '../../src/lib/projectKey.js';
 
 /*
@@ -100,6 +103,93 @@ describe('projectKey - declared and detected', () => {
     it('returns undefined for a project with no chords', () => {
         assert.equal(detectProjectKey({ name: 'empty', chords: [], options: {} }), undefined);
         assert.equal(resolveProjectKey({ name: 'empty', chords: [], options: {} }), undefined);
+    });
+
+});
+
+describe('describeProjectKey', () => {
+
+    const cMajorTwoFiveOne = {
+        name: 'ii-V-I in C',
+        chords: [
+            { chord: 'Dm7', chordNotes: ['D3', 'F3', 'A3', 'C4'] },
+            { chord: 'G7', chordNotes: ['G3', 'B3', 'D4', 'F4'] },
+            { chord: 'Cmaj7', chordNotes: ['C3', 'E3', 'G3', 'B3'] },
+        ],
+        options: {},
+    };
+
+    it('reports the default for an empty project', () => {
+        assert.equal(describeProjectKey({ name: 'empty', chords: [], options: {} }).label, '(no chords yet, default key)');
+    });
+
+    it('reports a detected key when none is declared', () => {
+        assert.equal(describeProjectKey(cMajorTwoFiveOne).label, '(detected)');
+    });
+
+    it('reports a set key that is the top detected key with two ticks', () => {
+        const project = { ...cMajorTwoFiveOne, options: { key: { tonic: 'C', type: 'major', source: 'user' } } };
+        assert.equal(describeProjectKey(project).label, '✅✅ (set by project, matches detected)');
+    });
+
+    it('reports a saved detection that is the top key with two ticks', () => {
+        const project = { ...cMajorTwoFiveOne, options: { key: { tonic: 'C', type: 'major', source: 'detected' } } };
+        assert.equal(describeProjectKey(project).label, '✅✅ (detected, saved)');
+    });
+
+    it('reports a set key that differs from the detection', () => {
+        const project = { ...cMajorTwoFiveOne, options: { key: { tonic: 'F', type: 'major', source: 'user' } } };
+        assert.equal(describeProjectKey(project).label, '⚠️ (set by project, differs from detected)');
+    });
+
+    it('reports a saved detection that now differs', () => {
+        const project = { ...cMajorTwoFiveOne, options: { key: { tonic: 'F', type: 'major', source: 'detected' } } };
+        assert.equal(describeProjectKey(project).label, '⚠️ (saved detection, now differs)');
+    });
+
+    // C major and D major fit both E minor and G major; only one is the top choice.
+    const twoCandidates = {
+        name: 'CM DM',
+        chords: [
+            { chord: 'CM', chordNotes: ['C3', 'E3', 'G3'] },
+            { chord: 'DM', chordNotes: ['D3', 'F#3', 'A3'] },
+        ],
+        options: {},
+    };
+
+    it('reports a set key that is a lower-ranked detected key with one tick', () => {
+        const project = { ...twoCandidates, options: { key: { tonic: 'G', type: 'major', source: 'user' } } };
+        const description = describeProjectKey(project);
+        assert.equal(description.label, '✅ (set by project, another detected key)');
+        assert.ok(description.title.includes('E minor'), description.title);
+        assert.ok(description.title.includes('G major'), description.title);
+    });
+
+    it('reports the top detected key with two ticks for CM DM', () => {
+        const project = { ...twoCandidates, options: { key: { tonic: 'E', type: 'minor', source: 'user' } } };
+        assert.equal(describeProjectKey(project).label, '✅✅ (set by project, matches detected)');
+    });
+
+    it('reports a set modal key when nothing can be detected', () => {
+        const project = { name: 'modal', chords: [{ chord: 'Dm7b5ChordNicerVoicing' }], options: { key: { tonic: 'D', type: 'dorian', source: 'user' } } };
+        assert.equal(describeProjectKey(project).label, '(set by project, modal key)');
+    });
+
+    it('reports a set key with no chords yet', () => {
+        const project = { name: 'empty', chords: [], options: { key: { tonic: 'F', type: 'minor', source: 'user' } } };
+        assert.equal(describeProjectKey(project).label, '(set by project, no chords yet)');
+    });
+
+    it('exposes every detected candidate, best first', () => {
+        const keys = detectProjectKeys(twoCandidates);
+        assert.deepEqual(keys.map((key) => `${key.tonic} ${key.type}`), ['E minor', 'G major']);
+        assert.equal(detectProjectKey(twoCandidates).tonic, 'E');
+    });
+
+    it('matches enharmonic and alias spellings', () => {
+        assert.equal(keysMatch({ tonic: 'Db', type: 'major' }, { tonic: 'C#', type: 'major' }), true);
+        assert.equal(keysMatch({ tonic: 'C', type: 'aeolian' }, { tonic: 'C', type: 'minor' }), true);
+        assert.equal(keysMatch({ tonic: 'C', type: 'major' }, { tonic: 'D', type: 'major' }), false);
     });
 
 });

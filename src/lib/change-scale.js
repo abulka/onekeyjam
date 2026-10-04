@@ -8,6 +8,7 @@ import { findTop3MatchingScales } from './findMatchingScales'
 import { createChordSymbol } from './note-tools.js';
 import { chordSymbolToScaleNames } from './chord-to-scale.js';
 import { scaleObjToNotes } from './scaleToNotes';
+import { projectKeyName } from './projectKey.js';
 
 
 /** @typedef {import("./typedefs").ChordConfig} ChordConfig */
@@ -200,6 +201,34 @@ export function setSoloMode(mode) {
         applyKeyScale()
     else
         changeScaleFilter()
+}
+
+/**
+ * Flip Solo in key on or off. Used by the 0 computer key and the MIDI
+ * Shift+Bb shortcut. Shows a small toast naming the key scale so the shortcut
+ * gives feedback even when the grid is not in view.
+ */
+export function toggleSoloMode() {
+    const turningOn = globals.soloMode !== 'key'
+    setSoloMode(turningOn ? 'key' : 'chord')
+    showSoloModeToast(turningOn)
+}
+
+/** @param {boolean} on */
+function showSoloModeToast(on) {
+    const key = globals.getProjectKey()
+    const keyName = key ? projectKeyName(key) : ''
+    const message = on
+        ? `Solo in key: ON${keyName ? ` (${keyName})` : ' (no key set)'}`
+        : 'Solo in key: OFF'
+    // jQuery/Fomantic is a browser global; skip the toast when it is absent.
+    if (typeof $ === 'function') {
+        $('body').toast({
+            message,
+            displayTime: 1200,
+            class: 'brown',
+        })
+    }
 }
 
 /**

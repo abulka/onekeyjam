@@ -2,6 +2,7 @@ import assert from 'assert';
 import { globals } from '../../src/lib/globals.js';
 import { findMatchingScalesForAllProjectChords } from '../../src/lib/findMatchingScales.js';
 import { applyProjectKeySettings } from '../../src/lib/projectScaleSettings.js';
+import { toggleSoloMode } from '../../src/lib/change-scale.js';
 
 /*
  * When the project key or colour changes, every chord scale is re-ranked in
@@ -97,6 +98,38 @@ describe('applyProjectKeySettings', () => {
         assert.equal(project.options.colour, 'diatonic');
         assert.equal(project.chords[0].scale1, 'D dorian'); // ii is dorian in both profiles
         assert.equal(project.chords[1].scale2 !== '', true);
+    });
+
+});
+
+describe('toggleSoloMode', () => {
+
+    beforeEach(() => {
+        document.broadcastEvent = () => { };
+        globals.chordTriggerMap = {};
+        globals.currentChordTriggerNote = undefined;
+        globals.currentScaleFilter = 'scale1';
+        globals.scaleFiltering.frozen = false;
+        globals.scaleFiltering.keyModeActive = false;
+        globals.scaleOverrideName = '';
+        globals.scaleOverrideNotes = [];
+        globals.projectKey = null;
+    });
+
+    it('flips the project solo mode on and off', () => {
+        const project = makeProject();
+        globals.project = project;
+        globals.chordTriggerMap = { C3: project.chords[0] };
+        globals.currentChordTriggerNote = 'C3';
+
+        toggleSoloMode();
+        assert.equal(globals.soloMode, 'key');
+        assert.equal(project.options.soloMode, 'key');
+        assert.equal(globals.scaleFiltering.keyModeActive, true);
+
+        toggleSoloMode();
+        assert.equal(globals.soloMode, 'chord');
+        assert.equal(project.options.soloMode, 'chord');
     });
 
 });

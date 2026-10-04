@@ -56,8 +56,9 @@ sound in the browser.
 2. Play the highlighted left-hand keys to trigger chords.
 3. Play anywhere to the right to jam - the notes are filtered to fit the chord.
 4. Press `1` `2` `3` `4` `5` from anywhere to switch scale1/scale2/scale3, the
-   chord notes, or lock the scale. The black keys do the same on a MIDI
-   keyboard, and transpose stays on the black keys.
+   chord notes, or lock the scale. Press `0` to toggle **Solo in key** (on a
+   MIDI keyboard, hold the left-hand `C#` shift and press `A#`/`Bb`). The black
+   keys do the same on a MIDI keyboard, and transpose stays on the black keys.
 5. Set the project key in the **Key Detection** section, and use the **Solo in
    key** checkbox and **Colour** dropdown above the chord/scale grid to shape
    the solo.

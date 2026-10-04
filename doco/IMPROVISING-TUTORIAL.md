@@ -44,8 +44,25 @@ the Edit and Perform pages.
 ### Step 1: set the project key
 
 The key is the song's home. In the **Project Key** row, pick the tonic and the
-type (major, minor, or a mode such as dorian). Most songs come with a key
-already set; the label shows `(set)` or `(detected)`.
+type (major, minor, or a mode such as dorian). The label beside it explains
+where the key came from:
+
+- `(detected)` - guessed from the chords, with nothing stored.
+- `✅✅ (set by project, matches detected)` - stored, and it is the top detected
+  key. (A saved detection shows as `✅✅ (detected, saved)`.)
+- `✅ (set by project, another detected key)` - stored, and it is one of the
+  valid detected keys, just not the top choice. This is not a mistake: several
+  keys can fit the same chords.
+- `⚠️ (set by project, differs from detected)` - stored, and no detected key
+  matches it.
+- `(set by project, modal key)` - a mode (such as D dorian) that the
+  major/minor detection cannot see.
+- `(set by project, no chords yet)` and `(no chords yet, default key)` - an
+  empty project, with or without a key already chosen.
+
+Hover the label to see the full list of detected keys. If a stored major/minor
+key disagrees with every detected key, a red warning also appears with a
+one-click "Use the detected key".
 
 Why it matters: the key decides which scales the engine suggests, so the safe
 notes agree with the song, and it keeps chromatic chords such as tritone
@@ -106,10 +123,11 @@ chord triggers works.
 | Scale filter 3 | `3` | the second colour alternative |
 | Notes of chord | `4` | filters the solo to the chord's own notes |
 | Lock scale | `5` | freezes the scale so chord changes do not move it |
+| Toggle Solo in key | `0` | on/off, with a toast naming the key scale |
 | Filter off | `d` (left black key) | turns solo filtering off, so the keyboard is a plain piano |
 | Filter on | `g` (left black key) | turns solo filtering back on |
 | Transpose down/up | `h` / `j` (left black keys) | shifts the chords a semitone |
-| Shift | hold `s` (left black key) | modifies the other left black keys, for example `s`+`h` resets transpositions |
+| Shift | hold `s` (left black key) | modifies the other left black keys, for example `s`+`j` toggles Solo in key |
 
 The **Active Scale** panel shows what the right hand is doing: the scale name,
 its notes, and the mapping from your solo keys to sounding notes.
@@ -126,6 +144,17 @@ stop and spell out the harmony.
 which notes), and **jazz** or **adventurous** marks a scale that is a colour
 choice of the active profile. With the colour set to `diatonic`, or on music
 that never leaves the key, most scales are unlabelled.
+
+**When Solo in key is on**, a `Solo in key → C major` badge appears above the
+grid, the stored scale names dim, and the **out of key** tags are struck
+through, because every chord is now filtered to the key scale. If you press
+`1`-`4` to inspect a chord scale, the dimming pauses for that chord and a muted
+`Solo in key (temporarily overridden)` note appears, then the key scale returns
+on the next chord trigger.
+
+**When you lock the scale** (`5`), the locked scale is bolded in the grid with a
+padlock 🔒, so you can see at a glance which scale the right hand is frozen into
+even as the chords change.
 
 ---
 
