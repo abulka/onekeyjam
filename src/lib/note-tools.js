@@ -240,6 +240,58 @@ export function findOctaveCrossingPoint(notes) {
     return -1
 }
 
+export function samePitchClass(noteA, noteB) {
+    // Are two notes the same tone regardless of octave and spelling?
+    // e.g. samePitchClass('C4', 'C2') -> true, samePitchClass('C#3', 'Db5') -> true
+    if (!noteA || !noteB)
+        return false
+    const a = Note.get(noteA)
+    const b = Note.get(noteB)
+    if (a.empty || b.empty)
+        return false
+    return a.chroma === b.chroma
+}
+
+export function noteInAnyPitchClass(note, notes) {
+    // Does note match any of the notes in the list, ignoring octave and spelling?
+    if (!Array.isArray(notes))
+        return false
+    return notes.some(other => samePitchClass(note, other))
+}
+
+export function describeNoteRoles({ inProjectKey, inCurrentScale, inCurrentChord }) {
+    // A short educational description of a note in the live scale display.
+    const parts = []
+    parts.push(inProjectKey ? 'Project key note' : 'Outside the project key')
+    parts.push(inCurrentScale ? 'in the current scale' : 'not in the current scale')
+    parts.push(inCurrentChord ? 'in the current chord' : 'not in the current chord')
+    return parts.join(' — ')
+}
+
+export function unionPitchClassNotes(primaryNotes, extraNotes) {
+    // Merge two lists of notes into one, drop duplicate tones (by chroma), and
+    // sort ascending from C so a given note always sits in the same place.
+    // The spelling from the first list wins, then the second list fills gaps.
+    const lists = [primaryNotes, extraNotes]
+    const byChroma = new Map()
+    for (const list of lists) {
+        if (!Array.isArray(list))
+            continue
+        for (const note of list) {
+            if (!note)
+                continue
+            const chroma = Note.get(note).chroma
+            if (!Number.isFinite(chroma))
+                continue
+            if (!byChroma.has(chroma))
+                byChroma.set(chroma, note)
+        }
+    }
+    return [...byChroma.entries()]
+        .sort((a, b) => a[0] - b[0])
+        .map(([, note]) => note)
+}
+
 export function sanitiseNoteToSharp(note) {
     // Convert accidental b notes into #
     // param note: string e.g. 'Cb'

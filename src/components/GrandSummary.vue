@@ -90,6 +90,14 @@ function scaleNotesAreLocked(notes) {
   return a.every((note, i) => note === b[i])
 }
 
+/**
+ * Hover hint listing the notes in a scale, for the grid's scale filter cells.
+ * @param {Array<string>} notes
+ */
+function scaleNotesTitle(notes) {
+  return Array.isArray(notes) && notes.length > 0 ? 'Scale notes: ' + notes.join(' ') : ''
+}
+
 function _generateSummaryInfo(note) {
   /*
   Generate a summary info object for a single chord trigger note
@@ -171,6 +179,11 @@ function _generateSummaryInfo(note) {
   info.rhScaleName = chordConfig.scale1
   info.rhScale2Name = chordConfig.scale2
   info.rhScale3Name = chordConfig.scale3
+  // Derived note lists, shown as hover hints on the scale filter cells.
+  info.rhScaleNotesData = chordConfig.scale1Notes ?? []
+  info.rhScale2NotesData = chordConfig.scale2Notes ?? []
+  info.rhScale3NotesData = chordConfig.scale3Notes ?? []
+  info.rhScaleNotesOfChordData = chordConfig.scaleNotesOfChord ?? []
   // info.rhScaleNotesOfChordName = chordConfig.scale3  // ??????
 
   // nicer display of arrays of notes which might be there if proper scale name not detected 
@@ -430,6 +443,7 @@ function generalTableClick(event) {
               <td width="25%"
                 data-scale-filter="scale1"
                 data-scale-filter-note="C#"
+                :title="scaleNotesTitle(info.rhScaleNotesData)"
                 :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale1' }">
                 <span><code v-if="info.rhScaleName" class="scale-name"
                     :class="{ 'boldy': (!lockedOrFrozen() && info.rhScaleIsCurrent && info.lhChordIsCurrent) || info.rhScaleIsLocked }">
@@ -437,8 +451,8 @@ function generalTableClick(event) {
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp;
                 <div v-if="info.rhScaleName" class="scale-tags">
                   <span v-if="info.rhScaleAnnotation.outOfKey.length" class="scale-tag"
-                    :class="{ struck: keyModeActive }"
-                    :title="'Notes outside the key: ' + info.rhScaleAnnotation.outOfKey.join(', ')">out of key</span>
+                    :class="{ struck: keyModeActive, 'scale-tag-colour': info.rhScaleAnnotation.colour }"
+                    :title="'Notes outside the key: ' + info.rhScaleAnnotation.outOfKey.join(', ')">out of key: {{ info.rhScaleAnnotation.outOfKey.join(' ') }}</span>
                   <span v-if="info.rhScaleAnnotation.colour" class="scale-tag scale-tag-colour"
                     :title="'A ' + info.rhScaleAnnotation.colour + ' colour scale'">{{ info.rhScaleAnnotation.colour }}</span>
                 </div>
@@ -447,6 +461,7 @@ function generalTableClick(event) {
               <td width="25%"
                 data-scale-filter="scale2"
                 data-scale-filter-note="D#"
+                :title="scaleNotesTitle(info.rhScale2NotesData)"
                 :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale2' }">
                 <span><code v-if="info.rhScale2Name" class="scale-name"
                     :class="{ 'boldy': (!lockedOrFrozen() && info.rhScale2IsCurrent && info.lhChordIsCurrent) || info.rhScale2IsLocked }">
@@ -454,8 +469,8 @@ function generalTableClick(event) {
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp; 
                 <div v-if="info.rhScale2Name" class="scale-tags">
                   <span v-if="info.rhScale2Annotation.outOfKey.length" class="scale-tag"
-                    :class="{ struck: keyModeActive }"
-                    :title="'Notes outside the key: ' + info.rhScale2Annotation.outOfKey.join(', ')">out of key</span>
+                    :class="{ struck: keyModeActive, 'scale-tag-colour': info.rhScale2Annotation.colour }"
+                    :title="'Notes outside the key: ' + info.rhScale2Annotation.outOfKey.join(', ')">out of key: {{ info.rhScale2Annotation.outOfKey.join(' ') }}</span>
                   <span v-if="info.rhScale2Annotation.colour" class="scale-tag scale-tag-colour"
                     :title="'A ' + info.rhScale2Annotation.colour + ' colour scale'">{{ info.rhScale2Annotation.colour }}</span>
                 </div>
@@ -464,6 +479,7 @@ function generalTableClick(event) {
               <td width="25%"
                 data-scale-filter="scale3"
                 data-scale-filter-note="F#"
+                :title="scaleNotesTitle(info.rhScale3NotesData)"
                 :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale3' }">
                 <code v-if="info.rhScale3Name" class="scale-name"
                     :class="{ 'boldy': (!lockedOrFrozen() && info.rhScale3IsCurrent && info.lhChordIsCurrent) || info.rhScale3IsLocked }">
@@ -473,8 +489,8 @@ function generalTableClick(event) {
                     title="This scale is locked (press 5 to unlock)">🔒</span>
                 <div v-if="info.rhScale3Name" class="scale-tags">
                   <span v-if="info.rhScale3Annotation.outOfKey.length" class="scale-tag"
-                    :class="{ struck: keyModeActive }"
-                    :title="'Notes outside the key: ' + info.rhScale3Annotation.outOfKey.join(', ')">out of key</span>
+                    :class="{ struck: keyModeActive, 'scale-tag-colour': info.rhScale3Annotation.colour }"
+                    :title="'Notes outside the key: ' + info.rhScale3Annotation.outOfKey.join(', ')">out of key: {{ info.rhScale3Annotation.outOfKey.join(' ') }}</span>
                   <span v-if="info.rhScale3Annotation.colour" class="scale-tag scale-tag-colour"
                     :title="'A ' + info.rhScale3Annotation.colour + ' colour scale'">{{ info.rhScale3Annotation.colour }}</span>
                 </div>
@@ -483,6 +499,7 @@ function generalTableClick(event) {
               <td width="25%"
                 data-scale-filter="notesOfChord"
                 data-scale-filter-note="G#"
+                :title="scaleNotesTitle(info.rhScaleNotesOfChordData)"
                 :class="{ 'td-highlight': info.lhChordIsCurrent && info.rhScaleNotesOfChordsCurrent }">
                 <code
                   :class="{ 'boldy': (!lockedOrFrozen() && info.lhChordIsCurrent && info.rhScaleNotesOfChordsCurrent) || info.rhScaleNotesOfChordIsLocked }">
