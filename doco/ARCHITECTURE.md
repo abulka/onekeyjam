@@ -26,9 +26,10 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
   `src/components/PageMenubar.vue` is the shared second-level menu bar (File
   menu, guided tour, project library and keyboard shortcuts); it is used by the
   Edit, Perform and Settings views, with the Edit and Perform views supplying
-  their own Actions items through a slot. The Start Tour button and project name
-  are right-aligned, and the tour only uses the steps whose targets exist on the
-  current page.
+  their own Actions items through a slot. The Start Tour button is right-aligned
+  in this bar, and the tour only uses the steps whose targets exist on the
+  current page. The current project name is shown, right-aligned and in larger
+  text, on the top navigation bar in `App.vue`, next to the page tabs.
 - `src/views/` holds the routed pages. `src/components/` holds the UI widgets
   such as the piano keyboards, chord pickers, scale pickers and status panels.
   The Help view (`AboutView.vue`) has a small help-pages menu: an overview and
@@ -216,11 +217,13 @@ and the validation commands.
   key codes (`keycodes1`/`keycodes2`) and handles the keys itself using the
   table in `src/lib/midi/piano-key-map.js`. This keeps the shortcuts under our
   control (for example Ctrl+digit does not also sound a note) and lets the
-  keyboard shortcut list in `KeyboardNoteMeaningsLegend.vue` be generated from
+  keyboard shortcut list in `KeyboardShortcutsHelp.vue` be generated from
   the same table. Both mouse/touch and computer keys flow through the same
   `handleNote()` and then `onNoteOn()`/`onNoteOff()` in
-  `src/lib/midi/wire-events.js`. The keyboard only responds while its canvas has
-  focus, so the user must click it first.
+  `src/lib/midi/wire-events.js`. The note listeners are attached to the window,
+  so the computer keyboard plays whenever the app window is focused and only
+  pauses while typing in a form field. The shortcuts help dialog is opened from
+  the button above the on-screen keyboard, next to the Key labels control.
 - The separate `src/components/PianoKeyboard.vue` component (reachable only from
   the research view) is an older experiment. It highlights keys when computer
   keys are pressed but does not emit events, so it does not produce sound.

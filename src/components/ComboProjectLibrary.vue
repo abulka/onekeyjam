@@ -19,17 +19,6 @@ const options = computed({
     },
 })
 
-const currentProjectDisplay = computed({
-    get: () => {
-        const name = globals.projectLibrary.projectName
-        if (!name) {
-            return 'Untitled'
-        } else {
-            return name
-        }
-    },
-})
-
 const dialogBoxTitle = computed({
     get: () => {
         if (props.userOrFeatured == 'user')
@@ -62,10 +51,6 @@ function clickOnList(event, name) {
 </script>
 
 <template>
-
-    <span v-if="props.userOrFeatured == 'user'">
-        <a href="#" @click="fileOpen()" class="ml-2">Project:</a> <code class="ml-2">{{ currentProjectDisplay }}</code>
-    </span>
 
     <div class="ui small modal" ref="modalDialogBoxDiv">
         <div class="header">Open a {{ dialogBoxTitle }} Project</div>

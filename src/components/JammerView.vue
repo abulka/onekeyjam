@@ -9,7 +9,6 @@ import KeySignature from './KeySignature.vue'
 import MidiParser from './MidiParser.vue'
 import GrandStatus from './GrandStatus.vue';
 import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
-import KeyboardNoteMeaningsLegend from './KeyboardNoteMeaningsLegend.vue'
 import LivePianoKeyboard from './LivePianoKeyboard.vue'
 
 let stopAccordion = () => {}
@@ -50,9 +49,6 @@ onUnmounted(() => {
     <ScaleFilteringToggles />
   </div>
   <LivePianoKeyboard />
-  <div class="ui container mb-4">
-    <KeyboardNoteMeaningsLegend />
-  </div>
   <div class="ui container">
     <GrandSummary />
   </div>

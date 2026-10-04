@@ -7,7 +7,6 @@ import PageMenubar from './PageMenubar.vue'
 import GrandSummary from './GrandSummary.vue'
 import GrandStatus from './GrandStatus.vue';
 import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
-import KeyboardNoteMeaningsLegend from './KeyboardNoteMeaningsLegend.vue'
 import ActiveScale from './ActiveScale.vue'
 import ActiveChord from './ActiveChord.vue'
 import LivePianoKeyboard from './LivePianoKeyboard.vue'
@@ -76,9 +75,6 @@ onUnmounted(() => {
     <ScaleFilteringToggles />
   </div>
   <LivePianoKeyboard />
-  <div class="ui container mb-4">
-    <KeyboardNoteMeaningsLegend />
-  </div>
 
   <br>
 

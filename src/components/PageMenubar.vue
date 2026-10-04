@@ -92,6 +92,23 @@ function fileOpenUser() {
   fileOpenComponentUser.value.fileOpen()
 }
 
+/**
+ * Load a random project from the classic collection. Excludes the current
+ * project when there is more than one choice, so the dice always moves you.
+ */
+function loadRandomClassicProject() {
+  const all = globals.projectLibrary.classicProjectNames
+  if (!all || all.length === 0) {
+    if (typeof $ === 'function')
+      $('body').toast({ message: 'Classic projects are still loading', displayTime: 1500, class: 'brown' })
+    return
+  }
+  const current = globals.projectLibrary.projectName
+  const candidates = all.length > 1 ? all.filter(name => name !== current) : all
+  const name = candidates[Math.floor(Math.random() * candidates.length)]
+  loadClassicProject(name)
+}
+
 function keyDownListener(e) {
   if (e.code === 'KeyN' && e.altKey && !e.metaKey && !e.repeat) {
     newProject()
@@ -179,15 +196,13 @@ onUnmounted(() => {
       </div>
 
       <div class="right menu">
+        <a class="item" title="Load a random project from the classic collection"
+          @click="loadRandomClassicProject()">🎲 Random project</a>
         <a class="item" title="Load a demo project and get started" @click="loadDemoProject()">DEMO</a>
         <a class="item" @click="tutorial()">Start Tour 🧭</a>
         <ComboProjectLibrary ref="fileOpenComponent" userOrFeatured="featured" />
-        <div class="item">
-          <ComboProjectLibrary ref="fileOpenComponentClassic" userOrFeatured="classic" />
-        </div>
-        <div class="item">
-          <ComboProjectLibrary ref="fileOpenComponentUser" userOrFeatured="user" />
-        </div>
+        <ComboProjectLibrary ref="fileOpenComponentClassic" userOrFeatured="classic" />
+        <ComboProjectLibrary ref="fileOpenComponentUser" userOrFeatured="user" />
       </div>
 
     </div>

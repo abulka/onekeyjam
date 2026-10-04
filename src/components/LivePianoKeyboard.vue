@@ -10,6 +10,7 @@ import { isTypingTarget } from "@/lib/is-typing-target.js"
 import { consumePendingKeyboardFocus } from "@/lib/demo-project.js"
 import KeyboardHelpOverlay from "./KeyboardHelpOverlay.vue"
 import PlaybackKeysOverlay from "./PlaybackKeysOverlay.vue"
+import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.vue"
 
 // window.matchMedia('(min-width: 700px)')
 const isLargeScreen = computed({
@@ -22,6 +23,8 @@ const isLhCsharp = (keyboardIndex) => indexToNote(keyboardIndex, globals.keyboar
 
 const pianoKeyboard = ref(null)
 const keyboardFocused = ref(false)
+// Whether the keyboard shortcuts help dialog is open.
+const showShortcutsHelp = ref(false)
 // True while the computer keyboard can no longer play notes: the user is
 // typing in a form field, or the app window does not have focus.
 const noteInputSuspended = ref(false)
@@ -309,6 +312,8 @@ onUnmounted(() => {
           <input type="checkbox" v-model="globals.showKeyShortcuts">
           Show computer keyboard shortcuts
         </label>
+        <button type="button" class="shortcuts-help-button" title="Show the keyboard shortcuts quick reference"
+          @click="showShortcutsHelp = true">Shortcuts help</button>
       </div>
     </div>
     <div class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }">
@@ -318,6 +323,7 @@ onUnmounted(() => {
       <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off' || globals.showKeyShortcuts" :keyboard-el="pianoKeyboard"
         :keys="isLargeScreen ? 49 : 25" />
     </div>
+    <KeyboardShortcutsHelp v-model="showShortcutsHelp" />
   </div>
 </template>
 
@@ -398,5 +404,21 @@ onUnmounted(() => {
 
 .shortcuts-checkbox input {
   margin: 0;
+}
+
+.shortcuts-help-button {
+  padding: 0.1rem 0.5rem;
+  border: 1px solid #2f4fa8;
+  border-radius: 999px;
+  background: #4a6fd4;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.shortcuts-help-button:hover {
+  background: #3a5cc0;
 }
 </style>

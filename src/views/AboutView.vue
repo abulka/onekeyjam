@@ -113,10 +113,11 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
       <h3 class="ui header">And there is more</h3>
       <ul class="ui list">
         <li><strong>DEMO</strong> - load the C Major II-V-I demo project, focus the keyboard and show a short getting-started guide with a <strong>Jam!</strong> button.</li>
+        <li><strong>Random project</strong> - load a random project from the Classic collection, for when you cannot decide what to play.</li>
         <li><strong>Start Tour</strong> - a guided tour of the controls on the current view.</li>
         <li>The chord and scale pickers, with search and audition buttons.</li>
         <li>The <strong>Circle of Fifths</strong> helper.</li>
-        <li>The <strong>keyboard note meanings</strong> legend, which explains what every key does.</li>
+        <li>The <strong>Shortcuts help</strong> button above the keyboard, with a quick reference for every key.</li>
         <li>The <strong>scale filtering toggles</strong> for switching filtering on and off.</li>
       </ul>
 
@@ -126,7 +127,7 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         The <RouterLink to="/perform">Perform view</RouterLink> is where you play
         and record; playing and recording share one page. It shows the active
         chord and the active scale as you go, together with a live piano keyboard,
-        the scale-filtering toggles and the note-meanings legend. The
+        the scale-filtering toggles and the scale policy Options panel. The
         <strong>File</strong> menu is the same as on the Edit view, while the
         <strong>Actions</strong> menu offers <strong>Play Chord
         Sequencer</strong>, <strong>Record</strong> and <strong>Export
@@ -188,12 +189,13 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
           finds the chords inside it, then assigns them across the keyboard.
         </li>
         <li>
-          <strong>Play from your computer keyboard</strong> - click the on-screen
-          keyboard, then play chords with the lower row (<code>z x c v b n m</code>)
-          and solo notes with the upper row (<code>q w e r t y u</code>). The black
-          keys are <code>s d g h j</code> on the left and <code>2 3 5 6 7</code> on
-          the right. Open <strong>Shortcuts help</strong> next to the keyboard note
-          meanings for the full list, including function keys and Ctrl shortcuts.
+          <strong>Play from your computer keyboard</strong> - make sure the app
+          window is focused, then play chords with the lower row
+          (<code>z x c v b n m</code>) and solo notes with the upper row
+          (<code>q w e r t y u</code>). The black keys are <code>s d g h j</code>
+          on the left and <code>2 3 5 6 7</code> on the right. Open
+          <strong>Shortcuts help</strong> above the keyboard, next to Key labels,
+          for the full quick reference, including function keys and Ctrl shortcuts.
         </li>
       </ul>
 

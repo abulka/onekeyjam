@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import mainOneKeyJam from '../src/lib/main.js';
 import { globals } from './lib/globals.js';
@@ -10,6 +10,9 @@ import DemoIntroDialog from './components/DemoIntroDialog.vue';
 const showResearch = import.meta.env.DEV
 
 const router = useRouter()
+
+// The current project name, shown prominently at the right of the page tabs.
+const projectName = computed(() => globals.projectLibrary.projectName || 'Untitled')
 
 onMounted(() => {
   console.log('App onMounted')
@@ -58,7 +61,10 @@ onMounted(() => {
         <!-- <div class="item"> <a href="#" @click="fileImportMidiDialog.open()">dialog</a> </div> -->
 
         <div class="right menu">
-
+          <div class="item app-project-name" :title="projectName">
+            <span class="app-project-label">Project:</span>
+            <strong class="app-project-value">{{ projectName }}</strong>
+          </div>
         </div>
       </div>
     </div>
@@ -76,6 +82,35 @@ onMounted(() => {
 
 </template>
 
-<style>
+<style scoped>
+/* Current project name, at the right of the page tabs. */
+.app-project-name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  max-width: 46vw;
+  overflow: hidden;
+  white-space: nowrap;
+  /* Selectable so the name can be copied. */
+  -webkit-user-select: text !important;
+  user-select: text !important;
+  cursor: text;
+}
 
+.app-project-label {
+  font-size: 0.95rem;
+  font-weight: normal;
+  color: #7a6547;
+}
+
+.app-project-value {
+  min-width: 0;
+  font-size: 1.3rem;
+  color: #5a3d1a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  -webkit-user-select: text !important;
+  user-select: text !important;
+}
 </style>
