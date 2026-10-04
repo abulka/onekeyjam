@@ -5,6 +5,7 @@ import { registerAccordion } from "@/lib/accordionState.js"
 import GrandSummary from './GrandSummary.vue'
 import ChordPicker from './ChordPicker.vue'
 import ScalePicker from './ScalePicker.vue'
+import KeySignature from './KeySignature.vue'
 import MidiParser from './MidiParser.vue'
 import GrandStatus from './GrandStatus.vue';
 import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
@@ -78,6 +79,15 @@ onUnmounted(() => {
       </div>
       <div id="chordPicker" class="content ">
         <ScalePicker />
+      </div>
+
+
+      <div class="title">
+        <i class="dropdown icon"></i>
+        Key Detection
+      </div>
+      <div class="content">
+        <KeySignature />
       </div>
 
 

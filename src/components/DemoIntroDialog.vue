@@ -9,7 +9,7 @@ import { requestKeyboardFocus } from '@/lib/demo-project.js'
 // visible (and interactive) while the user reads the instructions.
 
 const show = ref(false)
-const intro = ref({ triggerNotes: 'C D E F', chordKeys: 'Z X C V', soloKeys: 'Q W E R T Y U' })
+const intro = ref({ triggerNotes: 'C D E F', chordKeys: 'Z X C V', soloKeys: 'Q W E R T Y U', legend: [] })
 
 const route = useRoute()
 const router = useRouter()
@@ -81,6 +81,14 @@ onUnmounted(() => {
           </li>
           <li>
             Using the computer keyboard? Click the on-screen keyboard first to focus it.
+          </li>
+        </ul>
+
+        <ul v-if="intro.legend && intro.legend.length" class="demo-intro-legend">
+          <li v-for="trigger in intro.legend" :key="trigger.note">
+            <strong>{{ trigger.key || trigger.note }}</strong>
+            <span v-if="trigger.chord"> · {{ trigger.chord }}</span>
+            <em v-if="trigger.scale"> · {{ trigger.scale }}</em>
           </li>
         </ul>
 
@@ -162,6 +170,23 @@ onUnmounted(() => {
   margin-bottom: 0.45rem;
   line-height: 1.35;
   font-size: 0.92rem;
+}
+
+.demo-intro-legend {
+  margin: 0 0 0.9rem;
+  padding: 0.4rem 0.6rem;
+  list-style: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.45);
+  font-size: 0.88rem;
+}
+
+.demo-intro-legend li {
+  margin-bottom: 0.2rem;
+}
+
+.demo-intro-legend em {
+  color: #5b4326;
 }
 
 .demo-intro-dont-show {

@@ -31,6 +31,13 @@ candidate scales from Tonal's scale dictionary rooted on the chord and ranks
 them with interval theory. Any chord works, including unusual or imported
 ones; the engine degrades to the best partial matches instead of failing.
 
+On top of that, the engine now accepts an optional **project key**. The key
+does not replace the chord scale; it is a bias. Key context fixes the cases
+where the same chord has different idiomatic scales depending on its function
+(a iiø versus a viiø, a major-key V7 versus a minor-key V7, a tritone
+substitute) and keeps the runner-up suggestions close to the key. Without a
+key the original chord-by-chord behaviour is unchanged.
+
 ## Chord resolution
 
 The first job is to know the chord's root, pitch-class set and intervals
@@ -60,6 +67,46 @@ relative to the root.
   notes can act as the root.
 - If nothing resolves, the engine builds a generic chord from the note set so
   that something sensible is always returned.
+
+## The project key
+
+A project can declare its key in `options.key`:
+`{ tonic, type, source }`. The model lives in `src/lib/projectKey.js`. The
+`type` is a Tonal scale type, so it can be
+`major`, `minor`, or a mode such as `dorian`; a modal tune is described
+accurately rather than forced into major or minor. For example the classic
+"So What" project is in `D dorian`, so its B natural is in the key.
+
+When no key is declared the app detects one from the project's chords with the
+same major/minor algorithm as the Key Detection section
+(`keyFromChords.js`), and treats it as the default (`source: "detected"`).
+The user can override it in the Key Detection section; the explicit value is
+saved with the project. Detection is a hint, not a fact: relative major/minor
+and blues progressions are ambiguous, and some tunes modulate, so a single
+project key should stay a bias. Projects that change key mid-tune still get
+correct chord-level scales for their out-of-key chords, because chord tones
+are always licensed (see below).
+
+Setting the key in the UI re-ranks every chord scale automatically (see
+`src/lib/projectScaleSettings.js`), so the stored `scale1/2/3` always match
+the declared key. The same happens when the colour preference changes.
+
+### Colour preference
+
+The key is a bias, and `options.colour` decides how hard it pushes:
+
+- **diatonic** stays strictly in key. Dorian flattens to aeolian on m7 chords,
+  locrian #2 flattens to locrian on half-diminished chords, and the in-key
+  bonus is strong.
+- **jazz** (the default) restores the idiomatic primaries while the key still
+  shapes the alternative scales: dorian on m7, locrian #2 on half-diminished,
+  lydian on IV/bVI/bIII and the Neapolitan bIImaj7, and mixolydian on the
+  natural-minor bVII triad.
+- **adventurous** prefers lydian on maj7 chords and lydian dominant on
+  dominants, on top of the jazz choices.
+
+Function rules (minor-key V7, tritone substitutes, backdoor dominants) apply
+in every profile: they are about function, not taste.
 
 ## Candidate scales
 
@@ -199,6 +246,56 @@ Small bonuses settle near-ties in favour of idiomatic defaults:
 - diminished on dim7 (+3)
 - whole tone, augmented and lydian augmented on augmented chords (+5 each)
 
+### 5. Key context
+
+With a key supplied, each candidate receives two adjustments whose size comes
+from the colour profile:
+
+| Adjustment | diatonic | jazz | adventurous |
+|---|---|---|---|
+| candidate is a mode of the key | +5 | +2 | 0 |
+| candidate is an in-key subset (pentatonic) | +2 | +1 | 0 |
+| note outside the key, not a chord tone and not licensed | -3 | -1 | 0 |
+
+The in-key bonus settles ties in favour of the diatonic scale. The out-of-key
+penalty keeps the alternatives coherent with the key, while secondary
+dominants, tritone substitutes and borrowed chords keep their accidentals: a
+note the chord actually sounds is always licensed. In the jazz and
+adventurous profiles the adjustments are small enough that the idiomatic
+primaries (dorian, locrian #2, lydian dominant) win outright. On top of this,
+the jazz profile adds +2 to dorian on m7 and locrian #2 on half-diminished,
+and the adventurous profile adds +3 to those plus +4 to lydian on major
+chords and +6 to lydian dominant on dominants.
+
+### 6. Function preferences
+
+The same chord needs different scales depending on its function in the key.
+The engine looks at the chord root's scale degree and its quality and adds a
+bonus to the appropriate scale type:
+
+- **Half-diminished chords**: in the jazz and adventurous profiles, locrian #2
+  (from melodic minor) +6 with locrian +2 everywhere, which is the colour choice.
+  In the diatonic profile the distinction is functional: **iiø in a minor key**
+  gets locrian #2 +8 with locrian +2, and **viiø in a major key** gets locrian
+  +8. Both are licence-checked together.
+- **V7 in a minor key**: phrygian dominant +12 (harmonic minor), altered +10,
+  half-whole diminished +8, mixolydian b6 +6, lydian dominant +4. When the
+  chord itself has a #9 or #5, altered is promoted to +16 and phrygian
+  dominant drops to +8. These types license their chromatic notes; lydian
+  dominant is not licensed, because a bright #11 is out of place over a
+  minor-key dominant.
+- **bII7** (tritone substitute) and **bVII7** (backdoor dominant): lydian
+  dominant +6 and +4.
+- **bIImaj7** in a minor key (the Neapolitan chord): lydian +6.
+- **bVII major** in a minor key (the natural-minor VII): mixolydian +3, whose
+  notes are the natural minor set.
+- **iii7 in a major key**: aeolian and dorian +3 each, so the sparse in-key
+  pentatonic does not outrank the full minor scale by avoiding the mode's
+  avoid note.
+
+The bonus is deliberately modest; chord-tone coverage still dominates, and
+function preferences only decide between scales that already fit the chord.
+
 ## Selection
 
 Candidates are sorted by score, duplicate pitch sets are removed, and the top
@@ -220,8 +317,53 @@ colour scale. Typical outcomes:
 | Caug | C lydian augmented | C augmented | C whole tone |
 | C13sus4 | C mixolydian | C dorian | C bebop |
 
+With a key and the default jazz colour, function and idiomatic colour both
+show:
+
+| Chord and key | Primary | Second | Third |
+|---|---|---|---|
+| Bm7b5 in C major | B locrian #2 | B locrian | B minor blues |
+| Dm7b5 in C minor | D locrian #2 | D locrian | D minor blues |
+| G7 in C minor | G phrygian dominant | G lydian dominant | G mixolydian |
+| G7alt in C minor | G altered | G phrygian dominant | G half-whole diminished |
+| Db7 in C major | Db lydian dominant | Db mixolydian | Db mixolydian b6 |
+| Fmaj7 in C major | F lydian | F major | F harmonic major |
+| Am7 in C major | A dorian | A aeolian | A minor pentatonic |
+| Cm7 in C minor | C dorian | C aeolian | C minor pentatonic |
+
+The diatonic colour flattens the m7 and half-diminished rows (`Am7` becomes
+A aeolian, `Bm7b5` becomes B locrian); the adventurous colour turns `Cmaj7`
+into C lydian and `G7` in C major into G lydian dominant.
+
 The engine never returns empty for a resolvable chord. If no scale contains
 every chord tone, the penalties simply produce the best partial matches.
+
+## Solo in key mode
+
+A project's `options.soloMode` is `"chord"` (the default) or `"key"`. In chord
+mode the right hand follows `scale1`/`scale2`/`scale3` as the chord changes.
+In key mode the right hand stays on the project key scale for the whole tune,
+which is how many improvisers think: play in the key, follow the changes with
+chord tones. Chord triggers still sound their chords and still change the
+underlying chord config; they just do not swap the scale. The `1`-`3` scale
+shortcuts remain a deliberate temporary switch and the `4` shortcut still
+gives the notes of the current chord, until the next chord trigger returns to
+the key. The toggle lives directly above the chord/scale grid on the Edit and
+Perform views, next to the colour selector, and the project key lives in its
+own Key Detection section on the Edit view. These are set-up decisions rather
+than things to change mid-performance.
+
+The grid also labels each stored scale: a tiny **out of key** tag when the
+scale uses notes outside the project key, and a **jazz** or **adventurous** tag
+when the scale is a colour choice of the active colour profile. With the
+diatonic colour, and on music that stays in key, most scales are unlabelled.
+
+Solo in key needs no scale regeneration: it filters to the key scale directly.
+The thing regeneration changes is the stored per-chord `scale1/2/3`, not this
+mode. Also note that in a diatonic major tune the key scale is the same as the
+per-chord scales, so Solo in key sounds identical; it differs over chromatic
+chords (an altered dominant or a tritone substitute), where it stays safe in
+the key.
 
 ## Checking stored scales
 
@@ -235,6 +377,10 @@ chord and reports:
   Dm7b5 or G7alt is a genuine mismatch.
 - **hard semitone clashes**: the strong avoid-note relationships from the
   scoring rules above.
+- **out-of-key colour notes** (only when a key is passed): scale notes outside
+  the declared key that are not chord tones or licensed function notes. These
+  are reported in `outOfKey` but do not make the scale fail, because chromatic
+  colour is often deliberate.
 
 The report deliberately ignores soft avoid notes such as the natural 11 over a
 major triad, so `C major` over a C chord is not flagged. It also skips
@@ -248,10 +394,45 @@ npm run regenerate:scales          # dry run the engine's replacements
 npm run regenerate:scales -- --write
 ```
 
-The regeneration script only touches the scale slots that fail the check, and
-edits the JSON values in place so formatting is preserved. It skips projects
+`validate:scales` now passes each project's declared key and colour into the
+checker, so it also prints deliberate out-of-key colour notes as information.
+The regeneration script re-ranks all three scale slots for projects that
+declare a key, and otherwise only touches the slots that fail the check. It
+edits the JSON values in place so formatting is preserved, and skips projects
 whose scales are deliberately shared across chords or used as teaching
 examples; those are listed in `bin/regenerate-project-scales.mjs`.
+
+The generated classic library carries an explicit key and the jazz colour per
+progression (`bin/classic-project-definitions.mjs`) and is regenerated
+key-aware by `npm run generate:classic`. The featured projects that have a
+clear key carry one too; the rest fall back to detection at load.
+
+## Hearing the difference
+
+For a full performance walkthrough, with the scales and notes to play over each
+chord, see `doco/IMPROVISING-TUTORIAL.md` (also readable in the app's Help
+view).
+
+The key work is subtle in a diatonic major tune and clear in the places where
+function and colour matter. Good static projects to smoke test:
+
+| Project | Chord | What changed |
+|---|---|---|
+| C Major II-V-I (featured) | Db7 (4th trigger) | lydian dominant, adds G natural |
+| Minor ii-V-i with tritone sub in C minor | Db7 | lydian dominant instead of mixolydian |
+| Blue Bossa in C minor | G7 | phrygian dominant instead of mixolydian |
+| Blue Bossa in C minor | Dbmaj7 | lydian, adds G natural |
+| Autumn Leaves in G minor | D7 / Ebmaj7 | phrygian dominant / lydian |
+| Andalusian cadence in A minor | E7 | phrygian dominant |
+| Summertime in A minor | E7 | phrygian dominant |
+| Stella by Starlight in Bb | Ab7 | lydian dominant, adds D natural |
+| Key awareness demo (featured) | all | walks through all of the above |
+
+The featured **Key awareness demo** project is built for this: it visits the
+home chord, a colour vi chord, the diatonic ii and V, a tritone substitute, a
+backdoor dominant and a borrowed bVI, and its chord names say what to listen
+for. The demo welcome also lists each trigger key with its chord and current
+scale.
 
 ## Worked examples
 
@@ -277,19 +458,22 @@ disagreed, and the suggested scales followed the label:
   root. It is now voiced Eb-G-B-D, a rootless Cm(maj9), which is smooth.
 
 The engine now treats the sounding voicing as authoritative when it disagrees
-with a symbol. The resulting scales are:
+with a symbol. The project declares C minor, so the key-aware engine picks the
+minor-function scales:
 
-- Dm7b5: D locrian #2 (= F melodic minor), D locrian, F melodic minor.
-- G7alt: G altered (= Ab melodic minor), G phrygian dominant, G whole tone.
-- Cm(maj9): C melodic minor, C harmonic minor, C minor bebop.
+- Dm7b5 (iiø): D locrian #2 (= F melodic minor), D locrian, D minor blues.
+- G7alt (V7): G altered (= Ab melodic minor), G phrygian dominant, G half-whole diminished.
+- Cm(maj9) (i): C melodic minor, C harmonic minor, C minor bebop.
 
 ### Tritone substitution
 
 `C Major II-V-I.json` used G mixolydian over the Db7 tritone substitute of the
 G7 chord, and F minor over the G7 itself. G mixolydian contains no Db and
 clashes with the Db7's Cb; F minor has Bb against G7's B natural. The engine
-replaces these with D mixolydian / Db lydian dominant and G lydian dominant
-respectively.
+replaces these with G mixolydian over the G7 and, because the project declares
+C major and Db7 is its bII7, Db lydian dominant over the substitute (the G
+natural is the note that makes a tritone substitute work), with Db mixolydian
+and Db mixolydian b6 as the alternatives.
 
 ### Why the same set can have two names
 
@@ -314,10 +498,21 @@ over G7alt").
 
 ## Known limitations
 
-- Context is per chord. The engine does not yet know that a chord is a iiø in
-  C minor or a tritone substitute, so it cannot prefer locrian #2 over locrian
-  for a iiø, or alter the V7 choice in a minor key. The existing key detection
-  (`keyFromChords.js`, `keyDetection.js`) could feed this in later.
+- The project has one key. Tunes that modulate (many standards do) get the
+  key's bias for every chord, though out-of-key chords still receive scales
+  that fit them, because chord tones and function preferences are licensed.
+  Per-section keys would be the next step.
+- Key detection is major/minor only and is genuinely ambiguous for some
+  progressions (relative major/minor, blues, modal vamps). That is why the
+  detected key is a default the user can override, and why the static
+  libraries declare their keys explicitly. Modal keys (such as D dorian) can
+  only be set by hand.
+- The function preferences are a small, hand-weighted set of the common jazz
+  functions, not a full functional-harmony analysis. They are deliberately
+  modest so that chord-tone coverage always dominates.
+- The colour profiles are a global taste setting, not per chord. A project
+  that wants strict diatonicism in one place and lydian colour in another
+  cannot express both at once.
 - Scale suggestions are always rooted on the chord. Traditional parent-scale
   names are not generated automatically; they survive only if a project stored
   them.

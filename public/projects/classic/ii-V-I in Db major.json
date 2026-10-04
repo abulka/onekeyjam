@@ -29,7 +29,14 @@
       "scale3": "Db harmonic major"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "Db",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

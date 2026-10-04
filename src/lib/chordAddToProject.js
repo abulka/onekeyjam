@@ -3,6 +3,7 @@ import { appendChordTriggerMap } from './triggerMaps';
 import { fillInChordConfig, fillInChordConfig2 } from './fillInChordConfig';
 import { removeBassSlash } from './removeBassSlash.js';
 import { keyDetection } from './keyDetection';
+import { resolveProjectKey } from './projectKey.js';
 
 export function chordAddToProject(currentRoot, currentChord, currentChordInversion, bass) {
     const o = new ChordAddToProjectFromCombo(currentRoot, currentChord, currentChordInversion, bass)
@@ -41,6 +42,7 @@ class ChordAddToProjectBase {
         globals.maxChordConfigs++
 
         appendChordTriggerMap(globals.chordTriggerMap, this.chordConfig)
+        globals.projectKey = resolveProjectKey(globals.project) ?? globals.projectKey ?? null
         keyDetection()
     }
     doFillInChordConfig() {

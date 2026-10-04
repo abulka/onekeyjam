@@ -71,8 +71,18 @@ describe('uiPrefs', () => {
         globals.keyboardHelpMode = 'white'
         globals.showKeyShortcuts = true
         globals.showWelcomeDialog = false
-        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true, showWelcomeDialog: false })
+        globals.helpPage = 'tutorial'
+        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true, showWelcomeDialog: false, helpPage: 'tutorial' })
         globals.showWelcomeDialog = true
+        globals.helpPage = 'overview'
+    })
+
+    it('reads, validates and loads the Help page', () => {
+        assert.equal(readPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ helpPage: 'tutorial' }) })).helpPage, 'tutorial')
+        assert.equal(readPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ helpPage: 'nonsense' }) })).helpPage, undefined)
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ helpPage: 'tutorial' }) }))
+        assert.equal(globals.helpPage, 'tutorial')
+        globals.helpPage = 'overview'
     })
 
     it('round-trips a valid keyboard help mode', () => {

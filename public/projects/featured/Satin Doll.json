@@ -5,21 +5,21 @@
       "name": "DM7 chord",
       "chord": "Dm7",
       "scale1": "D dorian",
-      "scale2": "C major",
-      "scale3": "C major pentatonic"
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
     },
     {
       "name": "G7 - dominant chord",
       "chord": "G7",
       "scale1": "G mixolydian",
       "scale2": "G lydian dominant",
-      "scale3": "C major pentatonic"
+      "scale3": "G mixolydian b6"
     },
     {
       "name": "EM7 chord",
       "chord": "EM7",
-      "scale1": "E lydian",
-      "scale2": "E major",
+      "scale1": "E major",
+      "scale2": "E lydian",
       "scale3": "E harmonic major"
     },
     {
@@ -27,22 +27,22 @@
       "chord": "A7",
       "scale1": "A mixolydian",
       "scale2": "A lydian dominant",
-      "scale3": "C major pentatonic"
+      "scale3": "A mixolydian b6"
     },
     {
       "name": "CM/Eb chord",
       "chord": "CM",
       "bass": "Eb",
-      "scale1": "C lydian",
-      "scale2": "C major",
-      "scale3": "C major pentatonic"
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C mixolydian"
     },
     {
       "name": "D7 - dominant chord",
       "chord": "D7",
       "scale1": "D mixolydian",
       "scale2": "D lydian dominant",
-      "scale3": "C major pentatonic"
+      "scale3": "D mixolydian b6"
     },
     {
       "name": "Abm7 chord",
@@ -54,30 +54,30 @@
     {
       "name": "Db7b9 ?? chord",
       "chord": "Db7b9",
-      "scale1": "Db phrygian dominant",
-      "scale2": "Db half-whole diminished",
-      "scale3": "Db mixolydian"
+      "scale1": "Db half-whole diminished",
+      "scale2": "Db phrygian dominant",
+      "scale3": "Db lydian dominant"
     },
     {
       "name": "C6 ?? chord",
       "chord": "C6",
-      "scale1": "C mixolydian",
-      "scale2": "C dominant",
+      "scale1": "C major",
+      "scale2": "C lydian",
       "scale3": "C major pentatonic"
     },
     {
       "name": "F chord",
       "chord": "FM",
       "scale1": "F lydian",
-      "scale2": "C major",
-      "scale3": "C major pentatonic"
+      "scale2": "F major",
+      "scale3": "F mixolydian"
     },
     {
       "name": "A7b9 chord",
       "chord": "A7b9",
       "scale1": "A phrygian dominant",
       "scale2": "A half-whole diminished",
-      "scale3": "C major pentatonic"
+      "scale3": "A mixolydian"
     }
   ],
   "meta": {
@@ -85,7 +85,13 @@
     "version": 2,
     "source": "https://onekeyjam.netlify.app"
   },
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    }
+  },
   "songs": {
     "default": {
       "ids": [],

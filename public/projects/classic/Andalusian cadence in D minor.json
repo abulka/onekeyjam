@@ -15,17 +15,17 @@
       "name": "C",
       "chord": "C",
       "bass": "C2",
-      "scale1": "C major",
-      "scale2": "C lydian",
-      "scale3": "C mixolydian"
+      "scale1": "C mixolydian",
+      "scale2": "C major",
+      "scale3": "C lydian"
     },
     {
       "id": 3,
       "name": "Bb",
       "chord": "Bb",
       "bass": "Bb2",
-      "scale1": "Bb major",
-      "scale2": "Bb lydian",
+      "scale1": "Bb lydian",
+      "scale2": "Bb major",
       "scale3": "Bb mixolydian"
     },
     {
@@ -33,12 +33,19 @@
       "name": "A7",
       "chord": "A7",
       "bass": "A2",
-      "scale1": "A mixolydian",
+      "scale1": "A phrygian dominant",
       "scale2": "A lydian dominant",
-      "scale3": "A mixolydian b6"
+      "scale3": "A mixolydian"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "D",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

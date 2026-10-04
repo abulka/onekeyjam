@@ -9,7 +9,8 @@ import { DEFINITIONS } from './classic-project-definitions.mjs'
 /*
  * Generates the classic project library in public/projects/classic. Each
  * progression becomes a project with standard voicings (via the chord symbol,
- * which the app expands on load) and engine-chosen scale1/2/3.
+ * which the app expands on load), an explicit project key and colour, and
+ * key-aware engine-chosen scale1/2/3.
  *
  * Run: node bin/generate-classic-projects.mjs
  */
@@ -23,6 +24,7 @@ const problems = []
 
 for (const definition of DEFINITIONS) {
     const chords = []
+    const colour = definition.colour ?? 'jazz'
     let ok = true
     for (let i = 0; i < definition.chords.length; i++) {
         const symbol = definition.chords[i]
@@ -32,7 +34,7 @@ for (const definition of DEFINITIONS) {
             ok = false
             continue
         }
-        const scaleNames = chordScaleNamesFor(symbol, 3)
+        const scaleNames = chordScaleNamesFor(symbol, 3, { ...definition.key, colour })
         chords.push({
             id: i + 1,
             name: symbol,
@@ -50,7 +52,7 @@ for (const definition of DEFINITIONS) {
     const project = {
         name: definition.name,
         chords,
-        options: {},
+        options: definition.key ? { key: definition.key, colour } : {},
         meta: {
             type: 'onekeyjam',
             version: 2,

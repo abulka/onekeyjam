@@ -33,9 +33,9 @@
       "name": "G7",
       "chord": "G7",
       "bass": "G2",
-      "scale1": "G mixolydian",
+      "scale1": "G phrygian dominant",
       "scale2": "G lydian dominant",
-      "scale3": "G mixolydian b6"
+      "scale3": "G mixolydian"
     },
     {
       "id": 5,
@@ -69,12 +69,19 @@
       "name": "Dbmaj7",
       "chord": "Dbmaj7",
       "bass": "Db2",
-      "scale1": "Db major",
-      "scale2": "Db lydian",
+      "scale1": "Db lydian",
+      "scale2": "Db major",
       "scale3": "Db harmonic major"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

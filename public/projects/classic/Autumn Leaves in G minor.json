@@ -33,8 +33,8 @@
       "name": "Ebmaj7",
       "chord": "Ebmaj7",
       "bass": "Eb2",
-      "scale1": "Eb major",
-      "scale2": "Eb lydian",
+      "scale1": "Eb lydian",
+      "scale2": "Eb major",
       "scale3": "Eb harmonic major"
     },
     {
@@ -51,9 +51,9 @@
       "name": "D7",
       "chord": "D7",
       "bass": "D2",
-      "scale1": "D mixolydian",
+      "scale1": "D phrygian dominant",
       "scale2": "D lydian dominant",
-      "scale3": "D mixolydian b6"
+      "scale3": "D mixolydian"
     },
     {
       "id": 7,
@@ -74,7 +74,14 @@
       "scale3": "G minor pentatonic"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "G",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

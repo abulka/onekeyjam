@@ -42,8 +42,8 @@
       "name": "Dbmaj7",
       "chord": "Dbmaj7",
       "bass": "Db2",
-      "scale1": "Db major",
-      "scale2": "Db lydian",
+      "scale1": "Db lydian",
+      "scale2": "Db major",
       "scale3": "Db harmonic major"
     },
     {
@@ -74,7 +74,14 @@
       "scale3": "C harmonic major"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "Ab",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

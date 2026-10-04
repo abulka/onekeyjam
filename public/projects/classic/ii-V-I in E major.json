@@ -29,7 +29,14 @@
       "scale3": "E harmonic major"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "E",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

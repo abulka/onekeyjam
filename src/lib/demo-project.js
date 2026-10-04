@@ -84,10 +84,25 @@ export function buildDemoIntro() {
     })
     .filter(Boolean)
 
+  // Per-trigger legend: which chord and current scale each trigger key plays,
+  // so the welcome can explain the project (and call out colour chords such as
+  // the C Major demo's Db7 tritone substitute).
+  const legend = triggers.map(note => {
+    const config = globals.chordTriggerMap[note] || {}
+    const midi = Note.midi(note)
+    return {
+      note,
+      key: typeof midi === 'number' ? labelForOffset(midi - baseMidi) : '',
+      chord: config.chord || config.name || '',
+      scale: config.scale1 || '',
+    }
+  })
+
   return {
     projectName: globals.projectLibrary.projectName || DEMO_PROJECT_NAME,
     triggerNotes: triggers.length ? triggers.join(' ') : 'C D E F',
     chordKeys: chordKeys.length ? chordKeys.join(' ') : 'Z X C V',
     soloKeys: 'Q W E R T Y U',
+    legend,
   }
 }

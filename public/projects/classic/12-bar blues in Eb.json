@@ -74,7 +74,14 @@
       "scale3": "Eb mixolydian b6"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "Eb",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

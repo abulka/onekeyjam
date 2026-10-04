@@ -1,6 +1,6 @@
 // @ts-check
 import { join } from 'node:path'
-import { findScaleProblems, findSymbolVoicingMismatches, listProjectFiles, loadJson } from './project-scale-utils.mjs'
+import { findScaleProblems, findOutOfKeyScales, findSymbolVoicingMismatches, listProjectFiles, loadJson } from './project-scale-utils.mjs'
 
 const strict = process.argv.includes('--strict')
 const requested = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
@@ -12,18 +12,28 @@ const targets = requested.length > 0
     : all
 
 let failures = 0
+let keyWarnings = 0
 for (const { dir, file } of targets) {
     const project = loadJson(join(dir, file))
     const problems = findScaleProblems(project)
     const mismatches = findSymbolVoicingMismatches(project)
-    if (problems.length === 0 && mismatches.length === 0)
+    const outOfKey = findOutOfKeyScales(project)
+    if (problems.length === 0 && mismatches.length === 0 && outOfKey.length === 0)
         continue
-    failures++
-    console.error(`${strict ? '✗' : '⚠'} ${file}`)
+    if (problems.length > 0 || mismatches.length > 0) {
+        failures++
+        console.error(`${strict ? '✗' : '⚠'} ${file}`)
+    }
+    else {
+        keyWarnings++
+        console.error(`ℹ ${file}`)
+    }
     for (const mismatch of mismatches)
         console.error(`    ${mismatch.chord.name ?? mismatch.chord.chord}: "${mismatch.symbol}" does not contain the voiced notes; the voicing is used instead`)
     for (const problem of problems)
         console.error(`    ${problem.chord.name ?? problem.chord.chord}: "${problem.scale}" - ${problem.reasons.join('; ')}`)
+    for (const warning of outOfKey)
+        console.error(`    ${warning.chord.name ?? warning.chord.chord}: "${warning.scale}" uses out-of-key colour ${warning.outOfKey.join(', ')}`)
 }
 
 if (failures > 0) {
@@ -33,5 +43,7 @@ if (failures > 0) {
         process.exit(1)
 }
 else {
-    console.log(`Checked ${targets.length} projects - all chord scales look consistent.`)
+    console.log(`Checked ${targets.length} projects - all chord scales contain their guide tones.`)
 }
+if (keyWarnings > 0)
+    console.log(`${keyWarnings} projects use deliberate out-of-key colour notes (reported above).`)

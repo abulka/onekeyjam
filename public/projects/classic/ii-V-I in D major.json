@@ -29,7 +29,14 @@
       "scale3": "D harmonic major"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "D",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

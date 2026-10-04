@@ -80,9 +80,27 @@
  */
 
 /**
+ * The declared musical key of a project. `type` is a Tonal scale type, usually
+ * 'major' or 'minor' but any mode ('dorian', ...) is allowed so modal tunes are
+ * described accurately. `source` records whether the user chose it or it was
+ * detected from the chords.
+ * @typedef {object} ProjectKey
+ * @property {string} tonic the key note, e.g. "C"
+ * @property {string} type the Tonal scale type, e.g. "major", "minor", "dorian"
+ * @property {'user'|'detected'} [source]
+ */
+
+/**
  * Per-project overrides. `keyboard` overrides the current keyboard config.
+ * `key` is the declared musical key. `soloMode` chooses whether the right hand
+ * follows the per-chord scales ('chord', the default) or stays on the key scale
+ * ('key'). `colour` chooses how much chromatic colour the key-aware engine
+ * prefers: 'diatonic', 'jazz' (the default) or 'adventurous'.
  * @typedef {object} ProjectOptions
  * @property {Partial<KeyboardConfig>} [keyboard]
+ * @property {ProjectKey} [key]
+ * @property {'chord'|'key'} [soloMode]
+ * @property {'diatonic'|'jazz'|'adventurous'} [colour]
  */
 
 /**

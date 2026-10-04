@@ -1,16 +1,35 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { globals } from '../../src/lib/globals.js'
+import { setSoloMode } from '../../src/lib/change-scale.js'
+import { applyProjectKeySettings } from '../../src/lib/projectScaleSettings.js'
+import { scaleAnnotation, PROJECT_COLOURS } from '../../src/lib/chordScaleEngine.js'
 import { Note } from '@/lib/midi/webmidi.js'
 import { getProjectChordsTriggers } from "../../src/lib/project-chord-triggers.js"
 import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events.js"
 import { start, dragover, dragend } from '../../src/lib/drag-drop-table-rows.js'
 import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '../../src/lib/massOperationsOnChordConfigs'
 import { keyDetection } from '../../src/lib/keyDetection';
+import { projectKeyName } from '../../src/lib/projectKey.js';
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
 
 let showFavourites = ref(true)  // deprecated
+
+const projectKey = computed(() => globals.getProjectKey())
+
+const soloInKey = computed({
+  get: () => globals.soloMode === 'key',
+  set: (value) => setSoloMode(value ? 'key' : 'chord'),
+})
+
+const colours = PROJECT_COLOURS
+
+// Changing the colour re-ranks every chord scale in the new profile.
+const currentColour = computed({
+  get: () => globals.getProjectColour(),
+  set: (value) => applyProjectKeySettings({ colour: value }),
+})
 
 function configGrandSummary() {
   // Return an intelligent easy summary of the project config, for vuejs to use to display in UI
@@ -134,6 +153,24 @@ function _generateSummaryInfo(note) {
   if (Array.isArray(info.rhScale3Name))
     info.rhScale3Name = info.rhScale3Name.join(',')
 
+  // Tiny labels under each scale: notes outside the project key, and whether
+  // the scale is a colour choice of the active jazz/adventurous profile.
+  const annotationInput = {
+    symbol: chordConfig.chord,
+    notes: chordConfig.chordNotes,
+    bass: chordConfig.bass ?? chordConfig.bassNote,
+    name: chordConfig.name,
+  }
+  const annotate = (scaleName) => {
+    const key = globals.getProjectKey()
+    if (!key || !scaleName || scaleName === 'notes of chord' || typeof scaleName !== 'string')
+      return { outOfKey: [], colour: null }
+    return scaleAnnotation(annotationInput, scaleName, key)
+  }
+  info.rhScaleAnnotation = annotate(info.rhScaleName)
+  info.rhScale2Annotation = annotate(info.rhScale2Name)
+  info.rhScale3Annotation = annotate(info.rhScale3Name)
+
   info.rhScaleIsCurrent = info.rhScaleName === globals.currentChordConfig()[globals.currentScaleFilter]
   info.rhScale2IsCurrent = info.rhScale2Name === globals.currentChordConfig()[globals.currentScaleFilter]
   info.rhScale3IsCurrent = info.rhScale3Name === globals.currentChordConfig()[globals.currentScaleFilter]
@@ -235,6 +272,23 @@ function generalTableClick(event) {
 <template>
   <!-- <ReallocatePanel /> -->
   <!-- <br> -->
+
+  <div v-if="globals.isProjectLoaded" class="scale-settings ui small">
+    <label class="checkboxLabel"
+      title="Solo in key: while the chords change, the right hand stays on the project key scale instead of switching to each chord's scale. You cannot play a wrong note, and the 1-3 scale shortcuts still switch temporarily. Set it before you start playing.">
+      <input type="checkbox" v-model="soloInKey" /> Solo in key
+    </label>
+    <span class="ml-4">
+      <span class="mr-1">Colour:</span>
+      <select v-model="currentColour"
+        title="Colour: how much chromatic colour the scale suggestions keep. diatonic stays strictly in key; jazz (default) keeps dorian and locrian #2 colour plus the functional dominants; adventurous prefers lydian and lydian-dominant colours.">
+        <option v-for="colour in colours" :key="colour" :value="colour">{{ colour }}</option>
+      </select>
+    </span>
+    <span v-if="projectKey" class="ml-3 ui small text grey">
+      Key: <code>{{ projectKeyName(projectKey) }}</code>
+    </span>
+  </div>
 
   <!-- grand summary table -->
   <table v-if="globals.isProjectLoaded" id="grand-summary" style="width:100%;" border="1" bordercolor="green">
@@ -340,6 +394,12 @@ function generalTableClick(event) {
                 :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale1' }">
                 <span><code v-if="info.rhScaleName" :class="{ 'boldy': !lockedOrFrozen() && info.rhScaleIsCurrent && info.lhChordIsCurrent }">
                             {{ info.rhScaleName }}</code><code v-else>none</code></span>&nbsp;&nbsp;
+                <div v-if="info.rhScaleName" class="scale-tags">
+                  <span v-if="info.rhScaleAnnotation.outOfKey.length" class="scale-tag"
+                    :title="'Notes outside the key: ' + info.rhScaleAnnotation.outOfKey.join(', ')">out of key</span>
+                  <span v-if="info.rhScaleAnnotation.colour" class="scale-tag scale-tag-colour"
+                    :title="'A ' + info.rhScaleAnnotation.colour + ' colour scale'">{{ info.rhScaleAnnotation.colour }}</span>
+                </div>
                 <!-- debugging: &nbsp;{{info.rhScaleIsCurrent}}&nbsp;{{globals.currentScaleFilter == 'scale1'}} -->
               </td>
               <td width="25%"
@@ -348,6 +408,12 @@ function generalTableClick(event) {
                 :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale2' }">
                 <span><code v-if="info.rhScale2Name" :class="{ 'boldy': !lockedOrFrozen() && info.rhScale2IsCurrent && info.lhChordIsCurrent }">
                             {{ info.rhScale2Name }}</code><code v-else>none</code></span>&nbsp;&nbsp; 
+                <div v-if="info.rhScale2Name" class="scale-tags">
+                  <span v-if="info.rhScale2Annotation.outOfKey.length" class="scale-tag"
+                    :title="'Notes outside the key: ' + info.rhScale2Annotation.outOfKey.join(', ')">out of key</span>
+                  <span v-if="info.rhScale2Annotation.colour" class="scale-tag scale-tag-colour"
+                    :title="'A ' + info.rhScale2Annotation.colour + ' colour scale'">{{ info.rhScale2Annotation.colour }}</span>
+                </div>
                 <!-- debugging: &nbsp;{{info.rhScale2IsCurrent}}&nbsp;{{globals.currentScaleFilter == 'scale2'}} -->
               </td>
               <td width="25%"
@@ -357,6 +423,12 @@ function generalTableClick(event) {
                 <code v-if="info.rhScale3Name" :class="{ 'boldy': !lockedOrFrozen() && info.rhScale3IsCurrent && info.lhChordIsCurrent }">
                             {{ info.rhScale3Name }}</code>
                 <code v-else>none</code>
+                <div v-if="info.rhScale3Name" class="scale-tags">
+                  <span v-if="info.rhScale3Annotation.outOfKey.length" class="scale-tag"
+                    :title="'Notes outside the key: ' + info.rhScale3Annotation.outOfKey.join(', ')">out of key</span>
+                  <span v-if="info.rhScale3Annotation.colour" class="scale-tag scale-tag-colour"
+                    :title="'A ' + info.rhScale3Annotation.colour + ' colour scale'">{{ info.rhScale3Annotation.colour }}</span>
+                </div>
                 <!-- debugging: &nbsp;{{info.rhScale3IsCurrent}}&nbsp;{{globals.currentScaleFilter == 'scale3'}} -->
               </td>
               <td width="25%"
@@ -429,6 +501,43 @@ table.scale-filters td {
 
 .demo-button:hover {
   background: #3a5cc0;
+}
+
+/* Solo in key / colour controls that sit directly above the scale grid. */
+.scale-settings {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.scale-settings .checkboxLabel {
+  cursor: pointer;
+}
+
+/* Tiny annotations under a scale in the grid. */
+.scale-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.15rem;
+}
+
+.scale-tag {
+  font-size: 0.62rem;
+  line-height: 1.3;
+  padding: 0 0.25rem;
+  border-radius: 3px;
+  background: #efe3cf;
+  color: #6b5a45;
+  border: 1px solid #d9c9b0;
+}
+
+.scale-tag-colour {
+  background: #dce4f7;
+  color: #2f4fa8;
+  border-color: #b9c9ee;
 }
 
 </style>

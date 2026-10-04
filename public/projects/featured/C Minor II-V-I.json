@@ -7,8 +7,8 @@
       "chord": "Dm7b5ChordNicerVoicing",
       "bass": "D3",
       "scale1": "D locrian #2",
-      "scale2": "F melodic minor",
-      "scale3": "D locrian"
+      "scale2": "D locrian",
+      "scale3": "D minor blues"
     },
     {
       "id": 2,
@@ -17,7 +17,7 @@
       "bass": "G3",
       "scale1": "G altered",
       "scale2": "G phrygian dominant",
-      "scale3": "G whole tone"
+      "scale3": "G half-whole diminished"
     },
     {
       "id": 3,
@@ -26,10 +26,16 @@
       "chord": "CmMaj9ChordNicerVoicing",
       "scale1": "C melodic minor",
       "scale2": "C harmonic minor",
-      "scale3": "C minor pentatonic"
+      "scale3": "C minor bebop"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "minor",
+      "source": "user"
+    }
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

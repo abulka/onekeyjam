@@ -14,17 +14,17 @@
         "E4"
       ],
       "bassNote": "F2",
-      "scale3": "F lydian pentatonic",
+      "scale3": "F harmonic major",
       "scale2": "F major"
     },
     {
       "symbols": "Dm6/F,Bm7b5/F",
-      "scale1": "D melodic minor",
+      "scale1": "D dorian",
       "id": 2,
       "chord": "Dm6",
       "bass": "F",
-      "scale3": "D minor six pentatonic",
-      "scale2": "D dorian",
+      "scale3": "D major blues",
+      "scale2": "D melodic minor",
       "name": "Dm6 (user jam)",
       "chordNotes": [
         "F3",
@@ -45,14 +45,14 @@
         "B3",
         "D4"
       ],
-      "scale2": "E minor pentatonic",
-      "scale3": "E minor blues",
+      "scale2": "E aeolian",
+      "scale3": "E minor pentatonic",
       "bass": "E",
       "bassNote": "E2",
       "name": "Em7 (user jam)"
     },
     {
-      "scale2": "C mixolydian",
+      "scale2": "C lydian",
       "scale3": "C major pentatonic",
       "chordNotes": [
         "E3",
@@ -70,8 +70,8 @@
     },
     {
       "chord": "Dm7",
-      "scale2": "D minor pentatonic",
-      "scale3": "D minor blues",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic",
       "name": "Dm7 (user jam)",
       "symbols": "Dm7,F6/D",
       "bass": "D",
@@ -99,7 +99,7 @@
         "B3"
       ],
       "chord": "G7",
-      "scale3": "G lydian dominant pentatonic",
+      "scale3": "G mixolydian b6",
       "scale2": "G lydian dominant"
     },
     {
@@ -107,10 +107,10 @@
       "id": 7,
       "name": "Cmaj7 (user jam)",
       "chord": "Cmaj7",
-      "scale2": "C major",
-      "scale3": "C lydian pentatonic",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major",
       "symbols": "Cmaj7",
-      "scale1": "C lydian",
+      "scale1": "C major",
       "bassNote": "C2",
       "chordNotes": [
         "C3",
@@ -154,6 +154,12 @@
       ]
     }
   },
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    }
+  },
   "name": "descending seven"
 }

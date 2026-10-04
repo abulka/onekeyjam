@@ -83,7 +83,7 @@ API
 /**
  * Changes scale filtering for r.h. notes. Should be called only via a chord trigger note change.
  * Assumes globals.currentChordTriggerNote is set to a chord trigger note e.g. "D2"
- * @param {('scale1'|'scale2'|'scale3'|'notesOfChord')} [scaleFilter] Name of the scale filter to change to. 
+ * @param {('scale1'|'scale2'|'scale3'|'notesOfChord'|'rhnotes')} [scaleFilter] Name of the scale filter to change to. 
  * If not supplied, reverts to `globals.currentScaleFilter` which means you can call
  * this function with no parameters and have the scale trigger map rebuild itself.
  * @returns Nothing
@@ -98,6 +98,7 @@ API
  * Calls `reportScaleChange` which does various broadcasts.
  */
 export function changeScaleFilter(scaleFilter) {
+    const requested = scaleFilter
     if (!scaleFilter)
         scaleFilter = globals.currentScaleFilter
 
@@ -105,6 +106,13 @@ export function changeScaleFilter(scaleFilter) {
     if (globals.scaleFiltering.frozen)
         return
     if (Object.keys(globals.chordTriggerMap).length == 0)
+        return
+
+    // Solo mode 'key': chord changes and generic refreshes use the project key
+    // scale. An explicit scale1/2/3/notesOfChord request is a deliberate
+    // temporary switch and takes the normal path below. If no key can be
+    // resolved, fall through to the per-chord behaviour.
+    if (globals.soloMode === 'key' && (!requested || requested === 'rhnotes') && applyKeyScale())
         return
     if (globals.currentChordTriggerNote == undefined) {
         // Pick the first chord and its scale notes - should remember and pick the last chord and its scale notes?
@@ -139,6 +147,8 @@ export function changeScaleFilter(scaleFilter) {
     if (scaleNotes == undefined)
         console.warn(`${scaleFilter}Notes not in chord config? globals.chordTriggerMap[${globals.currentChordTriggerNote}]`)
 
+    globals.scaleFiltering.keyModeActive = false;
+
     if (scaleName == 'notes of chord') {
         // Added 'notes of chord' to combo and allow it to be selected
         // This indirectly sets scale combo box? Ironic since often the combo box sends us here. Doesn't hurt.
@@ -163,6 +173,36 @@ export function changeScaleFilter(scaleFilter) {
 }
 
 /**
+ * Switch the right hand to the project key scale. Used by solo mode 'key' so
+ * the whole solo stays in the key as the chords change.
+ * @returns {boolean} false when the project has no resolvable key
+ */
+export function applyKeyScale() {
+    const key = globals.getProjectKey()
+    if (!key)
+        return false
+    const scaleObj = Tonal.Scale.get(`${key.tonic} ${key.type}`)
+    if (scaleObj.empty)
+        return false
+    setActiveScaleFilter(scaleObj.tonic, scaleObj.type)
+    globals.scaleFiltering.keyModeActive = true
+    reportScaleChange()
+    return true
+}
+
+/**
+ * Set the per-project solo mode and apply it.
+ * @param {'chord'|'key'} mode 'chord' follows scale1/2/3; 'key' stays on the key scale
+ */
+export function setSoloMode(mode) {
+    globals.setSoloMode(mode)
+    if (globals.soloMode === 'key')
+        applyKeyScale()
+    else
+        changeScaleFilter()
+}
+
+/**
  * Sets the active scale filter.
  * @param {string} scaleTonic root note of scale
  * @param {string} scaleType type of scale e.g. 'major'
@@ -181,6 +221,7 @@ export function changeScaleFilter(scaleFilter) {
  * - Called many times by setScaleToMatchChord(), above
 */
 export function setActiveScaleFilter(scaleTonic, scaleType, scaleNotes = [], scaleTypes = [], override = false) {
+    globals.scaleFiltering.keyModeActive = false;
     const scaleObj = Tonal.Scale.get(`${scaleTonic} ${scaleType}`)
     if (scaleObj.empty && scaleNotes.length == 0)
         throw ('Called with no scale tonic or scale type and no scaleNotes')
@@ -230,7 +271,7 @@ export function setActiveScaleFilterToMatchChord(chordTonic, chordType, strategy
         return
     const chordSymbol = createChordSymbol(chordTonic, chordType)
 
-    const scaleTypes = calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy)
+    const scaleTypes = calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy, globals.getProjectKey())
     const scale1 = `${chordTonic} ${scaleTypes[0]}`
 
     const scaleObj = Tonal.Scale.get(scale1)
@@ -305,7 +346,7 @@ function calcScaleTypesDropdown(chordConfig) {
     // May fail with custom chords, but we don't care about that for now
     let extraScaleTypes = []
     try {
-        extraScaleTypes = chordSymbolToScaleNames(chordConfig.chord)
+        extraScaleTypes = chordSymbolToScaleNames(chordConfig.chord, globals.getProjectKey())
         // console.log('extraScaleTypes for', chordConfig.chord, 'are', extraScaleTypes.join(', '))
         // eslint-disable-next-line no-empty
     } catch (error) {
@@ -313,15 +354,15 @@ function calcScaleTypesDropdown(chordConfig) {
     return uniq([...existingScaleTypes, ...extraScaleTypes])
 }
 
-function calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy = 'top 3') {  // or 'all compatible'
+function calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy = 'top 3', key = undefined) {  // or 'all compatible'
     let scaleTypes = []
     if (strategy == 'top 3') {
-        const [scale1, scale2, scale3] = findTop3MatchingScales([chordSymbol])  // scale is a string which contains tonic e.g. 'C major'
+        const [scale1, scale2, scale3] = findTop3MatchingScales([chordSymbol], true, {}, key)  // scale is a string which contains tonic e.g. 'C major'
         scaleTypes = [scale1, scale2, scale3].map(scale => Tonal.Scale.get(scale).type)
     }
     else {  // 'all compatible'
         // const scaleTonic = Tonal.Chord.get(chordSymbol).tonic
-        scaleTypes = chordSymbolToScaleNames([chordSymbol])
+        scaleTypes = chordSymbolToScaleNames([chordSymbol], key)
     }
     return scaleTypes
 }

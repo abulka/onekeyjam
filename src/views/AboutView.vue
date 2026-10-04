@@ -1,5 +1,7 @@
 <script setup>
 import { RouterLink } from 'vue-router'
+import { globals } from '../lib/globals.js'
+import ImprovisingTutorial from '../components/help/ImprovisingTutorial.vue'
 
 import mainView from '../../doco/images/onekeyjam-main-view.png'
 import performanceView from '../../doco/images/onekeyjam-performance-view.png'
@@ -12,12 +14,34 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
   <main class="help">
     <div class="ui container">
 
+      <!-- Help pages menu: the selection is remembered, so you can flip to the
+           Perform or Edit view and come back to the same page. -->
+      <div class="help-nav">
+        <span class="help-nav-label">Help:</span>
+        <button type="button" class="ui tiny button" :class="{ brown: globals.helpPage === 'overview' }"
+          @click="globals.helpPage = 'overview'">Overview</button>
+        <button type="button" class="ui tiny button" :class="{ brown: globals.helpPage === 'tutorial' }"
+          @click="globals.helpPage = 'tutorial'">Improvising tutorial</button>
+      </div>
+
+      <template v-if="globals.helpPage === 'tutorial'">
+        <ImprovisingTutorial />
+      </template>
+
+      <template v-else>
+
       <!-- Hero -->
       <div class="ui center aligned pad-top hero">
         <h1 class="ui huge header">OneKeyJam</h1>
         <p class="ui large text">
           Play chords with one finger in your left hand, and jam safely in the right hand.
         </p>
+      </div>
+
+      <div class="ui message tutorial-callout">
+        <strong>Want to improvise a whole performance?</strong>
+        Read the <a href="#" @click.prevent="globals.helpPage = 'tutorial'">Improvising tutorial</a>
+        - step-by-step song walkthroughs with the scales and the notes to play.
       </div>
 
       <!-- What it is -->
@@ -48,6 +72,10 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
           <strong>Edit Scales</strong> - define the scales and their notes.
         </li>
         <li>
+          <strong>Key Detection</strong> - set the project key, see the detected
+          key-signature candidates, and re-rank every chord scale in that key.
+        </li>
+        <li>
           <strong>Import MIDI File</strong> - load a MIDI file and OneKeyJam finds
           the chords inside it and lays them out across the keyboard.
         </li>
@@ -76,9 +104,10 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
       <h3 class="ui header">Edit view Actions menu</h3>
       <ul class="ui list">
         <li><strong>Reallocate Chords</strong> - shuffle the chord triggers across the keyboard.</li>
-        <li><strong>Find Matching Scales</strong> - suggest scales that fit the chords.</li>
+        <li><strong>Find Matching Scales</strong> - suggest scales that fit the chords, guided by the project key and colour.</li>
         <li><strong>Reset Transpositions</strong> - undo any transposing you did while playing.</li>
-        <li><strong>Fill with Key Signature</strong> - seed the scale filters from a key signature.</li>
+        <li><strong>Fill with Key Signature</strong> - detect the key, save it on the project and re-rank every chord scale in that key.</li>
+        <li>The <strong>Key Detection</strong> section sets the project key, while <strong>Solo in key</strong> and the colour selector sit above the chord/scale grid. Changing the key or colour re-ranks the scales automatically.</li>
       </ul>
 
       <h3 class="ui header">And there is more</h3>
@@ -109,7 +138,7 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         <li><strong>Chord Sequencer</strong> - draw a chord-sequence loop; audition it from the piano strip or by clicking a note (a chord trigger plays its chord), fit the loop to the notes, and clear it. Tick <strong>Include in recording</strong> to loop it while you record a solo, and it is merged into the take on Stop.</li>
         <li><strong>Chord / Scale Table</strong> - the chords and their scale filters at a glance; click a row to trigger the chord.</li>
         <li><strong>Active Chord</strong> - the chord that is currently sounding, with its notes and bass.</li>
-        <li><strong>Active Scale</strong> - the scale the right hand is currently filtered into.</li>
+        <li><strong>Active Scale</strong> - the scale the right hand is currently filtered into. If the project is in <strong>Solo in key</strong> mode it shows the project key scale instead of a per-chord scale.</li>
       </ul>
       <p>
         The status readouts at the top of the page summarise the current chord and
@@ -269,7 +298,14 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
           <a href="https://github.com/abulka/onekeyjam/blob/main/doco/NOTES.md" target="_blank" rel="noopener">Notes</a>
           - detailed MIDI setup and usage reference.
         </li>
+        <li>
+          <a href="https://github.com/abulka/onekeyjam/blob/main/doco/IMPROVISING-TUTORIAL.md" target="_blank"
+            rel="noopener">Improvising tutorial</a>
+          - how to play a whole performance, with song walkthroughs.
+        </li>
       </ul>
+
+      </template>
 
     </div>
   </main>
@@ -278,6 +314,25 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
 <style scoped>
 .help {
   padding-bottom: 4rem;
+}
+
+.help .help-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0 0.25rem;
+  border-bottom: 1px solid #e0d3bd;
+  margin-bottom: 0.5rem;
+}
+
+.help .help-nav-label {
+  color: #6b5a45;
+  font-weight: bold;
+}
+
+.help .tutorial-callout {
+  background-color: #f3ead9;
+  border: 1px solid #d9c9b0;
 }
 
 .help .hero {

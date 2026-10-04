@@ -13,8 +13,9 @@ import { resetChordTriggerMap } from './triggerMaps'
 export function resetTranspositionsEtc() {
     // Called by button 'reset changes' or when hit piano lh key combination (C# G#)
     resetChordTriggerMap(globals.chordTriggerMap, globals.project.chords)
-    // just in case scale changed
-    changeScaleFilter(globals.currentScaleFilter)
+    // just in case scale changed; with no argument this uses the current
+    // filter, or the project key scale when solo mode is 'key'
+    changeScaleFilter()
     // just in case chord changed
     document.broadcastEvent('chord-changed', { notes: globals.currentLhNotes(), bass: globals.currentBass() })
 

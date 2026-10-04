@@ -15,17 +15,17 @@
       "name": "G",
       "chord": "G",
       "bass": "G2",
-      "scale1": "G major",
-      "scale2": "G lydian",
-      "scale3": "G mixolydian"
+      "scale1": "G mixolydian",
+      "scale2": "G major",
+      "scale3": "G lydian"
     },
     {
       "id": 3,
       "name": "F",
       "chord": "F",
       "bass": "F2",
-      "scale1": "F major",
-      "scale2": "F lydian",
+      "scale1": "F lydian",
+      "scale2": "F major",
       "scale3": "F mixolydian"
     },
     {
@@ -33,12 +33,19 @@
       "name": "E7",
       "chord": "E7",
       "bass": "E2",
-      "scale1": "E mixolydian",
+      "scale1": "E phrygian dominant",
       "scale2": "E lydian dominant",
-      "scale3": "E mixolydian b6"
+      "scale3": "E mixolydian"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "A",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

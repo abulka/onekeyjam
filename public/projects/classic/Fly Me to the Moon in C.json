@@ -42,8 +42,8 @@
       "name": "Fmaj7",
       "chord": "Fmaj7",
       "bass": "F2",
-      "scale1": "F major",
-      "scale2": "F lydian",
+      "scale1": "F lydian",
+      "scale2": "F major",
       "scale3": "F harmonic major"
     },
     {
@@ -74,7 +74,14 @@
       "scale3": "A minor pentatonic"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

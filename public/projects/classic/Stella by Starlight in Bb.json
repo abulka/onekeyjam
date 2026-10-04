@@ -60,8 +60,8 @@
       "name": "Ebmaj7",
       "chord": "Ebmaj7",
       "bass": "Eb2",
-      "scale1": "Eb major",
-      "scale2": "Eb lydian",
+      "scale1": "Eb lydian",
+      "scale2": "Eb major",
       "scale3": "Eb harmonic major"
     },
     {
@@ -69,12 +69,19 @@
       "name": "Ab7",
       "chord": "Ab7",
       "bass": "Ab2",
-      "scale1": "Ab mixolydian",
-      "scale2": "Ab lydian dominant",
+      "scale1": "Ab lydian dominant",
+      "scale2": "Ab mixolydian",
       "scale3": "Ab mixolydian b6"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "Bb",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

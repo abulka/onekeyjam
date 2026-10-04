@@ -31,7 +31,7 @@ There are two closely related project shapes:
 | `meta` | `ProjectMeta` | no | `{ type: "onekeyjam", version, source }` |
 | `name` | `string` | yes | display name |
 | `chords` | `ChordConfig[]` | yes | the chord configs |
-| `options` | `ProjectOptions` | no | per-project overrides, e.g. `keyboard` |
+| `options` | `ProjectOptions` | no | per-project overrides: `keyboard`, `key`, `soloMode` |
 | `songs` | `Songs` | no | chord configs grouped by song |
 | `chordSequences` | `{ [name]: ChordSequence }` | no | sequencer patterns |
 
@@ -49,10 +49,40 @@ Minimal example:
       "scale1": "C major"
     }
   ],
-  "options": {},
+  "options": {
+    "key": { "tonic": "C", "type": "major", "source": "user" }
+  },
   "songs": { "default": { "ids": [1], "favourites": [], "blacklist": [] } }
 }
 ```
+
+## Project key and solo mode
+
+`options.key` declares the project's musical key. It guides the chord-scale
+engine and can drive a "solo in key" performance mode; see
+`doco/MUSIC-THEORY.md`.
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `tonic` | `string` | yes | key note, e.g. `"C"`, `"Bb"` |
+| `type` | `string` | yes | Tonal scale type: `"major"`, `"minor"`, or a mode such as `"dorian"` |
+| `source` | `"user"` or `"detected"` | no | defaults to `"user"` |
+
+When `options.key` is absent the app detects a major/minor key from the
+project's chords and uses that as the default suggestion (shown as
+`(detected)` in the Key Detection section). Saving the project persists whatever
+the app currently resolves.
+
+`options.soloMode` is `"chord"` (the default) or `"key"`. In `"chord"` mode the
+right hand follows `scale1`/`scale2`/`scale3` as the chords change. In `"key"`
+mode it stays on the project key scale, and the scale 1/2/3 shortcuts only
+switch temporarily until the next chord trigger.
+
+`options.colour` is `"diatonic"`, `"jazz"` (the default when absent) or
+`"adventurous"`. It decides how much chromatic colour the key-aware engine
+prefers when ranking chord scales; see `doco/MUSIC-THEORY.md`. When a chord is
+added, or when the key or colour is changed in the UI, every chord's
+`scale1/2/3` is re-ranked automatically in the new context.
 
 ## ChordConfig
 
@@ -139,6 +169,8 @@ are generated, so they are not validated and should not be edited by hand.
 ## Checking your changes
 
 ```sh
-npm run validate:data   # validate all static project/keyboard JSON
-npm run typecheck       # type-check the JS that uses this model
+npm run validate:data     # validate all static project/keyboard JSON
+npm run typecheck         # type-check the JS that uses this model
+npm run validate:scales   # key-aware guide-tone and colour-note report
+npm run regenerate:scales # dry-run the engine's scale replacements
 ```

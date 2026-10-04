@@ -17,7 +17,7 @@
       "bass": "E2",
       "scale1": "E phrygian dominant",
       "scale2": "E half-whole diminished",
-      "scale3": "E mixolydian"
+      "scale3": "E altered"
     },
     {
       "id": 3,
@@ -29,7 +29,14 @@
       "scale3": "A minor pentatonic"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "A",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

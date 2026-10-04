@@ -1,8 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { rememberScroll, scrollFor } from '../lib/scrollMemory.js'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+
+  // Restore the scroll position remembered for each page, so toggling between
+  // the Edit page and the Help page with Tab keeps your place.
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition)
+      return savedPosition
+    return { top: scrollFor(to.fullPath), left: 0 }
+  },
   routes: [
     {
       path: '/',
@@ -47,6 +56,13 @@ const router = createRouter({
         ]
       : [{ path: '/research', redirect: '/' }])
   ]
+})
+
+// Remember where the user was before each navigation so scrollBehavior can
+// restore it when they come back.
+router.beforeEach((to, from) => {
+  if (typeof window !== 'undefined')
+    rememberScroll(from.fullPath, window.scrollY)
 })
 
 export default router

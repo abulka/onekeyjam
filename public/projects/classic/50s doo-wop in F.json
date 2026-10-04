@@ -24,8 +24,8 @@
       "name": "Bbmaj7",
       "chord": "Bbmaj7",
       "bass": "Bb2",
-      "scale1": "Bb major",
-      "scale2": "Bb lydian",
+      "scale1": "Bb lydian",
+      "scale2": "Bb major",
       "scale3": "Bb harmonic major"
     },
     {
@@ -38,7 +38,14 @@
       "scale3": "C mixolydian b6"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "F",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

@@ -3,6 +3,7 @@ import { globals } from './globals.js';
 import { expandChordConfig } from './expandChordConfig.js';
 import { updateProjectChordConfig } from './projectConfig';
 import { findTop3MatchingScales } from './scaleMatching.js';
+import { resolveProjectKey } from './projectKey.js';
 
 // Re-exported so existing callers can keep importing it from here.
 export { findTop3MatchingScales };
@@ -11,6 +12,18 @@ export { findTop3MatchingScales };
 /** @typedef {import("./typedefs").ChordConfig} ChordConfig */
 /** @typedef {import("./typedefs").Project} Project */
 /** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
+
+/** @param {ChordConfig} chordConfig */
+function chordInfoForConfig(chordConfig) {
+    if (!chordConfig.chordNotes)
+        throw (`No chordNotes in ${JSON.stringify(chordConfig)} - chord configs should contain chordNotes`);
+    return {
+        symbol: chordConfig.chord,
+        notes: chordConfig.chordNotes,
+        bass: chordConfig.bass ?? chordConfig.bassNote,
+        name: chordConfig.name,
+    };
+}
 
 /**
  * Update the scales for all chord configs in the visible globals.chordTriggerMap, and also the project.
@@ -21,19 +34,40 @@ export { findTop3MatchingScales };
  */
 export function findMatchingScalesForProject(project, simple = true, updateProjectChords = true) {
     const chordConfigs = Object.values(globals.chordTriggerMap);
+    const key = resolveProjectKey(project);
     for (let chordConfig of chordConfigs) {
-        if (!chordConfig.chordNotes)
-            throw (`No chordNotes in ${JSON.stringify(chordConfig)} - chord configs should contain chordNotes`);
-        const chordInfo = {
-            symbol: chordConfig.chord,
-            notes: chordConfig.chordNotes,
-            bass: chordConfig.bass ?? chordConfig.bassNote,
-            name: chordConfig.name,
-        };
-        [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([], simple, chordInfo);
+        [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([], simple, chordInfoForConfig(chordConfig), key);
         expandChordConfig(chordConfig); // convert scales into scale notes etc. in this chord triggermap chord config
         if (updateProjectChords)
             updateProjectChordConfig(chordConfig)  // update the project config too
     }
 }
 
+/**
+ * Re-rank the scales of every chord in the project (not only the chords that
+ * are currently allocated to trigger notes) in the project key and colour, then
+ * sync any allocated trigger-map entries so the UI and the jam mapping use the
+ * new scales. Used when the project key or colour changes.
+ * @param {Project} project
+ * @param {boolean} [simple=true]
+ */
+export function findMatchingScalesForAllProjectChords(project, simple = true) {
+    const key = resolveProjectKey(project);
+    for (const chordConfig of project.chords) {
+        [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([], simple, chordInfoForConfig(chordConfig), key);
+        expandChordConfig(chordConfig);
+    }
+    syncTriggerMapScales(project);
+}
+
+/** @param {Project} project */
+function syncTriggerMapScales(project) {
+    for (const triggerNote of Object.keys(globals.chordTriggerMap)) {
+        const triggerConfig = globals.chordTriggerMap[triggerNote];
+        const projectConfig = project.chords.find((chordConfig) => chordConfig.id == triggerConfig.id);
+        if (!projectConfig)
+            continue;
+        for (const field of ['scale1', 'scale2', 'scale3', 'scale1Notes', 'scale2Notes', 'scale3Notes', 'scaleNotesOfChord'])
+            triggerConfig[field] = projectConfig[field];
+    }
+}

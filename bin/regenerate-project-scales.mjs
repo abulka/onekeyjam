@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { chordScaleNamesFor } from '../src/lib/chordScaleEngine.js'
-import { findScaleProblems, findSymbolVoicingMismatches, chordInfoFor, listProjectFiles } from './project-scale-utils.mjs'
+import { findScaleProblems, findSymbolVoicingMismatches, chordInfoFor, listProjectFiles, projectKeyContext } from './project-scale-utils.mjs'
 
 const write = process.argv.includes('--write')
 const requested = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
@@ -73,19 +73,29 @@ for (const { dir, file } of targets) {
     const filePath = join(dir, file)
     const originalText = readFileSync(filePath, 'utf8')
     const project = JSON.parse(originalText)
+    const projectKey = projectKeyContext(project)
     const problems = findScaleProblems(project)
-    if (problems.length === 0 && findSymbolVoicingMismatches(project).length === 0)
+    const mismatches = findSymbolVoicingMismatches(project)
+    if (!projectKey && problems.length === 0 && mismatches.length === 0)
         continue
 
     const flagged = new Map()
-    for (const problem of problems) {
-        if (!flagged.has(problem.chord))
-            flagged.set(problem.chord, new Set())
-        flagged.get(problem.chord).add(problem.key)
+    if (projectKey) {
+        // A declared key means the project was marked for key-aware
+        // regeneration: re-rank all three slots in that key.
+        for (const chord of project.chords ?? [])
+            flagged.set(chord, new Set(['scale1', 'scale2', 'scale3']))
+    }
+    else {
+        for (const problem of problems) {
+            if (!flagged.has(problem.chord))
+                flagged.set(problem.chord, new Set())
+            flagged.get(problem.chord).add(problem.key)
+        }
     }
     // A symbol/voicing mismatch means the stored scales may have been chosen
     // for the wrong chord, so regenerate all three slots for that chord.
-    for (const mismatch of findSymbolVoicingMismatches(project))
+    for (const mismatch of mismatches)
         flagged.set(mismatch.chord, new Set(['scale1', 'scale2', 'scale3']))
 
     const changesByChord = new Map()
@@ -97,7 +107,7 @@ for (const { dir, file } of targets) {
         if (!info.symbol && (!info.notes || info.notes.length === 0))
             continue
 
-        const ranked = chordScaleNamesFor(info, 8)
+        const ranked = chordScaleNamesFor(info, 8, projectKey)
         const assigned = new Map()
         const changes = new Map()
 

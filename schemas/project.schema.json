@@ -20,7 +20,30 @@
       "type": "array",
       "items": { "$ref": "#/definitions/chordConfig" }
     },
-    "options": { "type": "object" },
+    "options": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "description": "The declared musical key. type is a Tonal scale type; major and minor are the common values, modes such as dorian are allowed.",
+          "type": "object",
+          "required": ["tonic", "type"],
+          "properties": {
+            "tonic": { "type": "string" },
+            "type": { "type": "string" },
+            "source": { "enum": ["user", "detected"] }
+          }
+        },
+        "soloMode": {
+          "description": "'chord' follows the per-chord scales; 'key' keeps the right hand on the project key scale.",
+          "enum": ["chord", "key"]
+        },
+        "colour": {
+          "description": "How much chromatic colour the key-aware scale engine prefers when ranking chord scales.",
+          "enum": ["diatonic", "jazz", "adventurous"]
+        },
+        "keyboard": { "type": "object" }
+      }
+    },
     "songs": {
       "type": "object",
       "additionalProperties": {

@@ -1,18 +1,24 @@
 <script setup>
 import { onMounted } from 'vue'
-import { RouterLink, RouterView } from 'vue-router'
+import { RouterLink, RouterView, useRouter } from 'vue-router'
 import mainOneKeyJam from '../src/lib/main.js';
 import { globals } from './lib/globals.js';
+import { wireHelpShortcuts } from './lib/helpShortcuts.js';
 import DemoIntroDialog from './components/DemoIntroDialog.vue';
 
 // The Research view is a development-only playground; hide it from production builds.
 const showResearch = import.meta.env.DEV
+
+const router = useRouter()
 
 onMounted(() => {
   console.log('App onMounted')
 
   // one time OneKeyJam application and webmidi initialisation (non vue related)
   mainOneKeyJam()
+
+  // Tab toggles between the Edit page and the Help page.
+  wireHelpShortcuts(router)
 })
 
 </script>

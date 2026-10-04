@@ -3,6 +3,7 @@ import { reactive } from 'vue'
 import { maxChordConfigs } from './globals-config.js'
 import { stringify } from './prettyjson.js'
 import { getProjectForPersistence } from './projectSerialize.js'
+import { resolveProjectKey, projectKeyName, projectKeyNotes, projectColour, setProjectColour } from './projectKey.js'
 import { isProduction } from './settings.js'
 
 /** @typedef {import("./typedefs").Chord} Chord */
@@ -45,6 +46,11 @@ export const globals = reactive({
     get currentScaleName() {  // access as a property without the () call
         if (this.scaleOverrideName)
             return `${this.scaleOverrideName} (override)`
+        if (this.soloMode === 'key' && this.scaleFiltering.keyModeActive) {
+            const key = this.getProjectKey()
+            if (key)
+                return projectKeyName(key)
+        }
         // incl. tonic e.g. "C major", may also be a custom chord name or special 'notes of chord' name
         if (this.currentScaleFilter == 'notesOfChord')
             return 'notes of chord'
@@ -58,6 +64,12 @@ export const globals = reactive({
         if (this.scaleFiltering.frozen) {
             // console.log('GETcurrentScaleNotes: frozen')
             return this.scaleFiltering.frozenScaleNotes
+        }
+        if (this.soloMode === 'key' && this.scaleFiltering.keyModeActive) {
+            const key = this.getProjectKey()
+            const keyNotes = key ? projectKeyNotes(key) : []
+            if (keyNotes.length > 0)
+                return keyNotes
         }
         if (this.currentScaleFilter == 'notesOfChord') {
             // console.log('GETcurrentScaleNotes: notesOfChord')
@@ -108,6 +120,7 @@ export const globals = reactive({
     keyboardHelpMode: 'all',  // 'off' | 'black' | 'white' | 'all' - text overlays on the main keyboard
     showKeyShortcuts: false,  // show the computer-keyboard key badges on the main keyboard
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
+    helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial'
     debugJamChord: false,
     syncChordPickerToJamChord: true,
     syncChordPickerToCurrentTriggeredChord: true,
@@ -115,6 +128,7 @@ export const globals = reactive({
 
     scaleFiltering: {
         _frozen: false,  // whether scale filtering is frozen or changes as chords change
+        keyModeActive: false,  // true while the active scale is the project key scale (solo mode 'key')
 
         // These should always match the currentScaleName caused by lh trigger note chord changes
         // unless frozen is true. UI combo reflects this info. jamming map always respects this.
@@ -160,9 +174,32 @@ export const globals = reactive({
         keyFromChordNotes: [],
         music21Result: {},
         // options
-        fromEntireProject: false,  // or from visible chord list of chord trigger map
-        fromFavouritesOnly: true,  // or from favourites
+        fromEntireProject: true,  // or from visible chord list of chord trigger map
+        fromFavouritesOnly: false,  // or from favourites
         callMusic21Server: false,
+    },
+
+    // The resolved project key { tonic, type, source }, set when a project is
+    // loaded. See src/lib/projectKey.js and doco/MUSIC-THEORY.md.
+    projectKey: null,
+    getProjectKey() {
+        return this.projectKey ?? resolveProjectKey(this.project)
+    },
+    getProjectColour() {
+        return projectColour(this.project)
+    },
+    setColour(colour) {
+        return setProjectColour(this.project, colour)
+    },
+    get soloMode() {
+        // 'chord' (default) follows scale1/2/3 as the chord changes;
+        // 'key' keeps the right hand on the project key scale.
+        return this.project?.options?.soloMode === 'key' ? 'key' : 'chord'
+    },
+    setSoloMode(mode) {
+        if (!this.project.options)
+            this.project.options = {}
+        this.project.options.soloMode = mode === 'key' ? 'key' : 'chord'
     },
 
     currentChordBeingJammed: {

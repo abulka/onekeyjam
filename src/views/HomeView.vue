@@ -1,5 +1,5 @@
 <script setup>
-import { reAllocateChords, reAllocateScales } from '../../src/lib/boot-project'
+import { reAllocateChords, reAllocateScales, fillScalesFromKeySignature } from '../../src/lib/boot-project'
 import { resetTranspositionsEtc } from '../../src/lib/resetState'
 
 import Jammer from '@/components/JammerView.vue'
@@ -15,7 +15,7 @@ import PageMenubar from '@/components/PageMenubar.vue'
         <a class="item" @click="reAllocateScales()">Find Matching Scales 🎹</a>
         <div class="ui divider"></div>
         <a class="item" @click="resetTranspositionsEtc()">Reset Transpositions</a>
-        <a class="item" @click="fillScaleFiltersColumnWithKeySignature()">Fill with Key Signature</a>
+        <a class="item" @click="fillScalesFromKeySignature()">Fill with Key Signature</a>
       </template>
     </PageMenubar>
 

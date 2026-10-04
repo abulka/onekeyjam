@@ -4,6 +4,7 @@ import {findTop3MatchingScales} from './findMatchingScales';
 import {createChordSymbol} from './note-tools.js';
 import {suggestBass} from './note-tools';
 import {bassNoteOctave} from './settings.js';
+import {globals} from './globals.js';
 
 export function fillInChordConfig(chordConfig, chordRoot, chordType, inversion, bass) {
     // Fill in the chord config with the new chord info, adjust scales etc. (in place)
@@ -27,7 +28,7 @@ export function fillInChordConfig(chordConfig, chordRoot, chordType, inversion, 
     chordConfig.symbols = detectedChordSymbols.join(',')
 
     fillBass(bass, chordConfig);
-    [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([chordSymbolInclRoot])
+    [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([chordSymbolInclRoot], true, {}, globals.getProjectKey())
 }
 
 export function fillInChordConfig2(chordConfig, chordSymbolInclRoot, chordSymbols, chordNotes, bass) {
@@ -39,7 +40,7 @@ export function fillInChordConfig2(chordConfig, chordSymbolInclRoot, chordSymbol
     chordConfig.symbols = chordSymbols.join(',')
 
     fillBass(bass, chordConfig);
-    [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([chordSymbolInclRoot])
+    [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([chordSymbolInclRoot], true, {}, globals.getProjectKey())
 }
 
 function fillBass(bass, chordConfig) {

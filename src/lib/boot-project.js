@@ -13,6 +13,8 @@ import { findMatchingScalesForProject } from "./findMatchingScales"
 import { detectChords } from './parse-midi.js';
 import { buildProject } from './build-project.js';
 import { keyDetection } from "./keyDetection"
+import { resolveProjectKey } from './projectKey.js'
+import { applyProjectKeySettings } from './projectScaleSettings.js'
 import { deletePendingChordConfigs } from './massOperationsOnChordConfigs'
 import { fetchFeaturedProject, fetchClassicProject, fetchUserProject } from './projectLibrary';
 import { listKeyboardConfigs, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listUserProjects } from './projectLibrary';
@@ -157,14 +159,33 @@ export function reAllocateChordsPreserveCurrentChordConfig(ids) {
     const preserveSongIds = true;
     const useExistingChordMap = true;
     regen(preserveSongIds, useExistingChordMap, ids) // ids is and araay of ids in the new order we want
+    globals.projectKey = resolveProjectKey(globals.project) ?? null;
     keyDetection();
     linkProjectToKeyboard();
 }
 
 export function reAllocateScales(simple = true) {
-    // 5. only called from the button 'Find Matching Scales'
+    // 5. only called from the buttons 'Find Matching Scales' and
+    // 'Fill with Key Signature'. The project key (declared or detected) is
+    // passed into the engine, so the ranking is key-aware.
     const affectProject = true
     findMatchingScalesForProject(globals.project, simple, affectProject)
+
+    $('body')
+        .toast({
+            message: 'Scales Allocated OK',
+            displayTime: 1000,
+            class: 'brown',
+        })
+}
+
+export function fillScalesFromKeySignature() {
+    // 8. only called from the button 'Fill with Key Signature'. Declare the
+    // detected key on the project so it survives saving, then re-rank every
+    // chord scale in that key.
+    const key = globals.getProjectKey()
+    if (key)
+        applyProjectKeySettings({ tonic: key.tonic, type: key.type, source: 'detected' })
 
     $('body')
         .toast({
@@ -279,6 +300,7 @@ function projectChores2url(project, url, currentChordTriggerNote) {
 function projectChores({ project, maxChordConfigs, preserveSongIds }) {
     setMaxDisplayed(project, maxChordConfigs);
     regen(preserveSongIds);
+    globals.projectKey = resolveProjectKey(globals.project) ?? null;
     keyDetection();
     linkProjectToKeyboard();
 }

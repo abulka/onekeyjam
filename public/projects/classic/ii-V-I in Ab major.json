@@ -29,7 +29,14 @@
       "scale3": "Ab harmonic major"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "Ab",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

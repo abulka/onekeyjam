@@ -38,7 +38,14 @@
       "scale3": "C mixolydian b6"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "F",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

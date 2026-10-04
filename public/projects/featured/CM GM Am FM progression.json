@@ -34,7 +34,13 @@
       "id": 4
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    }
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

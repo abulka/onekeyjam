@@ -38,7 +38,14 @@
       "scale3": "A mixolydian b6"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "D",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

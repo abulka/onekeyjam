@@ -15,9 +15,9 @@
       "name": "E7",
       "chord": "E7",
       "bass": "E2",
-      "scale1": "E mixolydian",
+      "scale1": "E phrygian dominant",
       "scale2": "E lydian dominant",
-      "scale3": "E mixolydian b6"
+      "scale3": "E mixolydian"
     },
     {
       "id": 3,
@@ -60,9 +60,9 @@
       "name": "E7",
       "chord": "E7",
       "bass": "E2",
-      "scale1": "E mixolydian",
+      "scale1": "E phrygian dominant",
       "scale2": "E lydian dominant",
-      "scale3": "E mixolydian b6"
+      "scale3": "E mixolydian"
     },
     {
       "id": 8,
@@ -74,7 +74,14 @@
       "scale3": "A minor pentatonic"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "A",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

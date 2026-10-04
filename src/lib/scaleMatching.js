@@ -24,24 +24,25 @@ function padToThree(names) {
  * @param {boolean} [simple=true] if true, only the first chord symbol is used.
  * @param {ChordInfo} [chordInfo] extra hints, used when the symbols are empty
  *   or not valid Tonal symbols.
+ * @param {{tonic?:string, type?:string, colour?:string}|string} [key] optional project key context.
  * @returns {Array<string>} array of scale names viz. [scale1, scale2, scale3] incl tonic
  */
-export function findTop3MatchingScales(detectedChordSymbols, simple = true, chordInfo = {}) {
+export function findTop3MatchingScales(detectedChordSymbols, simple = true, chordInfo = {}, key) {
     const symbols = (detectedChordSymbols ?? []).filter((symbol) => symbol);
 
     if (symbols.length === 0)
-        return padToThree(chordScaleNamesFor(chordInfo, 3));
+        return padToThree(chordScaleNamesFor(chordInfo, 3, key));
 
     if (simple || symbols.length === 1)
-        return padToThree(chordScaleNamesFor({ ...chordInfo, symbol: symbols[0] }, 3));
+        return padToThree(chordScaleNamesFor({ ...chordInfo, symbol: symbols[0] }, 3, key));
 
     if (symbols.length === 2) {
-        const scale1 = chordScaleNamesFor({ ...chordInfo, symbol: symbols[0] }, 1)[0] ?? '';
-        const [scale2, scale3] = chordScaleNamesFor({ ...chordInfo, symbol: symbols[1] }, 2);
+        const scale1 = chordScaleNamesFor({ ...chordInfo, symbol: symbols[0] }, 1, key)[0] ?? '';
+        const [scale2, scale3] = chordScaleNamesFor({ ...chordInfo, symbol: symbols[1] }, 2, key);
         return [scale1, scale2 ?? '', scale3 ?? ''];
     }
 
-    return symbols.slice(0, 3).map((symbol) => chordScaleNamesFor({ ...chordInfo, symbol }, 1)[0] ?? '');
+    return symbols.slice(0, 3).map((symbol) => chordScaleNamesFor({ ...chordInfo, symbol }, 1, key)[0] ?? '');
 }
 
 /**
@@ -49,8 +50,9 @@ export function findTop3MatchingScales(detectedChordSymbols, simple = true, chor
  * best ranked scales that are not already in the config.
  * @param {*} chordConfig
  * @param {ChordInfo} [chordInfo]
+ * @param {{tonic?:string, type?:string, colour?:string}|string} [key] optional project key context
  */
-export function fillMissingScales(chordConfig, chordInfo = {}) {
+export function fillMissingScales(chordConfig, chordInfo = {}, key) {
     const input = {
         ...chordInfo,
         symbol: chordConfig.chord ?? chordInfo.symbol,
@@ -58,7 +60,7 @@ export function fillMissingScales(chordConfig, chordInfo = {}) {
         bass: chordConfig.bass ?? chordConfig.bassNote,
         name: chordConfig.name,
     };
-    const ranked = chordScaleNamesFor(input, 6);
+    const ranked = chordScaleNamesFor(input, 6, key);
     const taken = new Set(['scale1', 'scale2', 'scale3']
         .map((key) => chordConfig[key])
         .filter(Boolean)

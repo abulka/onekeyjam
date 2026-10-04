@@ -60,7 +60,10 @@ export function detectChordAndScalesFromChordNotes(chordConfig, chordNotes, _bas
         return false
     }
 
-    fillMissingScales(chordConfig, { notes: _chordNotes, bass: _bassNote, name });
+    // Use the project key when one is already resolved (for example a chord
+    // added to an existing project). During boot the key may not be set yet,
+    // in which case the scales are key-free until the project re-ranks.
+    fillMissingScales(chordConfig, { notes: _chordNotes, bass: _bassNote, name }, globals.projectKey ?? undefined);
 
     return true
 }

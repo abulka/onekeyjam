@@ -15,7 +15,13 @@
       "blacklist": []
     }
   },
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    }
+  },
   "chordSequences": {
     "default": {
       "tempo": 99,
@@ -30,13 +36,13 @@
         "Ab3",
         "C4"
       ],
-      "scale1": "D lydian dominant pentatonic",
-      "scale2": "C minor pentatonic",
+      "scale1": "D locrian #2",
+      "scale2": "D locrian",
       "bass": "D",
       "chord": "Dm7b5",
       "symbols": "Dm7b5",
       "id": 2,
-      "scale3": "D dorian",
+      "scale3": "D minor blues",
       "name": "Dm7b5 (user jam)",
       "bassNote": "D2"
     },
@@ -56,7 +62,7 @@
       "chord": "G7b9",
       "name": "G7b9 (user jam)",
       "scale1": "G phrygian dominant",
-      "scale2": "C minor pentatonic"
+      "scale2": "G half-whole diminished"
     },
     {
       "chordNotes": [
@@ -69,12 +75,12 @@
       "bass": "G",
       "id": 5,
       "bassNote": "G2",
-      "scale1": "C major pentatonic",
-      "scale2": "C major",
+      "scale1": "C major",
+      "scale2": "C lydian",
       "name": "Cmaj9 (user jam)",
       "symbols": "Cmaj9",
       "chord": "Cmaj9",
-      "scale3": "C bebop major"
+      "scale3": "C harmonic major"
     }
   ],
   "name": "ii v i - play01"

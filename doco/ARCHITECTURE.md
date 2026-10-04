@@ -31,6 +31,11 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
   current page.
 - `src/views/` holds the routed pages. `src/components/` holds the UI widgets
   such as the piano keyboards, chord pickers, scale pickers and status panels.
+  The Help view (`AboutView.vue`) has a small help-pages menu: an overview and
+  an Improvising tutorial rendered from `doco/IMPROVISING-TUTORIAL.md` through
+  the small Markdown renderer in `src/lib/markdown.js`
+  (`src/components/help/ImprovisingTutorial.vue`). The chosen page is
+  remembered in `src/lib/uiPrefs.js`, so returning to Help restores it.
 - `src/lib/` holds the framework-independent domain logic and the MIDI and
   audio plumbing. This is the largest part of the codebase. The hardware MIDI
   runtime is grouped in `src/lib/midi/` and the in-browser sound in
@@ -48,10 +53,12 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
 
 `src/lib/globals.js` exports a single Vue `reactive` object named `globals`.
 It holds the current project, the chord and scale trigger maps, the current
-chord and scale, the project library lists, and the MIDI input and output
-channels. Vue components read it reactively, and the plain JavaScript in
-`src/lib/` mutates it. Because it is a single shared object, it acts as the
-boundary between the UI layer and the MIDI and audio logic.
+chord and scale, the resolved project key (`globals.projectKey`, with
+`getProjectKey()` and the `soloMode` getter), the project library lists, and
+the MIDI input and output channels. Vue components read it reactively, and the
+plain JavaScript in `src/lib/` mutates it. Because it is a single shared
+object, it acts as the boundary between the UI layer and the MIDI and audio
+logic.
 
 ## Boot sequence
 
@@ -66,18 +73,26 @@ boundary between the UI layer and the MIDI and audio logic.
    `globals.keyboardsDetected`, and finds the IAC Driver output channels.
 5. `bootKeyboard()` loads the keyboard config that matches a detected device,
    and `bootProject()` loads the starting (empty) project.
-6. `regen()` allocates the project chords into `globals.chordTriggerMap`.
+6. `regen()` allocates the project chords into `globals.chordTriggerMap`, then
+   `resolveProjectKey()` (in `src/lib/projectKey.js`) stores the declared or
+   detected project key in `globals.projectKey`.
 7. `keyDetection()`, `initChordPlayEvents()` and `linkProjectToKeyboard()`
    finish the setup by wiring the MIDI input listeners and building the scale
-   mapping.
+   mapping (`linkProjectToKeyboard()` applies the key scale when the project
+   uses solo mode `'key'`).
 
 ## Data model
 
 - A project has a `name`, an array of `chords` (each a chord config), `songs`,
-  `options` and `chordSequences`.
+  `options` and `chordSequences`. `options.key` declares the musical key
+  (`{ tonic, type, source }`, where `type` may be a mode), `options.soloMode`
+  is `'chord'` or `'key'`, and `options.colour` is `'diatonic'`, `'jazz'` or
+  `'adventurous'`; see `doco/MUSIC-THEORY.md`.
 - A chord config has a chord symbol, its `chordNotes`, an optional `bass`, up
   to three scale names (`scale1`, `scale2`, `scale3`) and the notes of the
-  chord as a scale (`scaleNotesOfChord`).
+  chord as a scale (`scaleNotesOfChord`). Scale names can be rewritten by the
+  key-aware engine (`src/lib/chordScaleEngine.js`, `src/lib/scaleMatching.js`)
+  and by `bin/regenerate-project-scales.mjs`.
 - `chordTriggerMap` maps a left-hand MIDI note to a chord config. It is built
   by `regen()` from the project chords, capped by `globals.maxChordConfigs`.
 - `scaleTriggerMap` maps a right-hand played note to the allowed scale note.
@@ -94,6 +109,26 @@ and the validation commands.
 - Playing a note in the left-hand trigger octave that is in `chordTriggerMap`
   plays the chord and changes the current scale, which rebuilds the scale
   mapping (see `src/lib/midi/play-chord.js` and `src/lib/change-scale.js`).
+  When the project's `soloMode` is `'key'`, the chord trigger instead calls
+  `applyKeyScale()`, so the right hand stays on the project key scale while the
+  chords change; an explicit scale shortcut switches temporarily.
+- Changing the project key in the Key Detection section, or the colour above
+  the scale grid, goes through `applyProjectKeySettings()` in
+  `src/lib/projectScaleSettings.js`, which saves the setting, re-ranks every
+  chord scale with the new key and colour
+  (`findMatchingScalesForAllProjectChords()` in `src/lib/findMatchingScales.js`),
+  syncs the allocated trigger-map entries, and refreshes the active scale.
+  Chords added later are key-aware too, because `fillInChordConfig.js` and
+  `expandChordConfig.js` pass the resolved key into `fillMissingScales()`.
+- The Edit view's dedicated **Key Detection** accordion
+  (`src/components/KeySignature.vue`) owns the project key: its detection
+  candidates (chords, notes and the optional music21 server) each offer "set as
+  project key", which re-ranks the scales, and it warns when a declared
+  major/minor key disagrees with the whole-project detection. music21 is an
+  optional local Python server on `localhost:8082`; with it off the panel
+  ignores it. The **Solo in key** checkbox and the colour selector sit above
+  the chord/scale grid in `GrandSummary.vue`, so they appear on both the Edit
+  and Perform views.
 - Playing any other note calls `jam()` in `src/lib/midi/jam.js`. If scale
   filtering is on, the played note is translated through `scaleTriggerMap` to an allowed
   note; otherwise it is echoed through. Pending note-offs are tracked in
@@ -216,10 +251,16 @@ and the validation commands.
 - Featured projects are static JSON files in `public/projects/featured/` and
   classic projects (ii-V-I progressions, turnarounds, blues and jazz standard
   changes) are generated into `public/projects/classic/` by
-  `bin/generate-classic-projects.mjs`. Each library is discovered through its
-  own manifest (`featured-manifest.json`, `classic-manifest.json`), generated by
-  `bin/generate-manifests.mjs`. Saving a static project means editing or
-  regenerating the JSON and redeploying.
+  `bin/generate-classic-projects.mjs`, which takes each progression's key from
+  `bin/classic-project-definitions.mjs` and ranks its scales key-aware. Each
+  library is discovered through its own manifest (`featured-manifest.json`,
+  `classic-manifest.json`), generated by `bin/generate-manifests.mjs`. Saving a
+  static project means editing or regenerating the JSON and redeploying; the
+  featured projects with a clear key declare it in `options.key`, and
+  `bin/regenerate-project-scales.mjs --write` re-ranks them (and any other
+  project that declares a key) with the key-aware engine. `npm run
+  validate:scales` reports guide-tone problems and deliberate out-of-key
+  colour notes; see `doco/MUSIC-THEORY.md`.
 - Keyboard configs are static JSON files in `public/keyboards/`, discovered
   through `public/keyboards/keyboards-manifest.json`.
 - Projects the user saves are stored in the browser with IndexedDB, in
@@ -237,4 +278,6 @@ and the validation commands.
 - `doco/implementation-notes.md` records detailed WebMidi.js findings.
 - `doco/chord-scale-ref.md` covers the chord and scale reference material.
 - `doco/MUSIC-THEORY.md` explains the chord-scale matching engine in
-  `src/lib/chordScaleEngine.js`, its scoring rules and the data checkers.
+  `src/lib/chordScaleEngine.js`, the project key model in
+  `src/lib/projectKey.js`, the key-aware scoring rules, solo-in-key mode and
+  the data checkers.

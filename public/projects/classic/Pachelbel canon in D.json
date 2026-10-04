@@ -42,8 +42,8 @@
       "name": "Gmaj7",
       "chord": "Gmaj7",
       "bass": "G2",
-      "scale1": "G major",
-      "scale2": "G lydian",
+      "scale1": "G lydian",
+      "scale2": "G major",
       "scale3": "G harmonic major"
     },
     {
@@ -60,8 +60,8 @@
       "name": "Gmaj7",
       "chord": "Gmaj7",
       "bass": "G2",
-      "scale1": "G major",
-      "scale2": "G lydian",
+      "scale1": "G lydian",
+      "scale2": "G major",
       "scale3": "G harmonic major"
     },
     {
@@ -74,7 +74,14 @@
       "scale3": "A mixolydian b6"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "D",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

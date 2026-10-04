@@ -106,7 +106,7 @@ function firstTriggerNoteForScales() {
           </webaudio-keyboard>
         </div>
         <div class="row">
-          {{ currentChordConfig[globals.currentScaleFilter] }}
+          {{ globals.currentScaleName }}
           <span v-if="globals.currentScaleEmpty" style="color:brown">No scale specified for <b>{{
               globals.currentScaleFilter
           }}</b>

@@ -4,6 +4,13 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as chordDb from '../src/lib/config.js'
 import { checkScaleAgainstChord, chordSymbolVoicingMismatch } from '../src/lib/chordScaleEngine.js'
+import { declaredProjectKey, projectColour } from '../src/lib/projectKey.js'
+
+/** The declared key plus the project's colour, for key-aware checking. */
+export function projectKeyContext(project) {
+    const key = declaredProjectKey(project)
+    return key ? { ...key, colour: projectColour(project) } : undefined
+}
 
 export const root = fileURLToPath(new URL('..', import.meta.url))
 export const projectDirs = [
@@ -49,19 +56,45 @@ export function chordInfoFor(chord) {
 
 /** @param {*} project */
 export function findScaleProblems(project) {
+    const key = projectKeyContext(project)
     const problems = []
     for (const chord of project.chords ?? []) {
         const input = chordInfoFor(chord)
-        for (const key of ['scale1', 'scale2', 'scale3']) {
-            const scaleName = chord[key]
+        for (const scaleKey of ['scale1', 'scale2', 'scale3']) {
+            const scaleName = chord[scaleKey]
             if (!scaleName || scaleName === 'notes of chord')
                 continue
-            const result = checkScaleAgainstChord(input, scaleName)
+            const result = checkScaleAgainstChord(input, scaleName, key)
             if (!result.ok)
-                problems.push({ chord, key, scale: scaleName, reasons: result.reasons })
+                problems.push({ chord, key: scaleKey, scale: scaleName, reasons: result.reasons })
         }
     }
     return problems
+}
+
+/**
+ * Scales whose colour notes fall outside the declared project key, without
+ * counting as failures. These are reported as warnings because chromatic
+ * colour is often deliberate. Projects without a declared key are skipped.
+ * @param {*} project
+ */
+export function findOutOfKeyScales(project) {
+    const key = projectKeyContext(project)
+    if (!key)
+        return []
+    const warnings = []
+    for (const chord of project.chords ?? []) {
+        const input = chordInfoFor(chord)
+        for (const scaleKey of ['scale1', 'scale2', 'scale3']) {
+            const scaleName = chord[scaleKey]
+            if (!scaleName || scaleName === 'notes of chord')
+                continue
+            const result = checkScaleAgainstChord(input, scaleName, key)
+            if (result.ok && result.outOfKey.length > 0)
+                warnings.push({ chord, key: scaleKey, scale: scaleName, outOfKey: result.outOfKey })
+        }
+    }
+    return warnings
 }
 
 /** @param {*} project */

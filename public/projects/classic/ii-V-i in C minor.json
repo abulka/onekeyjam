@@ -17,7 +17,7 @@
       "bass": "G2",
       "scale1": "G phrygian dominant",
       "scale2": "G half-whole diminished",
-      "scale3": "G mixolydian"
+      "scale3": "G altered"
     },
     {
       "id": 3,
@@ -29,7 +29,14 @@
       "scale3": "C minor pentatonic"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

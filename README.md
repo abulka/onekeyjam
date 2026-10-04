@@ -18,6 +18,18 @@ sound in the browser.
   project. No chord shapes to learn.
 - **Scale filtering** - right-hand notes snap to the scale that fits the current
   chord, so improvisation always sounds right.
+- **Key-aware suggestions** - each project can declare its key (major, minor or
+  a mode). The key fixes the scale for chords whose function matters, such as
+  tritone substitutes and minor-key dominants, and keeps the alternative
+  suggestions close to the key.
+- **Colour dial** - choose how much chromatic colour the key keeps: `diatonic`,
+  `jazz` (the default) or `adventurous`. Changing the key or colour re-ranks
+  every chord scale automatically.
+- **Solo in key** - flip one switch to keep the right hand on the project key
+  scale while the chords change, the way many improvisers think.
+- **Key awareness demo** - a featured project that walks through a tritone
+  substitute, a backdoor dominant and a borrowed bVI so you can hear the
+  difference the key awareness makes.
 - **Black-key modifiers** - switch scale, transpose chords and turn filtering on
   or off while you play.
 - **Real MIDI, or built-in sounds** - send notes to a DAW over the macOS IAC
@@ -46,6 +58,9 @@ sound in the browser.
 4. Press `1` `2` `3` `4` `5` from anywhere to switch scale1/scale2/scale3, the
    chord notes, or lock the scale. The black keys do the same on a MIDI
    keyboard, and transpose stays on the black keys.
+5. Set the project key in the **Key Detection** section, and use the **Solo in
+   key** checkbox and **Colour** dropdown above the chord/scale grid to shape
+   the solo.
 
 A guided tour is available from the **Start Tour** item in the menu. To build a
 project from an existing MIDI file, choose **File -> Import MIDI file...** and
@@ -125,6 +140,9 @@ Then open http://localhost:8080/index.html.
 | `npm run lint` | Lint with ESLint. |
 | `npm run typecheck` | Type-check the JavaScript that opts in with `// @ts-check`. |
 | `npm run validate:data` | Validate the static project and keyboard JSON against `schemas/`. |
+| `npm run validate:scales` | Key-aware report on the scales stored in the static projects. |
+| `npm run regenerate:scales` | Dry-run the engine's scale replacements (`-- --write` to apply). |
+| `npm run generate:classic` | Regenerate the classic project library, keys included. |
 
 ## Project structure
 
@@ -161,6 +179,11 @@ Other hosting options are documented in [doco/NOTES.md](doco/NOTES.md).
   the boot sequence.
 - [doco/DATA-MODEL.md](doco/DATA-MODEL.md) - the project and keyboard data
   model, plus the validation commands.
+- [doco/MUSIC-THEORY.md](doco/MUSIC-THEORY.md) - how the chord-scale engine
+  works, the project key model, key-aware scoring and solo-in-key mode.
+- [doco/IMPROVISING-TUTORIAL.md](doco/IMPROVISING-TUTORIAL.md) - how to
+  improvise a whole performance, with song walkthroughs; also readable in the
+  Help view.
 - [doco/NOTES.md](doco/NOTES.md) - detailed MIDI setup, usage reference,
   deployment history and development notes.
 

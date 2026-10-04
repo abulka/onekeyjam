@@ -5,9 +5,8 @@ import { globals } from "../../src/lib/globals.js"
 import { sanitiseNoteToSharp } from "../../src/lib/note-tools.js"
 import { setActiveScaleFilterToMatchChord, setActiveScaleFilter } from "../../src/lib/change-scale.js"
 import { replaceCurrentScale } from "../../src/lib/replaceCurrentScale";
-import { setChordSmart, setChordFromSymbol } from "../../src/lib/chordPicker";
+import { setChordSmart } from "../../src/lib/chordPicker";
 import ComboScale from "./ComboScale.vue"
-import KeySignature from './KeySignature.vue';
 
 // ┌─┐┬ ┬┌─┐┌┐┌┌─┐┌─┐  ┌─┐┌─┐┌─┐┬  ┌─┐  ┌─┐┬┬  ┌─┐┬─┐  ┌─┐┌─┐┌┬┐┌┐ ┌─┐
 // │  ├─┤├─┤││││ ┬├┤   └─┐│  ├─┤│  ├┤   ├┤ ││  ├┤ ├┬┘  │  │ ││││├┴┐│ │
@@ -52,14 +51,6 @@ function setScaleFromMode(modeTuple) {
     setActiveScaleFilter(tonic, type, [], [], true)  // true means override the current scale
     globals.scaleFiltering.frozen = true
 }
-function setScaleFromKeySignature(keySignatureString) {
-    const tonic = keySignatureString.split(' ')[0]
-    const type = keySignatureString.split(' ').splice(1).join(' ')
-    showAllScales()
-    setActiveScaleFilter(tonic, type, [], [], true)  // true means override the current scale
-    globals.scaleFiltering.frozen = true
-}
-
 function replaceCurrentScaleDisabled() {
     const newScale = `${globals.scaleFiltering.scaleTonic} ${globals.scaleFiltering.scaleType}`
     return globals.currentConfigEmpty() ||
@@ -73,7 +64,7 @@ function replaceCurrentScaleDisabled() {
 
 
     <div class="centered row bigbottom">
-        👋 Change the currently selected Project scale
+        👋 Change the currently selected scale
     </div>
 
     <div class="ui aligned grid">
@@ -168,29 +159,6 @@ function replaceCurrentScaleDisabled() {
 
 
     </div> <!-- end sub sub accordion -->
-
-
-
-
-    <!-- Accordion with Key Signature -->
-    <div class="ui fluid styled accordion" style="background-color: burlywood;">
-
-        <div class="title">
-            <i class="dropdown icon"></i>
-            Key Signature Detection
-        </div>
-        <div class="content">
-
-            <!-- <div class="ui raised segment" style="background-color: burlywood;" v-if="globals.isProjectLoaded"> -->
-            <div class="row">
-                <KeySignature @set-chord-from-symbol="setChordFromSymbol($event.chordSymbol)"
-                    @set-scale-from-key-signature="setScaleFromKeySignature($event.keySignature)" />
-            </div>
-            <!-- </div> -->
-
-        </div>
-
-    </div> <!-- end accordion, Key Signature -->
 
 </template>
 

@@ -1,0 +1,88 @@
+{
+  "name": "Key awareness demo",
+  "chords": [
+    {
+      "id": 1,
+      "name": "I - home. C major, all white notes",
+      "chord": "Cmaj7",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "vi - A dorian keeps the jazz colour (key would give aeolian)",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A dorian",
+      "scale2": "A aeolian",
+      "scale3": "A minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "ii - D dorian, the diatonic default",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "V - G mixolydian contains F natural",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "tritone sub - Db lydian dominant adds G natural",
+      "chord": "Db7",
+      "bass": "Db2",
+      "scale1": "Db lydian dominant",
+      "scale2": "Db mixolydian",
+      "scale3": "Db mixolydian b6"
+    },
+    {
+      "id": 6,
+      "name": "backdoor - Bb lydian dominant adds E natural",
+      "chord": "Bb7",
+      "bass": "Bb2",
+      "scale1": "Bb lydian dominant",
+      "scale2": "Bb mixolydian",
+      "scale3": "Bb mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "borrowed bVI - Ab lydian adds D natural",
+      "chord": "Abmaj7",
+      "bass": "Ab2",
+      "scale1": "Ab lydian",
+      "scale2": "Ab major",
+      "scale3": "Ab harmonic major"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [1, 2, 3, 4, 5, 6, 7],
+      "favourites": [1, 2, 3, 4, 5, 6, 7],
+      "blacklist": []
+    }
+  }
+}

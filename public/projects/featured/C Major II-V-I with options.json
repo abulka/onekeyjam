@@ -5,33 +5,33 @@
       "id": "1",
       "name": "Dm7 chord",
       "chord": "Dm7",
-      "scale1": "d dorian",
-      "scale2": "c major pentatonic",
-      "scale3": ""
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
     },
     {
       "id": "2",
       "name": "G7 chord",
       "chord": "G7inversion2",
-      "scale1": "g mixolydian",
-      "scale2": "c major pentatonic",
-      "scale3": "G lydian dominant"
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
     },
     {
       "id": "3",
       "name": "CMaj7 chord - various scales",
       "chord": "Cmaj7",
-      "scale1": "c major",
-      "scale2": "c major pentatonic",
-      "scale3": "c lydian"
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major"
     },
     {
       "id": "4",
       "name": "Db7 chord - tritone substituion of V chord G7",
       "chord": "Db7",
-      "scale1": "Db mixolydian",
-      "scale2": "Db lydian dominant",
-      "scale3": ""
+      "scale1": "Db lydian dominant",
+      "scale2": "Db mixolydian",
+      "scale3": "Db mixolydian b6"
     }
   ],
   "meta": {
@@ -40,6 +40,11 @@
     "source": "https://onekeyjam.netlify.app"
   },
   "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    },
     "transposeUpAmount": 4,
     "transposeDownAmount": -4,    
     "keyboard": {

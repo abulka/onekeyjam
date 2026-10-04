@@ -1,5 +1,5 @@
 import { globals } from "../globals.js"
-import { changeScaleFilter } from "../change-scale.js"
+import { changeScaleFilter, applyKeyScale } from "../change-scale.js"
 import { playGmNote, stopGmNote } from "../audio/general-midi"
 import { recordChordNoteOn, recordChordNoteOff } from "./recorder.js"
 
@@ -56,6 +56,13 @@ function changeChordTriggerNoteAndThusScale(singleNote) {
         singleNote = globals.currentChordTriggerNote;
     else
         globals.currentChordTriggerNote = singleNote;
+
+    // Solo mode 'key': the right hand stays on the project key scale while the
+    // chords change. A user's explicit scale1/2/3 pick is temporary and the
+    // next chord trigger returns to the key scale. If no key can be resolved,
+    // fall through to the per-chord behaviour.
+    if (globals.soloMode === 'key' && !globals.scaleFiltering.frozen && applyKeyScale())
+        return;
 
     // Change scale if necessary - 
     if (globals.scaleFilteringModificationSticky)

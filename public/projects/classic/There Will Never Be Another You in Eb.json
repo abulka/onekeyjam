@@ -74,7 +74,14 @@
       "scale3": "Eb harmonic major"
     }
   ],
-  "options": {},
+  "options": {
+    "key": {
+      "tonic": "Eb",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
   "meta": {
     "type": "onekeyjam",
     "version": 2,

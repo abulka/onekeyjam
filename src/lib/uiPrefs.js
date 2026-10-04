@@ -12,12 +12,14 @@ import { globals } from './globals.js'
 const STORAGE_KEY = 'onekeyjam.uiPrefs'
 
 export const KEYBOARD_HELP_MODES = ['off', 'black', 'white', 'all']
+export const HELP_PAGES = ['overview', 'tutorial']
 
 /**
  * @typedef {Object} UiPrefs
  * @property {string} [keyboardHelpMode]
  * @property {boolean} [showKeyShortcuts]
  * @property {boolean} [showWelcomeDialog]
+ * @property {string} [helpPage]
  */
 
 function defaultStorage() {
@@ -48,6 +50,8 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.showKeyShortcuts = stored.showKeyShortcuts
         if (stored && typeof stored.showWelcomeDialog === 'boolean')
             prefs.showWelcomeDialog = stored.showWelcomeDialog
+        if (stored && HELP_PAGES.includes(stored.helpPage))
+            prefs.helpPage = stored.helpPage
         return prefs
     }
     catch (error) {
@@ -64,6 +68,7 @@ export function currentPrefs() {
         keyboardHelpMode: globals.keyboardHelpMode,
         showKeyShortcuts: globals.showKeyShortcuts,
         showWelcomeDialog: globals.showWelcomeDialog,
+        helpPage: globals.helpPage,
     }
 }
 
@@ -95,6 +100,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.showKeyShortcuts = prefs.showKeyShortcuts
     if (typeof prefs.showWelcomeDialog === 'boolean')
         globals.showWelcomeDialog = prefs.showWelcomeDialog
+    if (prefs.helpPage)
+        globals.helpPage = prefs.helpPage
 }
 
 /**
@@ -104,7 +111,7 @@ export function loadUiPrefs(storage = defaultStorage()) {
  */
 export function initUiPrefs(storage = defaultStorage()) {
     loadUiPrefs(storage)
-    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts, globals.showWelcomeDialog], () => {
+    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts, globals.showWelcomeDialog, globals.helpPage], () => {
         writePrefs(currentPrefs(), storage)
     })
 }

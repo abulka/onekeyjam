@@ -45,6 +45,71 @@ const FAMILY_DEFS = [
 ];
 const EXOTIC = { name: 'exotic', weight: -10 };
 
+/**
+ * How much chromatic colour the engine prefers when a key is supplied.
+ * `diatonic` stays strictly in key (dorian flattens to aeolian and locrian #2
+ * to locrian); `jazz` (the default) restores the idiomatic primaries while the
+ * key shapes the alternatives; `adventurous` prefers lydian and lydian
+ * dominant colour on the primary scales. Function rules (minor V7, tritone
+ * sub, backdoor) apply in every profile.
+ */
+export const PROJECT_COLOURS = ['diatonic', 'jazz', 'adventurous'];
+export const DEFAULT_COLOUR = 'jazz';
+
+const COLOUR_PROFILES = {
+    diatonic: {
+        inKeyBonus: 5,
+        subsetBonus: 2,
+        outOfKeyPenalty: 3,
+        functionalHalfDim: true,
+        tonicMajor: true,
+        ivLydian: false,
+        colourBonuses: {},
+    },
+    jazz: {
+        inKeyBonus: 2,
+        subsetBonus: 1,
+        outOfKeyPenalty: 1,
+        functionalHalfDim: false,
+        tonicMajor: true,
+        ivLydian: true,
+        colourBonuses: { dorian: 2, 'locrian #2': 2 },
+    },
+    adventurous: {
+        inKeyBonus: 0,
+        subsetBonus: 0,
+        outOfKeyPenalty: 0,
+        functionalHalfDim: false,
+        tonicMajor: false,
+        ivLydian: true,
+        colourBonuses: { dorian: 3, 'locrian #2': 3, lydian: 4, 'lydian dominant': 6 },
+    },
+};
+
+/** @param {string|undefined} colour */
+function colourProfile(colour) {
+    return COLOUR_PROFILES[colour] ?? COLOUR_PROFILES[DEFAULT_COLOUR];
+}
+
+/**
+ * Colour bonus for a scale type, gated to the chord qualities it suits.
+ * @param {string} type @param {*} shape @param {*} profile
+ */
+function colourBonus(type, shape, profile) {
+    const bonus = profile.colourBonuses[type] ?? 0;
+    if (!bonus)
+        return 0;
+    if (type === 'dorian' && !(shape.minorThird && shape.hasMinor7 && !shape.isHalfDim && !shape.isDominant))
+        return 0;
+    if (type === 'locrian #2' && !shape.isHalfDim)
+        return 0;
+    if (type === 'lydian' && !(shape.majorThird && !shape.isDominant))
+        return 0;
+    if (type === 'lydian dominant' && !shape.isDominant)
+        return 0;
+    return bonus;
+}
+
 const TIER_1_TYPES = [
     'major', 'dorian', 'mixolydian', 'lydian', 'aeolian',
     'melodic minor', 'lydian dominant', 'altered', 'locrian #2', 'phrygian dominant',
@@ -70,6 +135,166 @@ const FAMILY_SETS = FAMILY_DEFS.map((family) => ({
     ...family,
     set: scaleChromaSet(`C ${family.ref}`),
 }));
+
+/**
+ * Resolve a key description ({ tonic, type, colour } or a scale name such as
+ * "C major") into the pitch classes it licenses and its colour profile.
+ * @param {{tonic?:string, type?:string, colour?:string}|string} [key]
+ */
+function keyInfo(key) {
+    if (!key)
+        return undefined;
+    const name = typeof key === 'string' ? key : `${key.tonic} ${key.type}`;
+    const scale = Tonal.Scale.get(name);
+    if (scale.empty)
+        return undefined;
+    const tonicChroma = chromaOf(scale.tonic);
+    if (tonicChroma === undefined)
+        return undefined;
+    const colour = typeof key === 'string' ? DEFAULT_COLOUR : (key.colour ?? DEFAULT_COLOUR);
+    return {
+        tonic: scale.tonic,
+        type: scale.type,
+        colour,
+        profile: colourProfile(colour),
+        isMajor: scale.type === 'major',
+        isMinor: scale.type === 'aeolian' || scale.type === 'minor',
+        tonicChroma,
+        pcs: new Set(scale.notes.map(chromaOf).filter((chroma) => chroma !== undefined)),
+        name: `${scale.tonic} ${scale.type}`,
+    };
+}
+
+/** @param {Set<number>} a @param {Set<number>} b */
+function setsEqual(a, b) {
+    if (a.size !== b.size)
+        return false;
+    for (const value of a)
+        if (!b.has(value))
+            return false;
+    return true;
+}
+
+/** @param {Set<number>} subset @param {Set<number>} superset */
+function setIsSubset(subset, superset) {
+    for (const value of subset)
+        if (!superset.has(value))
+            return false;
+    return true;
+}
+
+/** @param {string} tonic @param {string} type */
+function scalePitchClasses(tonic, type) {
+    const scale = Tonal.Scale.get(`${tonic} ${type}`);
+    if (scale.empty)
+        return [];
+    return scale.notes.map(chromaOf).filter((chroma) => chroma !== undefined);
+}
+
+/**
+ * Jazz-function preferences relative to the key. Returns bonus points by scale
+ * type plus the pitch classes the function licenses (so the out-of-key penalty
+ * does not fight a deliberate choice such as the altered scale over a minor V7).
+ * @param {*} chord
+ * @param {*} key a resolved keyInfo
+ */
+function keyFunction(chord, key) {
+    const degree = mod12(chord.rootChroma - key.tonicChroma);
+    const shape = chordShape(chord);
+    const bonuses = new Map();
+    const licensed = new Set();
+    const prefer = (type, bonus) => bonuses.set(type, (bonuses.get(type) ?? 0) + bonus);
+
+    if (shape.isHalfDim) {
+        if (!key.profile.functionalHalfDim) {
+            // Jazz colour: locrian #2 (melodic minor) wherever the
+            // half-diminished chord sits, with locrian as the alternative.
+            prefer('locrian #2', 6);
+            prefer('locrian', 2);
+            for (const type of ['locrian #2', 'locrian'])
+                for (const pc of scalePitchClasses(chord.root, type))
+                    licensed.add(pc);
+        }
+        else if (degree === 2 && key.isMinor) {
+            // Minor-key iiø: locrian #2 is the jazz default, with locrian as
+            // the diatonic alternative; license both.
+            prefer('locrian #2', 8);
+            prefer('locrian', 2);
+            for (const type of ['locrian #2', 'locrian'])
+                for (const pc of scalePitchClasses(chord.root, type))
+                    licensed.add(pc);
+        }
+        else if (degree === 11 && key.isMajor) {
+            // Major-key viiø is the diatonic locrian chord.
+            prefer('locrian', 8);
+        }
+        else
+            prefer('locrian #2', 2);
+    }
+
+    if (shape.isDominant) {
+        if (degree === 7 && key.isMinor) {
+            // Minor-key V7 is chromatic; prefer the melodic/harmonic minor
+            // colours over plain mixolydian. A chord with a #9 or #5 is an
+            // altered dominant and takes the altered scale; otherwise phrygian
+            // dominant (harmonic minor) is the default. These scales carry the
+            // b6, b7 and altered tensions that the key licenses; lydian
+            // dominant (#11) stays unlicensed because its bright colour is not
+            // idiomatic over the minor-key dominant.
+            const alteredChord = chord.intervals.includes(3) || chord.intervals.includes(8);
+            const bonuses = alteredChord
+                ? [['altered', 16], ['phrygian dominant', 8], ['half-whole diminished', 8], ['mixolydian b6', 5], ['lydian dominant', 4]]
+                : [['phrygian dominant', 12], ['altered', 10], ['half-whole diminished', 8], ['mixolydian b6', 6], ['lydian dominant', 4]];
+            for (const [type, bonus] of bonuses)
+                prefer(type, bonus);
+            for (const type of ['altered', 'phrygian dominant'])
+                for (const pc of scalePitchClasses(chord.root, type))
+                    licensed.add(pc);
+        }
+        if (degree === 1) {
+            // bII7 is the tritone substitute; lydian dominant is the idiomatic
+            // scale because it keeps the #11 on the substituted root.
+            prefer('lydian dominant', 6);
+            for (const pc of scalePitchClasses(chord.root, 'lydian dominant'))
+                licensed.add(pc);
+        }
+        if (degree === 10) {
+            // bVII7 is the backdoor dominant.
+            prefer('lydian dominant', 4);
+            for (const pc of scalePitchClasses(chord.root, 'lydian dominant'))
+                licensed.add(pc);
+        }
+    }
+
+    if (key.profile.tonicMajor && shape.isMajorQuality && !shape.isDominant && degree === 0 && key.isMajor)
+        prefer('major', 4);
+
+    if (key.profile.ivLydian && shape.majorThird && !shape.isDominant) {
+        // IV, bVI and bIII major chords take lydian colour (their #11 is in
+        // the key) in the jazz and adventurous profiles; in a minor key the
+        // Neapolitan bIImaj7 is the lydian chord.
+        if (key.isMajor && [3, 5, 8].includes(degree))
+            prefer('lydian', 3);
+        else if (key.isMinor && degree === 1)
+            prefer('lydian', 6);
+    }
+
+    if (shape.majorThird && !shape.isDominant && !shape.hasMajor7 && key.isMinor && degree === 10) {
+        // bVII major (the Andalusian / natural-minor VII) is mixolydian, whose
+        // notes are the natural minor set.
+        prefer('mixolydian', 3);
+    }
+
+    if (shape.minorThird && shape.hasMinor7 && !shape.isHalfDim && key.isMajor && degree === 4) {
+        // iii7 in a major key: the diatonic phrygian mode has an avoid note on
+        // the b9, so nudge the idiomatic aeolian/dorian choices back in front of
+        // the sparse pentatonic, which the in-key test alone would favour.
+        prefer('aeolian', 3);
+        prefer('dorian', 3);
+    }
+
+    return { bonuses, licensed, degree };
+}
 
 /** @param {Set<number>} relSet */
 function familyOf(relSet) {
@@ -365,8 +590,11 @@ function conventionBonus(type, shape) {
     return bonus;
 }
 
-/** @param {Set<number>} relSet @param {*} chord @param {*} family @param {string} type */
-function scoreScale(relSet, chord, family, type) {
+/**
+ * @param {Set<number>} relSet @param {*} chord @param {*} family @param {string} type
+ * @param {*} [key] resolved keyInfo @param {*} [fn] keyFunction(chord, key)
+ */
+function scoreScale(relSet, chord, family, type, key, fn) {
     const shape = chordShape(chord);
     let score = 0;
 
@@ -390,11 +618,29 @@ function scoreScale(relSet, chord, family, type) {
     score += TYPE_PRIORITY.get(type) ?? -8;
     score += conventionBonus(type, shape);
 
+    if (key && fn) {
+        const profile = key.profile;
+        const absolutePcs = new Set([...relSet].map((srel) => mod12(chord.rootChroma + srel)));
+        if (setsEqual(absolutePcs, key.pcs))
+            score += profile.inKeyBonus;
+        else if (setIsSubset(absolutePcs, key.pcs))
+            score += profile.subsetBonus;
+        for (const pc of absolutePcs) {
+            const srel = mod12(pc - chord.rootChroma);
+            if (!key.pcs.has(pc) && !chord.intervals.includes(srel) && !fn.licensed.has(pc))
+                score -= profile.outOfKeyPenalty;
+        }
+        score += fn.bonuses.get(type) ?? 0;
+        score += colourBonus(type, shape, profile);
+    }
+
     return score;
 }
 
-/** @param {*} chord */
-function allSuggestions(chord) {
+/** @param {*} chord @param {{tonic?:string, type?:string, colour?:string}|string} [key] */
+function allSuggestions(chord, key) {
+    const resolvedKey = keyInfo(key);
+    const fn = resolvedKey ? keyFunction(chord, resolvedKey) : undefined;
     const suggestions = [];
     for (const scaleType of Tonal.ScaleType.all()) {
         const scale = Tonal.Scale.get(`${chord.root} ${scaleType.name}`);
@@ -408,7 +654,7 @@ function allSuggestions(chord) {
             name: `${scale.tonic} ${scale.type}`,
             type: scale.type,
             family: family.name,
-            score: scoreScale(relSet, chord, family, scale.type),
+            score: scoreScale(relSet, chord, family, scale.type, resolvedKey, fn),
             notes: scale.notes.map((n) => Tonal.Note.simplify(n)),
             relSet,
         });
@@ -421,12 +667,13 @@ function allSuggestions(chord) {
  * All candidate scales for a chord, best first, before duplicate removal and
  * diversity adjustment. Intended for debugging and documentation.
  * @param {*} input chord symbol, notes plus hints, or a chord object
+ * @param {{tonic?:string, type?:string, colour?:string}|string} [key] optional project key context
  */
-export function allRankedSuggestions(input) {
+export function allRankedSuggestions(input, key) {
     const chord = resolveChord(input);
     if (!chord)
         return [];
-    return allSuggestions(chord);
+    return allSuggestions(chord, key);
 }
 
 /**
@@ -434,12 +681,13 @@ export function allRankedSuggestions(input) {
  * and a gentle bias against repeating the same scale family.
  * @param {*} input chord symbol, notes plus hints, or a chord object
  * @param {number} count how many suggestions to return
+ * @param {{tonic?:string, type?:string, colour?:string}|string} [key] optional project key context
  */
-export function rankScales(input, count = 3) {
+export function rankScales(input, count = 3, key) {
     const chord = resolveChord(input);
     if (!chord)
         return [];
-    const suggestions = allSuggestions(chord);
+    const suggestions = allSuggestions(chord, key);
     const seen = new Set();
     const working = [];
     for (const suggestion of suggestions) {
@@ -453,23 +701,23 @@ export function rankScales(input, count = 3) {
     return working.slice(0, count);
 }
 
-/** @param {*} input @param {number} count */
-export function chordScaleNamesFor(input, count = 3) {
-    return rankScales(input, count).map((suggestion) => suggestion.name);
+/** @param {*} input @param {number} count @param {{tonic?:string, type?:string, colour?:string}|string} [key] */
+export function chordScaleNamesFor(input, count = 3, key) {
+    return rankScales(input, count, key).map((suggestion) => suggestion.name);
 }
 
-/** @param {*} input @param {number} variation 1-based */
-export function chordScaleNameFor(input, variation = 1) {
-    const names = chordScaleNamesFor(input, Math.max(variation, 1));
+/** @param {*} input @param {number} variation 1-based @param {{tonic?:string, type?:string, colour?:string}|string} [key] */
+export function chordScaleNameFor(input, variation = 1, key) {
+    const names = chordScaleNamesFor(input, Math.max(variation, 1), key);
     return names[variation - 1] ?? '';
 }
 
-/** @param {*} input */
-export function compatibleScaleTypesFor(input) {
+/** @param {*} input @param {{tonic?:string, type?:string, colour?:string}|string} [key] */
+export function compatibleScaleTypesFor(input, key) {
     const chord = resolveChord(input);
     if (!chord)
         return [];
-    return allSuggestions(chord)
+    return allSuggestions(chord, key)
         .filter((suggestion) => chord.intervals.every((interval) => suggestion.relSet.has(interval)))
         .map((suggestion) => suggestion.type);
 }
@@ -483,21 +731,51 @@ export function chordDescription(input) {
     return name;
 }
 
+const JAZZ_COLOUR_TYPES = new Set(['dorian', 'locrian #2', 'lydian']);
+const ADVENTUROUS_COLOUR_TYPES = new Set(['lydian', 'lydian dominant', 'dorian', 'locrian #2']);
+
+/**
+ * A tiny label for a stored scale in the chord/scale grid: the notes that fall
+ * outside the project key, and whether the scale is a colour choice of the
+ * active jazz or adventurous profile (diatonic has no colour label).
+ * @param {*} input chord symbol, notes plus hints, or a chord object
+ * @param {string} scaleName
+ * @param {{tonic?:string,type?:string,colour?:string}|string} [key] optional project key context
+ * @returns {{outOfKey: Array<string>, colour: string|null}}
+ */
+export function scaleAnnotation(input, scaleName, key) {
+    const resolved = keyInfo(key);
+    const result = checkScaleAgainstChord(input, scaleName, key);
+    let colour = null;
+    if (resolved && resolved.colour !== 'diatonic') {
+        const scale = Tonal.Scale.get(scaleName);
+        const types = resolved.colour === 'adventurous' ? ADVENTUROUS_COLOUR_TYPES : JAZZ_COLOUR_TYPES;
+        if (!scale.empty && types.has(scale.type))
+            colour = resolved.colour;
+    }
+    return { outOfKey: result.outOfKey ?? [], colour };
+}
+
 /**
  * Check a stored scale name against a chord description. This is stricter than
  * the ranking: it only reports guide-tone omissions and hard semitone clashes,
  * so deliberate modal colour scales are not flagged.
+ *
+ * With a key context, out-of-key colour notes are reported separately in
+ * `outOfKey`; they do not make `ok` false, because chromatic colour is often
+ * deliberate (secondary dominants, borrowed chords, altered tensions).
  * @param {*} input
  * @param {string} scaleName
- * @returns {{ok:boolean, missing:Array<number>, missingEssential:Array<number>, avoid:Array<{degree:number, related:number, penalty:number}>, reasons:Array<string>}}
+ * @param {{tonic?:string, type?:string, colour?:string}|string} [key] optional project key context
+ * @returns {{ok:boolean, missing:Array<number>, missingEssential:Array<number>, avoid:Array<{degree:number, related:number, penalty:number}>, outOfKey:Array<string>, reasons:Array<string>}}
  */
-export function checkScaleAgainstChord(input, scaleName) {
+export function checkScaleAgainstChord(input, scaleName, key) {
     const chord = resolveChord(input);
     if (!chord)
-        return { ok: false, missing: [], missingEssential: [], avoid: [], reasons: ['could not resolve chord'] };
+        return { ok: false, missing: [], missingEssential: [], avoid: [], outOfKey: [], reasons: ['could not resolve chord'] };
     const scale = Tonal.Scale.get(scaleName);
     if (scale.empty)
-        return { ok: false, missing: [], missingEssential: [], avoid: [], reasons: ['unknown scale'] };
+        return { ok: false, missing: [], missingEssential: [], avoid: [], outOfKey: [], reasons: ['unknown scale'] };
     const relSet = new Set(scale.notes.map((n) => mod12(chromaOf(n) - chord.rootChroma)));
     const shape = chordShape(chord);
     const missing = chord.intervals.filter((interval) => !relSet.has(interval));
@@ -524,5 +802,17 @@ export function checkScaleAgainstChord(input, scaleName) {
         reasons.push(`missing guide tones at semitones: ${missingEssential.join(', ')}`);
     if (avoid.length > 0)
         reasons.push(`hard semitone clash on semitones: ${avoid.map((a) => a.degree).join(', ')}`);
-    return { ok: missingEssential.length === 0 && avoid.length === 0, missing, missingEssential, avoid, reasons };
+
+    const outOfKey = [];
+    const resolvedKey = keyInfo(key);
+    if (resolvedKey) {
+        const fn = keyFunction(chord, resolvedKey);
+        for (const note of scale.notes) {
+            const pc = chromaOf(note);
+            if (pc === undefined || resolvedKey.pcs.has(pc) || chord.notePcs.includes(pc) || fn.licensed.has(pc))
+                continue;
+            outOfKey.push(Tonal.Note.simplify(note));
+        }
+    }
+    return { ok: missingEssential.length === 0 && avoid.length === 0, missing, missingEssential, avoid, outOfKey, reasons };
 }
