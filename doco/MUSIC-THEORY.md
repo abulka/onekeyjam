@@ -414,22 +414,27 @@ choice; the next chord trigger follows the history again.
 
 ### Shuffle
 
-Shuffle generates the top six ranked candidates for the chord with the same
-key-aware engine and then draws one at random, weighted by:
+Shuffle generates ranked candidates for the chord with the same key-aware
+engine and draws one at random, but it is anchored to the harmony: it only
+changes when the **chord changes**, and a repeated trigger of the same chord
+holds the scale. Inside that, the draw is weighted by:
 
 - the rank position, so the idiomatic primary scale is the most likely;
 - the common tones with the previous scale, so the changes still connect;
 - novelty relative to the last few scales, so recently heard pitch sets are
   unlikely to return.
 
-A candidate with the previous scale's exact pitch set is skipped while another
-candidate exists, so the harmony keeps moving. Every candidate is a scale the
-engine already rates for the chord, so random variety cannot produce a scale
-that clashes with the harmony.
+To keep a change musical, the draw is limited to candidates within
+`maxNewNotes` substituted notes of the previous scale (the `Spread` control), so
+a change is a close colour shift rather than a jump. If solo notes are sounding
+when the chord changes, shuffle takes the **closest fit** instead of a random
+draw, so the mapping barely moves under the player's fingers. Every candidate
+is a scale the engine already rates for the chord, so variety cannot produce a
+scale that clashes with the harmony.
 
-Because the pool is the top six and the grid stores only three slots, a draw is
-often a scale the grid does not contain. The header above the grid always names
-the live scale in an `auto:` chip, and the current chord row marks the closest
+Because the pool can be larger than the three stored slots, a draw is often a
+scale the grid does not contain. The header above the grid always names the
+live scale in an `auto:` chip, and the current chord row marks the closest
 stored alternative with a dashed amber border and a **closest** tag, whose
 tooltip gives the number of shared notes. When the drawn scale does coincide
 with a stored slot, that cell keeps the solid highlight and bold name and no

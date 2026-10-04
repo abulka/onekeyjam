@@ -31,10 +31,9 @@ export const HISTORY_LIMIT = 8
  */
 export const POLICY_PRESETS = {
     shuffle: [
-        { name: 'balanced', label: 'Balanced', options: { poolSize: 6, dwell: 1, changeChance: 1, phraseBias: false, phraseStrength: 1 } },
-        { name: 'steady', label: 'Steady', options: { poolSize: 3, dwell: 3, changeChance: 0.5, phraseBias: false, phraseStrength: 1 } },
-        { name: 'adventurous', label: 'Adventurous', options: { poolSize: 8, dwell: 1, changeChance: 1, phraseBias: false, phraseStrength: 1 } },
-        { name: 'phrase-aware', label: 'Phrase-aware', options: { poolSize: 6, dwell: 2, changeChance: 0.75, phraseBias: true, phraseStrength: 1 } },
+        { name: 'subtle', label: 'Subtle', options: { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 } },
+        { name: 'varied', label: 'Varied', options: { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 } },
+        { name: 'wild', label: 'Wild', options: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: false, phraseBias: false, phraseStrength: 1 } },
     ],
     follow: [
         { name: 'simple', label: 'Simple', options: { contextChords: 1, phraseBias: false, phraseStrength: 1 } },
@@ -360,10 +359,10 @@ export function chooseFollowCandidate(candidates, context) {
 }
 
 /**
- * Pick a live scale for variety. Candidates are ranked best first; rank,
- * common tones with the previous scale and novelty all shape the weights.
- * A candidate with the same pitch set as the previous scale is skipped when
- * another candidate exists, so the harmony keeps moving.
+ * Pick a live scale for variety. Candidates are ranked best first; the draw is
+ * limited to candidates whose pitch set is within `maxNewNotes` of the previous
+ * scale, so a change is a close colour shift rather than a jump. Rank, common
+ * tones and novelty shape the weights inside that band.
  * @param {Array<{name: string, pcs: Set<number>}>} candidates ranked best first
  * @param {*} context from buildContext()
  * @param {() => number} rng injectable for tests
@@ -371,11 +370,22 @@ export function chooseFollowCandidate(candidates, context) {
 export function chooseShuffleCandidate(candidates, context, rng = Math.random) {
     const previousPcs = context.previousScalePcs ?? new Set()
     const recent = context.recentScaleSets ?? []
+    const maxNewNotes = Number.isFinite(context.maxNewNotes) ? context.maxNewNotes : 1
+    // How many notes a change substitutes, roughly the symmetric difference / 2.
+    const changedCount = (pcs) => Math.round((pcs.size + previousPcs.size - 2 * commonToneCount(pcs, previousPcs)) / 2)
+
     let pool = candidates.map((candidate, index) => ({ candidate, index }))
-    if (pool.length > 1) {
-        const withoutPrevious = pool.filter(({ candidate }) => !setsEqual(candidate.pcs, previousPcs))
-        if (withoutPrevious.length > 0)
-            pool = withoutPrevious
+    if (previousPcs.size > 0) {
+        const close = pool.filter(({ candidate }) => changedCount(candidate.pcs) <= maxNewNotes)
+        if (close.length > 0)
+            pool = close
+        else {
+            // nothing is inside the band: fall back to the closest candidate(s)
+            let best = Infinity
+            for (const entry of pool)
+                best = Math.min(best, changedCount(entry.candidate.pcs))
+            pool = pool.filter(({ candidate }) => changedCount(candidate.pcs) === best)
+        }
     }
 
     const weights = []
@@ -402,12 +412,9 @@ export function chooseShuffleCandidate(candidates, context, rng = Math.random) {
         }
     }
 
-    const common = commonToneCount(chosen.candidate.pcs, previousPcs)
-    const seen = recent.some((set) => setsEqual(chosen.candidate.pcs, set))
-    const reason = seen
-        ? `shuffle: colour pick (rank ${chosen.index + 1} of ${candidates.length})`
-        : `shuffle: rank ${chosen.index + 1} of ${candidates.length}, ${common} common tones`
-    return { index: chosen.index, rank: chosen.index + 1, common, reason }
+    const changed = changedCount(chosen.candidate.pcs)
+    const changeLabel = changed === 0 ? 'same notes' : changed === 1 ? '1 note change' : `${changed} note change`
+    return { index: chosen.index, rank: chosen.index + 1, common: commonToneCount(chosen.candidate.pcs, previousPcs), changed, reason: `shuffle: ${changeLabel}` }
 }
 
 /** @param {ChordConfig} config */
@@ -474,6 +481,7 @@ function buildContext(current) {
         previous2ScalePcs: secondLast ? secondLast.scalePcs : new Set(),
         recentScaleSets: history.slice(-3).map((entry) => entry.scalePcs),
         contextChords: globals.scaleFiltering.policyOptions?.contextChords ?? 1,
+        maxNewNotes: globals.scaleFiltering.policyOptions?.maxNewNotes ?? 1,
         lastSoloPc: lastSolo ? lastSolo.pc : undefined,
         lastSoloName: lastSolo ? lastSolo.name : '',
         phraseBias: globals.scaleFiltering.policyOptions?.phraseBias ?? false,
@@ -485,8 +493,9 @@ function buildContext(current) {
  * Decide the scale for a chord trigger under the active policy.
  * @param {ChordConfig} chordConfig
  * @param {string} [policy]
- * @param {{rng?: () => number, heldRank?: number|null}} [options] heldRank
- * holds a previously drawn shuffle rank; rng is injectable for tests.
+ * @param {{rng?: () => number, heldRank?: number|null, closest?: boolean}} [options]
+ * heldRank holds a previously drawn shuffle rank, closest asks for the nearest
+ * fit to the previous scale, and rng is injectable for tests.
  * @returns {ScaleDecision|null} null when the normal manual behaviour applies
  */
 export function chooseScaleForChord(chordConfig, policy = globals.scaleFiltering.policy, options = {}) {
@@ -528,7 +537,21 @@ export function chooseScaleForChord(chordConfig, policy = globals.scaleFiltering
             : null
         let index
         let reason
-        if (heldRank != null) {
+        if (options.closest && (context.previousScalePcs?.size ?? 0) > 0) {
+            // A chord change while solo notes are held: take the closest fit so
+            // the mapping barely moves under the player's fingers.
+            let bestCommon = -1
+            index = 0
+            for (let i = 0; i < candidates.length; i++) {
+                const common = commonToneCount(candidates[i].pcs, context.previousScalePcs)
+                if (common > bestCommon) {
+                    bestCommon = common
+                    index = i
+                }
+            }
+            reason = `shuffle: closest fit (${bestCommon} common tones)`
+        }
+        else if (heldRank != null) {
             index = heldRank
             const common = commonToneCount(candidates[index].pcs, context.previousScalePcs)
             reason = `shuffle: holding rank ${index + 1} of ${candidates.length}, ${common} common tones`
@@ -579,6 +602,8 @@ export function resetChordHistory() {
     globals.recentSoloNotes = []
     globals.scaleFiltering.shuffleRank = null
     globals.scaleFiltering.shuffleDwellRemaining = 0
+    globals.scaleFiltering.shuffleChordId = null
+    globals.scaleFiltering.shuffleDeferred = false
     clearScaleRankingCache()
 }
 

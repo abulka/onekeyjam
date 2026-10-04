@@ -84,23 +84,35 @@ describe('manual scale picks vs the follow/shuffle policy', () => {
         assert.equal(globals.scaleFiltering.manualScaleNote, 'D3')
     })
 
-    it('lets the policy resume when the same chord is re-triggered', () => {
+    it('keeps the manual pick when the same chord is re-triggered', () => {
         clickCell('D3', 'D#6')
         assert.equal(globals.scaleFiltering.manualScaleNote, 'D3')
         triggerChord('D3')
         assert.equal(globals.currentChordTriggerNote, 'D3')
-        assert.equal(globals.scaleFiltering.manualScaleNote, '', 'a re-trigger releases the manual pick')
-        assert.ok(globals.scaleFiltering.autoScaleNotes.length > 0, 'shuffle chooses again on the same chord')
+        assert.equal(globals.scaleFiltering.manualScaleNote, 'D3', 'the override is kept for this chord')
+        assert.equal(globals.currentScaleFilter, 'scale2')
+        assert.equal(globals.scaleFiltering.autoScaleNotes.length, 0, 'the policy must not override the pick')
     })
 
-    it('lets the follow policy resume when the same chord is re-triggered', () => {
+    it('keeps the manual pick under the follow policy too', () => {
         globals.scaleFiltering.policy = 'follow'
         clickCell('D3', 'F#6')  // scale3, on the F# cell
         assert.equal(globals.currentScaleFilter, 'scale3')
         assert.equal(globals.scaleFiltering.manualScaleNote, 'D3')
         triggerChord('D3')
-        assert.equal(globals.scaleFiltering.manualScaleNote, '', 'a re-trigger releases the manual pick')
-        assert.ok(['scale1', 'scale2', 'scale3'].includes(globals.currentScaleFilter))
+        assert.equal(globals.currentScaleFilter, 'scale3')
+        assert.equal(globals.scaleFiltering.manualScaleNote, 'D3')
+    })
+
+    it('respects a 1-4 override on the next chord hit', () => {
+        wireScaleFilterShortcuts()
+        globals.currentChordTriggerNote = 'D3'
+        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit2' }))
+        assert.equal(globals.currentScaleFilter, 'scale2')
+        assert.equal(globals.scaleFiltering.manualScaleNote, 'D3')
+        triggerChord('D3')
+        assert.equal(globals.currentScaleFilter, 'scale2', 'the shortcut override survives the next chord hit')
+        assert.equal(globals.scaleFiltering.autoScaleNotes.length, 0)
     })
 
     it('resumes the policy when a different chord is triggered', () => {

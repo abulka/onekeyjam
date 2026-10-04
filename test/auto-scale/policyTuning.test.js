@@ -2,12 +2,13 @@ import assert from 'assert'
 import { globals } from '@/lib/globals.js'
 import { scaleNameToNotes } from '@/lib/scaleToNotes.js'
 import { applyScalePolicy, rerollShuffleScale } from '@/lib/change-scale.js'
-import { samePitchClasses, resetChordHistory } from '@/lib/autoScale.js'
+import { samePitchClasses, resetChordHistory, recordChordHistory } from '@/lib/autoScale.js'
 
 /*
- * Shuffle options: the drawn rank is held for the dwell (by rank, so each new
- * chord still gets a fitting scale), a change chance decides whether a dwell
- * boundary redraws, and Reroll forces a fresh draw. See doco/SCALE-POLICIES.md.
+ * Shuffle anchors a change to the harmony: a repeated trigger of the same
+ * chord holds the scale, a chord change may redraw within a close band, and a
+ * change made while solo notes are held takes the closest fit. See
+ * doco/SCALE-POLICIES.md.
  */
 
 function configFor(id, chord, chordNotes, scales) {
@@ -15,6 +16,10 @@ function configFor(id, chord, chordNotes, scales) {
     for (const slot of ['scale1', 'scale2', 'scale3'])
         config[`${slot}Notes`] = scaleNameToNotes(config[slot])
     return config
+}
+
+function goTo(note) {
+    globals.currentChordTriggerNote = note
 }
 
 describe('shuffle policy options', () => {
@@ -32,15 +37,18 @@ describe('shuffle policy options', () => {
         globals.pendingNoteOffs = {}
         globals.chordTriggerMap = {
             C3: configFor(1, 'Cmaj7', ['C3', 'E3', 'G3', 'B3'], ['C major', 'C lydian', 'C harmonic major']),
+            D3: configFor(2, 'Dm7', ['D3', 'F3', 'A3', 'C4'], ['D dorian', 'D aeolian', 'D minor pentatonic']),
         }
         globals.currentChordTriggerNote = 'C3'
         globals.currentScaleFilter = 'scale1'
         globals.projectKey = null
-        globals.project = { options: {}, songs: { default: { ids: [1], favourites: [], blacklist: [] } } }
+        globals.project = { options: {}, songs: { default: { ids: [1, 2], favourites: [], blacklist: [] } } }
         globals.scaleFiltering.policy = 'shuffle'
-        globals.scaleFiltering.policyOptions.poolSize = 6
-        globals.scaleFiltering.policyOptions.dwell = 2
+        globals.scaleFiltering.policyOptions.poolSize = 5
+        globals.scaleFiltering.policyOptions.dwell = 1
         globals.scaleFiltering.policyOptions.changeChance = 1
+        globals.scaleFiltering.policyOptions.maxNewNotes = 1
+        globals.scaleFiltering.policyOptions.deferWhilePlaying = true
         globals.scaleFiltering.frozen = false
         globals.scaleFiltering.autoScaleName = ''
         globals.scaleFiltering.autoScaleNotes = []
@@ -52,39 +60,41 @@ describe('shuffle policy options', () => {
     afterEach(() => {
         resetChordHistory()
         globals.scaleFiltering.policy = 'manual'
-        globals.scaleFiltering.policyOptions.poolSize = 6
-        globals.scaleFiltering.policyOptions.dwell = 1
-        globals.scaleFiltering.policyOptions.changeChance = 1
         globals.chordTriggerMap = {}
         globals.currentChordTriggerNote = undefined
         globals.currentScaleFilter = 'scale1'
         globals.scaleFiltering.autoScaleName = ''
-        globals.scaleFiltering.autoScaleNotes = []
+        globals.scaleFiltering.autoScaleNotes = ''
     })
 
-    it('draws a rank and holds it for the dwell', () => {
+    it('holds the scale when the same chord is triggered again', () => {
         applyScalePolicy({ rng: () => 0 })
         assert.equal(globals.scaleFiltering.shuffleRank, 0)
-        assert.equal(globals.scaleFiltering.shuffleDwellRemaining, 1)
         const heldName = globals.scaleFiltering.autoScaleName
 
         applyScalePolicy({ rng: () => 0.999 })
-        assert.equal(globals.scaleFiltering.shuffleRank, 0, 'the dwell should hold rank 0')
+        assert.equal(globals.scaleFiltering.shuffleRank, 0, 'a repeat must not redraw')
         assert.match(globals.scaleFiltering.autoReason, /holding rank 1/)
         assert.equal(globals.scaleFiltering.autoScaleName, heldName)
-        assert.equal(globals.scaleFiltering.shuffleDwellRemaining, 0)
-
-        applyScalePolicy({ rng: () => 0.999 })
-        assert.notEqual(globals.scaleFiltering.shuffleRank, 0, 'the boundary should redraw')
     })
 
-    it('keeps the rank when the change chance is zero', () => {
-        globals.scaleFiltering.policyOptions.dwell = 1
-        globals.scaleFiltering.policyOptions.changeChance = 0
+    it('draws again after the chord changes', () => {
+        applyScalePolicy({ rng: () => 0 })
+        assert.equal(globals.scaleFiltering.shuffleChordId, 1)
 
+        goTo('D3')
+        applyScalePolicy({ rng: () => 0.999 })
+        assert.equal(globals.scaleFiltering.shuffleChordId, 2)
+        assert.match(globals.scaleFiltering.autoReason, /shuffle:/)
+        assert.doesNotMatch(globals.scaleFiltering.autoReason, /holding/)
+    })
+
+    it('keeps the rank across a chord change when the change chance is zero', () => {
+        globals.scaleFiltering.policyOptions.changeChance = 0
         applyScalePolicy({ rng: () => 0 })
         assert.equal(globals.scaleFiltering.shuffleRank, 0)
 
+        goTo('D3')
         applyScalePolicy({ rng: () => 0.999 })
         assert.equal(globals.scaleFiltering.shuffleRank, 0, 'with 0% change the rank is kept')
         assert.match(globals.scaleFiltering.autoReason, /holding rank 1/)
@@ -101,6 +111,16 @@ describe('shuffle policy options', () => {
         rerollShuffleScale()
         assert.doesNotMatch(globals.scaleFiltering.autoReason, /holding/)
         assert.equal(globals.scaleFiltering.shuffleDwellRemaining, 3)
+    })
+
+    it('takes the closest fit when the chord changes while solo notes are held', () => {
+        applyScalePolicy({ rng: () => 0 })
+        recordChordHistory()  // as playChord does after a real trigger
+        globals.pendingNoteOffs = { 'E4': { allowedNote: 'F4' } }
+        goTo('D3')
+        applyScalePolicy({ rng: () => 0.999 })
+        assert.match(globals.scaleFiltering.autoReason, /closest fit/)
+        globals.pendingNoteOffs = {}
     })
 
     it('with a pool of three the draw is always a stored scale', () => {

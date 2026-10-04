@@ -54,7 +54,7 @@ describe('autoScale policies', () => {
     })
 
     describe('policy presets', () => {
-        const KNOWN_OPTIONS = new Set(['poolSize', 'dwell', 'changeChance', 'contextChords', 'phraseBias', 'phraseStrength'])
+        const KNOWN_OPTIONS = new Set(['poolSize', 'dwell', 'changeChance', 'maxNewNotes', 'deferWhilePlaying', 'contextChords', 'phraseBias', 'phraseStrength'])
 
         it('only set known option keys with real values', () => {
             for (const [mode, presets] of Object.entries(POLICY_PRESETS)) {
@@ -71,9 +71,9 @@ describe('autoScale policies', () => {
             }
         })
 
-        it('has a balanced shuffle preset that matches the defaults', () => {
-            const balanced = POLICY_PRESETS.shuffle.find((preset) => preset.name === 'balanced')
-            assert.deepEqual(balanced.options, { poolSize: 6, dwell: 1, changeChance: 1, phraseBias: false, phraseStrength: 1 })
+        it('has a varied shuffle preset that matches the defaults', () => {
+            const varied = POLICY_PRESETS.shuffle.find((preset) => preset.name === 'varied')
+            assert.deepEqual(varied.options, { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 })
         })
     })
 
@@ -318,14 +318,25 @@ describe('autoScale policies', () => {
             assert.equal(first.index, second.index)
         })
 
-        it('never repeats the previous pitch set when an alternative exists', () => {
+        it('prefers the closest candidate, keeping the previous pitch set', () => {
             const context = {
                 previousScalePcs: pitchClassSet(scaleNameToNotes('G mixolydian')),
                 recentScaleSets: [],
             }
             const result = chooseShuffleCandidate(candidates, context, () => 0)
+            assert.equal(result.index, 0)
+            assert.equal(result.changed, 0)
+            assert.match(result.reason, /same notes/)
+        })
+
+        it('allows a one-note colour shift when the previous set was just used', () => {
+            const context = {
+                previousScalePcs: pitchClassSet(scaleNameToNotes('G mixolydian')),
+                recentScaleSets: [pitchClassSet(scaleNameToNotes('G mixolydian'))],
+                maxNewNotes: 1,
+            }
+            const result = chooseShuffleCandidate(candidates, context, () => 0.2)
             assert.notEqual(result.index, 0)
-            assert.equal(result.index, 1)
         })
 
         it('allows the same pitch set when it is the only option', () => {

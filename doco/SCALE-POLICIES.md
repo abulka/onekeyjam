@@ -40,7 +40,7 @@ defaults preserve the sound of the original engine.
 
 | Phase | Feature | Status |
 |---|---|---|
-| 1 | Shuffle options: pool, dwell, change chance, reroll, ranking cache | Done |
+| 1 | Shuffle options: chord-change anchoring, close-shift band, hold, pool, dwell, change chance, reroll, ranking cache | Done |
 | 2 | Progression context: dominant resolutions and a two-chord ii-V-I | Done |
 | 3 | History strip and UI polish (README) | Done |
 | 4 | Phrase-aware bias from the last solo note | Done |
@@ -54,36 +54,47 @@ The button shows and hides the row, and the row shows the controls for the
 active mode (shuffle options, follow context, phrase, history and preset). All
 values are persisted in `uiPrefs` and default to the original behaviour.
 
-- **Pool** (3-8, default 6). How many engine-ranked candidates the draw is
-  taken from. A pool of 3 means only the stored `scale1/2/3`, so the grid always
-  highlights exactly; larger pools offer more colour and more live `auto:`
-  scales. The pool also widens or narrows the amount of surprise.
-- **Dwell** (1-4, default 1). How many chord triggers to hold the drawn *rank*
+Shuffle only changes the scale when the **chord changes**. A repeated trigger
+of the same chord holds the scale, so a repeated stab like `ZZZZZZ` never moves
+the notes under your fingers. This is the key difference from the first version
+of shuffle, which drew on every trigger.
+
+- **Pool** (3-8, default 5). How many engine-ranked candidates the draw is
+  taken from. A pool of 3 means only the stored `scale1/2/3`; larger pools offer
+  more colour and more live `auto:` scales.
+- **Dwell** (1-4, default 1). How many chord *changes* to hold the drawn rank
   before redrawing. The rank is held, not the literal scale, so each new chord
-  still gets a scale of that rank that fits its own harmony. A longer dwell is
-  steadier and less busy; a dwell of 1 redraws at every boundary.
+  still gets a scale of that rank that fits its own harmony.
 - **Change** (0-100%, default 100%). The chance of drawing a new rank at a
-  dwell boundary. Lower values keep the current colour for longer, even after
-  the dwell expires.
-- **Reroll** forces a fresh draw for the current chord and resets its dwell.
-- **Preset** (shuffle and follow) applies a named combination of values in one
-  click, so you do not have to tune each value. Shuffle presets are
-  **Balanced** (the defaults), **Steady**, **Adventurous** and
-  **Phrase-aware**; follow presets are **Simple**, **Progression**,
-  **Lyrical** and **Resolve**. Hand-adjusting any value moves the selector to
-  `Custom`.
+  dwell boundary. Lower values keep the current colour for longer.
+- **Spread** (same notes / 1 note / 2 notes / Wild, default 1 note). How far a
+  change may move the note set. A draw is limited to candidates whose pitch set
+  is within this many substituted notes of the previous scale, so a change is a
+  close colour shift rather than a jump. `Wild` lifts the limit.
+- **Hold** (default on). While solo notes are sounding, a chord change takes
+  the **closest fit** to the previous scale instead of a random draw, so the
+  mapping barely moves under the player's fingers.
+- **Reroll** forces a fresh draw for the current chord and resets its dwell; it
+  ignores the Spread band and the Hold rule for a deliberate jump.
+- **Preset** applies a named combination in one click. Shuffle presets are
+  **Subtle** (pool 3, held two changes), **Varied** (the default: one close
+  colour per chord change) and **Wild** (no band, no hold); follow presets are
+  **Simple**, **Progression**, **Lyrical** and **Resolve**. Hand-adjusting any
+  value moves the selector to `Custom`.
 
 The drawn rank is cached with the ranked candidates per chord, key, colour and
 pool size, so shuffle does not re-rank the scale dictionary on every trigger.
 The cache is cleared when a project loads, a key or colour changes, or the
 history resets.
 
-### Why hold the rank rather than the scale
+### Why hold on a repeat and bound the change
 
 Holding one literal scale across a chord change is unsafe: the new chord may
-not fit it. Holding the rank keeps the harmonic correctness of a fresh pick
-while giving the phrase a stable colour, because the same rank tends to be a
-similar kind of scale (for example the lydian-dominant slot on each dominant).
+not fit it. Bounding the change and, while notes are held, taking the closest
+fit keeps the harmony correct while giving the phrase a stable colour. Shuffle
+stays a close sibling of follow: follow picks the best continuation
+deterministically, shuffle picks a close random one, weighted by rank, common
+tones and novelty, and only when the harmony actually changes.
 
 ## Phase 2: progression context
 
@@ -147,9 +158,10 @@ comes later and stays off by default.
 This is behaviour, not a mode. The locked scale (`5`) always wins and pauses
 the policies. Solo in key (`0`) keeps the key scale and pauses them. A manual
 `1`-`4` press, a grid cell click or a right-hand black key applies immediately
-as a **one-shot override** for the chord it was made on: it is released on the
-next chord trigger, including a re-trigger of the same chord, so the policy
-resumes. Policies only choose on a chord trigger, never mid-chord.
+as an **override** for the chord it was made on: it is kept while that chord
+keeps sounding, including a re-trigger, and is released when a different chord
+is triggered so the policy resumes on the new chord. Policies only choose on a
+chord trigger, never mid-chord.
 
 ## UI map and manual smoke tests
 
@@ -164,7 +176,7 @@ Edit and Perform views, and appears when a project is loaded.
 | `Options` button | scale settings row | Shows or hides the advanced options panel. |
 | `Key: <key>` | scale settings row, far right | The resolved project key, in prominent text. |
 | `Preset` | Options panel, follow/shuffle | One-click policy presets for the active mode; shows `Custom` when the values are hand-tuned. |
-| `Pool`, `Dwell`, `Change` | Options panel, shuffle | Shuffle option values. |
+| `Pool`, `Dwell`, `Change`, `Spread`, `Hold` | Options panel, shuffle | Shuffle option values. `Spread` limits how far a change moves the note set; `Hold` keeps the closest fit while solo notes sound. |
 | `Reroll` | Options panel, shuffle, far right | Draws a new scale for the current chord now. |
 | `Context` | Options panel, follow | One or two previous chords. |
 | `Phrase`, `Strength` | Options panel, follow/shuffle | Phrase-aware bias. |
@@ -173,23 +185,27 @@ Edit and Perform views, and appears when a project is loaded.
 | `closest` tag / dashed cell | grid, current row | The nearest stored scale when the live scale is not a stored slot. |
 
 The presets are defined in `POLICY_PRESETS` in `src/lib/autoScale.js`. Shuffle:
-**Balanced** (the defaults), **Steady** (pool 3, dwell 3, 50% change),
-**Adventurous** (pool 8, always change) and **Phrase-aware** (phrase bias on).
-Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
-(two chords plus phrase bias) and **Resolve** (one chord, strong phrase bias).
+**Subtle** (only the stored scales, held for two chord changes), **Varied**
+(the default: a close colour change on each chord change) and **Wild** (no
+band, no hold). Follow: **Simple** (one chord), **Progression** (two chords),
+**Lyrical** (two chords plus phrase bias) and **Resolve** (one chord, strong
+phrase bias).
 
 ### Phase 1 - shuffle options
 
 1. Load a demo, set `Scales` to `shuffle`, click `Options`.
-2. Set `Pool` to 3. Trigger chords; the grid should always highlight exactly
-   one stored cell, and the chip should name one of `scale1/2/3`.
-3. Set `Pool` to 6 and `Dwell` to 3. Trigger the same chord three times: the
-   reason should say `shuffle: holding rank N ...` for consecutive triggers,
-   then redraw at the boundary.
-4. Set `Change` to `0%`. The rank should never change between triggers.
-5. Click `Reroll`: the reason should become a fresh draw, not `holding`.
-6. Choose the `Balanced` preset: the values return to `6 / 1 / 100%` and the
-   preset select stops showing `Custom`.
+2. Trigger the same chord several times (`Z Z Z Z Z`): the scale must not
+   change. The reason stays `holding` and the notes stay put.
+3. Trigger two different chords in turn: each chord change may draw once, and
+   the reason names the shift (for example `shuffle: 1 note change`).
+4. Set `Spread` to `same notes`: changes keep the same note set. Set it to
+   `Wild`: changes may jump.
+5. Set `Change` to `0%`: the rank is kept across chord changes.
+6. Click `Reroll`: the reason becomes a fresh draw, not `holding`.
+7. Choose the `Varied` preset: the values return to `5 / 1 / 100% / 1 note`
+   with `Hold` on, and the preset select stops showing `Custom`.
+8. While holding a long solo note, change chord: the reason should read
+   `closest fit`, and the scale should move as little as possible.
 
 ### Phase 2 - progression context
 
@@ -223,16 +239,18 @@ Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
 4. Tick `Phrase` with `shuffle` selected: the weights should favour candidates
    that contain the held note.
 
-### Manual pick behaviour (regression test)
+### Manual override behaviour (regression test)
 
-1. Set `Scales` to `shuffle`. Click a scale cell in a chord row: that scale
-   sounds immediately and its cell is highlighted, with no `auto:` chip.
-2. Trigger that same chord again: the policy should resume. Under `shuffle` an
-   `auto:` chip appears and the scale usually changes; under `follow history`
-   the reason line reappears, and the chosen scale may legitimately be the same
-   one because continuity still favours it. The important part is that the
-   policy runs again; it must not stay locked to the clicked slot.
-3. Repeat the same trigger several times: each trigger re-runs the policy.
+1. Set `Scales` to `shuffle`. Press `2` (or click a scale cell in a chord row):
+   that scale sounds immediately and its cell is highlighted, with no `auto:`
+   chip.
+2. Trigger that same chord (`Z`): the override is respected, so the scale stays
+   on the picked slot and no `auto:` chip appears.
+3. Trigger a **different** chord: the override is released and the policy
+   resumes. Under `shuffle` an `auto:` chip appears; under `follow history` the
+   reason line reappears.
+4. Re-trigger the first chord: the policy chooses for it again (the override
+   applied only for as long as that chord was the current one).
 
 ## Files
 

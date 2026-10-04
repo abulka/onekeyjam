@@ -469,7 +469,7 @@ function generalTableClick(event) {
       </label>
       <label class="advanced-field">Dwell
         <select v-model.number="globals.scaleFiltering.policyOptions.dwell"
-          title="Dwell: how many chord triggers to hold the drawn rank before redrawing. Each new chord still gets a fitting scale of that rank; a longer dwell is steadier and less busy.">
+          title="Dwell: how many chord changes to hold the drawn rank before redrawing. Each new chord still gets a fitting scale of that rank; a longer dwell is steadier and less busy.">
           <option v-for="n in [1, 2, 3, 4]" :key="n" :value="n">{{ n }}</option>
         </select>
       </label>
@@ -482,6 +482,19 @@ function generalTableClick(event) {
           <option :value="0.25">25%</option>
           <option :value="0">0%</option>
         </select>
+      </label>
+      <label class="advanced-field">Spread
+        <select v-model.number="globals.scaleFiltering.policyOptions.maxNewNotes"
+          title="Spread: how far a shuffle change may move the note set. Close keeps the same notes, 1-2 notes are close colour shifts, Wild allows anything.">
+          <option :value="0">same notes</option>
+          <option :value="1">1 note</option>
+          <option :value="2">2 notes</option>
+          <option :value="7">Wild</option>
+        </select>
+      </label>
+      <label class="advanced-field checkbox-field"
+        title="Hold while playing: do not jump the scale while solo notes are sounding; take the closest fit to what you are playing instead.">
+        <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.deferWhilePlaying" /> Hold
       </label>
     </template>
     <template v-else-if="globals.scaleFiltering.policy === 'follow'">

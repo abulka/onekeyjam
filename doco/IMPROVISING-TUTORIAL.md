@@ -108,7 +108,8 @@ right hand's scale is chosen each time you trigger a chord:
   press still overrides it for that chord.
 - **shuffle** draws a live scale from the top-ranked alternatives, weighted
   towards the primary scale and towards notes that connect with the last one.
-  It is a safe way to hear colours you would not have picked.
+  It only changes when the chord changes, so repeated stabs of one chord hold
+  the scale. It is a safe way to hear colours you would not have picked.
 
 A short reason appears beside the control after each automatic choice, for
 example `ii-V into G: diatonic dominant` or
@@ -227,8 +228,9 @@ three modes:
 - **manual** (the default): you stay in charge of the scale1/2/3 slots.
 - **follow history**: for each chord the app picks the stored scale that
   continues the scale you just played and fits the function of the progression.
-- **shuffle**: for each chord the app draws a fresh scale from the top-ranked
-  alternatives, keeping some continuity but always surprising you a little.
+- **shuffle**: when the chord changes, the app draws a close colour shift from
+  the top-ranked alternatives. A repeated trigger of the same chord holds the
+  scale, so it varies the harmony without moving the notes under your fingers.
 
 Why this helps:
 
@@ -236,8 +238,9 @@ Why this helps:
   a backdoor dominant or a full ii-V-I and picks the idiomatic scale, so the
   solo sounds intentional instead of accidentally outside.
 - **Variety on demand.** Shuffle is a safe way to hear colours you would not
-  have reached for; every choice still fits the chord, so you cannot play a
-  wrong note.
+  have reached for; every choice still fits the chord, and it changes only on a
+  chord change, so you cannot play a wrong note and the mapping stays put while
+  you hold a phrase.
 - **Phrases resolve.** The phrase bias follows your last solo note, so a line
   does not get cut off by the next chord.
 - **Nothing is a trap.** You can always override with `1`-`4` or a grid click,
@@ -250,18 +253,25 @@ only appear when the project is loaded.
 
 | Control | Mode | Benefit | Default |
 |---|---|---|---|
-| `Preset` | both | One-click options for the active mode. Choose a starting point, then fine-tune. | Balanced / Simple |
-| `Pool` (3-8) | shuffle | How many alternatives the draw uses. 3 = the stored scales only; 8 = more colour. | 6 |
-| `Dwell` (1-4) | shuffle | How many chords to hold one draw before changing. Longer is steadier. | 1 |
+| `Preset` | both | One-click options for the active mode. Choose a starting point, then fine-tune. | Varied / Simple |
+| `Pool` (3-8) | shuffle | How many alternatives the draw uses. 3 = the stored scales only; 8 = more colour. | 5 |
+| `Dwell` (1-4) | shuffle | How many chord changes to hold one draw before changing. Longer is steadier. | 1 |
 | `Change` (0-100%) | shuffle | The chance of a new draw at each boundary. Lower keeps a colour longer. | 100% |
+| `Spread` | shuffle | How far a change may move the notes: `same notes`, `1 note`, `2 notes` or `Wild`. | 1 note |
+| `Hold` | shuffle | Do not jump the scale while solo notes are sounding; take the closest fit instead. | on |
 | `Reroll` | shuffle | Draw a new scale for the current chord right now. | - |
 | `Context` (1-2) | follow | Whether to look one chord back or two, so a full ii-V-I is recognised. | 1 chord |
 | `Phrase` + `Strength` | either | Bias the next scale by your last solo note so the line resolves. | off |
 | `History` | either | Show the last four chord-to-scale choices above the grid. | off |
 
-The presets are the easiest way in. For **shuffle** they are **Balanced**
-(the defaults), **Steady** (few colours, held longer), **Adventurous** (more
-colour, changing often) and **Phrase-aware** (listens to your last note). For
+The single most important thing to know: **shuffle only changes the scale when
+the chord changes.** Repeated stabs of the same chord (`Z Z Z Z Z`) hold the
+scale, so the notes never move under your fingers. That is what makes it
+playable.
+
+The presets are the easiest way in. For **shuffle** they are **Subtle** (only
+the stored scales, held longer), **Varied** (the default: a close colour change
+on each chord change) and **Wild** (no limits, for experimenting). For
 **follow** they are **Simple** (one chord), **Progression** (two chords),
 **Lyrical** (two chords plus phrase) and **Resolve** (strong phrase bias). The
 selector shows `Custom` once you change any value by hand, so you always know
@@ -269,10 +279,10 @@ when you have moved away from a preset.
 
 Above the grid you also get the live read-outs: an `auto: <scale>` chip when a
 policy chose a scale that is not one of the stored slots, a short reason line
-(for example `ii-V-I into C: major` or `shuffle: holding rank 1 of 4`), and,
-when a shuffled scale is not a stored slot, a dashed `closest` marker on the
-nearest stored scale in that row. None of this changes the notes you can play;
-it just tells you what the app chose and why.
+(for example `ii-V-I into C: major`, `shuffle: 1 note change` or
+`shuffle: closest fit`), and, when a shuffled scale is not a stored slot, a
+dashed `closest` marker on the nearest stored scale in that row. None of this
+changes the notes you can play; it just tells you what the app chose and why.
 
 ### How to try each feature (smoke tests)
 
@@ -286,20 +296,25 @@ and repeat: the Cmaj7 reason changes to a plain resolution. Now play `F3`
 (Db7, the tritone substitute) then `E3`, and listen for the lydian-dominant
 resolution.
 
-**Shuffle options.** Set `Scales` to `shuffle`, `Pool` to `3`. Play any trigger
-key: the grid should always highlight exactly one stored scale, and the chip
-names one of that chord's scale1/2/3. Raise `Pool` to `6`: the chip often names
-a colour that is not in the grid, and the nearest cell gets the dashed
-`closest` marker. Set `Dwell` to `3` and play the same chord three times: the
-reason says `holding rank ...` for consecutive triggers, then changes. Set
-`Change` to `0%`: the rank stops changing. Press `Reroll` to force a new draw.
+**Shuffle is stable on repeated chords.** Set `Scales` to `shuffle`. Play the
+same trigger key several times (`Z Z Z Z Z`): the scale must stay the same and
+the reason should say `holding`. Then play two different chords in turn: each
+chord change may draw once, and the reason names a close shift such as
+`shuffle: 1 note change`. This is the behaviour that makes shuffle usable for a
+solo.
 
-**Presets.** With `shuffle` selected, choose `Steady` from the `Preset`
-dropdown and play: the scale should hold for longer and change rarely. Choose
-`Adventurous`: it changes almost every chord. With `follow history` selected,
-compare `Simple`, `Progression` and `Lyrical`, and listen for the ii-V-I and
-the phrase resolution. After you move any value by hand the dropdown shows
-`Custom`, and picking a preset again restores a known combination.
+**Shuffle spread and hold.** Set `Spread` to `same notes`: changes keep the same
+note set (only the label moves). Set it to `Wild`: changes may jump. Play a long
+solo note, then change chord while it rings: the reason reads `closest fit` and
+the notes move as little as possible. Press `Reroll` to force a new draw on the
+current chord. Set `Change` to `0%` to keep the same colour across changes.
+
+**Presets.** With `shuffle` selected, compare `Subtle`, `Varied` and `Wild` from
+the `Preset` dropdown and listen to how much each one changes. With `follow
+history` selected, compare `Simple`, `Progression` and `Lyrical`, and listen for
+the ii-V-I and the phrase resolution. After you move any value by hand the
+dropdown shows `Custom`, and picking a preset again restores a known
+combination.
 
 **Phrase bias.** Set `follow history`, tick `Phrase`, and play a long solo note
 that is the third or seventh of the next chord, then trigger that chord. With
@@ -312,11 +327,11 @@ watch the `Recent:` strip list the last four `chord -> scale` choices, each
 with a `manual`, `follow` or `shuffle` badge. This is the best way to learn
 what the policy is doing.
 
-**Manual override.** Set `Scales` to `shuffle` or `follow history`, click a
-scale cell in a chord row, then play that chord's trigger key again. The
-clicked scale sounds immediately, but the policy resumes on the next trigger:
-the `auto:` chip reappears and the scale may change. A manual pick is a
-one-shot override, never a lock.
+**Manual override.** Set `Scales` to `shuffle` or `follow history`, press `1`-`4`
+(or click a scale cell in a chord row) to pick a scale, then play that chord's
+trigger key. Your pick is respected: the scale stays on the chosen slot while
+that chord sounds. Trigger a different chord and the policy resumes for it, so
+the override is never a permanent lock.
 
 The full developer reference, including the theory and the exact scoring, is in
 `doco/SCALE-POLICIES.md`.

@@ -348,17 +348,34 @@ export function applyScalePolicy(options = {}) {
     const state = globals.scaleFiltering
     const policyOptions = state.policyOptions
     const rng = options.rng ?? Math.random
+    const currentChordId = globals.currentChordConfig().id
 
+    // Shuffle only changes on a real chord change; a repeated trigger of the
+    // same chord holds the scale. A change made while solo notes are held takes
+    // the closest fit instead of a random jump.
     let mode = 'draw'
+    let closest = false
     if (policy === 'shuffle' && !options.force) {
-        if (state.shuffleDwellRemaining > 0 && state.shuffleRank != null)
+        const notesHeld = Object.keys(globals.pendingNoteOffs).length > 0
+        const chordChanged = currentChordId !== state.shuffleChordId
+        const canHold = state.shuffleRank != null
+        if (!chordChanged && canHold) {
             mode = 'hold'
-        else if (state.shuffleRank != null && rng() >= (policyOptions?.changeChance ?? 1))
+        }
+        else if (chordChanged && canHold && state.shuffleDwellRemaining > 0) {
+            mode = 'hold'
+        }
+        else if (notesHeld && (policyOptions?.deferWhilePlaying ?? true)) {
+            mode = 'closest'
+            closest = true
+        }
+        else if (chordChanged && canHold && rng() >= (policyOptions?.changeChance ?? 1)) {
             mode = 'steady'
+        }
     }
-    const heldRank = mode === 'draw' ? null : state.shuffleRank
+    const heldRank = (mode === 'hold' || mode === 'steady') ? state.shuffleRank : null
 
-    const decision = chooseScaleForChord(globals.currentChordConfig(), policy, { heldRank, rng })
+    const decision = chooseScaleForChord(globals.currentChordConfig(), policy, { heldRank, rng, closest })
     if (!decision)
         return false
     if (decision.type === 'slot') {
@@ -368,12 +385,16 @@ export function applyScalePolicy(options = {}) {
         globals.scaleFiltering.autoReason = decision.reason
     }
     else {
-        if (mode === 'hold')
-            state.shuffleDwellRemaining = Math.max(0, state.shuffleDwellRemaining - 1)
+        if (mode === 'hold') {
+            if (currentChordId !== state.shuffleChordId)
+                state.shuffleDwellRemaining = Math.max(0, state.shuffleDwellRemaining - 1)
+        }
         else {
             state.shuffleRank = decision.rank ?? null
             state.shuffleDwellRemaining = Math.max(0, (policyOptions?.dwell ?? 1) - 1)
         }
+        state.shuffleChordId = currentChordId
+        state.shuffleDeferred = mode === 'closest'
         setAutoScaleFilter(decision.tonic ?? '', decision.scaleType ?? '', decision.notes ?? [], decision.scaleTypes ?? [], decision.reason)
     }
     return true
@@ -404,6 +425,8 @@ export function setScalePolicy(policy) {
     globals.scaleFiltering.manualScaleNote = ''
     globals.scaleFiltering.shuffleRank = null
     globals.scaleFiltering.shuffleDwellRemaining = 0
+    globals.scaleFiltering.shuffleChordId = null
+    globals.scaleFiltering.shuffleDeferred = false
     if (!globals.isProjectLoaded)
         return
     if (policy === 'manual') {

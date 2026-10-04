@@ -155,16 +155,22 @@ export const globals = reactive({
         autoReason: '',  // short explanation of the last automatic scale choice
 
         // Options for the follow and shuffle policies. See doco/SCALE-POLICIES.md.
+        // The shuffle defaults are the 'Varied' preset: change on a chord change,
+        // keep the shift close to the previous scale, and wait while notes sound.
         policyOptions: {
-            poolSize: 6,        // shuffle: ranked candidates to draw from (3-8)
-            dwell: 1,           // shuffle: chord triggers to hold the drawn rank
-            changeChance: 1,    // shuffle: chance to redraw at a dwell boundary (0-1)
-            contextChords: 1,   // follow: how many previous chords to consider (1-2)
-            phraseBias: false,  // follow/shuffle: bias by the last solo note
-            phraseStrength: 1,  // phrase bias strength (0.5 low, 1 medium, 2 high)
+            poolSize: 5,            // shuffle: ranked candidates to draw from (3-8)
+            dwell: 1,               // shuffle: chord changes to hold the drawn rank
+            changeChance: 1,        // shuffle: chance to redraw at a dwell boundary (0-1)
+            maxNewNotes: 1,         // shuffle: max pitch classes a change may move (0-7)
+            deferWhilePlaying: true,// shuffle: wait for held solo notes to release
+            contextChords: 1,       // follow: how many previous chords to consider (1-2)
+            phraseBias: false,      // follow/shuffle: bias by the last solo note
+            phraseStrength: 1,      // phrase bias strength (0.5 low, 1 medium, 2 high)
         },
         shuffleRank: null,          // shuffle: rank index currently held (0-based)
-        shuffleDwellRemaining: 0,   // shuffle: chord triggers left before a redraw
+        shuffleDwellRemaining: 0,   // shuffle: chord changes left before a redraw
+        shuffleChordId: null,       // chord id the current shuffle draw belongs to
+        shuffleDeferred: false,     // a draw was postponed while solo notes sounded
         // Chord trigger note for which the player explicitly picked a scale
         // (grid click, 1-4 shortcut or MIDI black key). While it matches the
         // current chord, the follow/shuffle policy leaves the pick alone.
