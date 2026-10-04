@@ -6,6 +6,7 @@ import { Note } from '@/lib/midi/webmidi.js'
 import { indexToNote } from "../lib/note-tools.js"
 import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events"
 import { getNoteKeyForCode } from "@/lib/midi/piano-key-map.js"
+import { isTypingTarget } from "@/lib/is-typing-target.js"
 import { consumePendingKeyboardFocus } from "@/lib/demo-project.js"
 import KeyboardHelpOverlay from "./KeyboardHelpOverlay.vue"
 import PlaybackKeysOverlay from "./PlaybackKeysOverlay.vue"
@@ -21,6 +22,9 @@ const isLhCsharp = (keyboardIndex) => indexToNote(keyboardIndex, globals.keyboar
 
 const pianoKeyboard = ref(null)
 const keyboardFocused = ref(false)
+// True while the computer keyboard can no longer play notes: the user is
+// typing in a form field, or the app window does not have focus.
+const noteInputSuspended = ref(false)
 // Physical keys currently held down, so we can stop the note we started.
 const keysDown = new Map()
 
@@ -54,9 +58,18 @@ function updateKeyboardFocus() {
   keyboardFocused.value = !!pianoKeyboard.value && document.activeElement === pianoKeyboard.value
 }
 
+// Notes play from a window listener, so the only thing that pauses them is
+// typing in a form field or the app losing focus.
+function updateNoteInputState() {
+  noteInputSuspended.value = isTypingTarget(document.activeElement) || !document.hasFocus()
+}
+
 function onFocusChange() {
   // focusout fires before the next element receives focus, so defer the check
-  setTimeout(updateKeyboardFocus, 0)
+  setTimeout(() => {
+    updateKeyboardFocus()
+    updateNoteInputState()
+  }, 0)
 }
 
 function focusKeyboard() {
@@ -75,6 +88,21 @@ function focusKeyboard() {
 function onFocusKeyboardRequest() {
   consumePendingKeyboardFocus()
   focusKeyboard()
+}
+
+// Stop any notes still held when the app loses focus, so nothing gets stuck on.
+function releaseAllKeys() {
+  keysDown.forEach((index) => {
+    if (index >= 0 && index < keyboardKeyCount.value)
+      pianoKeyboard.value?.setNote(false, index)
+    handleNote(false, index)
+  })
+  keysDown.clear()
+}
+
+function onWindowBlur() {
+  releaseAllKeys()
+  updateNoteInputState()
 }
 
 function buildRawPianoNoteInfo(note, on, noteNumber, showNoteNumber = true) {
@@ -132,6 +160,10 @@ function onChange(e) {
 // Computer keyboard, handled by us rather than the widget (see piano-key-map.js)
 function onKeyDown(e) {
   if (e.repeat || e.ctrlKey || e.metaKey || e.altKey)
+    return
+
+  // Leave keystrokes alone while the user is typing in a form field.
+  if (isTypingTarget(e.target))
     return
 
   // In normal piano mode Z / X shift the computer keyboard by an octave.
@@ -197,8 +229,6 @@ function detachKeyboard() {
   if (!attachedEl)
     return
   attachedEl.removeEventListener('change', onChange)
-  attachedEl.removeEventListener('keydown', onKeyDown)
-  attachedEl.removeEventListener('keyup', onKeyUp)
   attachedEl = null
 }
 
@@ -215,10 +245,9 @@ async function attachKeyboard() {
   el.keycodes2 = []
 
   el.addEventListener('change', onChange)
-  el.addEventListener('keydown', onKeyDown)
-  el.addEventListener('keyup', onKeyUp)
   attachedEl = el
   updateKeyboardFocus()
+  updateNoteInputState()
   // Focus now if a request was made before this keyboard mounted.
   if (consumePendingKeyboardFocus())
     focusKeyboard()
@@ -228,14 +257,25 @@ watch(pianoKeyboard, attachKeyboard)
 
 onMounted(() => {
   attachKeyboard()
+  // Notes play while the app window has focus, wherever the user is looking,
+  // so the listeners are global rather than tied to the on-screen keyboard.
+  window.addEventListener('keydown', onKeyDown)
+  window.addEventListener('keyup', onKeyUp)
+  window.addEventListener('blur', onWindowBlur)
+  window.addEventListener('focus', updateNoteInputState)
   document.addEventListener('live-note', onLiveNote)
   document.addEventListener('focusin', onFocusChange)
   document.addEventListener('focusout', onFocusChange)
   document.addEventListener('focus-keyboard', onFocusKeyboardRequest)
+  updateNoteInputState()
 })
 
 onUnmounted(() => {
   detachKeyboard()
+  window.removeEventListener('keydown', onKeyDown)
+  window.removeEventListener('keyup', onKeyUp)
+  window.removeEventListener('blur', onWindowBlur)
+  window.removeEventListener('focus', updateNoteInputState)
   document.removeEventListener("live-note", onLiveNote)
   document.removeEventListener('focusin', onFocusChange)
   document.removeEventListener('focusout', onFocusChange)
@@ -249,10 +289,10 @@ onUnmounted(() => {
   <!-- piano keyboard -->
   <div class="ui container mb-4" data-step="piano-keyboard">
     <div class="keyboard-hint-row">
-      <p class="keyboard-focus-hint" :class="{ 'keyboard-focus-hint-hidden': keyboardFocused }"
+      <p class="keyboard-focus-hint" :class="{ 'keyboard-focus-hint-hidden': !noteInputSuspended }"
         role="button" tabindex="0" title="Click to focus the keyboard" @click="focusKeyboard()"
         @keydown.enter="focusKeyboard()">
-        Click the keyboard to use computer-keyboard shortcuts.
+        Computer-keyboard notes pause while you type in a field.
       </p>
       <div class="key-labels-group">
         <label class="key-labels-control"

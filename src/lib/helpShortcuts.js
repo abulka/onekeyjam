@@ -7,14 +7,7 @@
  * Tab is left alone while typing in a form control.
  */
 
-/** @param {EventTarget|null} target */
-function isTypingTarget(target) {
-    if (!target || !(/** @type {HTMLElement} */ (target)).tagName)
-        return false
-    const element = /** @type {HTMLElement} */ (target)
-    const tag = element.tagName.toLowerCase()
-    return tag === 'input' || tag === 'textarea' || tag === 'select' || element.isContentEditable
-}
+import { isTypingTarget } from './is-typing-target.js'
 
 let wired = false
 

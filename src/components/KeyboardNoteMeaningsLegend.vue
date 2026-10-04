@@ -67,7 +67,7 @@ onUnmounted(() => {
         <br>
         <span class="text-muted">This is the standard Ableton / Logic computer-keyboard layout.
           Press <code class="kb">Z</code> / <code class="kb">X</code> to shift the computer keyboard down / up an
-          octave. The on-screen keyboard must be focused first.</span>
+          octave. These play whenever the app window is focused, and pause while you type in a field.</span>
       </template>
 
       <template v-else>
@@ -215,7 +215,7 @@ onUnmounted(() => {
               <tr><td><code class="kb">Ctrl+2</code> / <code class="kb">Ctrl+Shift+2</code></td><td>transpose up / down a semitone</td></tr>
               <tr><td><code class="kb">Ctrl+3</code> / <code class="kb">Ctrl+Shift+3</code></td><td>invert chord up / down</td></tr>
               <tr><td><code class="kb">Ctrl+5</code> / <code class="kb">Ctrl+Shift+5</code></td><td>circle of fifths up / down</td></tr>
-              <tr><td><code class="kb">Z</code> / <code class="kb">X</code></td><td>shift the on-screen keyboard down / up an octave (normal piano mode, keyboard focused)</td></tr>
+              <tr><td><code class="kb">Z</code> / <code class="kb">X</code></td><td>shift the on-screen keyboard down / up an octave (normal piano mode)</td></tr>
               <tr><td><code class="kb">Esc</code></td><td>close this help or the welcome message</td></tr>
             </tbody>
           </table>
@@ -237,7 +237,7 @@ onUnmounted(() => {
             <li>The number keys <code class="kb">1</code>-<code class="kb">5</code> are reserved for switching scales, on every octave, and <code class="kb">0</code> toggles <strong>Solo in key</strong>. The right-hand white notes are played with the letter keys.</li>
             <li>On Mac laptops the function keys may need <code class="kb">Fn</code>, or enable "use F1, F2, etc. keys as standard function keys".</li>
             <li><code class="kb">F5</code> reloads the page on Windows and Linux.</li>
-            <li>The on-screen keyboard must be clicked first so it has focus before the letter and number shortcuts work.</li>
+            <li>The letter and number note keys play whenever the app window is focused; they pause while you type in a field.</li>
           </ul>
         </div>
       </div>

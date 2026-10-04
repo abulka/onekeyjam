@@ -80,7 +80,7 @@ onUnmounted(() => {
             into the current scale, so they always fit the chord.
           </li>
           <li>
-            Using the computer keyboard? Click the on-screen keyboard first to focus it.
+            Using the computer keyboard? It works as soon as the app window is focused; notes pause only while you type in a field.
           </li>
         </ul>
 

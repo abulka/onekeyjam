@@ -1,6 +1,7 @@
 // @ts-check
 import { globals } from '../globals.js'
 import { changeScaleFilter, toggleSoloMode } from '../change-scale.js'
+import { isTypingTarget } from '../is-typing-target.js'
 
 /*
  * Computer-keyboard shortcuts for switching the right-hand scale filter:
@@ -14,15 +15,6 @@ import { changeScaleFilter, toggleSoloMode } from '../change-scale.js'
 
 /** @type {Array<'scale1'|'scale2'|'scale3'|'notesOfChord'>} */
 const SCALE_FILTERS = ['scale1', 'scale2', 'scale3', 'notesOfChord']
-
-/** @param {EventTarget|null} target */
-function isTypingTarget(target) {
-    if (!target || !(/** @type {HTMLElement} */ (target)).tagName)
-        return false
-    const element = /** @type {HTMLElement} */ (target)
-    const tag = element.tagName.toLowerCase()
-    return tag === 'input' || tag === 'textarea' || tag === 'select' || element.isContentEditable
-}
 
 /** @param {KeyboardEvent} e */
 function onKeyDown(e) {

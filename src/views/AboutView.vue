@@ -240,16 +240,15 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
 
       <h2 class="ui header">Play with your computer keyboard</h2>
       <ol class="steps">
-        <li>Click the on-screen piano keyboard once so that it has focus.</li>
+        <li>Make sure the app window has focus (click anywhere in it).</li>
         <li>Trigger chords with the lower row, <code>z x c v b n m</code> (the white keys of the chord trigger octave).</li>
         <li>The black keys <code>s d g h j</code> in that octave are the chord modifiers. Hold <code>s</code> as a shift key and use the others to switch scales or transpose.</li>
         <li>Play solo notes with the upper row, <code>q w e r t y u</code>. These are filtered into the current scale.</li>
       </ol>
       <p>
-        The keys only work while the on-screen keyboard has focus, so if typing
-        does nothing, click the keyboard first. The octaves follow the keyboard
-        config, so a different project or keyboard may shift the notes that each
-        key plays.
+        The keys play whenever the app window is focused; they pause only while
+        you are typing in a form field. The octaves follow the keyboard config, so
+        a different project or keyboard may shift the notes that each key plays.
       </p>
 
       <!-- Sequencer & features screenshots -->
