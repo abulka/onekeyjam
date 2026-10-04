@@ -1,5 +1,6 @@
 import { globals } from "../globals.js"
-import { changeScaleFilter, applyKeyScale } from "../change-scale.js"
+import { changeScaleFilter, applyKeyScale, applyScalePolicy } from "../change-scale.js"
+import { recordChordHistory } from "../autoScale.js"
 import { playGmNote, stopGmNote } from "../audio/general-midi"
 import { recordChordNoteOn, recordChordNoteOff } from "./recorder.js"
 
@@ -17,7 +18,7 @@ export function playChord(singleNote, options) {
         throw new Error(`${singleNote} not in globals.chordTriggerMap`);
 
     // Record current current chord trigger note e.g. e.g. "D2"
-    changeChordTriggerNoteAndThusScale(singleNote);
+    changeChordTriggerNoteAndThusScale(singleNote, options);
 
     // Update UI of chord piano keyboard
     document.broadcastEvent('chord-changed', { notes: globals.currentLhNotes(), bass: globals.currentBass() });
@@ -51,24 +52,41 @@ export function playChord(singleNote, options) {
 
 }
 
-function changeChordTriggerNoteAndThusScale(singleNote) {
+function changeChordTriggerNoteAndThusScale(singleNote, options = {}) {
     if (singleNote == undefined)
         singleNote = globals.currentChordTriggerNote;
-    else
-        globals.currentChordTriggerNote = singleNote;
+
+    // Clicking a grid cell fires an audible trigger and then a silent
+    // re-trigger of the same chord. Nothing changes the second time, so leave
+    // the scale and the history alone.
+    if (options.silent && singleNote === globals.currentChordTriggerNote)
+        return;
+
+    globals.currentChordTriggerNote = singleNote;
 
     // Solo mode 'key': the right hand stays on the project key scale while the
     // chords change. A user's explicit scale1/2/3 pick is temporary and the
     // next chord trigger returns to the key scale. If no key can be resolved,
     // fall through to the per-chord behaviour.
-    if (globals.soloMode === 'key' && !globals.scaleFiltering.frozen && applyKeyScale())
+    if (globals.soloMode === 'key' && !globals.scaleFiltering.frozen && applyKeyScale()) {
+        recordChordHistory();
         return;
+    }
+
+    // The follow and shuffle policies choose the scale for this chord. In
+    // manual mode they decline and the slot behaviour below applies.
+    if (applyScalePolicy()) {
+        recordChordHistory();
+        return;
+    }
 
     // Change scale if necessary - 
     if (globals.scaleFilteringModificationSticky)
         changeScaleFilter(globals.currentScaleFilter); // preserve current scale modification
     else
         changeScaleFilter('rhnotes'); // reset to default scale after switching to new chord
+
+    recordChordHistory();
 }
 
 export function playChordNote(noteName, toneType, options, channel, triggerNote, pendingNoteOffs) {

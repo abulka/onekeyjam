@@ -112,6 +112,9 @@ function firstTriggerNoteForScales() {
           }}</b>
             - jam notes will not be filtered</span>
         </div>
+        <div class="row" v-if="globals.scaleFiltering.autoReason">
+          <span class="auto-reason">{{ globals.scaleFiltering.autoReason }}</span>
+        </div>
         <div class="row">
           <p><b>
               <span v-for="note in globals.currentScaleNotes" :key="note">
@@ -207,5 +210,9 @@ function firstTriggerNoteForScales() {
 </template>
 
 <style scoped>
-
+.auto-reason {
+  color: #4a6fd4;
+  font-style: italic;
+  font-size: 0.8rem;
+}
 </style>

@@ -1,4 +1,5 @@
 <script setup>
+import { computed } from 'vue'
 import { globals } from '@/lib/globals.js'
 import DetectedChord from './DetectedChord.vue'
 import DetectedChordDebug from './DetectedChordDebug.vue'
@@ -9,6 +10,14 @@ import TriggeredChordBass from './TriggeredChordBass.vue'
 import TriggeredScale from './TriggeredScale.vue'
 import TriggeredScaleNotes from './TriggeredScaleNotes.vue'
 
+const scaleModeLabel = computed(() => {
+  const policy = globals.scaleFiltering.policy
+  if (policy === 'follow')
+    return `follow (${globals.currentScaleFilter})`
+  if (policy === 'shuffle')
+    return 'shuffle'
+  return globals.currentScaleFilter
+})
 
 </script>
 
@@ -32,7 +41,7 @@ import TriggeredScaleNotes from './TriggeredScaleNotes.vue'
                             <TriggeredScaleNotes />
                         </div>
                         <div class="column two wide">
-                            <span class="ui small text grey" v-if="globals.isProjectLoaded && globals.currentChordTriggerNote">{{ globals.currentScaleFilter}}</span>
+                            <span class="ui small text grey" v-if="globals.isProjectLoaded && globals.currentChordTriggerNote">{{ scaleModeLabel }}</span>
                             <span class="ui small text grey" v-else></span>
                         </div>
                     </div>

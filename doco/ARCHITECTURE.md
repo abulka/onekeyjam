@@ -112,6 +112,17 @@ and the validation commands.
   When the project's `soloMode` is `'key'`, the chord trigger instead calls
   `applyKeyScale()`, so the right hand stays on the project key scale while the
   chords change; an explicit scale shortcut switches temporarily.
+- The right-hand scale can also follow `globals.scaleFiltering.policy`:
+  `'manual'` (the default, the scale1/2/3 slot behaviour above), `'follow'`
+  (picks the stored slot that continues the previous scale and chord function
+  best) or `'shuffle'` (draws a live scale from the top ranked alternatives for
+  variety). The policy, history scoring and choosers live in
+  `src/lib/autoScale.js`; `applyScalePolicy()` in `src/lib/change-scale.js`
+  applies the decision, and `globals.chordHistory` holds the recent chord and
+  scale pairs. Follow and shuffle can sound a scale that is not a stored slot;
+  it is held in `globals.scaleFiltering.autoScaleName/Notes` and shown as
+  `(auto)`. The policy is remembered in `uiPrefs`, and the control sits above
+  the chord/scale grid in `GrandSummary.vue`, next to Solo in key and Colour.
 - Changing the project key in the Key Detection section, or the colour above
   the scale grid, goes through `applyProjectKeySettings()` in
   `src/lib/projectScaleSettings.js`, which saves the setting, re-ranks every

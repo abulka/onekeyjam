@@ -10,6 +10,7 @@ import { verifyTriggerMap, candidatesToTriggerMapSmart, existingToTriggerMapSmar
 import { openJsonUrl } from "./util.js";
 import { setMaxDisplayed } from './maxChordConfig'
 import { findMatchingScalesForProject } from "./findMatchingScales"
+import { resetChordHistory } from "./autoScale.js"
 import { detectChords } from './parse-midi.js';
 import { buildProject } from './build-project.js';
 import { keyDetection } from "./keyDetection"
@@ -287,6 +288,7 @@ function projectChores2name(project, name, currentChordTriggerNote, userOrFeatur
     globals.projectLibrary.projectName = name;
     globals.projectLibrary.projectIsUserOrFeatured = userOrFeatured;
     globals.currentChordTriggerNote = currentChordTriggerNote;
+    resetChordHistory();
 }
 
 function projectChores2url(project, url, currentChordTriggerNote) {
@@ -295,6 +297,7 @@ function projectChores2url(project, url, currentChordTriggerNote) {
     globals.project = project;
     globals.projectUrl = url;
     globals.currentChordTriggerNote = currentChordTriggerNote;
+    resetChordHistory();
 }
 
 function projectChores({ project, maxChordConfigs, preserveSongIds }) {

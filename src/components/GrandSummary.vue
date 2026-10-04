@@ -1,7 +1,8 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { globals } from '../../src/lib/globals.js'
-import { setSoloMode } from '../../src/lib/change-scale.js'
+import { setSoloMode, setScalePolicy } from '../../src/lib/change-scale.js'
+import { samePitchClasses, closestScaleIndex } from '../../src/lib/autoScale.js'
 import { applyProjectKeySettings } from '../../src/lib/projectScaleSettings.js'
 import { scaleAnnotation, PROJECT_COLOURS } from '../../src/lib/chordScaleEngine.js'
 import { Note } from '@/lib/midi/webmidi.js'
@@ -29,6 +30,12 @@ const colours = PROJECT_COLOURS
 const currentColour = computed({
   get: () => globals.getProjectColour(),
   set: (value) => applyProjectKeySettings({ colour: value }),
+})
+
+// How the per-chord scale is chosen: manual slot, follow the history, or shuffle.
+const scalePolicy = computed({
+  get: () => globals.scaleFiltering.policy,
+  set: (value) => setScalePolicy(value),
 })
 
 // keyModeActive is true while the project key scale is actually sounding; a
@@ -72,6 +79,18 @@ function lockedOrFrozen() {
   return globals.scaleFiltering.frozen || globals.scaleOverrideName != ''
 }
 
+/** True while a live auto/shuffle scale is sounding that may not be a stored slot. */
+function autoScaleActive() {
+  return globals.scaleFiltering.autoScaleNotes.length > 0
+}
+
+/** True when this stored scale has the same notes as the live auto scale. */
+function scaleNotesAreAuto(notes) {
+  if (!autoScaleActive())
+    return false
+  return samePitchClasses(notes, globals.scaleFiltering.autoScaleNotes)
+}
+
 /**
  * True when this scale's notes are the currently frozen (locked) scale, so the
  * grid can bold it and show a padlock even after the chord trigger moves on.
@@ -80,14 +99,16 @@ function lockedOrFrozen() {
 function scaleNotesAreLocked(notes) {
   if (!globals.scaleFiltering.frozen)
     return false
-  const frozen = globals.scaleFiltering.frozenScaleNotes
-  if (!Array.isArray(notes) || notes.length === 0 || !Array.isArray(frozen) || frozen.length === 0)
-    return false
-  if (notes.length !== frozen.length)
-    return false
-  const a = notes.map(n => String(n).toLowerCase()).sort()
-  const b = frozen.map(n => String(n).toLowerCase()).sort()
-  return a.every((note, i) => note === b[i])
+  return samePitchClasses(notes, globals.scaleFiltering.frozenScaleNotes)
+}
+
+/**
+ * Tooltip for the closest stored alternative when the live shuffle scale is
+ * not itself a stored slot.
+ * @param {number} common
+ */
+function closestTagTitle(common) {
+  return `Closest stored alternative: shares ${common} notes with the sounding ${globals.scaleFiltering.autoScaleName} (auto)`
 }
 
 /**
@@ -216,10 +237,39 @@ function _generateSummaryInfo(note) {
   info.rhScale3IsLocked = scaleNotesAreLocked(chordConfig.scale3Notes)
   info.rhScaleNotesOfChordIsLocked = scaleNotesAreLocked(chordConfig.scaleNotesOfChord)
 
-  info.rhScaleIsCurrent = info.rhScaleName === globals.currentChordConfig()[globals.currentScaleFilter]
-  info.rhScale2IsCurrent = info.rhScale2Name === globals.currentChordConfig()[globals.currentScaleFilter]
-  info.rhScale3IsCurrent = info.rhScale3Name === globals.currentChordConfig()[globals.currentScaleFilter]
-  info.rhScaleNotesOfChordsCurrent = globals.currentScaleFilter == 'notesOfChord'
+  // Live auto/shuffle scale: highlight the stored slot with the same notes,
+  // if any, so the shuffle pick is visible in the grid when it coincides with
+  // an alternative.
+  info.rhScaleIsAuto = scaleNotesAreAuto(chordConfig.scale1Notes)
+  info.rhScale2IsAuto = scaleNotesAreAuto(chordConfig.scale2Notes)
+  info.rhScale3IsAuto = scaleNotesAreAuto(chordConfig.scale3Notes)
+
+  // When the sounding shuffle scale is not a stored slot, mark the closest
+  // stored alternative with a dashed border and a "closest" tag. Only the
+  // current chord row carries the sounding scale.
+  const autoActive = autoScaleActive()
+  info.rhScaleNear = false
+  info.rhScale2Near = false
+  info.rhScale3Near = false
+  info.rhScaleNearCommon = 0
+  if (autoActive && info.lhChordIsCurrent && !info.rhScaleIsAuto && !info.rhScale2IsAuto && !info.rhScale3IsAuto) {
+    const near = closestScaleIndex(
+      [chordConfig.scale1Notes, chordConfig.scale2Notes, chordConfig.scale3Notes],
+      globals.scaleFiltering.autoScaleNotes,
+    )
+    if (near && near.common > 0) {
+      info.rhScaleNear = near.index === 0
+      info.rhScale2Near = near.index === 1
+      info.rhScale3Near = near.index === 2
+      info.rhScaleNearCommon = near.common
+    }
+  }
+
+  // While a live auto scale sounds, the stored slot is no longer current.
+  info.rhScaleIsCurrent = !autoActive && info.rhScaleName === globals.currentChordConfig()[globals.currentScaleFilter]
+  info.rhScale2IsCurrent = !autoActive && info.rhScale2Name === globals.currentChordConfig()[globals.currentScaleFilter]
+  info.rhScale3IsCurrent = !autoActive && info.rhScale3Name === globals.currentChordConfig()[globals.currentScaleFilter]
+  info.rhScaleNotesOfChordsCurrent = !autoActive && globals.currentScaleFilter == 'notesOfChord'
 
   info.bassData = chordConfig.bassNote
 
@@ -336,6 +386,20 @@ function generalTableClick(event) {
         <option v-for="colour in colours" :key="colour" :value="colour">{{ colour }}</option>
       </select>
     </span>
+    <span class="ml-4">
+      <span class="mr-1">Scales:</span>
+      <select v-model="scalePolicy"
+        title="How each chord's scale is chosen. manual uses the scale1/2/3 slots as before. follow history picks the stored alternative that continues the previous scale and chord function best. shuffle draws a live scale from the top ranked alternatives for variety.">
+        <option value="manual">manual</option>
+        <option value="follow">follow history</option>
+        <option value="shuffle">shuffle</option>
+      </select>
+    </span>
+    <span v-if="globals.scaleFiltering.autoScaleName" class="auto-live-chip"
+      :title="globals.scaleFiltering.autoReason || 'The live scale chosen by the follow or shuffle policy'">
+      auto: {{ globals.scaleFiltering.autoScaleName }}
+    </span>
+    <span v-if="globals.scaleFiltering.autoReason" class="auto-reason">{{ globals.scaleFiltering.autoReason }}</span>
     <span v-if="projectKey" class="ml-3 ui small text grey">
       Key: <code>{{ projectKeyName(projectKey) }}</code>
     </span>
@@ -444,12 +508,14 @@ function generalTableClick(event) {
                 data-scale-filter="scale1"
                 data-scale-filter-note="C#"
                 :title="scaleNotesTitle(info.rhScaleNotesData)"
-                :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale1' }">
+                :class="{ 'td-highlight': (info.lhChordIsCurrent && !autoScaleActive() && globals.currentScaleFilter == 'scale1') || (autoScaleActive() && info.rhScaleIsAuto && info.lhChordIsCurrent), 'td-near': info.rhScaleNear }">
                 <span><code v-if="info.rhScaleName" class="scale-name"
-                    :class="{ 'boldy': (!lockedOrFrozen() && info.rhScaleIsCurrent && info.lhChordIsCurrent) || info.rhScaleIsLocked }">
+                    :class="{ 'boldy': (!lockedOrFrozen() && info.rhScaleIsCurrent && info.lhChordIsCurrent) || info.rhScaleIsLocked || (autoScaleActive() && info.rhScaleIsAuto && info.lhChordIsCurrent) }">
                             {{ info.rhScaleName }}</code><code v-else>none</code><span v-if="info.rhScaleIsLocked"
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp;
                 <div v-if="info.rhScaleName" class="scale-tags">
+                  <span v-if="info.rhScaleNear" class="scale-tag scale-tag-near"
+                    :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
                   <span v-if="info.rhScaleAnnotation.outOfKey.length" class="scale-tag"
                     :class="{ struck: keyModeActive, 'scale-tag-colour': info.rhScaleAnnotation.colour }"
                     :title="'Notes outside the key: ' + info.rhScaleAnnotation.outOfKey.join(', ')">out of key: {{ info.rhScaleAnnotation.outOfKey.join(' ') }}</span>
@@ -462,12 +528,14 @@ function generalTableClick(event) {
                 data-scale-filter="scale2"
                 data-scale-filter-note="D#"
                 :title="scaleNotesTitle(info.rhScale2NotesData)"
-                :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale2' }">
+                :class="{ 'td-highlight': (info.lhChordIsCurrent && !autoScaleActive() && globals.currentScaleFilter == 'scale2') || (autoScaleActive() && info.rhScale2IsAuto && info.lhChordIsCurrent), 'td-near': info.rhScale2Near }">
                 <span><code v-if="info.rhScale2Name" class="scale-name"
-                    :class="{ 'boldy': (!lockedOrFrozen() && info.rhScale2IsCurrent && info.lhChordIsCurrent) || info.rhScale2IsLocked }">
+                    :class="{ 'boldy': (!lockedOrFrozen() && info.rhScale2IsCurrent && info.lhChordIsCurrent) || info.rhScale2IsLocked || (autoScaleActive() && info.rhScale2IsAuto && info.lhChordIsCurrent) }">
                             {{ info.rhScale2Name }}</code><code v-else>none</code><span v-if="info.rhScale2IsLocked"
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp; 
                 <div v-if="info.rhScale2Name" class="scale-tags">
+                  <span v-if="info.rhScale2Near" class="scale-tag scale-tag-near"
+                    :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
                   <span v-if="info.rhScale2Annotation.outOfKey.length" class="scale-tag"
                     :class="{ struck: keyModeActive, 'scale-tag-colour': info.rhScale2Annotation.colour }"
                     :title="'Notes outside the key: ' + info.rhScale2Annotation.outOfKey.join(', ')">out of key: {{ info.rhScale2Annotation.outOfKey.join(' ') }}</span>
@@ -480,14 +548,16 @@ function generalTableClick(event) {
                 data-scale-filter="scale3"
                 data-scale-filter-note="F#"
                 :title="scaleNotesTitle(info.rhScale3NotesData)"
-                :class="{ 'td-highlight': info.lhChordIsCurrent && globals.currentScaleFilter == 'scale3' }">
+                :class="{ 'td-highlight': (info.lhChordIsCurrent && !autoScaleActive() && globals.currentScaleFilter == 'scale3') || (autoScaleActive() && info.rhScale3IsAuto && info.lhChordIsCurrent), 'td-near': info.rhScale3Near }">
                 <code v-if="info.rhScale3Name" class="scale-name"
-                    :class="{ 'boldy': (!lockedOrFrozen() && info.rhScale3IsCurrent && info.lhChordIsCurrent) || info.rhScale3IsLocked }">
+                    :class="{ 'boldy': (!lockedOrFrozen() && info.rhScale3IsCurrent && info.lhChordIsCurrent) || info.rhScale3IsLocked || (autoScaleActive() && info.rhScale3IsAuto && info.lhChordIsCurrent) }">
                             {{ info.rhScale3Name }}</code>
                 <code v-else>none</code>
                 <span v-if="info.rhScale3IsLocked" class="scale-lock"
                     title="This scale is locked (press 5 to unlock)">🔒</span>
                 <div v-if="info.rhScale3Name" class="scale-tags">
+                  <span v-if="info.rhScale3Near" class="scale-tag scale-tag-near"
+                    :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
                   <span v-if="info.rhScale3Annotation.outOfKey.length" class="scale-tag"
                     :class="{ struck: keyModeActive, 'scale-tag-colour': info.rhScale3Annotation.colour }"
                     :title="'Notes outside the key: ' + info.rhScale3Annotation.outOfKey.join(', ')">out of key: {{ info.rhScale3Annotation.outOfKey.join(' ') }}</span>
@@ -547,6 +617,14 @@ table.scale-filters td {
 /* selected cell, turn border colour on */
 .td-highlight {
   border-color: #a5673f !important;
+}
+
+/* closest stored alternative while a live shuffle scale sounds: dashed amber,
+   deliberately weaker than the solid .td-highlight so it reads as a pointer,
+   not as the sounding filter */
+.td-near {
+  border-style: dashed !important;
+  border-color: #c9a227 !important;
 }
 
 .warn {
@@ -609,6 +687,12 @@ table.scale-filters td {
   border-color: #b9c9ee;
 }
 
+.scale-tag-near {
+  background: #fbeecb;
+  color: #8a6d1a;
+  border-color: #e6cf8b;
+}
+
 /* When Solo in key is sounding, the stored per-chord scales are dormant. */
 .solo-in-key-grid .scale-name {
   opacity: 0.45;
@@ -638,6 +722,24 @@ table.scale-filters td {
   margin-left: 0.75rem;
   color: #8a6d3b;
   font-style: italic;
+}
+
+/* Short explanation of the last follow/shuffle scale choice. */
+.auto-reason {
+  color: #4a6fd4;
+  font-style: italic;
+  font-size: 0.8rem;
+}
+
+/* The live scale chosen by the follow or shuffle policy. */
+.auto-live-chip {
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: #dce4f7;
+  color: #2f4fa8;
+  border: 1px solid #b9c9ee;
+  font-size: 0.78rem;
+  font-weight: bold;
 }
 
 </style>

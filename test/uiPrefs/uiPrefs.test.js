@@ -72,7 +72,8 @@ describe('uiPrefs', () => {
         globals.showKeyShortcuts = true
         globals.showWelcomeDialog = false
         globals.helpPage = 'tutorial'
-        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true, showWelcomeDialog: false, helpPage: 'tutorial' })
+        globals.scaleFiltering.policy = 'manual'
+        assert.deepEqual(currentPrefs(), { keyboardHelpMode: 'white', showKeyShortcuts: true, showWelcomeDialog: false, helpPage: 'tutorial', scalePolicy: 'manual' })
         globals.showWelcomeDialog = true
         globals.helpPage = 'overview'
     })
@@ -110,5 +111,32 @@ describe('uiPrefs', () => {
         assert.deepEqual(readPrefs(null), {})
         assert.doesNotThrow(() => writePrefs({ keyboardHelpMode: 'all' }, null))
         assert.doesNotThrow(() => loadUiPrefs(null))
+    })
+
+    it('reads and validates the scale policy', () => {
+        for (const policy of ['manual', 'follow', 'shuffle']) {
+            const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scalePolicy: policy }) })
+            assert.equal(readPrefs(storage).scalePolicy, policy)
+        }
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scalePolicy: 'nonsense' }) })
+        assert.equal(readPrefs(bad).scalePolicy, undefined)
+    })
+
+    it('loads the scale policy into globals', () => {
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scalePolicy: 'shuffle' }) }))
+        assert.equal(globals.scaleFiltering.policy, 'shuffle')
+        globals.scaleFiltering.policy = 'manual'
+    })
+
+    it('reports the scale policy from globals', () => {
+        globals.scaleFiltering.policy = 'follow'
+        assert.equal(currentPrefs().scalePolicy, 'follow')
+        globals.scaleFiltering.policy = 'manual'
+    })
+
+    it('round-trips the scale policy', () => {
+        const storage = fakeStorage()
+        writePrefs({ scalePolicy: 'follow' }, storage)
+        assert.equal(readPrefs(storage).scalePolicy, 'follow')
     })
 })

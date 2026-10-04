@@ -1,12 +1,13 @@
 // @ts-check
 import { watch } from 'vue'
 import { globals } from './globals.js'
+import { SCALE_POLICIES } from './autoScale.js'
 
 /**
  * @module lib/uiPrefs
  * @desc Persistence of small UI preferences that should survive a reload:
- * the on-screen keyboard Key labels mode and the computer-keyboard shortcut
- * badges.
+ * the on-screen keyboard Key labels mode, the computer-keyboard shortcut
+ * badges and the right-hand scale policy (manual, follow or shuffle).
  */
 
 const STORAGE_KEY = 'onekeyjam.uiPrefs'
@@ -20,6 +21,7 @@ export const HELP_PAGES = ['overview', 'tutorial']
  * @property {boolean} [showKeyShortcuts]
  * @property {boolean} [showWelcomeDialog]
  * @property {string} [helpPage]
+ * @property {string} [scalePolicy]
  */
 
 function defaultStorage() {
@@ -52,6 +54,8 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.showWelcomeDialog = stored.showWelcomeDialog
         if (stored && HELP_PAGES.includes(stored.helpPage))
             prefs.helpPage = stored.helpPage
+        if (stored && SCALE_POLICIES.includes(stored.scalePolicy))
+            prefs.scalePolicy = stored.scalePolicy
         return prefs
     }
     catch (error) {
@@ -69,6 +73,7 @@ export function currentPrefs() {
         showKeyShortcuts: globals.showKeyShortcuts,
         showWelcomeDialog: globals.showWelcomeDialog,
         helpPage: globals.helpPage,
+        scalePolicy: globals.scaleFiltering.policy,
     }
 }
 
@@ -102,6 +107,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.showWelcomeDialog = prefs.showWelcomeDialog
     if (prefs.helpPage)
         globals.helpPage = prefs.helpPage
+    if (prefs.scalePolicy)
+        globals.scaleFiltering.policy = prefs.scalePolicy
 }
 
 /**
@@ -111,7 +118,7 @@ export function loadUiPrefs(storage = defaultStorage()) {
  */
 export function initUiPrefs(storage = defaultStorage()) {
     loadUiPrefs(storage)
-    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts, globals.showWelcomeDialog, globals.helpPage], () => {
+    watch(() => [globals.keyboardHelpMode, globals.showKeyShortcuts, globals.showWelcomeDialog, globals.helpPage, globals.scaleFiltering.policy], () => {
         writePrefs(currentPrefs(), storage)
     })
 }

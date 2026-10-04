@@ -27,7 +27,8 @@ function msg() {
 </script>
 
 <template>
-    <span class="ui text grey" title="Scale filter depends on current triggered chord - add a chord via 'Build a project'">
+    <span class="ui text grey"
+        :title="globals.scaleFiltering.autoReason || 'Scale filter depends on current triggered chord - add a chord via \'Build a project\''">
         <span v-if="globals.scaleFilteringEnabled">
             {{ msg() }}
             <!-- {{ globals.currentScaleFilter}} -->

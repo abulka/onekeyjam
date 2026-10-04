@@ -96,6 +96,25 @@ Leave it **off** for standards with lots of changes (Autumn Leaves, All the
 Things You Are), where each chord's own scale is the point. The `1` `2` `3`
 shortcuts still switch scales temporarily even when Solo in key is on.
 
+### Step 3b: choose how the scale is picked
+
+Next to Solo in key is the **Scales** dropdown. Its three modes decide how the
+right hand's scale is chosen each time you trigger a chord:
+
+- **manual** (the default) carries the scale1/2/3 slot you last chose to the
+  next chord. You are always in charge.
+- **follow history** picks the stored alternative that continues the scale you
+  just played and the function of the chord you played before it. A `1 2 3`
+  press still overrides it for that chord.
+- **shuffle** draws a live scale from the top-ranked alternatives, weighted
+  towards the primary scale and towards notes that connect with the last one.
+  It is a safe way to hear colours you would not have picked.
+
+A short reason appears beside the control after each automatic choice, for
+example `ii-V into G: diatonic dominant` or
+`shuffle: rank 2 of 6, 3 common tones`. Treat the mode like the colour and
+Solo in key: a performance setting you choose before you start.
+
 ### Step 4: check scale filtering and learn the trigger keys
 
 In the Perform view, make sure the scale-filtering switch is on (the left-hand
@@ -138,6 +157,14 @@ dominant, locrian or locrian #2 over a half-diminished. Filter 3 tends to be a
 pentatonic or an accessible colour. Filter 4 (notes of chord) is for playing the
 actual chord tones, which is great at a cadence or when you want the solo to
 stop and spell out the harmony.
+
+**The Scales mode can do the switching for you.** With **follow history** the
+grid still shows the stored alternatives, but the app sets the slot for each
+chord and the active one is bolded; with **shuffle** the chosen scale may not
+be a stored slot, in which case it appears in an `auto:` chip above the grid,
+and the closest stored scale in the current row is marked with a dashed border
+and a **closest** tag. Pressing `1`-`4` at any time takes over for that chord,
+and the next chord trigger returns to the chosen mode.
 
 **Tiny labels in the scale grid.** Under each scale you may see a small tag:
 **out of key** means the scale uses notes outside the project key (hover to see
@@ -380,6 +407,10 @@ Treat these as **performance settings**, set before you start:
   between takes if at all.
 - **Solo in key:** on for modal tunes and vamps; off for standards with rich
   changes. If you are recording, decide before you press Record.
+- **Scales mode:** manual while you are learning a tune or following a plan;
+  follow history when you want the changes to steer the colour for you; shuffle
+  for practice and for finding new sounds. If you are recording, pick one
+  before you press Record, so the take is coherent.
 
 The one exception is transpose: the left-hand `g` and `h` black keys shift the
 chords mid-performance, which is a quick way to change key for a verse or to

@@ -40,6 +40,9 @@ export const globals = reactive({
 
     currentChordTriggerNote: undefined,  // incl. octave e.g. e.g. "D2"
     currentScaleFilter: 'scale1',  // e.g. 'scale1', 'scale2', 'scale3', 'notesOfChord'
+    // Recent chord triggers and the scale each sounded, newest last. Bounded by
+    // autoScale.js. Used by the follow and shuffle scale policies.
+    chordHistory: [],
     get currentProjectScaleName() {  // access as a property without the () call
         return this.currentChordConfig()[this.currentScaleFilter]
     },
@@ -51,6 +54,8 @@ export const globals = reactive({
             if (key)
                 return projectKeyName(key)
         }
+        if (this.scaleFiltering.autoScaleName)
+            return `${this.scaleFiltering.autoScaleName} (auto)`
         // incl. tonic e.g. "C major", may also be a custom chord name or special 'notes of chord' name
         if (this.currentScaleFilter == 'notesOfChord')
             return 'notes of chord'
@@ -65,6 +70,9 @@ export const globals = reactive({
             // console.log('GETcurrentScaleNotes: frozen')
             return this.scaleFiltering.frozenScaleNotes
         }
+        // A live auto/shuffle scale that is not one of the stored slots.
+        if (this.scaleFiltering.autoScaleNotes.length > 0)
+            return this.scaleFiltering.autoScaleNotes
         if (this.soloMode === 'key' && this.scaleFiltering.keyModeActive) {
             const key = this.getProjectKey()
             const keyNotes = key ? projectKeyNotes(key) : []
@@ -130,6 +138,16 @@ export const globals = reactive({
         _frozen: false,  // whether scale filtering is frozen or changes as chords change
         keyModeActive: false,  // true while the active scale is the project key scale (solo mode 'key')
 
+        // How the per-chord scale is chosen on a chord trigger:
+        // 'manual' follows the sticky scale1/2/3 slot as before, 'follow' picks
+        // the stored slot that continues the previous scale best, and 'shuffle'
+        // picks a live scale from the top ranked candidates for variety.
+        // See src/lib/autoScale.js.
+        policy: 'manual',
+        autoScaleName: '',  // live auto/shuffle scale when it is not a stored slot
+        autoScaleNotes: [],
+        autoReason: '',  // short explanation of the last automatic scale choice
+
         // These should always match the currentScaleName caused by lh trigger note chord changes
         // unless frozen is true. UI combo reflects this info. jamming map always respects this.
         scaleType: '', // scale type, sans tonic e.g. 'major', 'minor'
@@ -153,6 +171,11 @@ export const globals = reactive({
         set frozen(value) {
             if (value) {
                 this.frozenScaleNotes = globals.currentScaleNotes
+                // The locked notes are now authoritative; drop the live
+                // auto/shuffle state and its explanation.
+                this.autoScaleName = ''
+                this.autoScaleNotes = []
+                this.autoReason = ''
             } else {
                 this.frozenScaleNotes = [];
             }

@@ -9,6 +9,7 @@ import { createChordSymbol } from './note-tools.js';
 import { chordSymbolToScaleNames } from './chord-to-scale.js';
 import { scaleObjToNotes } from './scaleToNotes';
 import { projectKeyName } from './projectKey.js';
+import { chooseScaleForChord, noteScaleChange, SCALE_POLICIES } from './autoScale.js';
 
 
 /** @typedef {import("./typedefs").ChordConfig} ChordConfig */
@@ -108,6 +109,10 @@ export function changeScaleFilter(scaleFilter) {
         return
     if (Object.keys(globals.chordTriggerMap).length == 0)
         return
+
+    // A normal scale change replaces any live auto/shuffle scale. The policy
+    // itself is untouched, so the next chord trigger may choose again.
+    clearAutoScaleState()
 
     // Solo mode 'key': chord changes and generic refreshes use the project key
     // scale. An explicit scale1/2/3/notesOfChord request is a deliberate
@@ -250,6 +255,7 @@ function showSoloModeToast(on) {
  * - Called many times by setScaleToMatchChord(), above
 */
 export function setActiveScaleFilter(scaleTonic, scaleType, scaleNotes = [], scaleTypes = [], override = false) {
+    clearAutoScaleState();
     globals.scaleFiltering.keyModeActive = false;
     const scaleObj = Tonal.Scale.get(`${scaleTonic} ${scaleType}`)
     if (scaleObj.empty && scaleNotes.length == 0)
@@ -309,6 +315,84 @@ export function setActiveScaleFilterToMatchChord(chordTonic, chordType, strategy
     setActiveScaleFilter(scaleObj.tonic, scaleObj.type, [], scaleTypes)
 }
 
+/**
+ * Sound a live scale that is not one of the chord's stored slots, used by the
+ * shuffle policy. The scale is remembered separately from the ScalePicker
+ * override so the two cannot fight, and is shown as "(auto)" in the UI.
+ * @param {string} scaleTonic
+ * @param {string} scaleType
+ * @param {Array<string>} [scaleNotes]
+ * @param {Array<string>} [scaleTypes] scale types for the picker dropdown
+ * @param {string} [reason] short explanation for the UI
+ */
+export function setAutoScaleFilter(scaleTonic, scaleType, scaleNotes = [], scaleTypes = [], reason = '') {
+    setActiveScaleFilter(scaleTonic, scaleType, scaleNotes, scaleTypes)
+    globals.scaleFiltering.autoScaleName = scaleTonic ? `${scaleTonic} ${scaleType}` : scaleType
+    globals.scaleFiltering.autoScaleNotes = scaleNotes
+    globals.scaleFiltering.autoReason = reason
+    reportScaleChange()
+}
+
+/**
+ * Apply the active follow/shuffle policy to the current chord, if any.
+ * @returns {boolean} true when a policy choice was applied
+ */
+export function applyScalePolicy() {
+    if (globals.scaleFiltering.frozen)
+        return false
+    const decision = chooseScaleForChord(globals.currentChordConfig())
+    if (!decision)
+        return false
+    if (decision.type === 'slot') {
+        globals.currentScaleFilter = decision.slot
+        changeScaleFilter(decision.slot)
+        // changeScaleFilter() clears the auto state, so set the reason after it.
+        globals.scaleFiltering.autoReason = decision.reason
+    }
+    else
+        setAutoScaleFilter(decision.tonic ?? '', decision.scaleType ?? '', decision.notes ?? [], decision.scaleTypes ?? [], decision.reason)
+    return true
+}
+
+/**
+ * Change the scale policy from the UI and apply it to the current chord so the
+ * effect is immediate. Switching back to manual restores the stored slot.
+ * @param {'manual'|'follow'|'shuffle'} policy
+ */
+export function setScalePolicy(policy) {
+    if (!SCALE_POLICIES.includes(policy))
+        policy = 'manual'
+    globals.scaleFiltering.policy = policy
+    if (!globals.isProjectLoaded)
+        return
+    if (policy === 'manual') {
+        changeScaleFilter()
+        return
+    }
+    if (globals.soloMode === 'key' || globals.scaleFiltering.frozen)
+        return
+    applyScalePolicy()
+    showScalePolicyToast(policy)
+}
+
+/** @param {string} policy */
+function showScalePolicyToast(policy) {
+    if (typeof $ === 'function') {
+        const label = policy === 'follow' ? 'Follow history' : 'Shuffle'
+        $('body').toast({
+            message: `Scales: ${label}`,
+            displayTime: 1200,
+            class: 'brown',
+        })
+    }
+}
+
+function clearAutoScaleState() {
+    globals.scaleFiltering.autoScaleName = ''
+    globals.scaleFiltering.autoScaleNotes = []
+    globals.scaleFiltering.autoReason = ''
+}
+
 
 // ┌─┐┬─┐┬┬  ┬┌─┐┌┬┐┌─┐
 // ├─┘├┬┘│└┐┌┘├─┤ │ ├┤ 
@@ -341,6 +425,7 @@ function _setActiveScaleFilter(scaleNotes) {
 }
 
 function clearActiveScaleFilter() {
+    clearAutoScaleState()
     globals.scaleFiltering.scaleTonic = ''
     globals.scaleFiltering.scaleType = ''
     globals.scaleFiltering.scaleTypesMatchingCurrentChord
@@ -402,6 +487,10 @@ function calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy = 'top 3', 
 // └─┘┴└─└─┘┴ ┴─┴┘└─┘┴ ┴└─┘ ┴ 
 
 function reportScaleChange() {
+    // Keep the chord history in step when the scale changes without a chord
+    // trigger, for example when the player picks a scale by hand.
+    noteScaleChange()
+
     // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
     document.broadcastEvent('scale-changed', { notes: globals.currentScaleNotes })
 

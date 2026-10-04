@@ -370,6 +370,73 @@ per-chord scales, so Solo in key sounds identical; it differs over chromatic
 chords (an altered dominant or a tritone substitute), where it stays safe in
 the key.
 
+## History-aware and shuffled scale selection
+
+The stored `scale1`/`scale2`/`scale3` are ranked for a chord in isolation. Two
+optional policies in `src/lib/autoScale.js` choose the sounding scale on each
+chord trigger using the recent history (`globals.chordHistory`, the last eight
+chord and scale pairs). The control above the chord/scale grid offers
+**manual** (the default slot behaviour), **follow history** and **shuffle**;
+the choice is remembered per browser session through `uiPrefs`.
+
+### Follow history
+
+Follow scores the chord's three stored scales and sounds the best
+continuation. The score combines:
+
+- **Common tones with the previous sounding scale.** Each shared note counts
+  one point, plus an extra point when it is also a guide tone (third or
+  seventh) of the new chord, and half a point when it was a guide tone of the
+  previous chord. Continuity therefore keeps the line smooth and aims at the
+  notes that identify the harmony.
+- **Progression function.** When the new chord is a dominant whose root is a
+  fourth above the previous chord (a ii-V), mixolydian is preferred after a
+  minor seventh chord and the altered family (altered, phrygian dominant,
+  half-whole diminished, mixolydian b6) after a half-diminished chord. This
+  resolves the major ii-V versus the minor ii-V that a single chord cannot
+  distinguish.
+- **A small novelty point** for a candidate that does not repeat the previous
+  pitch set, so an available colour alternative is not ignored forever.
+
+Ties fall back to the earlier slot, so the first chord of a tune uses
+`scale1`. The UI shows a short reason, for example
+`ii-V into G: diatonic dominant` or `follows D dorian (7 common tones)`.
+A key change, a transposition or a manual `1`-`4` press clears the live
+choice; the next chord trigger follows the history again.
+
+### Shuffle
+
+Shuffle generates the top six ranked candidates for the chord with the same
+key-aware engine and then draws one at random, weighted by:
+
+- the rank position, so the idiomatic primary scale is the most likely;
+- the common tones with the previous scale, so the changes still connect;
+- novelty relative to the last few scales, so recently heard pitch sets are
+  unlikely to return.
+
+A candidate with the previous scale's exact pitch set is skipped while another
+candidate exists, so the harmony keeps moving. Every candidate is a scale the
+engine already rates for the chord, so random variety cannot produce a scale
+that clashes with the harmony.
+
+Because the pool is the top six and the grid stores only three slots, a draw is
+often a scale the grid does not contain. The header above the grid always names
+the live scale in an `auto:` chip, and the current chord row marks the closest
+stored alternative with a dashed amber border and a **closest** tag, whose
+tooltip gives the number of shared notes. When the drawn scale does coincide
+with a stored slot, that cell keeps the solid highlight and bold name and no
+closest marker is shown. Matches are compared by pitch class, so enharmonic
+spellings and parent-scale names (for example `G altered` against
+`Ab melodic minor`) count as the same scale.
+
+### Interaction with lock, Solo in key and manual picks
+
+This is a description of behaviour, not a fourth mode. The locked scale (`5`)
+always wins and pauses both policies. Solo in key (`0`) keeps the key scale, as
+before. A manual `1`-`4` press applies immediately and pauses the policy for
+that chord; the next chord trigger resumes it. The policies never switch the
+scale during a chord, only on a chord trigger.
+
 ## Checking stored scales
 
 `checkScaleAgainstChord()` in the engine tests a stored scale name against a
