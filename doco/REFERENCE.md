@@ -168,8 +168,9 @@ the fine-tuning controls. They only appear when a project is loaded.
 | `Palette` | follow | Which stored scale follow prefers: `Primary` (best continuation), `Close colour` (best alternative that adds a note at each change) or `Bold` (biggest colour shift among the stored scales). Different from the project-wide `Colour:` selector. | Primary |
 | `Phrase` + `Strength` | follow | Bias the next stored scale by your last solo note so the line resolves. Shuffle ignores the last note. | off |
 
-The recent chord-to-scale **History** strip is a global display preference, so
-it lives in `Settings` > `Preferences` rather than here.
+The recent chord-to-scale **History** strip, and the optional pale fill on the
+current scale-filter cell, are global display preferences, so they live in
+`Settings` > `Preferences` rather than here.
 
 The single most important thing to know: **shuffle only changes the scale when
 the chord changes.** Repeated stabs of the same chord (the same white trigger key
@@ -321,6 +322,11 @@ reason line reads `keeps your last note C#`; turn `Phrase` off and the pick
 follows continuity instead. In a diatonic tune every stored scale already
 contains the notes you are playing, so `Phrase` correctly changes nothing. Set
 `Strength` to `high` for a stronger pull. Shuffle ignores the last note.
+
+**Scale-cell fill.** In `Settings` > `Preferences`, `Fill the current scale
+filter cell` paints a pale background behind the sounding scale filter's cell in
+manual, follow and shuffle modes alike. It is off by default; with it off the
+cell is marked by its border only.
 
 **History strip.** In `Settings` > `Preferences`, tick `Show the recent
 chord-to-scale history above the grid`. Play a few chords and watch

@@ -57,6 +57,17 @@ onUnmounted(() => stopAccordion())
               shuffle modes are doing.
             </p>
           </div>
+          <div class="mt-2">
+            <label class="checkboxLabel" title="Paint a pale background behind the current scale-filter cell as well as its border. When off, the current cell is marked by its border only.">
+              <input type="checkbox" v-model="globals.showScaleCellFill" />
+              Fill the current scale filter cell
+            </label>
+            <p class="settings-hint">
+              With this on, the cell for the sounding scale filter gets a pale
+              background, in manual, follow and shuffle modes alike. Leave it off
+              for a quieter grid where only the border marks the current cell.
+            </p>
+          </div>
         </div>
 
         <div class="title">

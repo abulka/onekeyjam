@@ -25,6 +25,7 @@ export const HELP_PAGES = ['overview', 'tutorial', 'reference']
  * @property {string} [scalePolicy]
  * @property {boolean} [scaleAdvanced]
  * @property {boolean} [scaleHistory]
+ * @property {boolean} [showScaleCellFill]
  * @property {PolicyOptions} [policyOptions]
  * @property {HeldNoteRepair} [heldNoteRepair]
  */
@@ -140,6 +141,8 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.scaleAdvanced = stored.scaleAdvanced
         if (stored && typeof stored.scaleHistory === 'boolean')
             prefs.scaleHistory = stored.scaleHistory
+        if (stored && typeof stored.showScaleCellFill === 'boolean')
+            prefs.showScaleCellFill = stored.showScaleCellFill
         if (stored && stored.policyOptions) {
             const options = readPolicyOptions(stored.policyOptions)
             if (Object.keys(options).length > 0)
@@ -169,6 +172,7 @@ export function currentPrefs() {
         scalePolicy: globals.scaleFiltering.policy,
         scaleAdvanced: globals.showScaleAdvanced,
         scaleHistory: globals.showScaleHistory,
+        showScaleCellFill: globals.showScaleCellFill,
         policyOptions: { ...globals.scaleFiltering.policyOptions },
         heldNoteRepair: { ...globals.heldNoteRepair },
     }
@@ -212,6 +216,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.showScaleAdvanced = prefs.scaleAdvanced
     if (typeof prefs.scaleHistory === 'boolean')
         globals.showScaleHistory = prefs.scaleHistory
+    if (typeof prefs.showScaleCellFill === 'boolean')
+        globals.showScaleCellFill = prefs.showScaleCellFill
     if (prefs.policyOptions)
         Object.assign(globals.scaleFiltering.policyOptions, prefs.policyOptions)
     if (prefs.heldNoteRepair)
@@ -234,6 +240,7 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.scaleFiltering.policy,
         globals.showScaleAdvanced,
         globals.showScaleHistory,
+        globals.showScaleCellFill,
         globals.scaleFiltering.policyOptions.poolSize,
         globals.scaleFiltering.policyOptions.dwell,
         globals.scaleFiltering.policyOptions.changeChance,

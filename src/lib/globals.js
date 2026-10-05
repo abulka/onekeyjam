@@ -132,6 +132,7 @@ export const globals = reactive({
     showKeyShortcuts: false,  // show the computer-keyboard key badges on the main keyboard
     showScaleAdvanced: false,  // show the advanced follow/shuffle policy options above the grid
     showScaleHistory: false,  // show the recent chord-to-scale strip above the grid
+    showScaleCellFill: false,  // fill the current scale-filter cell instead of a border only
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
     showFavouriteBinColumns: false,  // show the favourite and bin columns in the chord/scale table
     helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial' | 'reference'

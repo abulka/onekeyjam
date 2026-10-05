@@ -550,7 +550,7 @@ function generalTableClick(event) {
 
   <!-- grand summary table -->
   <table v-if="globals.isProjectLoaded" id="grand-summary" style="width:100%;" border="1" bordercolor="green"
-    :class="{ 'solo-in-key-grid': keyModeActive, 'follow-grid': globals.scaleFiltering.policy === 'follow' }">
+    :class="{ 'solo-in-key-grid': keyModeActive, 'follow-grid': globals.scaleFiltering.policy === 'follow', 'scale-cell-fill': globals.showScaleCellFill }">
     <thead>
       <tr>
         <th>Id</th>
@@ -770,6 +770,11 @@ table.scale-filters td {
    and its "chosen" tag carry the eye, and the mode does not look static. */
 .follow-grid .td-highlight {
   border-color: #d9c9b0 !important;
+}
+
+/* Optional pale fill behind the current scale-filter cell (Settings >
+   Preferences). Applies in every policy; off by default. */
+.scale-cell-fill .td-highlight {
   background: #faf6ef;
 }
 

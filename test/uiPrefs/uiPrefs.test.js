@@ -92,6 +92,19 @@ describe('uiPrefs', () => {
         assert.equal(readPrefs(roundTrip).scaleHistory, true)
     })
 
+    it('reads, loads and round-trips the scale-cell fill flag', () => {
+        const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showScaleCellFill: true }) })
+        assert.equal(readPrefs(storage).showScaleCellFill, true)
+        loadUiPrefs(storage)
+        assert.equal(globals.showScaleCellFill, true)
+        globals.showScaleCellFill = false
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showScaleCellFill: 'yes' }) })
+        assert.equal(readPrefs(bad).showScaleCellFill, undefined)
+        const roundTrip = fakeStorage()
+        writePrefs({ showScaleCellFill: true }, roundTrip)
+        assert.equal(readPrefs(roundTrip).showScaleCellFill, true)
+    })
+
     it('loads the shortcut badge flag into globals', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showKeyShortcuts: true }) })
         loadUiPrefs(storage)
@@ -127,6 +140,7 @@ describe('uiPrefs', () => {
         globals.heldNoteRepair.enabled = true
         globals.heldNoteRepair.windowMs = 40
         globals.showScaleHistory = false
+        globals.showScaleCellFill = true
         assert.deepEqual(currentPrefs(), {
             keyboardHelpMode: 'white',
             showKeyShortcuts: true,
@@ -136,12 +150,14 @@ describe('uiPrefs', () => {
             scalePolicy: 'manual',
             scaleAdvanced: false,
             scaleHistory: false,
+            showScaleCellFill: true,
             policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' },
             heldNoteRepair: { enabled: true, windowMs: 40 },
         })
         globals.showWelcomeDialog = true
         globals.showFavouriteBinColumns = false
         globals.helpPage = 'overview'
+        globals.showScaleCellFill = false
     })
 
     it('reads, validates and clamps the shuffle options', () => {
