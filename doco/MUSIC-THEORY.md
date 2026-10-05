@@ -354,9 +354,12 @@ own Key Detection section on the Edit view. These are set-up decisions rather
 than things to change mid-performance. While the key scale is sounding, a
 `Solo in key → C major` badge appears above the grid, the stored scale names
 dim, and their out-of-key tags are struck through, because every chord is
-filtered to the key. Press `0` (or hold the left-hand `C#` shift and press
-`A#`/`Bb` on a MIDI keyboard) to toggle the mode, with a toast naming the key
-scale.
+filtered to the key. The slot markers (cell highlight, bold name, `chosen` tag
+and the bold filter buttons) are suppressed too, since no stored slot is the
+sounding scale, and the Colour, Scales, Preset and Options controls are dimmed
+and disabled for as long as the mode is checked. Press `0` (or hold the
+left-hand `C#` shift and press `A#`/`Bb` on a MIDI keyboard) to toggle the
+mode, with a toast naming the key scale.
 
 The grid also labels each stored scale: a tiny **out of key** tag when the
 scale uses notes outside the project key, and a **jazz** or **adventurous** tag

@@ -364,6 +364,8 @@ export function setAutoScaleFilter(scaleTonic, scaleType, scaleNotes = [], scale
 export function applyScalePolicy(options = {}) {
     if (globals.scaleFiltering.frozen)
         return false
+    if (globals.soloMode === 'key')
+        return false
     const policy = globals.scaleFiltering.policy
     const state = globals.scaleFiltering
     const policyOptions = state.policyOptions

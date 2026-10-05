@@ -220,10 +220,15 @@ never leaves the key, most scales are unlabelled.
 
 **When Solo in key is on**, a `Solo in key -> C major` badge appears above the
 grid, the stored scale names dim, and the **out of key** tags are struck through,
-because every chord is now filtered to the key scale. If you press `1`-`4` (or
-the right-hand black keys `C#`-`G#` on a MIDI keyboard) to inspect a chord scale,
-the dimming pauses for that chord and a muted `Solo in key (temporarily
-overridden)` note appears, then the key scale returns on the next chord trigger.
+because every chord is now filtered to the key scale. The per-slot markers (the
+cell highlight, the bold scale name and the `chosen` tag) pause too, since no
+stored scale is the one sounding, and the Colour, Scales, Preset and Options
+controls are dimmed and disabled until the mode is switched off. If you press
+`1`-`4` (or the right-hand black keys `C#`-`G#` on a MIDI keyboard) to inspect a
+chord scale, the markers and dimming pause for that chord and a muted `Solo in
+key (temporarily overridden)` note appears, then the key scale returns on the
+next chord trigger. The Colour, Scales, Preset and Options controls stay
+disabled through that temporary override.
 
 ---
 

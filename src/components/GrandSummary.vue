@@ -417,31 +417,37 @@ function generalTableClick(event) {
     <span v-else-if="soloInKey" class="solo-paused-note" title="A temporary scale switch is in force until the next chord trigger">
       Solo in key (temporarily overridden)
     </span>
-    <span class="ml-4">
+    <span class="ml-4" :class="{ 'paused-control': soloInKey }"
+      :title="soloInKey ? 'Paused while Solo in key is on' : null">
       <span class="mr-1">Colour:</span>
-      <select v-model="currentColour"
+      <select v-model="currentColour" :disabled="soloInKey"
         title="Colour: how much chromatic colour the scale suggestions keep. diatonic stays strictly in key; jazz (default) keeps dorian and locrian #2 colour plus the functional dominants; adventurous prefers lydian and lydian-dominant colours.">
         <option v-for="colour in colours" :key="colour" :value="colour">{{ colour }}</option>
       </select>
     </span>
-    <span class="ml-4">
+    <span class="ml-4" :class="{ 'paused-control': soloInKey }"
+      :title="soloInKey ? 'Paused while Solo in key is on' : null">
       <span class="mr-1">Scales:</span>
-      <select v-model="scalePolicy"
+      <select v-model="scalePolicy" :disabled="soloInKey"
         title="How each chord's scale is chosen. manual uses the scale1/2/3 slots as before. follow history picks the stored alternative that continues the previous scale and chord function best. shuffle draws a live scale from the top ranked alternatives for variety.">
         <option value="manual">manual</option>
         <option value="follow">follow history</option>
         <option value="shuffle">shuffle</option>
       </select>
     </span>
-    <label v-if="globals.scaleFiltering.policy !== 'manual'" class="preset-field" title="Presets: one-click options for the active mode. Custom means the values have been hand-tuned; open Options to see and adjust them.">
+    <label v-if="globals.scaleFiltering.policy !== 'manual'" class="preset-field"
+      :class="{ 'paused-control': soloInKey }"
+      :title="soloInKey ? 'Paused while Solo in key is on' : 'Presets: one-click options for the active mode. Custom means the values have been hand-tuned; open Options to see and adjust them.'">
       <span>Preset:</span>
-      <select v-model="scalePreset" :class="{ 'preset-custom': scalePreset === 'custom' }">
+      <select v-model="scalePreset" :disabled="soloInKey" :class="{ 'preset-custom': scalePreset === 'custom' }">
         <option value="custom" disabled>Custom</option>
         <option v-for="preset in presetsForMode" :key="preset.name" :value="preset.name">{{ preset.label }}</option>
       </select>
     </label>
     <button class="advanced-toggle" type="button"
       title="Scale policy options for the follow and shuffle modes"
+      :class="{ 'paused-control': soloInKey }"
+      :disabled="soloInKey"
       :aria-expanded="globals.showScaleAdvanced ? 'true' : 'false'"
       @click="releaseControlFocus($event); globals.showScaleAdvanced = !globals.showScaleAdvanced">
       {{ globals.showScaleAdvanced ? 'Hide options' : 'Options' }}
@@ -454,22 +460,23 @@ function generalTableClick(event) {
   </div>
 
   <!-- scale policy options for the follow/shuffle modes -->
-  <div v-if="globals.isProjectLoaded && globals.showScaleAdvanced" class="scale-advanced ui small" @change="releaseControlFocus">
+  <div v-if="globals.isProjectLoaded && globals.showScaleAdvanced" class="scale-advanced ui small"
+    :class="{ 'paused-control': soloInKey }" @change="releaseControlFocus">
     <template v-if="globals.scaleFiltering.policy === 'shuffle'">
       <label class="advanced-field">Pool
-        <select v-model.number="globals.scaleFiltering.policyOptions.poolSize"
+        <select v-model.number="globals.scaleFiltering.policyOptions.poolSize" :disabled="soloInKey"
           title="Shuffle pool: how many ranked candidates the draw is taken from. 3 uses only the stored scale1/2/3, so the grid always highlights exactly; larger pools offer more colour and more live auto scales.">
           <option v-for="n in [3, 4, 5, 6, 7, 8]" :key="n" :value="n">{{ n }}</option>
         </select>
       </label>
       <label class="advanced-field">Dwell
-        <select v-model.number="globals.scaleFiltering.policyOptions.dwell"
+        <select v-model.number="globals.scaleFiltering.policyOptions.dwell" :disabled="soloInKey"
           title="Dwell: how many chord changes to hold the drawn rank before redrawing. Each new chord still gets a fitting scale of that rank; a longer dwell is steadier and less busy.">
           <option v-for="n in [1, 2, 3, 4]" :key="n" :value="n">{{ n }}</option>
         </select>
       </label>
       <label class="advanced-field">Change
-        <select v-model.number="globals.scaleFiltering.policyOptions.changeChance"
+        <select v-model.number="globals.scaleFiltering.policyOptions.changeChance" :disabled="soloInKey"
           title="Change chance: the probability of drawing a new rank at a dwell boundary. Lower values keep the current colour for longer.">
           <option :value="1">100%</option>
           <option :value="0.75">75%</option>
@@ -479,7 +486,7 @@ function generalTableClick(event) {
         </select>
       </label>
       <label class="advanced-field">Spread
-        <select v-model.number="globals.scaleFiltering.policyOptions.maxNewNotes"
+        <select v-model.number="globals.scaleFiltering.policyOptions.maxNewNotes" :disabled="soloInKey"
           title="Spread: how far a shuffle change may move the note set. Close keeps the same notes, 1-2 notes are close colour shifts, Wild allows anything.">
           <option :value="0">same notes</option>
           <option :value="1">1 note</option>
@@ -489,19 +496,19 @@ function generalTableClick(event) {
       </label>
       <label class="advanced-field checkbox-field"
         title="Hold while playing: do not jump the scale while solo notes are sounding; take the closest fit to what you are playing instead.">
-        <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.deferWhilePlaying" /> Hold
+        <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.deferWhilePlaying" :disabled="soloInKey" /> Hold
       </label>
     </template>
     <template v-else-if="globals.scaleFiltering.policy === 'follow'">
       <label class="advanced-field">Context
-        <select v-model.number="globals.scaleFiltering.policyOptions.contextChords"
+        <select v-model.number="globals.scaleFiltering.policyOptions.contextChords" :disabled="soloInKey"
           title="Progression context: how many previous chords to consider. Two chords recognises a full ii-V-I and other chains; one chord uses only the chord just played.">
           <option :value="1">1 chord</option>
           <option :value="2">2 chords</option>
         </select>
       </label>
       <label class="advanced-field">Palette
-        <select v-model="globals.scaleFiltering.policyOptions.palette"
+        <select v-model="globals.scaleFiltering.policyOptions.palette" :disabled="soloInKey"
           title="Palette: which stored scale follow prefers. Primary is the best continuation (the usual choice); Close colour takes the best alternative that adds a note at each change; Bold takes the biggest colour shift among the stored scales. All choices fit the chord.">
           <option value="primary">Primary</option>
           <option value="colour">Close colour</option>
@@ -510,10 +517,10 @@ function generalTableClick(event) {
       </label>
       <label class="advanced-field checkbox-field"
         title="Phrase: bias the next chord's scale by the last solo note you played, so the phrase resolves instead of being cut off. It only changes the pick when that note distinguishes the stored scales.">
-        <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.phraseBias" /> Phrase
+        <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.phraseBias" :disabled="soloInKey" /> Phrase
       </label>
       <label class="advanced-field" v-if="globals.scaleFiltering.policyOptions.phraseBias">Strength
-        <select v-model.number="globals.scaleFiltering.policyOptions.phraseStrength"
+        <select v-model.number="globals.scaleFiltering.policyOptions.phraseStrength" :disabled="soloInKey"
           title="How strongly the last solo note influences the choice. Low is a gentle nudge, high insists on the resolution.">
           <option :value="0.5">low</option>
           <option :value="1">medium</option>
@@ -524,6 +531,8 @@ function generalTableClick(event) {
     <span v-else class="advanced-hint">Select follow or shuffle to tune the scale policy.</span>
     <button v-if="globals.scaleFiltering.policy === 'shuffle'" class="advanced-button" type="button"
       title="Draw a new scale for the current chord now"
+      :class="{ 'paused-control': soloInKey }"
+      :disabled="soloInKey"
       @click="releaseControlFocus($event); rerollShuffleScale()">Reroll</button>
   </div>
 
@@ -556,15 +565,15 @@ function generalTableClick(event) {
             <tbody>
             <tr>
               <th width="25%">Scale Filter 1<br> <button @mousedown="_scaleFilterMouseDown" @touchstart.prevent="_scaleFilterMouseDown"
-                  :class="{ 'boldy': globals.currentScaleFilter == 'scale1' }" class="trigger-btn p-2">C#</button></th>
+                  :class="{ 'boldy': !keyModeActive && globals.currentScaleFilter == 'scale1' }" class="trigger-btn p-2">C#</button></th>
               <th width="25%">Scale Filter 2<br> <button @mousedown="_scaleFilterMouseDown" @touchstart.prevent="_scaleFilterMouseDown"
-                  :class="{ 'boldy': globals.currentScaleFilter == 'scale2' }" class="trigger-btn p-2">D#</button>
+                  :class="{ 'boldy': !keyModeActive && globals.currentScaleFilter == 'scale2' }" class="trigger-btn p-2">D#</button>
               </th>
               <th width="25%">Scale Filter 3<br> <button @mousedown="_scaleFilterMouseDown" @touchstart.prevent="_scaleFilterMouseDown"
-                  :class="{ 'boldy': globals.currentScaleFilter == 'scale3' }" class="trigger-btn p-2">F#</button>
+                  :class="{ 'boldy': !keyModeActive && globals.currentScaleFilter == 'scale3' }" class="trigger-btn p-2">F#</button>
               </th>
               <th width="25%">Special Scale Filter<br> <button @mousedown="_scaleFilterMouseDown" @touchstart.prevent="_scaleFilterMouseDown"
-                  :class="{ 'boldy': globals.currentScaleFilter == 'notesOfChord' }" class="trigger-btn p-2">G#</button>
+                  :class="{ 'boldy': !keyModeActive && globals.currentScaleFilter == 'notesOfChord' }" class="trigger-btn p-2">G#</button>
               </th>
             </tr>
             </tbody>
@@ -642,13 +651,13 @@ function generalTableClick(event) {
                 data-scale-filter="scale1"
                 data-scale-filter-note="C#"
                 :title="scaleNotesTitle(info.rhScaleNotesData)"
-                :class="{ 'td-highlight': (info.lhChordIsCurrent && !autoScaleActive() && globals.currentScaleFilter == 'scale1') || (autoScaleActive() && info.rhScaleIsAuto && info.lhChordIsCurrent), 'td-near': info.rhScaleNear }">
+                :class="{ 'td-highlight': !keyModeActive && ((info.lhChordIsCurrent && !autoScaleActive() && globals.currentScaleFilter == 'scale1') || (autoScaleActive() && info.rhScaleIsAuto && info.lhChordIsCurrent)), 'td-near': info.rhScaleNear }">
                 <span><code v-if="info.rhScaleName" class="scale-name"
-                    :class="{ 'boldy': (!lockedOrFrozen() && info.rhScaleIsCurrent && info.lhChordIsCurrent) || info.rhScaleIsLocked || (autoScaleActive() && info.rhScaleIsAuto && info.lhChordIsCurrent) }">
+                    :class="{ 'boldy': (!keyModeActive && ((!lockedOrFrozen() && info.rhScaleIsCurrent && info.lhChordIsCurrent) || (autoScaleActive() && info.rhScaleIsAuto && info.lhChordIsCurrent))) || info.rhScaleIsLocked }">
                             {{ info.rhScaleName }}</code><code v-else>none</code><span v-if="info.rhScaleIsLocked"
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp;
                 <div class="scale-tags">
-                  <span v-if="info.lhChordIsCurrent && info.rhScaleIsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
+                  <span v-if="!keyModeActive && info.rhScaleName && info.lhChordIsCurrent && info.rhScaleIsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
                   <span v-if="info.rhScaleNear" class="scale-tag scale-tag-near"
                     :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
                   <span v-if="info.rhScaleAnnotation.outOfKey.length" class="scale-tag"
@@ -663,13 +672,13 @@ function generalTableClick(event) {
                 data-scale-filter="scale2"
                 data-scale-filter-note="D#"
                 :title="scaleNotesTitle(info.rhScale2NotesData)"
-                :class="{ 'td-highlight': (info.lhChordIsCurrent && !autoScaleActive() && globals.currentScaleFilter == 'scale2') || (autoScaleActive() && info.rhScale2IsAuto && info.lhChordIsCurrent), 'td-near': info.rhScale2Near }">
+                :class="{ 'td-highlight': !keyModeActive && ((info.lhChordIsCurrent && !autoScaleActive() && globals.currentScaleFilter == 'scale2') || (autoScaleActive() && info.rhScale2IsAuto && info.lhChordIsCurrent)), 'td-near': info.rhScale2Near }">
                 <span><code v-if="info.rhScale2Name" class="scale-name"
-                    :class="{ 'boldy': (!lockedOrFrozen() && info.rhScale2IsCurrent && info.lhChordIsCurrent) || info.rhScale2IsLocked || (autoScaleActive() && info.rhScale2IsAuto && info.lhChordIsCurrent) }">
+                    :class="{ 'boldy': (!keyModeActive && ((!lockedOrFrozen() && info.rhScale2IsCurrent && info.lhChordIsCurrent) || (autoScaleActive() && info.rhScale2IsAuto && info.lhChordIsCurrent))) || info.rhScale2IsLocked }">
                             {{ info.rhScale2Name }}</code><code v-else>none</code><span v-if="info.rhScale2IsLocked"
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp; 
                 <div class="scale-tags">
-                  <span v-if="info.lhChordIsCurrent && info.rhScale2IsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
+                  <span v-if="!keyModeActive && info.rhScale2Name && info.lhChordIsCurrent && info.rhScale2IsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
                   <span v-if="info.rhScale2Near" class="scale-tag scale-tag-near"
                     :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
                   <span v-if="info.rhScale2Annotation.outOfKey.length" class="scale-tag"
@@ -684,15 +693,15 @@ function generalTableClick(event) {
                 data-scale-filter="scale3"
                 data-scale-filter-note="F#"
                 :title="scaleNotesTitle(info.rhScale3NotesData)"
-                :class="{ 'td-highlight': (info.lhChordIsCurrent && !autoScaleActive() && globals.currentScaleFilter == 'scale3') || (autoScaleActive() && info.rhScale3IsAuto && info.lhChordIsCurrent), 'td-near': info.rhScale3Near }">
+                :class="{ 'td-highlight': !keyModeActive && ((info.lhChordIsCurrent && !autoScaleActive() && globals.currentScaleFilter == 'scale3') || (autoScaleActive() && info.rhScale3IsAuto && info.lhChordIsCurrent)), 'td-near': info.rhScale3Near }">
                 <code v-if="info.rhScale3Name" class="scale-name"
-                    :class="{ 'boldy': (!lockedOrFrozen() && info.rhScale3IsCurrent && info.lhChordIsCurrent) || info.rhScale3IsLocked || (autoScaleActive() && info.rhScale3IsAuto && info.lhChordIsCurrent) }">
+                    :class="{ 'boldy': (!keyModeActive && ((!lockedOrFrozen() && info.rhScale3IsCurrent && info.lhChordIsCurrent) || (autoScaleActive() && info.rhScale3IsAuto && info.lhChordIsCurrent))) || info.rhScale3IsLocked }">
                             {{ info.rhScale3Name }}</code>
                 <code v-else>none</code>
                 <span v-if="info.rhScale3IsLocked" class="scale-lock"
                     title="This scale is locked (press 5 to unlock)">🔒</span>
                 <div class="scale-tags">
-                  <span v-if="info.lhChordIsCurrent && info.rhScale3IsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
+                  <span v-if="!keyModeActive && info.rhScale3Name && info.lhChordIsCurrent && info.rhScale3IsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
                   <span v-if="info.rhScale3Near" class="scale-tag scale-tag-near"
                     :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
                   <span v-if="info.rhScale3Annotation.outOfKey.length" class="scale-tag"
@@ -707,9 +716,9 @@ function generalTableClick(event) {
                 data-scale-filter="notesOfChord"
                 data-scale-filter-note="G#"
                 :title="scaleNotesTitle(info.rhScaleNotesOfChordData)"
-                :class="{ 'td-highlight': info.lhChordIsCurrent && info.rhScaleNotesOfChordsCurrent }">
+                :class="{ 'td-highlight': !keyModeActive && info.lhChordIsCurrent && info.rhScaleNotesOfChordsCurrent }">
                 <code
-                  :class="{ 'boldy': (!lockedOrFrozen() && info.lhChordIsCurrent && info.rhScaleNotesOfChordsCurrent) || info.rhScaleNotesOfChordIsLocked }">
+                  :class="{ 'boldy': (!keyModeActive && !lockedOrFrozen() && info.lhChordIsCurrent && info.rhScaleNotesOfChordsCurrent) || info.rhScaleNotesOfChordIsLocked }">
                   notes of chord
                 </code>
                 <span v-if="info.rhScaleNotesOfChordIsLocked" class="scale-lock"
@@ -990,6 +999,10 @@ table.scale-filters td {
 
 /* When Solo in key is sounding, the stored per-chord scales are dormant. */
 .solo-in-key-grid .scale-name {
+  opacity: 0.45;
+}
+
+.paused-control {
   opacity: 0.45;
 }
 
