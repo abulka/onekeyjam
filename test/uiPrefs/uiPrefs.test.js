@@ -123,6 +123,8 @@ describe('uiPrefs', () => {
         globals.scaleFiltering.policyOptions.contextChords = 1
         globals.scaleFiltering.policyOptions.phraseBias = false
         globals.scaleFiltering.policyOptions.phraseStrength = 1
+        globals.heldNoteRepair.enabled = true
+        globals.heldNoteRepair.windowMs = 40
         globals.showScaleHistory = false
         assert.deepEqual(currentPrefs(), {
             keyboardHelpMode: 'white',
@@ -133,7 +135,8 @@ describe('uiPrefs', () => {
             scalePolicy: 'manual',
             scaleAdvanced: false,
             scaleHistory: false,
-            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, remapHeldNotes: true, remapGraceMs: 40 },
+            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1 },
+            heldNoteRepair: { enabled: true, windowMs: 40 },
         })
         globals.showWelcomeDialog = true
         globals.showFavouriteBinColumns = false
@@ -151,7 +154,7 @@ describe('uiPrefs', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scaleAdvanced: true, policyOptions: { poolSize: 4, dwell: 2, changeChance: 0.25 } }) })
         loadUiPrefs(storage)
         assert.equal(globals.showScaleAdvanced, true)
-        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, remapHeldNotes: true, remapGraceMs: 40 })
+        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1 })
         globals.showScaleAdvanced = false
         globals.scaleFiltering.policyOptions.poolSize = 6
         globals.scaleFiltering.policyOptions.dwell = 1
@@ -178,11 +181,19 @@ describe('uiPrefs', () => {
         globals.scaleFiltering.policyOptions.phraseStrength = 1
     })
 
-    it('reads, validates and clamps the held-note correction options', () => {
-        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { remapHeldNotes: false, remapGraceMs: 60 } }) })
-        assert.deepEqual(readPrefs(good).policyOptions, { remapHeldNotes: false, remapGraceMs: 60 })
-        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { remapHeldNotes: 'yes', remapGraceMs: -5 } }) })
-        assert.deepEqual(readPrefs(bad).policyOptions, { remapGraceMs: 0 })
+    it('reads, validates and clamps the held-note repair settings', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ heldNoteRepair: { enabled: false, windowMs: 60 } }) })
+        assert.deepEqual(readPrefs(good).heldNoteRepair, { enabled: false, windowMs: 60 })
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ heldNoteRepair: { enabled: 'yes', windowMs: -5 } }) })
+        assert.deepEqual(readPrefs(bad).heldNoteRepair, { windowMs: 0 })
+        // Older saves kept these inside policyOptions; migrate them on read.
+        const legacy = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { remapHeldNotes: false, remapGraceMs: 60 } }) })
+        assert.deepEqual(readPrefs(legacy).heldNoteRepair, { enabled: false, windowMs: 60 })
+        loadUiPrefs(good)
+        assert.equal(globals.heldNoteRepair.enabled, false)
+        assert.equal(globals.heldNoteRepair.windowMs, 60)
+        globals.heldNoteRepair.enabled = true
+        globals.heldNoteRepair.windowMs = 40
     })
 
     it('reads, validates and loads the Help page', () => {

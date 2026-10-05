@@ -161,7 +161,9 @@ the fine-tuning controls. They only appear when a project is loaded.
 | `Reroll` | shuffle | Draw a new scale for the current chord right now. | - |
 | `Context` (1-2) | follow | Whether to look one chord back or two, so a full ii-V-I is recognised. | 1 chord |
 | `Phrase` + `Strength` | either | Bias the next scale by your last solo note so the line resolves. | off |
-| `History` | either | Show the last four chord-to-scale choices above the grid. | off |
+
+The recent chord-to-scale **History** strip is a global display preference, so
+it lives in `Settings` > `Preferences` rather than here.
 
 The single most important thing to know: **shuffle only changes the scale when
 the chord changes.** Repeated stabs of the same chord (the same white trigger key
@@ -296,7 +298,8 @@ that is the third or seventh of the next chord, then trigger that chord. With
 turn it off and repeat to hear the difference. Set `Strength` to `high` for a
 stronger pull.
 
-**History strip.** Open `Options` and tick `History`. Play a few chords and watch
+**History strip.** In `Settings` > `Preferences`, tick `Show the recent
+chord-to-scale history above the grid`. Play a few chords and watch
 the `Recent:` strip list the last four chord-to-scale choices, each with a
 `manual`, `follow` or `shuffle` badge. This is the best way to learn what the
 policy is doing.
@@ -305,8 +308,9 @@ policy is doing.
 `1`-`4` (the right-hand black keys `C#`-`G#` on a MIDI keyboard, or click a scale
 cell in a chord row) to pick a scale, then play that chord's trigger key. Your
 pick is respected: the scale stays on the chosen slot while that chord sounds.
-Trigger a different chord and the policy resumes for it, so the override is
-never a permanent lock.
+It is then carried to the next different chord once, using that chord's own
+scale for the slot, after which the policy resumes, so the override is never a
+permanent lock.
 
 The full developer reference, including the theory and the exact scoring, is in
 `doco/SCALE-POLICIES.md`.

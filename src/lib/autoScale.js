@@ -608,6 +608,8 @@ export function resetChordHistory() {
     globals.scaleFiltering.shuffleDwellRemaining = 0
     globals.scaleFiltering.shuffleChordId = null
     globals.scaleFiltering.shuffleDeferred = false
+    globals.scaleFiltering.manualScaleFilter = ''
+    globals.scaleFiltering.manualScaleNote = ''
     clearScaleRankingCache()
 }
 

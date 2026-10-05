@@ -139,6 +139,12 @@ and the validation commands.
   is remembered in `uiPrefs`, and the control sits above the chord/scale grid
   in `GrandSummary.vue`, next to Solo in key and Colour. The roadmap and full
   control reference are in `doco/SCALE-POLICIES.md`.
+- Separately from the policies, `globals.heldNoteRepair` (`enabled`,
+  `windowMs`) is a global preference on the Settings page: when a chord trigger
+  changes the scale just after a solo note started, the still-sounding note is
+  moved onto the new scale. It is applied by
+  `src/lib/midi/remap-held-solo-notes.js` and persisted in `uiPrefs`. It is not
+  part of the per-policy options.
 - Changing the project key in the Key Detection section, or the colour above
   the scale grid, goes through `applyProjectKeySettings()` in
   `src/lib/projectScaleSettings.js`, which saves the setting, re-ranks every

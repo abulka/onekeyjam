@@ -61,6 +61,7 @@ describe('manual scale picks vs the follow/shuffle policy', () => {
         globals.scaleFiltering.autoScaleNotes = []
         globals.scaleFiltering.autoReason = ''
         globals.scaleFiltering.manualScaleNote = ''
+        globals.scaleFiltering.manualScaleFilter = ''
         globals.chordHistory = []
         globals.project = { options: {}, songs: { default: { ids: [1, 2], favourites: [], blacklist: [] } } }
     })
@@ -68,6 +69,7 @@ describe('manual scale picks vs the follow/shuffle policy', () => {
     afterEach(() => {
         globals.scaleFiltering.policy = 'manual'
         globals.scaleFiltering.manualScaleNote = ''
+        globals.scaleFiltering.manualScaleFilter = ''
         globals.chordTriggerMap = {}
         globals.currentChordTriggerNote = undefined
         globals.currentScaleFilter = 'scale1'
@@ -119,8 +121,25 @@ describe('manual scale picks vs the follow/shuffle policy', () => {
         clickCell('D3', 'D#6')
         triggerChord('C3')
         assert.equal(globals.currentChordTriggerNote, 'C3')
-        assert.equal(globals.scaleFiltering.manualScaleNote, '', 'manual pick applies to one chord only')
-        assert.ok(globals.scaleFiltering.autoScaleNotes.length > 0, 'shuffle should choose again')
+        assert.equal(globals.scaleFiltering.manualScaleNote, '', 'the pick is consumed by the next chord')
+        assert.equal(globals.currentScaleFilter, 'scale2', 'the picked column carries to the next chord')
+        assert.equal(globals.scaleFiltering.autoScaleNotes.length, 0, 'no auto scale on the carried hit')
+        // The hit after that resumes the follow/shuffle policy.
+        triggerChord('C3')
+        assert.ok(globals.scaleFiltering.autoScaleNotes.length > 0, 'shuffle chooses again after the carried hit')
+    })
+
+    it('carries a 1-4 shortcut pick to the next different chord', () => {
+        wireScaleFilterShortcuts()
+        globals.currentChordTriggerNote = 'C3'
+        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'Digit2' }))
+        assert.equal(globals.currentScaleFilter, 'scale2')
+        assert.equal(globals.scaleFiltering.manualScaleFilter, 'scale2')
+        triggerChord('D3')  // a different chord
+        assert.equal(globals.currentChordTriggerNote, 'D3')
+        assert.equal(globals.currentScaleFilter, 'scale2', 'the picked column carries to the next chord')
+        assert.equal(globals.scaleFiltering.autoScaleNotes.length, 0)
+        assert.equal(globals.scaleFiltering.manualScaleFilter, '', 'the pick is consumed by the next hit')
     })
 
     it('marks a 1-4 shortcut as a manual pick', () => {

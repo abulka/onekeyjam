@@ -26,6 +26,7 @@ export const HELP_PAGES = ['overview', 'tutorial', 'reference']
  * @property {boolean} [scaleAdvanced]
  * @property {boolean} [scaleHistory]
  * @property {PolicyOptions} [policyOptions]
+ * @property {HeldNoteRepair} [heldNoteRepair]
  */
 
 /**
@@ -38,8 +39,12 @@ export const HELP_PAGES = ['overview', 'tutorial', 'reference']
  * @property {number} [contextChords]
  * @property {boolean} [phraseBias]
  * @property {number} [phraseStrength]
- * @property {boolean} [remapHeldNotes]
- * @property {number} [remapGraceMs]
+ */
+
+/**
+ * @typedef {Object} HeldNoteRepair
+ * @property {boolean} [enabled]
+ * @property {number} [windowMs]
  */
 
 /**
@@ -68,11 +73,28 @@ function readPolicyOptions(stored) {
         options.phraseBias = stored.phraseBias
     if (Number.isFinite(stored.phraseStrength))
         options.phraseStrength = Math.min(2, Math.max(0.5, stored.phraseStrength))
-    if (typeof stored.remapHeldNotes === 'boolean')
-        options.remapHeldNotes = stored.remapHeldNotes
-    if (Number.isFinite(stored.remapGraceMs))
-        options.remapGraceMs = Math.min(100000, Math.max(0, Math.round(stored.remapGraceMs)))
     return options
+}
+
+/**
+ * Validate and clamp the stored global held-note repair settings.
+ * @param {*} stored
+ * @returns {HeldNoteRepair}
+ */
+function readHeldNoteRepair(stored) {
+    /** @type {HeldNoteRepair} */
+    const repair = {}
+    if (!stored || typeof stored !== 'object')
+        return repair
+    // Accept the legacy names too: these settings used to live in
+    // globals.scaleFiltering.policyOptions as remapHeldNotes/remapGraceMs.
+    const enabled = typeof stored.enabled === 'boolean' ? stored.enabled : stored.remapHeldNotes
+    if (typeof enabled === 'boolean')
+        repair.enabled = enabled
+    const windowMs = Number.isFinite(stored.windowMs) ? stored.windowMs : stored.remapGraceMs
+    if (Number.isFinite(windowMs))
+        repair.windowMs = Math.min(100000, Math.max(0, Math.round(windowMs)))
+    return repair
 }
 
 function defaultStorage() {
@@ -118,6 +140,9 @@ export function readPrefs(storage = defaultStorage()) {
             if (Object.keys(options).length > 0)
                 prefs.policyOptions = options
         }
+        const repair = readHeldNoteRepair(stored && (stored.heldNoteRepair ?? stored.policyOptions))
+        if (Object.keys(repair).length > 0)
+            prefs.heldNoteRepair = repair
         return prefs
     }
     catch (error) {
@@ -140,6 +165,7 @@ export function currentPrefs() {
         scaleAdvanced: globals.showScaleAdvanced,
         scaleHistory: globals.showScaleHistory,
         policyOptions: { ...globals.scaleFiltering.policyOptions },
+        heldNoteRepair: { ...globals.heldNoteRepair },
     }
 }
 
@@ -183,6 +209,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.showScaleHistory = prefs.scaleHistory
     if (prefs.policyOptions)
         Object.assign(globals.scaleFiltering.policyOptions, prefs.policyOptions)
+    if (prefs.heldNoteRepair)
+        Object.assign(globals.heldNoteRepair, prefs.heldNoteRepair)
 }
 
 /**
@@ -209,8 +237,8 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.scaleFiltering.policyOptions.contextChords,
         globals.scaleFiltering.policyOptions.phraseBias,
         globals.scaleFiltering.policyOptions.phraseStrength,
-        globals.scaleFiltering.policyOptions.remapHeldNotes,
-        globals.scaleFiltering.policyOptions.remapGraceMs,
+        globals.heldNoteRepair.enabled,
+        globals.heldNoteRepair.windowMs,
     ], () => {
         writePrefs(currentPrefs(), storage)
     })

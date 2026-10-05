@@ -327,7 +327,8 @@ Abmaj7: D C  Ab Eb        (filter 1; D natural is the borrowed bVI)
 
 **A sample solo (follow history mode):**
 
-Set **Scales** to `follow history`, open **Options** and tick **History**. Play
+Set **Scales** to `follow history`, then in **Settings** > **Preferences** tick
+**Show the recent chord-to-scale history above the grid**. Play
 the same progression and watch the `Recent:` strip: it lists the chord-to-scale
 choices with a `follow` badge, so you can see the engine name the substitutions
 as they go.

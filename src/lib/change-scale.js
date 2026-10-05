@@ -194,6 +194,7 @@ export function applyKeyScale() {
     setActiveScaleFilter(scaleObj.tonic, scaleObj.type)
     globals.scaleFiltering.keyModeActive = true
     globals.scaleFiltering.manualScaleNote = ''
+    globals.scaleFiltering.manualScaleFilter = ''
     reportScaleChange()
     return true
 }
@@ -318,6 +319,24 @@ export function setActiveScaleFilterToMatchChord(chordTonic, chordType, strategy
 }
 
 /**
+ * The player picked a scale filter by hand (a grid cell click, a 1-4
+ * shortcut or a right-hand black key). Remember the choice so the follow and
+ * shuffle policies respect it, and apply it now. The pick is kept while its
+ * own chord keeps sounding and is carried to the next different chord once,
+ * so it overrides the policy for the next chord hit either way.
+ * @param {'scale1'|'scale2'|'scale3'|'notesOfChord'} filter
+ */
+export function pickManualScaleFilter(filter) {
+    if (!filter)
+        return
+    globals.scaleFiltering.frozen = false
+    globals.currentScaleFilter = filter
+    globals.scaleFiltering.manualScaleFilter = filter
+    globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
+    changeScaleFilter(filter)
+}
+
+/**
  * Sound a live scale that is not one of the chord's stored slots, used by the
  * shuffle policy. The scale is remembered separately from the ScalePicker
  * override so the two cannot fight, and is shown as "(auto)" in the UI.
@@ -424,6 +443,7 @@ export function setScalePolicy(policy) {
     // Choosing a policy releases any manual per-chord pick so it can act now,
     // and starts the shuffle dwell fresh.
     globals.scaleFiltering.manualScaleNote = ''
+    globals.scaleFiltering.manualScaleFilter = ''
     globals.scaleFiltering.shuffleRank = null
     globals.scaleFiltering.shuffleDwellRemaining = 0
     globals.scaleFiltering.shuffleChordId = null
@@ -492,6 +512,7 @@ function _setActiveScaleFilter(scaleNotes) {
 function clearActiveScaleFilter() {
     clearAutoScaleState()
     globals.scaleFiltering.manualScaleNote = ''
+    globals.scaleFiltering.manualScaleFilter = ''
     globals.scaleFiltering.scaleTonic = ''
     globals.scaleFiltering.scaleType = ''
     globals.scaleFiltering.scaleTypesMatchingCurrentChord

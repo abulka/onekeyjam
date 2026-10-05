@@ -119,8 +119,9 @@ they can never force a scale that clashes.
 
 ## Phase 3: history strip
 
-A `History` checkbox in the Options expander shows a strip of the last four
-chord-to-scale choices above the grid, newest first. Each entry shows the
+A `History` checkbox in Settings > Preferences (it is a global display
+preference, not a policy option) shows a strip of the last four chord-to-scale
+choices above the grid, newest first. Each entry shows the
 chord, an arrow, the scale and a small badge naming the policy that chose it
 (`manual`, `follow` or `shuffle`); a scale that uses notes outside the project
 key is tinted amber. This makes the policy visible while playing, on both the
@@ -158,10 +159,12 @@ comes later and stays off by default.
 This is behaviour, not a mode. The locked scale (`5`) always wins and pauses
 the policies. Solo in key (`0`) keeps the key scale and pauses them. A manual
 `1`-`4` press, a grid cell click or a right-hand black key applies immediately
-as an **override** for the chord it was made on: it is kept while that chord
-keeps sounding, including a re-trigger, and is released when a different chord
-is triggered so the policy resumes on the new chord. Policies only choose on a
-chord trigger, never mid-chord.
+as an **override**: the chosen slot is kept while its own chord keeps sounding,
+including a re-trigger, and it is carried to the next different chord once, so
+the pick wins on the next chord hit either way. After that the policy resumes.
+Because the slot resolves to the new chord's own stored scale, carrying it
+across a chord change stays in harmony. Policies only choose on a chord
+trigger, never mid-chord.
 
 ## UI map and manual smoke tests
 
@@ -180,7 +183,7 @@ Edit and Perform views, and appears when a project is loaded.
 | `Reroll` | Options panel, shuffle, far right | Draws a new scale for the current chord now. |
 | `Context` | Options panel, follow | One or two previous chords. |
 | `Phrase`, `Strength` | Options panel, follow/shuffle | Phrase-aware bias. |
-| `History` | Options panel | Shows the recent chord-to-scale strip. |
+| `History` | Settings > Preferences | Shows the recent chord-to-scale strip. |
 | `Recent:` strip | above the grid | Last four chord-to-scale choices with a policy badge. |
 | `closest` tag / dashed cell | grid, current row | The nearest stored scale when the live scale is not a stored slot. |
 
@@ -229,7 +232,7 @@ phrase bias).
 
 ### Phase 3 - history strip
 
-1. Open `Options` and tick `History`. Trigger a few chords.
+1. Open `Settings` and tick `History` in `Preferences`. Trigger a few chords.
 2. The strip above the grid should show the last four `chord -> scale` pairs,
    newest first, each with a `manual`/`follow`/`shuffle` badge. A scale outside
    the project key is tinted amber.
@@ -256,11 +259,10 @@ phrase bias).
    chip.
 2. Trigger that same chord (`Z`): the override is respected, so the scale stays
    on the picked slot and no `auto:` chip appears.
-3. Trigger a **different** chord: the override is released and the policy
-   resumes. Under `shuffle` an `auto:` chip appears; under `follow history` the
-   reason line reappears.
-4. Re-trigger the first chord: the policy chooses for it again (the override
-   applied only for as long as that chord was the current one).
+3. Trigger a **different** chord: the picked slot carries to it once, so that
+   chord's own `scale2` sounds and no `auto:` chip appears.
+4. Trigger another chord: the pick has been consumed, so the policy resumes and
+   an `auto:` chip appears (under `shuffle`).
 
 ## Files
 

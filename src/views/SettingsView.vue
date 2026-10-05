@@ -44,6 +44,52 @@ onUnmounted(() => stopAccordion())
               Show favourite and bin columns in the chord/scale table
             </label>
           </div>
+          <div class="mt-2">
+            <label class="checkboxLabel" title="Show a strip of the last four chord-to-scale choices above the chord/scale grid.">
+              <input type="checkbox" v-model="globals.showScaleHistory" />
+              Show the recent chord-to-scale history above the grid
+            </label>
+            <p class="settings-hint">
+              The strip lists the last four chord-to-scale choices, newest first,
+              each with a badge naming the policy that chose it (manual, follow
+              or shuffle). A scale that uses notes outside the project key is
+              tinted amber. It is useful while learning what the follow and
+              shuffle modes are doing.
+            </p>
+          </div>
+        </div>
+
+        <div class="title">
+          <i class="dropdown icon"></i>
+          Held note repair
+        </div>
+        <div class="content">
+          <p class="settings-explainer">
+            When a chord trigger changes the scale just after you have played a
+            right-hand solo note, the note would otherwise keep the old scale and
+            sound out of place. Repair moves that still-sounding note onto the
+            new scale, so it does not matter whether the solo note or the chord
+            arrived first. Notes you are holding deliberately are left alone,
+            and nothing is moved while recording.
+          </p>
+          <div>
+            <label class="checkboxLabel" title="Move a still-sounding solo note onto the new scale after a chord trigger changes it.">
+              <input type="checkbox" v-model="globals.heldNoteRepair.enabled" />
+              Repair held solo notes when the scale changes
+            </label>
+          </div>
+          <div class="mt-2" v-if="globals.heldNoteRepair.enabled">
+            <label title="How recently the held note must have started to be repaired. A short window re-attacks so quickly it is barely audible; a long window also moves notes you are holding deliberately.">
+              Window:
+              <select v-model.number="globals.heldNoteRepair.windowMs">
+                <option :value="25">25 ms</option>
+                <option :value="40">40 ms</option>
+                <option :value="60">60 ms</option>
+                <option :value="100">100 ms</option>
+                <option :value="100000">any</option>
+              </select>
+            </label>
+          </div>
         </div>
 
         <div class="title">
@@ -67,3 +113,17 @@ onUnmounted(() => stopAccordion())
 
   </main>
 </template>
+
+<style scoped>
+.settings-explainer {
+  max-width: 60ch;
+  color: #5a3d1a;
+}
+
+.settings-hint {
+  max-width: 60ch;
+  margin: 0.25rem 0 0 1.5rem;
+  color: #6b5a45;
+  font-size: 0.9rem;
+}
+</style>

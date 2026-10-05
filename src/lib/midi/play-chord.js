@@ -64,12 +64,6 @@ function changeChordTriggerNoteAndThusScale(singleNote, options = {}) {
 
     const chordChanged = singleNote !== globals.currentChordTriggerNote;
     globals.currentChordTriggerNote = singleNote;
-    // A manual pick (a grid cell click, a right-hand black key or a 1-4
-    // shortcut) overrides the policy for the chord it was made on. It is kept
-    // while that chord keeps sounding and is released when a different chord is
-    // triggered, so the follow/shuffle policy resumes on the new chord.
-    if (chordChanged)
-        globals.scaleFiltering.manualScaleNote = '';
 
     // Solo mode 'key': the right hand stays on the project key scale while the
     // chords change. A user's explicit scale1/2/3 pick is temporary and the
@@ -80,10 +74,19 @@ function changeChordTriggerNoteAndThusScale(singleNote, options = {}) {
         return;
     }
 
-    // A manual pick for this chord wins over the policy until the chord changes.
-    if (globals.scaleFiltering.manualScaleNote && globals.scaleFiltering.manualScaleNote === singleNote) {
-        changeScaleFilter(globals.currentScaleFilter);
+    // A manual pick (a grid cell click, a right-hand black key or a 1-4
+    // shortcut) overrides the follow/shuffle policy. The chosen slot is kept
+    // while its own chord keeps sounding, and is carried to the next different
+    // chord once, so the pick wins on the next chord hit whether or not the
+    // chord changes. After that the policy resumes.
+    if (globals.scaleFiltering.manualScaleFilter) {
+        globals.currentScaleFilter = globals.scaleFiltering.manualScaleFilter;
+        changeScaleFilter(globals.scaleFiltering.manualScaleFilter);
         recordChordHistory();
+        if (chordChanged) {
+            globals.scaleFiltering.manualScaleFilter = '';
+            globals.scaleFiltering.manualScaleNote = '';
+        }
         return;
     }
 

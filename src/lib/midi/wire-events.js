@@ -2,7 +2,7 @@ import { globals } from "../globals.js"
 import { playChord, playChordOff } from "./play-chord.js"
 import { transposeChordTriggerMap } from "../transpose"
 import { stopAllNotes } from "./stop-all-notes.js"
-import { changeScaleFilter, toggleSoloMode } from "../change-scale.js"
+import { changeScaleFilter, toggleSoloMode, pickManualScaleFilter } from "../change-scale.js"
 import { jam, jamOff } from "./jam.js"
 import { resetTranspositionsEtc } from "../resetState.js"
 
@@ -106,37 +106,16 @@ export function onNoteOn(e) {
     }
     // rh modifiers
     else if (globals.scaleFilteringEnabled && modifierKeysCsharp.includes(e.note.identifier)) {
-        globals.scaleFiltering.frozen = false
-        globals.currentScaleFilter = 'scale1'
-        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
-        changeScaleFilter()  // if no params, will use globals.currentScaleFilter scale
+        pickManualScaleFilter('scale1')
     }
     else if (globals.scaleFilteringEnabled && modifierKeysDsharp.includes(e.note.identifier)) {
-        // TODO why set the global.currentScaleFilter as well as pass in the
-        // param to changeScaleFilter? You'd think that the parameter should be
-        // sufficient. Well, it turns out that changeScaleFilter() does not
-        // change globals.currentScaleFilter - interesting. Perhaps it should.
-        // Note also that triggering lh chord will trigger a change in scale
-        // and we won't go through this logic here - so to get a permanent change
-        // in scale, you need to set globals.currentScaleFilter.
-        globals.scaleFiltering.frozen = false
-        globals.currentScaleFilter = 'scale2'
-        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
-        changeScaleFilter('scale2')
+        pickManualScaleFilter('scale2')
     }
     else if (globals.scaleFilteringEnabled && modifierKeysFsharp.includes(e.note.identifier)) {
-        globals.scaleFiltering.frozen = false
-        globals.currentScaleFilter = 'scale3'
-        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
-        changeScaleFilter('scale3')
+        pickManualScaleFilter('scale3')
     }
     else if (globals.scaleFilteringEnabled && modifierKeysGsharp.includes(e.note.identifier)) {
-        // globals.toggleScaleStrategy()  // deprecated
-        // changeScaleFilter()
-        globals.scaleFiltering.frozen = false
-        globals.currentScaleFilter = 'notesOfChord'  // permanent change
-        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
-        changeScaleFilter()
+        pickManualScaleFilter('notesOfChord')
     }
     else if (globals.scaleFilteringEnabled && modifierKeysAsharp.includes(e.note.identifier)) {
         // globals.toggleScalePreserveOctaves()  // deprecated

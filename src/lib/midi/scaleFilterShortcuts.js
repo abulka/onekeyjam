@@ -1,6 +1,6 @@
 // @ts-check
 import { globals } from '../globals.js'
-import { changeScaleFilter, toggleSoloMode } from '../change-scale.js'
+import { changeScaleFilter, toggleSoloMode, pickManualScaleFilter } from '../change-scale.js'
 import { isTypingTarget } from '../is-typing-target.js'
 
 /*
@@ -31,10 +31,7 @@ function onKeyDown(e) {
     const digit = Number(e.code.slice(5))
     if (digit >= 1 && digit <= 4) {
         e.preventDefault()
-        globals.scaleFiltering.frozen = false
-        globals.currentScaleFilter = SCALE_FILTERS[digit - 1]
-        globals.scaleFiltering.manualScaleNote = globals.currentChordTriggerNote
-        changeScaleFilter(SCALE_FILTERS[digit - 1])
+        pickManualScaleFilter(SCALE_FILTERS[digit - 1])
     }
     else if (digit === 5) {
         e.preventDefault()

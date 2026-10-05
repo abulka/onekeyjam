@@ -4,6 +4,7 @@ import { RouterLink, RouterView, useRouter } from 'vue-router'
 import mainOneKeyJam from '../src/lib/main.js';
 import { globals } from './lib/globals.js';
 import { wireHelpShortcuts } from './lib/helpShortcuts.js';
+import { projectKeyName } from './lib/projectKey.js';
 import DemoIntroDialog from './components/DemoIntroDialog.vue';
 
 // The Research view is a development-only playground; hide it from production builds.
@@ -13,6 +14,15 @@ const router = useRouter()
 
 // The current project name, shown prominently at the right of the page tabs.
 const projectName = computed(() => globals.projectLibrary.projectName || 'Untitled')
+
+// The resolved project key, shown next to the project name. It follows live
+// transposition because getProjectKey() applies the transposition offset.
+const projectKeyLabel = computed(() => {
+  if (!globals.isProjectLoaded)
+    return ''
+  const key = globals.getProjectKey()
+  return key ? projectKeyName(key) : ''
+})
 
 onMounted(() => {
   console.log('App onMounted')
@@ -61,6 +71,10 @@ onMounted(() => {
         <!-- <div class="item"> <a href="#" @click="fileImportMidiDialog.open()">dialog</a> </div> -->
 
         <div class="right menu">
+          <div v-if="projectKeyLabel" class="item app-key-name" title="The resolved project key. It moves with live transposition.">
+            <span class="app-key-label">Key:</span>
+            <strong class="app-key-value">{{ projectKeyLabel }}</strong>
+          </div>
           <div class="item app-project-name" :title="projectName">
             <span class="app-project-label">Project:</span>
             <strong class="app-project-value">{{ projectName }}</strong>
@@ -83,6 +97,26 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Resolved project key, shown beside the project name at the right of the tabs. */
+.app-key-name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.app-key-label {
+  font-size: 0.95rem;
+  font-weight: normal;
+  color: #7a6547;
+}
+
+.app-key-value {
+  font-size: 1.1rem;
+  color: #5a3d1a;
+  white-space: nowrap;
+}
+
 /* Current project name, at the right of the page tabs. */
 .app-project-name {
   display: inline-flex;

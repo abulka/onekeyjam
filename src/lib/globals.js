@@ -140,6 +140,14 @@ export const globals = reactive({
     syncChordPickerToCurrentTriggeredChord: true,
     enableLhChordTriggers: true,
 
+    // Global repair of held right-hand solo notes when a chord trigger changes
+    // the scale just after a note started. Configured on the Settings page, not
+    // in the scale policy options. See src/lib/midi/remap-held-solo-notes.js.
+    heldNoteRepair: {
+        enabled: true,   // move a still-sounding note onto the new scale
+        windowMs: 40,    // only correct notes started within this many ms
+    },
+
     scaleFiltering: {
         _frozen: false,  // whether scale filtering is frozen or changes as chords change
         keyModeActive: false,  // true while the active scale is the project key scale (solo mode 'key')
@@ -167,16 +175,18 @@ export const globals = reactive({
             contextChords: 1,       // follow: how many previous chords to consider (1-2)
             phraseBias: false,      // follow/shuffle: bias by the last solo note
             phraseStrength: 1,      // phrase bias strength (0.5 low, 1 medium, 2 high)
-            remapHeldNotes: true,   // keep held solo notes in step when the scale changes
-            remapGraceMs: 40,       // only correct held notes started within this many ms
         },
         shuffleRank: null,          // shuffle: rank index currently held (0-based)
         shuffleDwellRemaining: 0,   // shuffle: chord changes left before a redraw
         shuffleChordId: null,       // chord id the current shuffle draw belongs to
         shuffleDeferred: false,     // a draw was postponed while solo notes sounded
-        // Chord trigger note for which the player explicitly picked a scale
-        // (grid click, 1-4 shortcut or MIDI black key). While it matches the
-        // current chord, the follow/shuffle policy leaves the pick alone.
+        // A manual scale pick (grid click, 1-4 shortcut or MIDI black key)
+        // overrides the policy. manualScaleFilter is the chosen slot
+        // ('scale1'/'scale2'/'scale3'/'notesOfChord'), manualScaleNote is the
+        // chord it was made on. It is kept while that chord keeps sounding and
+        // is carried to the next different chord once, so the pick works for
+        // the next chord hit either way.
+        manualScaleFilter: '',
         manualScaleNote: '',
 
         // These should always match the currentScaleName caused by lh trigger note chord changes

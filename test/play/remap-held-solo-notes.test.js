@@ -39,8 +39,8 @@ describe('remapHeldSoloNotes', () => {
             E4: { allowedNote: 'F4', velocity: 0.7, startedAt: 1000 },
         }
         globals.currentJamNote = { real: '', mapped: '' }
-        globals.scaleFiltering.policyOptions.remapHeldNotes = true
-        globals.scaleFiltering.policyOptions.remapGraceMs = 40
+        globals.heldNoteRepair.enabled = true
+        globals.heldNoteRepair.windowMs = 40
         globals.recording = { isRecording: false }
         detectChordsBeingPlayed.mockClear()
     })
@@ -110,7 +110,7 @@ describe('remapHeldSoloNotes', () => {
 
     it('does nothing when correction is switched off', () => {
         globals.scaleTriggerMap = { E4: 'G4' }
-        globals.scaleFiltering.policyOptions.remapHeldNotes = false
+        globals.heldNoteRepair.enabled = false
 
         assert.equal(remapHeldSoloNotes({ now: 1010 }), 0)
         assert.equal(calls.length, 0)
@@ -126,7 +126,7 @@ describe('remapHeldSoloNotes', () => {
 
     it('uses the default window when none is stored', () => {
         globals.scaleTriggerMap = { E4: 'G4' }
-        globals.scaleFiltering.policyOptions.remapGraceMs = undefined
+        globals.heldNoteRepair.windowMs = undefined
 
         // 40 ms default: 30 ms later is corrected, 50 ms later is not.
         assert.equal(remapHeldSoloNotes({ now: 1030 }), 1)

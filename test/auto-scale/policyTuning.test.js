@@ -54,6 +54,7 @@ describe('shuffle policy options', () => {
         globals.scaleFiltering.autoScaleNotes = []
         globals.scaleFiltering.autoReason = ''
         globals.scaleFiltering.manualScaleNote = ''
+        globals.scaleFiltering.manualScaleFilter = ''
         resetChordHistory()
     })
 

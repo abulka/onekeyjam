@@ -44,8 +44,8 @@ function graceWindow(value) {
  * @returns {number} how many held notes were corrected or stopped
  */
 export function remapHeldSoloNotes(options = {}) {
-    const policyOptions = globals.scaleFiltering && globals.scaleFiltering.policyOptions
-    if (policyOptions && policyOptions.remapHeldNotes === false)
+    const repair = globals.heldNoteRepair
+    if (repair && repair.enabled === false)
         return 0
     if (globals.recording && globals.recording.isRecording)
         return 0
@@ -56,7 +56,7 @@ export function remapHeldSoloNotes(options = {}) {
         return 0
 
     const now = options.now ?? nowMs()
-    const window = graceWindow(policyOptions && policyOptions.remapGraceMs)
+    const window = graceWindow(repair && repair.windowMs)
     let corrected = 0
 
     for (const realKey of Object.keys(globals.pendingNoteOffs)) {
