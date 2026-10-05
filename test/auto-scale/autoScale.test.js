@@ -342,14 +342,37 @@ describe('autoScale policies', () => {
             assert.match(result.reason, /same notes/)
         })
 
-        it('allows a one-note colour shift when the previous set was just used', () => {
+        it('favours the primary over a colour, even when the previous set was just used', () => {
             const context = {
                 previousScalePcs: pitchClassSet(scaleNameToNotes('G mixolydian')),
                 recentScaleSets: [pitchClassSet(scaleNameToNotes('G mixolydian'))],
                 maxNewNotes: 1,
             }
-            const result = chooseShuffleCandidate(candidates, context, () => 0.2)
-            assert.notEqual(result.index, 0)
+            // A low random value stays on the primary...
+            assert.equal(chooseShuffleCandidate(candidates, context, () => 0.2).index, 0)
+            // ...and a high one can still reach a colour shift.
+            assert.notEqual(chooseShuffleCandidate(candidates, context, () => 0.99).index, 0)
+        })
+
+        it('uses the primary as the baseline on the first draw', () => {
+            const context = { previousScalePcs: new Set(), recentScaleSets: [], maxNewNotes: 1 }
+            const result = chooseShuffleCandidate(candidates, context, () => 0)
+            assert.equal(result.index, 0)
+            assert.equal(result.changed, 0)
+            assert.match(result.reason, /same notes/)
+        })
+
+        it('makes the primary clearly the most likely after a ii chord', () => {
+            const context = {
+                previousScalePcs: pitchClassSet(scaleNameToNotes('D dorian')),
+                recentScaleSets: [pitchClassSet(scaleNameToNotes('D dorian'))],
+                maxNewNotes: 1,
+            }
+            const counts = [0, 0, 0]
+            for (let i = 0; i < 1000; i++)
+                counts[chooseShuffleCandidate(candidates, context, () => (i + 0.5) / 1000).index]++
+            assert.ok(counts[0] > 700, `primary picked ${counts[0]} of 1000`)
+            assert.ok(counts[1] > 0 && counts[1] < 200, `colour picked ${counts[1]} of 1000`)
         })
 
         it('allows the same pitch set when it is the only option', () => {

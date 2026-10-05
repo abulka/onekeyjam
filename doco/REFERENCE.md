@@ -125,9 +125,11 @@ for you. There are three modes:
 - **manual** (the default): you stay in charge of the scale1/2/3 slots.
 - **follow history**: for each chord the app picks the stored scale that
   continues the scale you just played and fits the function of the progression.
-- **shuffle**: when the chord changes, the app draws a close colour shift from
-  the top-ranked alternatives. A repeated trigger of the same chord holds the
-  scale, so it varies the harmony without moving the notes under your fingers.
+- **shuffle**: when the chord changes, the app draws from the top-ranked
+  alternatives. The idiomatically correct primary scale is the usual choice and
+  a close colour shift is occasional, so it varies the harmony gently. A
+  repeated trigger of the same chord holds the scale, so it does not move the
+  notes under your fingers.
 
 Why this helps:
 
@@ -173,7 +175,8 @@ the notes never move under your fingers. That is what makes it playable.
 ### Presets
 
 The presets are the easiest way in. For **shuffle** they are **Subtle** (the
-default: only the stored scales, held longer, close shifts), **Varied** (a close
+default: only the stored scales, held longer, with rare close shifts), **Varied**
+(a close
 colour from a pool of five on each chord change) and **Wild** (no limits, for
 experimenting). For **follow** they are **Simple** (one chord), **Progression**
 (two chords), **Lyrical** (two chords plus phrase) and **Resolve** (strong

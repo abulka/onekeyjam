@@ -156,6 +156,25 @@ describe('transposeChordConfig', () => {
         assert.equal(chordConfig.chord, 'DM')
     });
 
+    it('slash chord keeps a truthful symbol and bass when transposed', () => {
+        /** @type {ChordConfig} */
+        const chordConfig = {
+            "id": 1,
+            "name": "G7/D chord",
+            "chord": "G7/D",
+            "chordNotes": ["D3", "F3", "G3", "B3"],
+            "scale1": "g mixolydian",
+        }
+        expandChordConfig(chordConfig)
+
+        _transposeChordConfig(chordConfig, '2m')
+        assert.equal(chordConfig.chord, 'Ab7/Eb')
+        assert.deepEqual(chordConfig.chordNotes, ['Eb3', 'Gb3', 'Ab3', 'C4'])
+        const resolved = resolveChord({ symbol: chordConfig.chord, notes: chordConfig.chordNotes, bass: chordConfig.bass })
+        assert.equal(resolved.root, 'Ab')
+        assert.deepEqual(resolved.intervals, [0, 4, 7, 10])
+    });
+
 });
 
 describe('transposeChordConfigs', () => {

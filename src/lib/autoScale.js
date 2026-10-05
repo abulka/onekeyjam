@@ -367,6 +367,12 @@ export function chooseFollowCandidate(candidates, context) {
  * limited to candidates whose pitch set is within `maxNewNotes` of the previous
  * scale, so a change is a close colour shift rather than a jump. Rank, common
  * tones and novelty shape the weights inside that band.
+ *
+ * When there is no previous scale the top-ranked candidate becomes the
+ * reference, so the first draw of a session behaves like the rest: the
+ * idiomatic primary is the baseline and Spread decides how far a later change
+ * may move. The rank weight is steep and novelty only nudges the alternatives,
+ * so the best fit is favoured and colour scales are occasional.
  * @param {Array<{name: string, pcs: Set<number>}>} candidates ranked best first
  * @param {*} context from buildContext()
  * @param {() => number} rng injectable for tests
@@ -375,11 +381,13 @@ export function chooseShuffleCandidate(candidates, context, rng = Math.random) {
     const previousPcs = context.previousScalePcs ?? new Set()
     const recent = context.recentScaleSets ?? []
     const maxNewNotes = Number.isFinite(context.maxNewNotes) ? context.maxNewNotes : 1
+    // With no history, the primary scale is the baseline to vary from.
+    const referencePcs = previousPcs.size > 0 ? previousPcs : (candidates[0]?.pcs ?? new Set())
     // How many notes a change substitutes, roughly the symmetric difference / 2.
-    const changedCount = (pcs) => Math.round((pcs.size + previousPcs.size - 2 * commonToneCount(pcs, previousPcs)) / 2)
+    const changedCount = (pcs) => Math.round((pcs.size + referencePcs.size - 2 * commonToneCount(pcs, referencePcs)) / 2)
 
     let pool = candidates.map((candidate, index) => ({ candidate, index }))
-    if (previousPcs.size > 0) {
+    if (referencePcs.size > 0) {
         const close = pool.filter(({ candidate }) => changedCount(candidate.pcs) <= maxNewNotes)
         if (close.length > 0)
             pool = close
@@ -396,12 +404,16 @@ export function chooseShuffleCandidate(candidates, context, rng = Math.random) {
     let total = 0
     for (let i = 0; i < pool.length; i++) {
         const { candidate } = pool[i]
-        const common = commonToneCount(candidate.pcs, previousPcs)
+        const common = commonToneCount(candidate.pcs, referencePcs)
         const seen = recent.some((set) => setsEqual(candidate.pcs, set))
-        let weight = 1 + 1 / (i + 1)
+        // Steep rank preference: the idiomatically best fit is the usual choice.
+        let weight = 1 / ((i + 1) ** 3)
         weight *= 1 + 0.1 * common
         weight *= Math.max(0.2, 1 + 0.15 * phraseBonus(candidate, context))
-        weight *= seen ? 0.35 : 1.15
+        // Novelty only nudges the alternatives. The best fit is never punished
+        // for continuing the same notes, which is the diatonic norm.
+        if (i > 0)
+            weight *= seen ? 0.4 : 1.1
         weights.push(weight)
         total += weight
     }
@@ -418,7 +430,7 @@ export function chooseShuffleCandidate(candidates, context, rng = Math.random) {
 
     const changed = changedCount(chosen.candidate.pcs)
     const changeLabel = changed === 0 ? 'same notes' : changed === 1 ? '1 note change' : `${changed} note change`
-    return { index: chosen.index, rank: chosen.index + 1, common: commonToneCount(chosen.candidate.pcs, previousPcs), changed, reason: `shuffle: ${changeLabel}` }
+    return { index: chosen.index, rank: chosen.index + 1, common: commonToneCount(chosen.candidate.pcs, referencePcs), changed, reason: `shuffle: ${changeLabel}` }
 }
 
 /** @param {ChordConfig} config */

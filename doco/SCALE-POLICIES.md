@@ -77,10 +77,11 @@ of shuffle, which drew on every trigger.
 - **Reroll** forces a fresh draw for the current chord and resets its dwell; it
   ignores the Spread band and the Hold rule for a deliberate jump.
 - **Preset** applies a named combination in one click. Shuffle presets are
-  **Subtle** (the default: pool 3, held two changes, close shifts), **Varied**
-  (a close colour from a larger pool on each chord change) and **Wild** (no
-  band, no hold); follow presets are **Simple**, **Progression**, **Lyrical**
-  and **Resolve**. Hand-adjusting any value moves the selector to `Custom`.
+  **Subtle** (the default: pool 3, held two changes, close shifts that are
+  rare), **Varied** (a close colour from a larger pool on each chord change)
+  and **Wild** (no band, no hold); follow presets are **Simple**,
+  **Progression**, **Lyrical** and **Resolve**. Hand-adjusting any value moves
+  the selector to `Custom`.
 
 The drawn rank is cached with the ranked candidates per chord, key, colour and
 pool size, so shuffle does not re-rank the scale dictionary on every trigger.
@@ -95,6 +96,26 @@ fit keeps the harmony correct while giving the phrase a stable colour. Shuffle
 stays a close sibling of follow: follow picks the best continuation
 deterministically, shuffle picks a close random one, weighted by rank, common
 tones and novelty, and only when the harmony actually changes.
+
+### Why the primary scale is favoured
+
+The draw is not uniform. The rank weight is steep, so the engine's top-ranked,
+idiomatically correct scale is the usual choice and a colour alternative is
+occasional. Two details keep that musical:
+
+- **The best fit is never punished for novelty.** In a diatonic progression the
+  ii chord's scale and the V chord's primary are the same pitch set (D dorian
+  and G mixolydian, for example), so continuing the same notes is the norm, not
+  a repeat to avoid. Only the lower-ranked alternatives are nudged away from
+  recently heard sets.
+- **The first draw of a session uses the primary as its baseline.** With no
+  previous scale the `Spread` band and common-tone weighting would otherwise be
+  skipped; instead the top-ranked candidate is the reference, so the first
+  chord behaves like every other draw.
+
+The upshot is that in a C major ii-V-I the V chord stays on its diatonic
+`G mixolydian` almost all the time and only rarely shifts to a close colour
+such as `G lydian dominant` (a valid `#11` dominant sound, but a bright one).
 
 ## Phase 2: progression context
 
@@ -215,10 +236,10 @@ phrase bias).
    `closest fit`, and the scale should move as little as possible.
 9. Transpose the C Major II-V-I demo up a semitone (Ctrl+2, or hold the
    left-hand `C#` and press `A#`), then trigger the second chord: the `Key:`
-   chip should read `Db major`, the chord row should show `Ab7inversion2*`, and
+   chip should read `Db major`, the chord row should show `Ab7/Eb`, and
    shuffle should offer Ab scales (Ab mixolydian, Ab lydian dominant, Ab
    mixolydian b6), never a G scale. Press Ctrl+Shift+2 (or Shift+`G#`) to reset:
-   the key returns to C major and the chord to `G7inversion2`.
+   the key returns to C major and the chord to `G7/D`.
 
 ### Phase 2 - progression context
 

@@ -11,7 +11,8 @@
     },
     {
       "id": "2",
-      "name": "G7, G7inversion2",
+      "name": "G7/D chord",
+      "chord": "G7/D",
       "chordNotes": ["D3", "F3", "G3", "B3"],
       "scale1": "G mixolydian",
       "scale2": "G lydian dominant",

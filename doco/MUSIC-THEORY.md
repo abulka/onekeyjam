@@ -419,18 +419,25 @@ engine and draws one at random, but it is anchored to the harmony: it only
 changes when the **chord changes**, and a repeated trigger of the same chord
 holds the scale. Inside that, the draw is weighted by:
 
-- the rank position, so the idiomatic primary scale is the most likely;
-- the common tones with the previous scale, so the changes still connect;
-- novelty relative to the last few scales, so recently heard pitch sets are
-  unlikely to return.
+- the rank position, steeply, so the idiomatic primary scale is the usual
+  choice and a colour alternative is occasional;
+- the common tones with the reference scale, so the changes still connect;
+- novelty relative to the last few scales, applied only to the alternatives, so
+  recently heard colour sets are unlikely to return.
+
+When there is no previous scale, the top-ranked candidate is used as the
+reference, so the first draw of a session starts on the primary rather than
+skipping the band. Novelty never penalises the best fit, because in a diatonic
+progression the ii chord's scale and the V chord's primary are the same pitch
+set (D dorian and G mixolydian), and continuing the same notes is the norm.
 
 To keep a change musical, the draw is limited to candidates within
-`maxNewNotes` substituted notes of the previous scale (the `Spread` control), so
-a change is a close colour shift rather than a jump. If solo notes are sounding
-when the chord changes, shuffle takes the **closest fit** instead of a random
-draw, so the mapping barely moves under the player's fingers. Every candidate
-is a scale the engine already rates for the chord, so variety cannot produce a
-scale that clashes with the harmony.
+`maxNewNotes` substituted notes of the reference scale (the `Spread` control),
+so a change is a close colour shift rather than a jump. If solo notes are
+sounding when the chord changes, shuffle takes the **closest fit** instead of a
+random draw, so the mapping barely moves under the player's fingers. Every
+candidate is a scale the engine already rates for the chord, so variety cannot
+produce a scale that clashes with the harmony.
 
 Because the pool can be larger than the three stored slots, a draw is often a
 scale the grid does not contain. The header above the grid always names the
@@ -464,9 +471,10 @@ notes:
   project key, so key-aware ranking, the `Key:` chip and Solo in key all hear
   the transposed key (C major becomes Db major after one semitone up). The
   written project is not modified, and Reset Transpositions restores it.
-- Custom chord names that Tonal cannot parse (for example `G7inversion2` or
-  `E7/D`) move their root as well, so the grid label keeps describing what
-  sounds: `G7inversion2*` becomes `Ab7inversion2*` and sounds an Ab7.
+- Custom chord names that Tonal cannot parse (for example `E7/D` slash names,
+  or legacy custom names such as `G7inversion2`) move their root as well, so the
+  grid label keeps describing what sounds: `G7/D` becomes `Ab7/Eb`, and
+  `G7inversion2*` becomes `Ab7inversion2*`.
 - The follow and shuffle history is cleared, so the first chord after a
   transposition starts a fresh phrase rather than continuing pre-transposition
   scales.
