@@ -19,6 +19,7 @@ import { applyProjectKeySettings } from './projectScaleSettings.js'
 import { deletePendingChordConfigs } from './massOperationsOnChordConfigs'
 import { fetchFeaturedProject, fetchClassicProject, fetchUserProject } from './projectLibrary';
 import { listKeyboardConfigs, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listUserProjects } from './projectLibrary';
+import { restoreCurrentProject } from './currentProjectStore.js';
 
 /** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
 /** @typedef {import("./typedefs").KeyboardConfig} KeyboardConfig */
@@ -46,12 +47,16 @@ function emptyProject() {  // TODO move this into globals and integrate with glo
 }
 
 export async function bootProject() {
-    // Called by the initial boot in src/lib/main.js. This only seeds the empty
-    // project into globals; the orchestrator then calls regen(), keyDetection(),
-    // initChordPlayEvents() and linkProjectToKeyboard() (see src/lib/main.js).
-    // Subsequent project loads go through projectChores() instead, which reruns
-    // regen(), keyDetection() and linkProjectToKeyboard() but not the one-time
-    // initChordPlayEvents().
+    // Called by the initial boot in src/lib/main.js. This restores the working
+    // project saved by the autosave (including unsaved edits and the grid
+    // selection), or seeds an empty project when there is none. The orchestrator
+    // then calls regen(), keyDetection(), initChordPlayEvents() and
+    // linkProjectToKeyboard() (see src/lib/main.js). Subsequent project loads go
+    // through projectChores() instead, which reruns regen(), keyDetection() and
+    // linkProjectToKeyboard() but not the one-time initChordPlayEvents().
+
+    if (restoreCurrentProject())
+        return
 
     projectChores2name(
         emptyProject(),     // project data object

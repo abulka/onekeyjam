@@ -73,7 +73,9 @@ logic.
    enables WebMidi.js, records the detected keyboards in
    `globals.keyboardsDetected`, and finds the IAC Driver output channels.
 5. `bootKeyboard()` loads the keyboard config that matches a detected device,
-   and `bootProject()` loads the starting (empty) project.
+   and `bootProject()` restores the last working project from the autosave (or
+   seeds an empty project when there is none). The autosave is started later,
+   once boot has finished (see Persistence and backend).
 6. `regen()` allocates the project chords into `globals.chordTriggerMap`, then
    `resolveProjectKey()` (in `src/lib/projectKey.js`) stores the declared or
    detected project key in `globals.projectKey`.
@@ -288,6 +290,16 @@ and the validation commands.
 - `src/lib/projectSave.js` wires the Save, Save As, Import and Export actions to
   the local store. Projects can also be exported and imported as JSON files, so
   they can be backed up or moved between browsers and machines.
+- The **current working project** is autosaved to `localStorage` (key
+  `onekeyjam.currentProject`) by `src/lib/currentProjectStore.js`, so a browser
+  reload does not lose unsaved edits. The snapshot holds the slim persisted
+  project (`getProjectForPersistence()`), the project name and library category,
+  the highlighted grid row and scale column (`currentChordTriggerNote`,
+  `currentScaleFilter`) and the number of displayed chord rows. `bootProject()`
+  restores it at boot, and `initCurrentProjectAutosave()` (called at the end of
+  the boot in `src/lib/main.js`) keeps it up to date with a debounced deep watch,
+  flushing on `pagehide`. Loading or creating another project simply replaces
+  the snapshot; the take, sequencer pattern and UI prefs persist separately.
 
 ## Further reading
 

@@ -5,6 +5,7 @@ import { bootGeneralMidi } from "./audio/general-midi.js"
 import { restoreTake } from "./midi/recorder.js"
 import { keyDetection } from "./keyDetection"
 import { initChordPlayEvents } from './midi/wire-chord-play-events';
+import { initCurrentProjectAutosave } from './currentProjectStore.js';
 
 export default async function () {
     globals.boot.status = 'booting'
@@ -28,6 +29,10 @@ export default async function () {
         // Bring back the last recorded take, if there is one, so a refresh
         // does not lose it.
         restoreTake()
+
+        // Start autosaving the working project now that the boot restore has
+        // finished, so a refresh does not lose unsaved edits either.
+        initCurrentProjectAutosave()
 
         globals.boot.status = 'ready'
         console.log('one time app boot complete')
