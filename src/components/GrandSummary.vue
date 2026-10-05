@@ -647,7 +647,7 @@ function generalTableClick(event) {
                     :class="{ 'boldy': (!lockedOrFrozen() && info.rhScaleIsCurrent && info.lhChordIsCurrent) || info.rhScaleIsLocked || (autoScaleActive() && info.rhScaleIsAuto && info.lhChordIsCurrent) }">
                             {{ info.rhScaleName }}</code><code v-else>none</code><span v-if="info.rhScaleIsLocked"
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp;
-                <div v-if="info.rhScaleName" class="scale-tags">
+                <div class="scale-tags">
                   <span v-if="info.lhChordIsCurrent && info.rhScaleIsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
                   <span v-if="info.rhScaleNear" class="scale-tag scale-tag-near"
                     :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
@@ -668,7 +668,7 @@ function generalTableClick(event) {
                     :class="{ 'boldy': (!lockedOrFrozen() && info.rhScale2IsCurrent && info.lhChordIsCurrent) || info.rhScale2IsLocked || (autoScaleActive() && info.rhScale2IsAuto && info.lhChordIsCurrent) }">
                             {{ info.rhScale2Name }}</code><code v-else>none</code><span v-if="info.rhScale2IsLocked"
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp; 
-                <div v-if="info.rhScale2Name" class="scale-tags">
+                <div class="scale-tags">
                   <span v-if="info.lhChordIsCurrent && info.rhScale2IsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
                   <span v-if="info.rhScale2Near" class="scale-tag scale-tag-near"
                     :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
@@ -691,7 +691,7 @@ function generalTableClick(event) {
                 <code v-else>none</code>
                 <span v-if="info.rhScale3IsLocked" class="scale-lock"
                     title="This scale is locked (press 5 to unlock)">🔒</span>
-                <div v-if="info.rhScale3Name" class="scale-tags">
+                <div class="scale-tags">
                   <span v-if="info.lhChordIsCurrent && info.rhScale3IsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
                   <span v-if="info.rhScale3Near" class="scale-tag scale-tag-near"
                     :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
@@ -714,6 +714,7 @@ function generalTableClick(event) {
                 </code>
                 <span v-if="info.rhScaleNotesOfChordIsLocked" class="scale-lock"
                   title="Notes of chord is the locked scale (press 5 to unlock)">🔒</span>
+                <div class="scale-tags"></div>
               </td>
             </tr>
             </tbody>
@@ -953,6 +954,9 @@ table.scale-filters td {
   flex-wrap: wrap;
   gap: 0.25rem;
   margin-top: 0.15rem;
+  /* Reserve one pill line so the scale name does not jump when a tag appears.
+     0.95rem matches a .scale-tag's height (0.62rem x 1.3 line-height + borders). */
+  min-height: 0.95rem;
 }
 
 .scale-tag {
