@@ -3,7 +3,7 @@ import { reactive } from 'vue'
 import { maxChordConfigs } from './globals-config.js'
 import { stringify } from './prettyjson.js'
 import { getProjectForPersistence } from './projectSerialize.js'
-import { resolveProjectKey, projectKeyName, projectKeyNotes, projectColour, setProjectColour } from './projectKey.js'
+import { resolveProjectKey, projectKeyName, projectKeyNotes, projectColour, setProjectColour, transposeKey } from './projectKey.js'
 import { isProduction } from './settings.js'
 
 /** @typedef {import("./typedefs").Chord} Chord */
@@ -155,11 +155,12 @@ export const globals = reactive({
         autoReason: '',  // short explanation of the last automatic scale choice
 
         // Options for the follow and shuffle policies. See doco/SCALE-POLICIES.md.
-        // The shuffle defaults are the 'Varied' preset: change on a chord change,
-        // keep the shift close to the previous scale, and wait while notes sound.
+        // The shuffle defaults are the 'Subtle' preset: stay on the three stored
+        // scales, hold a drawn rank for two chord changes, and keep each shift
+        // within one substituted note. Varied and Wild are one click away.
         policyOptions: {
-            poolSize: 5,            // shuffle: ranked candidates to draw from (3-8)
-            dwell: 1,               // shuffle: chord changes to hold the drawn rank
+            poolSize: 3,            // shuffle: ranked candidates to draw from (3-8)
+            dwell: 2,               // shuffle: chord changes to hold the drawn rank
             changeChance: 1,        // shuffle: chance to redraw at a dwell boundary (0-1)
             maxNewNotes: 1,         // shuffle: max pitch classes a change may move (0-7)
             deferWhilePlaying: true,// shuffle: wait for held solo notes to release
@@ -235,8 +236,13 @@ export const globals = reactive({
     // The resolved project key { tonic, type, source }, set when a project is
     // loaded. See src/lib/projectKey.js and doco/MUSIC-THEORY.md.
     projectKey: null,
+    // Semitones the live trigger map has been transposed by (Ctrl+2 or the
+    // left-hand black keys). The written project key never changes; this offset
+    // is applied on top of it by getProjectKey().
+    transpositionSemitones: 0,
     getProjectKey() {
-        return this.projectKey ?? resolveProjectKey(this.project)
+        const key = this.projectKey ?? resolveProjectKey(this.project)
+        return transposeKey(key, this.transpositionSemitones)
     },
     getProjectColour() {
         return projectColour(this.project)

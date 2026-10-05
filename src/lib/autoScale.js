@@ -31,7 +31,11 @@ export const HISTORY_LIMIT = 8
  */
 export const POLICY_PRESETS = {
     shuffle: [
-        { name: 'subtle', label: 'Subtle', options: { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 } },
+        // Intentions, in order of boldness: Subtle stays on the three stored
+        // scales with close, infrequent shifts; Varied takes one close colour
+        // from a larger pool on each chord change; Wild lifts the spread band
+        // and the hold rule.
+        { name: 'subtle', label: 'Subtle', options: { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 } },
         { name: 'varied', label: 'Varied', options: { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 } },
         { name: 'wild', label: 'Wild', options: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: false, phraseBias: false, phraseStrength: 1 } },
     ],

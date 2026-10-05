@@ -2,6 +2,7 @@
 import { globals } from './globals.js'
 import { changeScaleFilter } from './change-scale.js'
 import { resetChordTriggerMap } from './triggerMaps'
+import { resetChordHistory } from './autoScale.js'
 
 /**
  * Clear any transpositions and re-instate the original chord config.
@@ -13,6 +14,10 @@ import { resetChordTriggerMap } from './triggerMaps'
 export function resetTranspositionsEtc() {
     // Called by button 'reset changes' or when hit piano lh key combination (C# G#)
     resetChordTriggerMap(globals.chordTriggerMap, globals.project.chords)
+    // The sounding key returns to the written project key, and the live
+    // follow/shuffle context starts fresh.
+    globals.transpositionSemitones = 0
+    resetChordHistory()
     // just in case scale changed; with no argument this uses the current
     // filter, or the project key scale when solo mode is 'key'
     changeScaleFilter()

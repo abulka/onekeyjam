@@ -146,14 +146,15 @@ Why this helps:
 
 ### Options reference
 
-Open the **Options** button beside the **Scales** dropdown to reveal these. They
-only appear when a project is loaded.
+The **Preset** selector sits in the main row beside the **Scales** dropdown, so
+the active flavour is always visible. The **Options** button next to it reveals
+the fine-tuning controls. They only appear when a project is loaded.
 
 | Control | Mode | Benefit | Default |
 |---|---|---|---|
-| `Preset` | both | One-click options for the active mode. Choose a starting point, then fine-tune. | Varied / Simple |
-| `Pool` (3-8) | shuffle | How many alternatives the draw uses. 3 = the stored scales only; 8 = more colour. | 5 |
-| `Dwell` (1-4) | shuffle | How many chord changes to hold one draw before changing. Longer is steadier. | 1 |
+| `Preset` | both | One-click options for the active mode. Choose a starting point, then fine-tune. Always visible in the main row; shows a highlighted `Custom` when the values are hand-tuned. | Subtle / Simple |
+| `Pool` (3-8) | shuffle | How many alternatives the draw uses. 3 = the stored scales only; 8 = more colour. | 3 |
+| `Dwell` (1-4) | shuffle | How many chord changes to hold one draw before changing. Longer is steadier. | 2 |
 | `Change` (0-100%) | shuffle | The chance of a new draw at each boundary. Lower keeps a colour longer. | 100% |
 | `Spread` | shuffle | How far a change may move the notes: `same notes`, `1 note`, `2 notes` or `Wild`. | 1 note |
 | `Hold` | shuffle | Do not jump the scale while solo notes are sounding; take the closest fit instead. | on |
@@ -169,13 +170,13 @@ the notes never move under your fingers. That is what makes it playable.
 
 ### Presets
 
-The presets are the easiest way in. For **shuffle** they are **Subtle** (only the
-stored scales, held longer), **Varied** (the default: a close colour change on
-each chord change) and **Wild** (no limits, for experimenting). For **follow**
-they are **Simple** (one chord), **Progression** (two chords), **Lyrical** (two
-chords plus phrase) and **Resolve** (strong phrase bias). The selector shows
-`Custom` once you change any value by hand, so you always know when you have
-moved away from a preset.
+The presets are the easiest way in. For **shuffle** they are **Subtle** (the
+default: only the stored scales, held longer, close shifts), **Varied** (a close
+colour from a pool of five on each chord change) and **Wild** (no limits, for
+experimenting). For **follow** they are **Simple** (one chord), **Progression**
+(two chords), **Lyrical** (two chords plus phrase) and **Resolve** (strong
+phrase bias). The selector shows a highlighted `Custom` once you change any
+value by hand, so you always know when you have moved away from a preset.
 
 ### Live read-outs
 

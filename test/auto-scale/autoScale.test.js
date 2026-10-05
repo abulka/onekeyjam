@@ -71,9 +71,22 @@ describe('autoScale policies', () => {
             }
         })
 
-        it('has a varied shuffle preset that matches the defaults', () => {
+        it('has a subtle shuffle preset that matches the defaults', () => {
+            const subtle = POLICY_PRESETS.shuffle.find((preset) => preset.name === 'subtle')
+            assert.deepEqual(subtle.options, { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 })
+            for (const [key, value] of Object.entries(subtle.options))
+                assert.equal(globals.scaleFiltering.policyOptions[key], value, `default ${key}`)
+        })
+
+        it('keeps Subtle within a close spread and Wild unbounded', () => {
+            const subtle = POLICY_PRESETS.shuffle.find((preset) => preset.name === 'subtle')
             const varied = POLICY_PRESETS.shuffle.find((preset) => preset.name === 'varied')
-            assert.deepEqual(varied.options, { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 })
+            const wild = POLICY_PRESETS.shuffle.find((preset) => preset.name === 'wild')
+            assert.ok(subtle.options.maxNewNotes <= 1, 'Subtle must not use the Wild spread')
+            assert.ok(varied.options.maxNewNotes <= 1)
+            assert.equal(wild.options.maxNewNotes, 7)
+            assert.ok(subtle.options.poolSize < varied.options.poolSize)
+            assert.ok(varied.options.poolSize <= wild.options.poolSize)
         })
     })
 

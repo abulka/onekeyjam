@@ -130,4 +130,24 @@ describe('shuffle policy options', () => {
         const stored = ['C major', 'C lydian', 'C harmonic major'].map(scaleNameToNotes)
         assert.ok(stored.some((notes) => samePitchClasses(autoNotes, notes)), autoNotes.join(','))
     })
+
+    it('never offers a G scale for a transposed G7inversion2 that sounds Ab7', () => {
+        // The custom name keeps its old G root unless transposition moves it.
+        // Even with a stale name, the sounding Ab7 notes must drive the choice.
+        globals.projectKey = { tonic: 'C', type: 'major', source: 'user' }
+        globals.transpositionSemitones = 1
+        globals.chordTriggerMap = {
+            G3: configFor(2, 'G7inversion2*', ['Eb3', 'Gb3', 'Ab3', 'C4'], ['Ab mixolydian', 'Ab lydian dominant', 'Ab mixolydian b6']),
+        }
+        globals.currentChordTriggerNote = 'G3'
+        globals.scaleFiltering.policyOptions.poolSize = 6
+        globals.scaleFiltering.policyOptions.maxNewNotes = 7
+        globals.scaleFiltering.policyOptions.deferWhilePlaying = false
+        resetChordHistory()
+        applyScalePolicy({ rng: () => 0.999 })
+        const name = globals.scaleFiltering.autoScaleName
+        assert.match(name, /^Ab /, name)
+        assert.doesNotMatch(name, /G harmonic minor|G major augmented|G double harmonic/)
+        globals.transpositionSemitones = 0
+    })
 })

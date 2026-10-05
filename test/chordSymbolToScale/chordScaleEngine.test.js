@@ -117,6 +117,21 @@ describe('chordScaleEngine - voicings, inversions and root hints', () => {
         assert.equal(names[0], 'D locrian #2');
     });
 
+    it('does not trust a custom-name root left over from a transposition', () => {
+        // G7inversion2 transposed up a semitone sounds Ab7, but the custom
+        // name keeps its old root. The sounding notes must win, otherwise the
+        // engine invents a shell-less G chord and offers G harmonic minor.
+        const names = chordScaleNamesFor({ symbol: 'G7inversion2*', notes: ['Eb3', 'Gb3', 'Ab3', 'C4'], bass: 'Eb3' }, 3);
+        assert.deepEqual(names, ['Ab mixolydian', 'Ab lydian dominant', 'Ab mixolydian b6']);
+    });
+
+    it('does not trust a stale slash-chord root when the voicing disagrees', () => {
+        // E7/D transposed up a semitone sounds F7; the stale symbol must not
+        // make the engine rank scales for an E chord.
+        const names = chordScaleNamesFor({ symbol: 'E7/D*', notes: ['F3', 'A3', 'C4', 'Eb4'], bass: 'Eb3' }, 3);
+        assert.deepEqual(names, ['F mixolydian', 'F lydian dominant', 'F mixolydian b6']);
+    });
+
     it('does not throw on unrecognised or cluster chords', () => {
         for (const input of ['C69#11', 'G7sus4b9', { notes: ['C4', 'C#4', 'D4'] }])
             assert.doesNotThrow(() => chordScaleNamesFor(input, 3));

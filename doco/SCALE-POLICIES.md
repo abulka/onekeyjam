@@ -59,10 +59,10 @@ of the same chord holds the scale, so a repeated stab like `ZZZZZZ` never moves
 the notes under your fingers. This is the key difference from the first version
 of shuffle, which drew on every trigger.
 
-- **Pool** (3-8, default 5). How many engine-ranked candidates the draw is
+- **Pool** (3-8, default 3). How many engine-ranked candidates the draw is
   taken from. A pool of 3 means only the stored `scale1/2/3`; larger pools offer
   more colour and more live `auto:` scales.
-- **Dwell** (1-4, default 1). How many chord *changes* to hold the drawn rank
+- **Dwell** (1-4, default 2). How many chord *changes* to hold the drawn rank
   before redrawing. The rank is held, not the literal scale, so each new chord
   still gets a scale of that rank that fits its own harmony.
 - **Change** (0-100%, default 100%). The chance of drawing a new rank at a
@@ -77,10 +77,10 @@ of shuffle, which drew on every trigger.
 - **Reroll** forces a fresh draw for the current chord and resets its dwell; it
   ignores the Spread band and the Hold rule for a deliberate jump.
 - **Preset** applies a named combination in one click. Shuffle presets are
-  **Subtle** (pool 3, held two changes), **Varied** (the default: one close
-  colour per chord change) and **Wild** (no band, no hold); follow presets are
-  **Simple**, **Progression**, **Lyrical** and **Resolve**. Hand-adjusting any
-  value moves the selector to `Custom`.
+  **Subtle** (the default: pool 3, held two changes, close shifts), **Varied**
+  (a close colour from a larger pool on each chord change) and **Wild** (no
+  band, no hold); follow presets are **Simple**, **Progression**, **Lyrical**
+  and **Resolve**. Hand-adjusting any value moves the selector to `Custom`.
 
 The drawn rank is cached with the ranked candidates per chord, key, colour and
 pool size, so shuffle does not re-rank the scale dictionary on every trigger.
@@ -174,8 +174,8 @@ Edit and Perform views, and appears when a project is loaded.
 | `auto: <scale>` chip | scale settings row | The live scale when a policy chose one that is not a stored slot. |
 | Reason line | scale settings row | Short explanation of the last automatic choice. |
 | `Options` button | scale settings row | Shows or hides the advanced options panel. |
-| `Key: <key>` | scale settings row, far right | The resolved project key, in prominent text. |
-| `Preset` | Options panel, follow/shuffle | One-click policy presets for the active mode; shows `Custom` when the values are hand-tuned. |
+| `Preset` | scale settings row, left of `Options` | One-click policy presets for the active mode; shows `Custom` (highlighted) when the values are hand-tuned. Always visible while follow or shuffle is selected, even when the options are hidden. |
+| `Key: <key>` | scale settings row, far right | The resolved project key, in prominent text. It moves with a live transposition. |
 | `Pool`, `Dwell`, `Change`, `Spread`, `Hold` | Options panel, shuffle | Shuffle option values. `Spread` limits how far a change moves the note set; `Hold` keeps the closest fit while solo notes sound. |
 | `Reroll` | Options panel, shuffle, far right | Draws a new scale for the current chord now. |
 | `Context` | Options panel, follow | One or two previous chords. |
@@ -185,9 +185,11 @@ Edit and Perform views, and appears when a project is loaded.
 | `closest` tag / dashed cell | grid, current row | The nearest stored scale when the live scale is not a stored slot. |
 
 The presets are defined in `POLICY_PRESETS` in `src/lib/autoScale.js`. Shuffle:
-**Subtle** (only the stored scales, held for two chord changes), **Varied**
-(the default: a close colour change on each chord change) and **Wild** (no
-band, no hold). Follow: **Simple** (one chord), **Progression** (two chords),
+**Subtle** (the default: only the stored scales, held for two chord changes,
+close shifts), **Varied** (a close colour from a pool of five on each chord
+change) and **Wild** (no band, no hold). The shipped defaults match Subtle; the
+`Subtle` preset keeps `Spread` at one note, so it never uses the Wild spread.
+Follow: **Simple** (one chord), **Progression** (two chords),
 **Lyrical** (two chords plus phrase bias) and **Resolve** (one chord, strong
 phrase bias).
 
@@ -202,10 +204,18 @@ phrase bias).
    `Wild`: changes may jump.
 5. Set `Change` to `0%`: the rank is kept across chord changes.
 6. Click `Reroll`: the reason becomes a fresh draw, not `holding`.
-7. Choose the `Varied` preset: the values return to `5 / 1 / 100% / 1 note`
-   with `Hold` on, and the preset select stops showing `Custom`.
+7. Choose the `Subtle` preset: the values become `3 / 2 / 100% / 1 note` with
+   `Hold` on, and the preset select stops showing `Custom`. Choose `Varied` for
+   `5 / 1 / 100% / 1 note`; choose `Wild` for `6 / 1 / 100% / Wild` with `Hold`
+   off.
 8. While holding a long solo note, change chord: the reason should read
    `closest fit`, and the scale should move as little as possible.
+9. Transpose the C Major II-V-I demo up a semitone (Ctrl+2, or hold the
+   left-hand `C#` and press `A#`), then trigger the second chord: the `Key:`
+   chip should read `Db major`, the chord row should show `Ab7inversion2*`, and
+   shuffle should offer Ab scales (Ab mixolydian, Ab lydian dominant, Ab
+   mixolydian b6), never a G scale. Press Ctrl+Shift+2 (or Shift+`G#`) to reset:
+   the key returns to C major and the chord to `G7inversion2`.
 
 ### Phase 2 - progression context
 

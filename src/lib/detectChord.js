@@ -62,8 +62,9 @@ export function detectChordAndScalesFromChordNotes(chordConfig, chordNotes, _bas
 
     // Use the project key when one is already resolved (for example a chord
     // added to an existing project). During boot the key may not be set yet,
-    // in which case the scales are key-free until the project re-ranks.
-    fillMissingScales(chordConfig, { notes: _chordNotes, bass: _bassNote, name }, globals.projectKey ?? undefined);
+    // in which case the scales are key-free until the project re-ranks. The
+    // live transposition offset, if any, is part of the resolved key.
+    fillMissingScales(chordConfig, { notes: _chordNotes, bass: _bassNote, name }, globals.getProjectKey() ?? undefined);
 
     return true
 }

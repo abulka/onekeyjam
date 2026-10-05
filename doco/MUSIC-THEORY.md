@@ -452,6 +452,30 @@ Re-triggering the same chord keeps the player's choice; moving to a different
 chord resumes the policy. The policies never switch the scale during a chord,
 only on a chord trigger.
 
+### Live transposition
+
+The left-hand black keys and Ctrl+2 shift every chord up or down a semitone
+mid-performance. Transposition moves the whole musical context, not just the
+notes:
+
+- The key context moves with the chords. `globals.transpositionSemitones`
+  records the offset and `getProjectKey()` applies it on top of the written
+  project key, so key-aware ranking, the `Key:` chip and Solo in key all hear
+  the transposed key (C major becomes Db major after one semitone up). The
+  written project is not modified, and Reset Transpositions restores it.
+- Custom chord names that Tonal cannot parse (for example `G7inversion2` or
+  `E7/D`) move their root as well, so the grid label keeps describing what
+  sounds: `G7inversion2*` becomes `Ab7inversion2*` and sounds an Ab7.
+- The follow and shuffle history is cleared, so the first chord after a
+  transposition starts a fresh phrase rather than continuing pre-transposition
+  scales.
+
+As a safety net, the engine itself distrusts a root read from a custom symbol
+name when the sounding notes neither contain it nor make a recognisable chord
+shell on it (a third and a seventh). A stale name such as `G7inversion2*`
+sounding Ab7 is therefore resolved on its notes, and shuffle offers Ab scales
+rather than inventing a G chord and offering G harmonic minor.
+
 ## Checking stored scales
 
 `checkScaleAgainstChord()` in the engine tests a stored scale name against a

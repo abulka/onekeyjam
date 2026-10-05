@@ -3,6 +3,7 @@ import { globals } from './globals.js';
 import { setProjectKey, setProjectColour, resolveProjectKey } from './projectKey.js';
 import { findMatchingScalesForAllProjectChords } from './findMatchingScales.js';
 import { applyKeyScale, changeScaleFilter } from './change-scale.js';
+import { resetTranspositionsEtc } from './resetState.js';
 
 /**
  * @module lib/projectScaleSettings
@@ -18,6 +19,12 @@ import { applyKeyScale, changeScaleFilter } from './change-scale.js';
  * @returns {boolean} whether a key could be resolved
  */
 export function applyProjectKeySettings(settings = {}) {
+    // A live transposition has moved the sounding chords away from the written
+    // project, so bring them back before re-ranking; otherwise the new key or
+    // colour would be applied to transposed notes.
+    if (globals.transpositionSemitones)
+        resetTranspositionsEtc();
+
     if (settings.tonic && settings.type)
         setProjectKey(globals.project, { tonic: settings.tonic, type: settings.type }, settings.source ?? 'user');
     if (settings.colour)

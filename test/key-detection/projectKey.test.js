@@ -15,7 +15,9 @@ import {
     resolveProjectKey,
     describeProjectKey,
     keysMatch,
+    transposeKey,
 } from '../../src/lib/projectKey.js';
+import { globals } from '../../src/lib/globals.js';
 
 /*
  * The project key model: options.key = { tonic, type, source }. Type is a
@@ -218,6 +220,44 @@ describe('projectKey - colour preference', () => {
             options: { key: { tonic: 'C', type: 'major' }, colour: 'diatonic' },
         };
         assert.equal(resolveProjectKey(project)?.colour, 'diatonic');
+    });
+
+});
+
+describe('projectKey - live transposition', () => {
+
+    it('moves the tonic and preserves type, source and colour', () => {
+        const key = { tonic: 'C', type: 'major', source: 'user', colour: 'jazz' };
+        assert.deepEqual(transposeKey(key, 1), { tonic: 'Db', type: 'major', source: 'user', colour: 'jazz' });
+        assert.equal(transposeKey(key, -1).tonic, 'B');
+        assert.equal(transposeKey(key, 0), key);
+        assert.equal(transposeKey(undefined, 1), undefined);
+    });
+
+    it('round-trips back to the written tonic', () => {
+        const up = transposeKey({ tonic: 'C', type: 'major', source: 'user' }, 1);
+        assert.equal(up.tonic, 'Db');
+        assert.equal(transposeKey(up, -1).tonic, 'C');
+    });
+
+    it('getProjectKey applies the live offset on top of the written key', () => {
+        const previousKey = globals.projectKey;
+        const previousOffset = globals.transpositionSemitones;
+        try {
+            globals.projectKey = { tonic: 'C', type: 'major', source: 'user' };
+            globals.transpositionSemitones = 0;
+            assert.equal(projectKeyName(globals.getProjectKey()), 'C major');
+            globals.transpositionSemitones = 1;
+            assert.equal(projectKeyName(globals.getProjectKey()), 'Db major');
+            globals.transpositionSemitones = 2;
+            assert.equal(projectKeyName(globals.getProjectKey()), 'D major');
+            globals.transpositionSemitones = -1;
+            assert.equal(projectKeyName(globals.getProjectKey()), 'B major');
+        }
+        finally {
+            globals.projectKey = previousKey;
+            globals.transpositionSemitones = previousOffset;
+        }
     });
 
 });

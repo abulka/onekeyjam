@@ -366,25 +366,51 @@ function buildGeneric(notes, rootChroma, symbol) {
 }
 
 /**
+ * Whether a generic chord built on a root has a recognisable shell: a third
+ * (major or minor) and a seventh (major or minor). A rootless voicing such as
+ * a rootless G7b9 keeps both, so the symbol root can be trusted; a stale or
+ * mislabelled root, for example a custom chord name that was transposed
+ * without its root, usually produces a shell-less set of intervals.
+ * @param {Array<number>} intervals semitone offsets from the root
+ */
+function hasChordShell(intervals) {
+    const hasThird = intervals.includes(3) || intervals.includes(4);
+    const hasSeventh = intervals.includes(10) || intervals.includes(11);
+    return hasThird && hasSeventh;
+}
+
+/**
  * An explicit root declared by the chord identifier (a root hint or a chord
  * name such as a custom voicing). The human-readable project name is not used,
  * so names like "Chord 1 from midi" are not mistaken for a C chord.
- * @param {*} hints
+ *
+ * A `rootHint` is always trusted because it is declared deliberately. A root
+ * read from a custom symbol is only trusted when it is among the sounding
+ * notes, or when those notes make a recognisable chord shell on it (a
+ * rootless voicing). Otherwise the name is stale or misleading and the notes
+ * are left to speak for themselves.
+ * @param {Array<number>} pcs @param {Set<number>} pcSet @param {*} hints
  */
-function explicitRootChroma(hints) {
-    for (const hint of [hints.rootHint, rootFromName(hints.symbol)]) {
-        if (!hint)
-            continue;
-        const chroma = chromaOf(hint);
-        if (chroma !== undefined)
-            return chroma;
+function explicitRootChroma(pcs, pcSet, hints) {
+    if (hints.rootHint) {
+        const declared = chromaOf(hints.rootHint);
+        if (declared !== undefined)
+            return declared;
     }
+    const named = rootFromName(hints.symbol);
+    if (!named)
+        return undefined;
+    const chroma = chromaOf(named);
+    if (chroma === undefined)
+        return undefined;
+    if (pcSet.has(chroma) || hasChordShell(buildGeneric(pcs, chroma, undefined).intervals))
+        return chroma;
     return undefined;
 }
 
 /** @param {*} hints */
 function hintChroma(hints) {
-    for (const hint of [hints.rootHint, hints.bass, hints.bassNote, rootFromName(hints.symbol)]) {
+    for (const hint of [hints.bass, hints.bassNote]) {
         if (!hint)
             continue;
         const chroma = chromaOf(hint);
@@ -409,7 +435,7 @@ function resolveFromNotes(notes, hints) {
     if (pcs.length === 0)
         return undefined;
     const pcSet = new Set(pcs);
-    const explicitHint = explicitRootChroma(hints);
+    const explicitHint = explicitRootChroma(pcs, pcSet, hints);
     const hint = explicitHint ?? hintChroma(hints);
     const pcsWithoutOctave = notes.map((n) => Tonal.Note.get(n).pc).filter(Boolean);
     const detections = Tonal.Chord.detect(pcsWithoutOctave);
@@ -473,7 +499,13 @@ export function resolveChord(input) {
             // sound are authoritative, and the symbol supplies the root.
             const generic = buildGeneric(voicedPcs, resolved.rootChroma, input.symbol);
             generic.mismatch = { symbol: input.symbol, symbolNotes: resolved.notePcs, voicedNotes: voicedPcs };
-            return generic;
+            // When the symbol root and the voiced notes are too far apart to be
+            // the same chord written differently (for example a custom name
+            // transposed without its root), resolve from the notes alone and
+            // keep the mismatch for reporting.
+            if (hasChordShell(generic.intervals))
+                return generic;
+            return resolveFromNotes(notes, { ...input, symbol: undefined }) ?? generic;
         }
     }
     if (notes)

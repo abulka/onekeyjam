@@ -435,6 +435,13 @@ function generalTableClick(event) {
         <option value="shuffle">shuffle</option>
       </select>
     </span>
+    <label v-if="globals.scaleFiltering.policy !== 'manual'" class="preset-field" title="Presets: one-click options for the active mode. Custom means the values have been hand-tuned; open Options to see and adjust them.">
+      <span>Preset:</span>
+      <select v-model="scalePreset" :class="{ 'preset-custom': scalePreset === 'custom' }">
+        <option value="custom" disabled>Custom</option>
+        <option v-for="preset in presetsForMode" :key="preset.name" :value="preset.name">{{ preset.label }}</option>
+      </select>
+    </label>
     <button class="advanced-toggle" type="button"
       title="Scale policy options for the follow and shuffle modes"
       :aria-expanded="globals.showScaleAdvanced ? 'true' : 'false'"
@@ -453,13 +460,6 @@ function generalTableClick(event) {
 
   <!-- scale policy options for the follow/shuffle modes -->
   <div v-if="globals.isProjectLoaded && globals.showScaleAdvanced" class="scale-advanced ui small" @change="releaseControlFocus">
-    <label v-if="globals.scaleFiltering.policy !== 'manual'" class="advanced-field">Preset
-      <select v-model="scalePreset"
-        title="Presets: one-click options for the active mode. Pick one, then fine-tune the values; saving a custom combination shows as Custom.">
-        <option value="custom" disabled>Custom</option>
-        <option v-for="preset in presetsForMode" :key="preset.name" :value="preset.name">{{ preset.label }}</option>
-      </select>
-    </label>
     <template v-if="globals.scaleFiltering.policy === 'shuffle'">
       <label class="advanced-field">Pool
         <select v-model.number="globals.scaleFiltering.policyOptions.poolSize"
@@ -840,6 +840,22 @@ table.scale-filters td {
 
 .advanced-toggle:hover {
   background: #e6d7bd;
+}
+
+/* Preset selector surfaced beside the Options button, so the active
+   shuffle/follow flavour stays visible even when the options are hidden. */
+.preset-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #4a3418;
+}
+
+.preset-field select.preset-custom {
+  border-color: #b0631e;
+  background: #f6e3c8;
+  color: #8a4a12;
+  font-weight: bold;
 }
 
 /* Scale policy options row, shown under the scale settings. */

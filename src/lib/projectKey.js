@@ -70,6 +70,23 @@ export function projectKeyName(key) {
     return key ? `${key.tonic} ${key.type}` : '';
 }
 
+/**
+ * Move a key's tonic by a number of semitones, preserving its type, source and
+ * colour. Used by live chord transposition so the key context moves with the
+ * sounding music without altering the written project.
+ * @param {(ProjectKey & {colour?: string})|undefined} key
+ * @param {number} [semitones]
+ */
+export function transposeKey(key, semitones = 0) {
+    if (!key || !semitones)
+        return key;
+    const interval = Tonal.Interval.fromSemitones(semitones);
+    const tonic = Tonal.Note.simplify(Tonal.Note.transpose(key.tonic, interval));
+    if (!tonic)
+        return key;
+    return { ...key, tonic };
+}
+
 /** @param {ProjectKey} [key] */
 export function projectKeyNotes(key) {
     if (!key)

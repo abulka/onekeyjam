@@ -70,8 +70,9 @@ export function expandChordConfig(config) {
         throw (new Error(`Chord config ${config.id} has no chord and we could not detect it`))
 
     // Auto find matching scales if not supplied - if any entries are blank,
-    // they will be filled in using the project key when one is resolved.
-    fillMissingScales(config, {}, globals.projectKey ?? undefined)
+    // they will be filled in using the project key when one is resolved. The
+    // live transposition offset, if any, is part of the resolved key.
+    fillMissingScales(config, {}, globals.getProjectKey() ?? undefined)
 
     // Fill in scale notes, also ensure all scale keys exist
     for (let key of ['scale1', 'scale2', 'scale3']) {

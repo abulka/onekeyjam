@@ -2,6 +2,7 @@ import assert from 'assert';
 import * as Tonal from "@tonaljs/tonal";
 import { transposeScaleName, _transposeChordName, _transposeChordConfig, _transposeChordConfigs } from '../../src/lib/transpose.js';
 import { expandChordConfig } from "../../src/lib/expandChordConfig"
+import { resolveChord } from '../../src/lib/chordScaleEngine.js';
 
 /** @typedef {import("../../src/lib/typedefs").Chord} Chord */
 /** @typedef {import("../../src/lib/typedefs").ChordConfig} ChordConfig */
@@ -94,6 +95,11 @@ describe('transposeChordName', () => {
         assert.equal(result, 'GM')
     });
 
+    it('up a semitone with a slash bass', () => {
+        const result = _transposeChordName('E7/D', '2m')
+        assert.equal(result, 'F7/Eb')
+    });
+
 });
 
 describe('transposeChordConfig', () => {
@@ -125,7 +131,12 @@ describe('transposeChordConfig', () => {
         const intervalName = '2m'  // semitone up
         _transposeChordConfig(chordConfig, intervalName)
         assert.equal(chordConfig.name, 'My Config*')
-        assert.equal(chordConfig.chord, 'G7inversion2*')
+        // The custom name moves its root too, so the label describes what plays.
+        assert.equal(chordConfig.chord, 'Ab7inversion2*')
+        assert.deepEqual(chordConfig.chordNotes, ['Eb3', 'Gb3', 'Ab3', 'C4'])
+        const resolved = resolveChord({ symbol: chordConfig.chord, notes: chordConfig.chordNotes, bass: chordConfig.bass })
+        assert.equal(resolved.root, 'Ab')
+        assert.deepEqual(resolved.intervals, [0, 4, 7, 10])
     });
 
     it('known tonal chord, twice', () => {
