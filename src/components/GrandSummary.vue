@@ -522,6 +522,20 @@ function generalTableClick(event) {
       </label>
     </template>
     <label class="advanced-field checkbox-field"
+      title="Fix held notes: when a chord trigger changes the scale just after you played a solo note, move the still-sounding note to the new scale instead of leaving it on the old one.">
+      <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.remapHeldNotes" /> Fix held
+    </label>
+    <label class="advanced-field" v-if="globals.scaleFiltering.policyOptions.remapHeldNotes">Window
+      <select v-model.number="globals.scaleFiltering.policyOptions.remapGraceMs"
+        title="How recently the held note must have started to be corrected. A short window re-attacks so quickly it is barely audible; a long window also moves notes you are holding deliberately.">
+        <option :value="25">25 ms</option>
+        <option :value="40">40 ms</option>
+        <option :value="60">60 ms</option>
+        <option :value="100">100 ms</option>
+        <option :value="100000">any</option>
+      </select>
+    </label>
+    <label class="advanced-field checkbox-field"
       title="Show a strip of the last few chord-to-scale choices above the grid.">
       <input type="checkbox" v-model="globals.showScaleHistory" /> History
     </label>

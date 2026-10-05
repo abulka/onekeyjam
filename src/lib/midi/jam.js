@@ -4,6 +4,10 @@ import { detectChordsBeingPlayed } from "../detectChordsBeingPlayed.js";
 import { recordJamNoteOn, recordJamNoteOff } from "./recorder.js"
 import { recordSoloNote } from "../autoScale.js"
 
+function nowMs() {
+    return typeof performance !== 'undefined' ? performance.now() : Date.now()
+}
+
 export function jam(note) {
     // Avoid playing a jam note when the focus is in the live onscreen piano
     // keyboard and user hits CMD-R to refresh the browser page. See my issue
@@ -18,7 +22,9 @@ export function jam(note) {
         const noteOffInfo = {
             allowedNote: note.identifier,
             pitch: undefined,
-            envelope: undefined
+            velocity: note.attack,
+            envelope: undefined,
+            startedAt: nowMs(),
         }
         globals.pendingNoteOffs[note.identifier] = noteOffInfo
         recordSoloNote(note.identifier)
@@ -40,8 +46,9 @@ export function jam(note) {
         const noteOffInfo = {
             allowedNote: allowedNote,
             pitch: undefined,
-            velocity: undefined,
-            envelope: undefined
+            velocity: note.attack,
+            envelope: undefined,
+            startedAt: nowMs(),
         }
         globals.pendingNoteOffs[note.identifier] = noteOffInfo;
 

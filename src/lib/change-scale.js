@@ -10,6 +10,7 @@ import { chordSymbolToScaleNames } from './chord-to-scale.js';
 import { scaleObjToNotes } from './scaleToNotes';
 import { projectKeyName } from './projectKey.js';
 import { chooseScaleForChord, noteScaleChange, SCALE_POLICIES } from './autoScale.js';
+import { remapHeldSoloNotes } from './midi/remap-held-solo-notes.js';
 
 
 /** @typedef {import("./typedefs").ChordConfig} ChordConfig */
@@ -555,6 +556,10 @@ function reportScaleChange() {
     // Keep the chord history in step when the scale changes without a chord
     // trigger, for example when the player picks a scale by hand.
     noteScaleChange()
+
+    // A chord trigger may arrive a few milliseconds after a solo note, so keep
+    // held solo notes in step with the scale that just became current.
+    remapHeldSoloNotes()
 
     // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
     document.broadcastEvent('scale-changed', { notes: globals.currentScaleNotes })

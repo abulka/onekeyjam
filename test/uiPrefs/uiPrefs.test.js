@@ -133,7 +133,7 @@ describe('uiPrefs', () => {
             scalePolicy: 'manual',
             scaleAdvanced: false,
             scaleHistory: false,
-            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1 },
+            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, remapHeldNotes: true, remapGraceMs: 40 },
         })
         globals.showWelcomeDialog = true
         globals.showFavouriteBinColumns = false
@@ -151,7 +151,7 @@ describe('uiPrefs', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scaleAdvanced: true, policyOptions: { poolSize: 4, dwell: 2, changeChance: 0.25 } }) })
         loadUiPrefs(storage)
         assert.equal(globals.showScaleAdvanced, true)
-        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1 })
+        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, remapHeldNotes: true, remapGraceMs: 40 })
         globals.showScaleAdvanced = false
         globals.scaleFiltering.policyOptions.poolSize = 6
         globals.scaleFiltering.policyOptions.dwell = 1
@@ -176,6 +176,13 @@ describe('uiPrefs', () => {
         assert.equal(globals.scaleFiltering.policyOptions.phraseStrength, 2)
         globals.scaleFiltering.policyOptions.phraseBias = false
         globals.scaleFiltering.policyOptions.phraseStrength = 1
+    })
+
+    it('reads, validates and clamps the held-note correction options', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { remapHeldNotes: false, remapGraceMs: 60 } }) })
+        assert.deepEqual(readPrefs(good).policyOptions, { remapHeldNotes: false, remapGraceMs: 60 })
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { remapHeldNotes: 'yes', remapGraceMs: -5 } }) })
+        assert.deepEqual(readPrefs(bad).policyOptions, { remapGraceMs: 0 })
     })
 
     it('reads, validates and loads the Help page', () => {

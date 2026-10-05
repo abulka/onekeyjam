@@ -166,6 +166,8 @@ export const globals = reactive({
             contextChords: 1,       // follow: how many previous chords to consider (1-2)
             phraseBias: false,      // follow/shuffle: bias by the last solo note
             phraseStrength: 1,      // phrase bias strength (0.5 low, 1 medium, 2 high)
+            remapHeldNotes: true,   // keep held solo notes in step when the scale changes
+            remapGraceMs: 40,       // only correct held notes started within this many ms
         },
         shuffleRank: null,          // shuffle: rank index currently held (0-based)
         shuffleDwellRemaining: 0,   // shuffle: chord changes left before a redraw

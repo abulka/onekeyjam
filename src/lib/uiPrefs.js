@@ -38,6 +38,8 @@ export const HELP_PAGES = ['overview', 'tutorial']
  * @property {number} [contextChords]
  * @property {boolean} [phraseBias]
  * @property {number} [phraseStrength]
+ * @property {boolean} [remapHeldNotes]
+ * @property {number} [remapGraceMs]
  */
 
 /**
@@ -66,6 +68,10 @@ function readPolicyOptions(stored) {
         options.phraseBias = stored.phraseBias
     if (Number.isFinite(stored.phraseStrength))
         options.phraseStrength = Math.min(2, Math.max(0.5, stored.phraseStrength))
+    if (typeof stored.remapHeldNotes === 'boolean')
+        options.remapHeldNotes = stored.remapHeldNotes
+    if (Number.isFinite(stored.remapGraceMs))
+        options.remapGraceMs = Math.min(100000, Math.max(0, Math.round(stored.remapGraceMs)))
     return options
 }
 
@@ -203,6 +209,8 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.scaleFiltering.policyOptions.contextChords,
         globals.scaleFiltering.policyOptions.phraseBias,
         globals.scaleFiltering.policyOptions.phraseStrength,
+        globals.scaleFiltering.policyOptions.remapHeldNotes,
+        globals.scaleFiltering.policyOptions.remapGraceMs,
     ], () => {
         writePrefs(currentPrefs(), storage)
     })
