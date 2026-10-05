@@ -51,7 +51,7 @@ defaults preserve the sound of the original engine.
 
 The controls live in an inline **Options** expander beside the `Scales` select.
 The button shows and hides the row, and the row shows the controls for the
-active mode (shuffle options, follow context, phrase, history and preset). All
+active mode (shuffle options, follow context and phrase, history and preset). All
 values are persisted in `uiPrefs` and default to the original behaviour.
 
 Shuffle only changes the scale when the **chord changes**. A repeated trigger
@@ -138,6 +138,28 @@ behaviour; two chords adds the chain rule. The rules are candidate-specific:
 they decide between the stored alternatives that already fit the chord, so
 they can never force a scale that clashes.
 
+### Follow palette
+
+By itself follow is deterministic: it sounds the stored scale with the best
+continuity with what you just played. In an all-diatonic tune every chord's
+`scale1` shares the same seven notes, so follow stays on `scale1` throughout
+and can appear to do nothing. The **Palette** control in the follow Options
+makes the choice explicit:
+
+- **Primary** (default): the best continuation, the original behaviour.
+- **Close colour**: the best continuation among the stored scales whose notes
+  differ from the previous scale, so each chord change adds the closest new
+  colour. The reason names the scale and the note it adds, for example
+  `palette: close colour (G lydian dominant adds C#)`.
+- **Bold**: the stored scale with the fewest notes in common with the previous
+  one, the biggest colour shift the chord's stored options allow.
+
+The first chord of a session always uses Primary, and all choices are stored
+scales that already fit the chord, so a palette pick can never clash. The
+project-wide `Colour:` selector at the top of the page is a different setting:
+it decides how the stored scales themselves are ranked (diatonic, jazz,
+adventurous). Palette only chooses among whatever is stored.
+
 ## Phase 3: history strip
 
 A `History` checkbox in Settings > Preferences (it is a global display
@@ -148,7 +170,7 @@ chord, an arrow, the scale and a small badge naming the policy that chose it
 key is tinted amber. This makes the policy visible while playing, on both the
 Edit and Perform views. The flag is persisted in `uiPrefs`.
 
-## Phase 4: phrase-aware bias
+## Phase 4: phrase-aware bias in follow
 
 When the phrase bias is on, `phraseBonus()` in `src/lib/autoScale.js` reads the
 last sounding solo note (recorded in a small ring buffer in
@@ -162,9 +184,21 @@ last sounding solo note (recorded in a small ring buffer in
   penalised.
 
 The bonus is scaled by the strength. A `Phrase` checkbox and a
-low/medium/high `Strength` select sit in the Options expander for both follow
-and shuffle, and both are off or neutral by default. Phrase bias only nudges
-the choice between scales that already fit the chord.
+low/medium/high `Strength` select sit in the Options expander when `follow` is
+selected, and both are off by default. Phrase bias only nudges the choice
+between stored scales that already fit the chord.
+
+It is deliberately conservative. In an all-diatonic tune every stored
+candidate contains the notes you are playing, so phrase changes nothing and
+follow stays on `scale1`. It only changes the pick when the last note
+distinguishes the candidates, for example a held `C#` over `G7` favours
+`G lydian dominant`. When that happens the reason line says
+`keeps your last note <name>`.
+
+Shuffle ignores the last note entirely, because the draw is driven by rank,
+continuity and spread; held notes are handled by the note-repair setting in
+`Settings`. Without that, an inert Phrase control in shuffle only added
+confusion.
 
 ## Phase 5: modulation (planned)
 
@@ -199,13 +233,15 @@ Edit and Perform views, and appears when a project is loaded.
 | Reason line | scale settings row | Short explanation of the last automatic choice. |
 | `Options` button | scale settings row | Shows or hides the advanced options panel. |
 | `Preset` | scale settings row, left of `Options` | One-click policy presets for the active mode; shows `Custom` (highlighted) when the values are hand-tuned. Always visible while follow or shuffle is selected, even when the options are hidden. |
-| `Key: <key>` | scale settings row, far right | The resolved project key, in prominent text. It moves with a live transposition. |
+| `Key: <key>` | header, beside the project name | The resolved project key, in prominent text. It moves with a live transposition. |
 | `Pool`, `Dwell`, `Change`, `Spread`, `Hold` | Options panel, shuffle | Shuffle option values. `Spread` limits how far a change moves the note set; `Hold` keeps the closest fit while solo notes sound. |
 | `Reroll` | Options panel, shuffle, far right | Draws a new scale for the current chord now. |
 | `Context` | Options panel, follow | One or two previous chords. |
-| `Phrase`, `Strength` | Options panel, follow/shuffle | Phrase-aware bias. |
+| `Palette` | Options panel, follow | Which stored scale follow prefers: `Primary` (best continuation), `Close colour` (best alternative that adds a note at each change) or `Bold` (biggest colour shift among the stored scales). |
+| `Phrase`, `Strength` | Options panel, follow | Phrase-aware bias for follow; shuffle ignores the last note. |
 | `History` | Settings > Preferences | Shows the recent chord-to-scale strip. |
 | `Recent:` strip | above the grid | Last four chord-to-scale choices with a policy badge. |
+| `chosen` tag | grid, current row | Marks the stored scale that is sounding; in follow the slot highlight is softened so this reads first. |
 | `closest` tag / dashed cell | grid, current row | The nearest stored scale when the live scale is not a stored slot. |
 
 The presets are defined in `POLICY_PRESETS` in `src/lib/autoScale.js`. Shuffle:
@@ -213,9 +249,10 @@ The presets are defined in `POLICY_PRESETS` in `src/lib/autoScale.js`. Shuffle:
 close shifts), **Varied** (a close colour from a pool of five on each chord
 change) and **Wild** (no band, no hold). The shipped defaults match Subtle; the
 `Subtle` preset keeps `Spread` at one note, so it never uses the Wild spread.
-Follow: **Simple** (one chord), **Progression** (two chords),
-**Lyrical** (two chords plus phrase bias) and **Resolve** (one chord, strong
-phrase bias).
+Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
+(two chords plus phrase bias) and **Resolve** (one chord, strong phrase bias)
+all use `Palette: Primary`; **Colourful** uses `Palette: Close colour`. Every
+value a preset sets is visible in the Options panel.
 
 ### Phase 1 - shuffle options
 
@@ -250,6 +287,17 @@ phrase bias).
    mention `ii-V-I`.
 4. Trigger `F3` (the Db7 tritone substitute) and then `E3` (Cmaj7): the reason
    on the Cmaj7 should mention a dominant or tritone-sub resolution.
+5. Set `Palette` to `Primary` and trigger `C3`, `D3`, `E3`: the scales stay
+   `D dorian`, `G mixolydian`, `C major`, and the reason names the chosen scale
+   (`G mixolydian: ii-V into G: diatonic dominant`).
+6. Choose the `Colourful` preset (or set `Palette` to `Close colour`): the `G7`
+   reason becomes `palette: close colour (G lydian dominant adds C#)` and the
+   grid bolds `G lydian dominant` with a green `chosen` tag. The cadence still
+   resolves to `C major`.
+7. Set `Palette` to `Bold`: the pick takes the biggest colour shift among the
+   stored scales, with a reason beginning `palette: bold`.
+8. Re-trigger the same chord: the palette choice is held, so the notes do not
+   move under your fingers.
 
 ### Phase 3 - history strip
 
@@ -260,18 +308,20 @@ phrase bias).
 3. Close the `Options` panel: the strip stays visible.
 4. Untick `History`: the strip disappears. Reload the page: the choice persists.
 
-### Phase 4 - phrase bias
+### Phase 4 - phrase bias in follow
 
-1. Set `Scales` to `follow history`, open `Options`, set `Pool`/`Context` aside,
-   and tick `Phrase`.
-2. Play a solo note that is the third or seventh of the next chord, then
-   trigger that chord. With `Phrase` on, the chosen stored scale should contain
-   that note (watch the bolded cell and the reason); with `Phrase` off the
-   choice follows continuity and function instead.
+1. Set `Scales` to `follow history`, open `Options`, and tick `Phrase`.
+2. Play a solo note that only a colour scale contains (for example a held `C#`
+   over `G7`), then trigger that chord. The chosen stored scale should contain
+   that note and the reason line should read `keeps your last note C#`; with
+   `Phrase` off the choice follows continuity and function instead.
 3. Set `Strength` to `high` and repeat: the bias is more emphatic; set it to
    `low` for a gentle nudge.
-4. Tick `Phrase` with `shuffle` selected: the weights should favour candidates
-   that contain the held note.
+4. In a plain diatonic tune, phrase stays quiet: every stored scale already
+   contains the notes you are playing, so follow stays on `scale1` and the
+   reason does not mention your note. That is the intended, conservative
+   behaviour, not a fault.
+5. `Phrase` is not shown in `shuffle`, which ignores the last note.
 
 ### Manual override behaviour (regression test)
 

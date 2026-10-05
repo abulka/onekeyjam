@@ -403,12 +403,27 @@ continuation. The score combines:
   then aeolian. With the `Context` control set to two chords, a full ii-V-I
   adds a chain bonus. This resolves the major ii-V versus the minor ii-V, and
   the colour of a resolution, that a single chord cannot distinguish.
+- **Phrase resolution**, optional. When `Phrase` is ticked, the last sounding
+  solo note is preferred: a stored scale that contains it scores, larger when
+  it is a guide tone of the new chord; one that omits a guide or chord tone is
+  penalised. It is deliberately conservative, because in a diatonic tune every
+  stored candidate contains the notes you are playing, so it changes nothing.
+  It only decides when the note distinguishes the candidates; the reason line
+  then says `keeps your last note <name>`.
+- **Palette**, optional. `Primary` sounds the highest-scoring continuation.
+  `Close colour` sounds the highest-scoring stored scale whose pitch set
+  differs from the previous one, so each chord change adds the nearest new
+  colour (for example `G lydian dominant` adds C# after `D dorian`). `Bold`
+  sounds the stored scale with the fewest common tones, the biggest shift the
+  chord's stored options allow. The first chord always uses Primary, and every
+  choice is a stored scale that already fits the chord.
 - **A small novelty point** for a candidate that does not repeat the previous
   pitch set, so an available colour alternative is not ignored forever.
 
 Ties fall back to the earlier slot, so the first chord of a tune uses
 `scale1`. The UI shows a short reason, for example
-`ii-V into G: diatonic dominant` or `follows D dorian (7 common tones)`.
+`G mixolydian: ii-V into G: diatonic dominant` or
+`C major continues G mixolydian (same notes)`.
 A key change, a transposition or a manual `1`-`4` press clears the live
 choice; the next chord trigger follows the history again.
 

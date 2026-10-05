@@ -35,15 +35,16 @@ export const POLICY_PRESETS = {
         // scales with close, infrequent shifts; Varied takes one close colour
         // from a larger pool on each chord change; Wild lifts the spread band
         // and the hold rule.
-        { name: 'subtle', label: 'Subtle', options: { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 } },
-        { name: 'varied', label: 'Varied', options: { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 } },
-        { name: 'wild', label: 'Wild', options: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: false, phraseBias: false, phraseStrength: 1 } },
+        { name: 'subtle', label: 'Subtle', options: { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true } },
+        { name: 'varied', label: 'Varied', options: { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true } },
+        { name: 'wild', label: 'Wild', options: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: false } },
     ],
     follow: [
-        { name: 'simple', label: 'Simple', options: { contextChords: 1, phraseBias: false, phraseStrength: 1 } },
-        { name: 'progression', label: 'Progression', options: { contextChords: 2, phraseBias: false, phraseStrength: 1 } },
-        { name: 'lyrical', label: 'Lyrical', options: { contextChords: 2, phraseBias: true, phraseStrength: 1 } },
-        { name: 'resolve', label: 'Resolve', options: { contextChords: 1, phraseBias: true, phraseStrength: 2 } },
+        { name: 'simple', label: 'Simple', options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' } },
+        { name: 'progression', label: 'Progression', options: { contextChords: 2, phraseBias: false, phraseStrength: 1, palette: 'primary' } },
+        { name: 'lyrical', label: 'Lyrical', options: { contextChords: 2, phraseBias: true, phraseStrength: 1, palette: 'primary' } },
+        { name: 'resolve', label: 'Resolve', options: { contextChords: 1, phraseBias: true, phraseStrength: 2, palette: 'primary' } },
+        { name: 'colourful', label: 'Colourful', options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'colour' } },
     ],
 }
 
@@ -331,35 +332,97 @@ export function continuityScore(candidate, context) {
             weight += 0.5
         score += weight
     }
-    const { bonus, reason } = progressionBonus(candidate.name, context.current, context.previous, context.previous2, context.contextChords ?? 1)
+    const { bonus, reason: progressionReason } = progressionBonus(candidate.name, context.current, context.previous, context.previous2, context.contextChords ?? 1)
     score += bonus
     score += phraseBonus(candidate, context)
     const common = commonToneCount(candidate.pcs, previousPcs)
     if (previousPcs.size > 0 && !setsEqual(candidate.pcs, previousPcs))
         score += 0.5
-    const fallbackReason = common > 0 && context.previousScaleName
-        ? `follows ${context.previousScaleName} (${common} common tones)`
-        : ''
-    return { score, common, reason: reason || fallbackReason }
+    let reason
+    if (progressionReason)
+        reason = `${candidate.name}: ${progressionReason}`
+    else if (previousPcs.size > 0 && context.previousScaleName && setsEqual(candidate.pcs, previousPcs))
+        reason = `${candidate.name} continues ${context.previousScaleName} (same notes)`
+    else if (common > 0 && context.previousScaleName)
+        reason = `${candidate.name} follows ${context.previousScaleName} (${common} common tones)`
+    else if (context.previousScaleName)
+        reason = `${candidate.name} continues from ${context.previousScaleName}`
+    else
+        reason = `${candidate.name} starts the tune`
+    return { score, common, reason }
 }
 
 /**
- * Pick the stored slot whose scale continues the previous scale best.
- * Ties fall back to the earlier slot.
+ * The pitch-class names a scale adds over a previous set, for palette reasons.
+ * @param {Set<number>} pcs @param {Set<number>} previousPcs
+ */
+function addedNoteNames(pcs, previousPcs) {
+    const names = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B']
+    return [...pcs]
+        .filter((pc) => !previousPcs.has(pc))
+        .sort((a, b) => a - b)
+        .map((pc) => names[pc])
+}
+
+/**
+ * Pick the stored slot whose scale continues the previous scale best. The
+ * Palette option can ask for a deliberate colour shift instead: 'colour' takes
+ * the best continuation that changes the note set, 'bold' the biggest shift
+ * among the stored options. Ties fall back to the earlier slot. When the phrase
+ * bias is what changes the pick, the reason names the note it kept.
  * @param {Array<{slot: string, name: string, pcs: Set<number>}>} candidates
  * @param {*} context from buildContext()
  */
 export function chooseFollowCandidate(candidates, context) {
-    let bestIndex = 0
-    let best = /** @type {{score: number, common: number, reason: string}|undefined} */ (undefined)
-    for (let i = 0; i < candidates.length; i++) {
-        const scored = continuityScore(candidates[i], context)
-        if (!best || scored.score > best.score) {
-            best = scored
-            bestIndex = i
+    const scored = candidates.map((candidate, index) => ({ candidate, index, ...continuityScore(candidate, context) }))
+    if (scored.length === 0)
+        return { index: 0, score: 0, common: 0, reason: '' }
+    const previousPcs = context.previousScalePcs ?? new Set()
+    const hasHistory = previousPcs.size > 0
+    const palette = context.palette ?? 'primary'
+
+    let best = scored[0]
+    let bestWithoutPhraseIndex = 0
+    let bestWithoutPhraseScore = /** @type {number|undefined} */ (undefined)
+    for (const entry of scored) {
+        if (entry.score > best.score)
+            best = entry
+        const scoreWithoutPhrase = entry.score - phraseBonus(entry.candidate, context)
+        if (bestWithoutPhraseScore === undefined || scoreWithoutPhrase > bestWithoutPhraseScore) {
+            bestWithoutPhraseScore = scoreWithoutPhrase
+            bestWithoutPhraseIndex = entry.index
         }
     }
-    return { index: bestIndex, score: best?.score ?? 0, common: best?.common ?? 0, reason: best?.reason ?? '' }
+    const bestIndex = best.index
+
+    let chosen = best
+    if (hasHistory && palette === 'colour') {
+        const differing = scored.filter((entry) => !setsEqual(entry.candidate.pcs, previousPcs))
+        const pool = differing.length > 0 ? differing : scored
+        chosen = pool.reduce((a, b) => b.score > a.score ? b : a, pool[0])
+    }
+    else if (hasHistory && palette === 'bold') {
+        chosen = scored.reduce((a, b) => b.common < a.common ? b : a, scored[0])
+    }
+
+    const phraseDecided = palette === 'primary'
+        && context.phraseBias
+        && context.lastSoloPc !== undefined
+        && bestIndex !== bestWithoutPhraseIndex
+        && chosen.candidate.pcs.has(context.lastSoloPc)
+
+    let reason = chosen.reason
+    if (phraseDecided) {
+        reason = `keeps your last note ${context.lastSoloName || ''}`.trim()
+    }
+    else if (chosen.index !== bestIndex) {
+        const added = addedNoteNames(chosen.candidate.pcs, previousPcs)
+        const detail = added.length > 0 ? ` adds ${added.join(' ')}` : ''
+        reason = palette === 'bold'
+            ? `palette: bold (${chosen.candidate.name}${detail})`
+            : `palette: close colour (${chosen.candidate.name}${detail})`
+    }
+    return { index: chosen.index, score: chosen.score, common: chosen.common, reason }
 }
 
 /**
@@ -409,7 +472,6 @@ export function chooseShuffleCandidate(candidates, context, rng = Math.random) {
         // Steep rank preference: the idiomatically best fit is the usual choice.
         let weight = 1 / ((i + 1) ** 3)
         weight *= 1 + 0.1 * common
-        weight *= Math.max(0.2, 1 + 0.15 * phraseBonus(candidate, context))
         // Novelty only nudges the alternatives. The best fit is never punished
         // for continuing the same notes, which is the diatonic norm.
         if (i > 0)
@@ -502,6 +564,7 @@ function buildContext(current) {
         lastSoloName: lastSolo ? lastSolo.name : '',
         phraseBias: globals.scaleFiltering.policyOptions?.phraseBias ?? false,
         phraseStrength: globals.scaleFiltering.policyOptions?.phraseStrength ?? 1,
+        palette: globals.scaleFiltering.policyOptions?.palette ?? 'primary',
     }
 }
 

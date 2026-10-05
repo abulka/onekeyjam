@@ -175,6 +175,7 @@ export const globals = reactive({
             contextChords: 1,       // follow: how many previous chords to consider (1-2)
             phraseBias: false,      // follow/shuffle: bias by the last solo note
             phraseStrength: 1,      // phrase bias strength (0.5 low, 1 medium, 2 high)
+            palette: 'primary',     // follow: primary / colour / bold stored-scale palette
         },
         shuffleRank: null,          // shuffle: rank index currently held (0-based)
         shuffleDwellRemaining: 0,   // shuffle: chord changes left before a redraw

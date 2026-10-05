@@ -39,7 +39,10 @@ export const HELP_PAGES = ['overview', 'tutorial', 'reference']
  * @property {number} [contextChords]
  * @property {boolean} [phraseBias]
  * @property {number} [phraseStrength]
+ * @property {string} [palette]  'primary' | 'colour' | 'bold'
  */
+
+const PALETTES = ['primary', 'colour', 'bold']
 
 /**
  * @typedef {Object} HeldNoteRepair
@@ -73,6 +76,8 @@ function readPolicyOptions(stored) {
         options.phraseBias = stored.phraseBias
     if (Number.isFinite(stored.phraseStrength))
         options.phraseStrength = Math.min(2, Math.max(0.5, stored.phraseStrength))
+    if (PALETTES.includes(stored.palette))
+        options.palette = stored.palette
     return options
 }
 
@@ -237,6 +242,7 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.scaleFiltering.policyOptions.contextChords,
         globals.scaleFiltering.policyOptions.phraseBias,
         globals.scaleFiltering.policyOptions.phraseStrength,
+        globals.scaleFiltering.policyOptions.palette,
         globals.heldNoteRepair.enabled,
         globals.heldNoteRepair.windowMs,
     ], () => {

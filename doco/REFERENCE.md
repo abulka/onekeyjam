@@ -140,8 +140,11 @@ Why this helps:
   reached for; every choice still fits the chord, and it changes only on a chord
   change, so you cannot play a wrong note and the mapping stays put while you
   hold a phrase.
-- **Phrases resolve.** The phrase bias follows your last solo note, so a line
-  does not get cut off by the next chord.
+- **Phrases resolve (follow).** The phrase bias follows your last solo note, so a
+  line does not get cut off by the next chord. It only changes the pick when
+  that note distinguishes the stored scales; in a diatonic tune it correctly
+  stays quiet. Shuffle ignores the last note; held notes are repaired instead
+  (see `Settings` > `Held note repair`).
 - **Nothing is a trap.** You can always override with the filters (`1`-`4`, or
   the right-hand black keys) or a grid click, and the app goes back to the policy
   on the next chord you play.
@@ -162,7 +165,8 @@ the fine-tuning controls. They only appear when a project is loaded.
 | `Hold` | shuffle | Do not jump the scale while solo notes are sounding; take the closest fit instead. | on |
 | `Reroll` | shuffle | Draw a new scale for the current chord right now. | - |
 | `Context` (1-2) | follow | Whether to look one chord back or two, so a full ii-V-I is recognised. | 1 chord |
-| `Phrase` + `Strength` | either | Bias the next scale by your last solo note so the line resolves. | off |
+| `Palette` | follow | Which stored scale follow prefers: `Primary` (best continuation), `Close colour` (best alternative that adds a note at each change) or `Bold` (biggest colour shift among the stored scales). Different from the project-wide `Colour:` selector. | Primary |
+| `Phrase` + `Strength` | follow | Bias the next stored scale by your last solo note so the line resolves. Shuffle ignores the last note. | off |
 
 The recent chord-to-scale **History** strip is a global display preference, so
 it lives in `Settings` > `Preferences` rather than here.
@@ -179,9 +183,10 @@ default: only the stored scales, held longer, with rare close shifts), **Varied*
 (a close
 colour from a pool of five on each chord change) and **Wild** (no limits, for
 experimenting). For **follow** they are **Simple** (one chord), **Progression**
-(two chords), **Lyrical** (two chords plus phrase) and **Resolve** (strong
-phrase bias). The selector shows a highlighted `Custom` once you change any
-value by hand, so you always know when you have moved away from a preset.
+(two chords), **Lyrical** (two chords plus phrase), **Resolve** (strong
+phrase bias) and **Colourful** (`Palette: Close colour`). The selector shows a
+highlighted `Custom` once you change any value by hand, so you always know when
+you have moved away from a preset.
 
 ### Live read-outs
 
@@ -295,11 +300,22 @@ history` selected, compare `Simple`, `Progression` and `Lyrical`, and listen for
 the ii-V-I and the phrase resolution. After you move any value by hand the
 dropdown shows `Custom`, and picking a preset again restores a known combination.
 
-**Phrase bias.** Set `follow history`, tick `Phrase`, and play a long solo note
-that is the third or seventh of the next chord, then trigger that chord. With
-`Phrase` on the chosen scale contains your note (watch which cell is bolded);
-turn it off and repeat to hear the difference. Set `Strength` to `high` for a
-stronger pull.
+**Follow palette.** Follow normally sounds the best continuation, which in a
+diatonic tune is always `scale1`, so it can look static. Set `Palette` to
+`Close colour` (or pick the `Colourful` preset) and play the progression again:
+the reason line occasionally reads `palette: close colour (G lydian dominant
+adds C#)` and the grid bolds a colour scale with a green `chosen` tag. `Bold`
+takes the biggest colour shift the stored scales allow. All choices fit the
+chord; `Primary` keeps the original sound. This is separate from the
+project-wide `Colour:` selector, which decides how the stored scales are ranked.
+
+**Phrase bias (follow).** Set `follow history`, tick `Phrase`, and play a long
+solo note that only one stored scale contains, for example a held `C#` over
+`G7`, then trigger that chord. The chosen scale contains your note and the
+reason line reads `keeps your last note C#`; turn `Phrase` off and the pick
+follows continuity instead. In a diatonic tune every stored scale already
+contains the notes you are playing, so `Phrase` correctly changes nothing. Set
+`Strength` to `high` for a stronger pull. Shuffle ignores the last note.
 
 **History strip.** In `Settings` > `Preferences`, tick `Show the recent
 chord-to-scale history above the grid`. Play a few chords and watch

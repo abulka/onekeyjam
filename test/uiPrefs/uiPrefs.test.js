@@ -123,6 +123,7 @@ describe('uiPrefs', () => {
         globals.scaleFiltering.policyOptions.contextChords = 1
         globals.scaleFiltering.policyOptions.phraseBias = false
         globals.scaleFiltering.policyOptions.phraseStrength = 1
+        globals.scaleFiltering.policyOptions.palette = 'primary'
         globals.heldNoteRepair.enabled = true
         globals.heldNoteRepair.windowMs = 40
         globals.showScaleHistory = false
@@ -135,7 +136,7 @@ describe('uiPrefs', () => {
             scalePolicy: 'manual',
             scaleAdvanced: false,
             scaleHistory: false,
-            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1 },
+            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' },
             heldNoteRepair: { enabled: true, windowMs: 40 },
         })
         globals.showWelcomeDialog = true
@@ -154,7 +155,7 @@ describe('uiPrefs', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scaleAdvanced: true, policyOptions: { poolSize: 4, dwell: 2, changeChance: 0.25 } }) })
         loadUiPrefs(storage)
         assert.equal(globals.showScaleAdvanced, true)
-        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1 })
+        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' })
         globals.showScaleAdvanced = false
         globals.scaleFiltering.policyOptions.poolSize = 6
         globals.scaleFiltering.policyOptions.dwell = 1
@@ -179,6 +180,16 @@ describe('uiPrefs', () => {
         assert.equal(globals.scaleFiltering.policyOptions.phraseStrength, 2)
         globals.scaleFiltering.policyOptions.phraseBias = false
         globals.scaleFiltering.policyOptions.phraseStrength = 1
+    })
+
+    it('reads, validates and loads the follow palette', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { palette: 'colour' } }) })
+        assert.deepEqual(readPrefs(good).policyOptions, { palette: 'colour' })
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { palette: 'nonsense' } }) })
+        assert.equal(readPrefs(bad).policyOptions, undefined)
+        loadUiPrefs(good)
+        assert.equal(globals.scaleFiltering.policyOptions.palette, 'colour')
+        globals.scaleFiltering.policyOptions.palette = 'primary'
     })
 
     it('reads, validates and clamps the held-note repair settings', () => {

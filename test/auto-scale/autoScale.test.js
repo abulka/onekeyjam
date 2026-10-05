@@ -54,7 +54,7 @@ describe('autoScale policies', () => {
     })
 
     describe('policy presets', () => {
-        const KNOWN_OPTIONS = new Set(['poolSize', 'dwell', 'changeChance', 'maxNewNotes', 'deferWhilePlaying', 'contextChords', 'phraseBias', 'phraseStrength'])
+        const KNOWN_OPTIONS = new Set(['poolSize', 'dwell', 'changeChance', 'maxNewNotes', 'deferWhilePlaying', 'contextChords', 'phraseBias', 'phraseStrength', 'palette'])
 
         it('only set known option keys with real values', () => {
             for (const [mode, presets] of Object.entries(POLICY_PRESETS)) {
@@ -73,7 +73,7 @@ describe('autoScale policies', () => {
 
         it('has a subtle shuffle preset that matches the defaults', () => {
             const subtle = POLICY_PRESETS.shuffle.find((preset) => preset.name === 'subtle')
-            assert.deepEqual(subtle.options, { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, phraseBias: false, phraseStrength: 1 })
+            assert.deepEqual(subtle.options, { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true })
             for (const [key, value] of Object.entries(subtle.options))
                 assert.equal(globals.scaleFiltering.policyOptions[key], value, `default ${key}`)
         })
@@ -87,6 +87,15 @@ describe('autoScale policies', () => {
             assert.equal(wild.options.maxNewNotes, 7)
             assert.ok(subtle.options.poolSize < varied.options.poolSize)
             assert.ok(varied.options.poolSize <= wild.options.poolSize)
+        })
+
+        it('gives every follow preset a visible palette', () => {
+            const byName = Object.fromEntries(POLICY_PRESETS.follow.map((preset) => [preset.name, preset.options]))
+            assert.deepEqual(byName.simple, { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' })
+            assert.deepEqual(byName.progression, { contextChords: 2, phraseBias: false, phraseStrength: 1, palette: 'primary' })
+            assert.deepEqual(byName.lyrical, { contextChords: 2, phraseBias: true, phraseStrength: 1, palette: 'primary' })
+            assert.deepEqual(byName.resolve, { contextChords: 1, phraseBias: true, phraseStrength: 2, palette: 'primary' })
+            assert.deepEqual(byName.colourful, { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'colour' })
         })
     })
 
@@ -314,6 +323,105 @@ describe('autoScale policies', () => {
                 previousScaleName: '',
             }
             assert.equal(chooseFollowCandidate(gCandidates, context).index, 0)
+        })
+
+        it('keeps the last note when a colour scale contains it', () => {
+            const context = {
+                current: chordShapeFor(configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])),
+                previous: undefined,
+                previousScalePcs: new Set(),
+                previousScaleName: '',
+                phraseBias: true,
+                phraseStrength: 1,
+                lastSoloPc: 1,  // C# is only in G lydian dominant
+                lastSoloName: 'C#',
+            }
+            const result = chooseFollowCandidate(gCandidates, context)
+            assert.equal(result.index, 1)
+            assert.match(result.reason, /keeps your last note C#/)
+        })
+
+        it('ignores the last note when phrase bias is off', () => {
+            const context = {
+                current: chordShapeFor(configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])),
+                previous: undefined,
+                previousScalePcs: new Set(),
+                previousScaleName: '',
+                phraseBias: false,
+                phraseStrength: 1,
+                lastSoloPc: 1,
+                lastSoloName: 'C#',
+            }
+            const result = chooseFollowCandidate(gCandidates, context)
+            assert.equal(result.index, 0)
+            assert.doesNotMatch(result.reason, /keeps your last note/)
+        })
+
+        it('stays on the primary when every candidate contains the note', () => {
+            const context = {
+                current: chordShapeFor(configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])),
+                previous: undefined,
+                previousScalePcs: new Set(),
+                previousScaleName: '',
+                phraseBias: true,
+                phraseStrength: 2,
+                lastSoloPc: 7,  // G is the root and is in all three
+                lastSoloName: 'G',
+            }
+            const result = chooseFollowCandidate(gCandidates, context)
+            assert.equal(result.index, 0)
+            assert.doesNotMatch(result.reason, /keeps your last note/)
+        })
+
+        const afterDDorian = {
+            current: chordShapeFor(configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])),
+            previous: chordShapeFor(configFor('Dm7', ['D3', 'F3', 'A3', 'C4'], ['D dorian', 'D aeolian', 'D minor pentatonic'])),
+            previousScalePcs: pitchClassSet(scaleNameToNotes('D dorian')),
+            previousScaleName: 'D dorian',
+        }
+
+        it('primary palette follows the best continuation', () => {
+            const result = chooseFollowCandidate(gCandidates, { ...afterDDorian, palette: 'primary' })
+            assert.equal(result.index, 0)
+            assert.doesNotMatch(result.reason, /palette:/)
+        })
+
+        it('close colour palette takes the best stored scale that changes the notes', () => {
+            const result = chooseFollowCandidate(gCandidates, { ...afterDDorian, palette: 'colour' })
+            assert.equal(result.index, 1)
+            assert.match(result.reason, /palette: close colour/)
+            assert.match(result.reason, /adds C#/)
+        })
+
+        it('bold palette takes the biggest colour shift among the stored scales', () => {
+            const dCandidates = [
+                { slot: 'scale1', name: 'D dorian', pcs: pitchClassSet(scaleNameToNotes('D dorian')) },
+                { slot: 'scale2', name: 'D aeolian', pcs: pitchClassSet(scaleNameToNotes('D aeolian')) },
+                { slot: 'scale3', name: 'D minor pentatonic', pcs: pitchClassSet(scaleNameToNotes('D minor pentatonic')) },
+            ]
+            const context = {
+                current: chordShapeFor(configFor('Dm7', ['D3', 'F3', 'A3', 'C4'], ['D dorian', 'D aeolian', 'D minor pentatonic'])),
+                previous: chordShapeFor(configFor('Cmaj7', ['C3', 'E3', 'G3', 'B3'], ['C major', 'C lydian', 'C harmonic major'])),
+                previousScalePcs: pitchClassSet(scaleNameToNotes('C major')),
+                previousScaleName: 'C major',
+                palette: 'bold',
+            }
+            const result = chooseFollowCandidate(dCandidates, context)
+            assert.equal(result.index, 2)
+            assert.match(result.reason, /palette: bold/)
+        })
+
+        it('palette falls back to the primary on the first chord', () => {
+            const context = {
+                current: chordShapeFor(configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])),
+                previous: undefined,
+                previousScalePcs: new Set(),
+                previousScaleName: '',
+                palette: 'bold',
+            }
+            const result = chooseFollowCandidate(gCandidates, context)
+            assert.equal(result.index, 0)
+            assert.doesNotMatch(result.reason, /palette:/)
         })
     })
 

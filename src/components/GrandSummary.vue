@@ -500,11 +500,16 @@ function generalTableClick(event) {
           <option :value="2">2 chords</option>
         </select>
       </label>
-    </template>
-    <span v-else class="advanced-hint">Select follow or shuffle to tune the scale policy.</span>
-    <template v-if="globals.scaleFiltering.policy !== 'manual'">
+      <label class="advanced-field">Palette
+        <select v-model="globals.scaleFiltering.policyOptions.palette"
+          title="Palette: which stored scale follow prefers. Primary is the best continuation (the usual choice); Close colour takes the best alternative that adds a note at each change; Bold takes the biggest colour shift among the stored scales. All choices fit the chord.">
+          <option value="primary">Primary</option>
+          <option value="colour">Close colour</option>
+          <option value="bold">Bold</option>
+        </select>
+      </label>
       <label class="advanced-field checkbox-field"
-        title="Phrase: bias the next chord's scale by the last solo note you played, so the phrase resolves instead of being cut off.">
+        title="Phrase: bias the next chord's scale by the last solo note you played, so the phrase resolves instead of being cut off. It only changes the pick when that note distinguishes the stored scales.">
         <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.phraseBias" /> Phrase
       </label>
       <label class="advanced-field" v-if="globals.scaleFiltering.policyOptions.phraseBias">Strength
@@ -516,6 +521,7 @@ function generalTableClick(event) {
         </select>
       </label>
     </template>
+    <span v-else class="advanced-hint">Select follow or shuffle to tune the scale policy.</span>
     <button v-if="globals.scaleFiltering.policy === 'shuffle'" class="advanced-button" type="button"
       title="Draw a new scale for the current chord now"
       @click="releaseControlFocus($event); rerollShuffleScale()">Reroll</button>
@@ -535,7 +541,7 @@ function generalTableClick(event) {
 
   <!-- grand summary table -->
   <table v-if="globals.isProjectLoaded" id="grand-summary" style="width:100%;" border="1" bordercolor="green"
-    :class="{ 'solo-in-key-grid': keyModeActive }">
+    :class="{ 'solo-in-key-grid': keyModeActive, 'follow-grid': globals.scaleFiltering.policy === 'follow' }">
     <thead>
       <tr>
         <th>Id</th>
@@ -642,6 +648,7 @@ function generalTableClick(event) {
                             {{ info.rhScaleName }}</code><code v-else>none</code><span v-if="info.rhScaleIsLocked"
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp;
                 <div v-if="info.rhScaleName" class="scale-tags">
+                  <span v-if="info.lhChordIsCurrent && info.rhScaleIsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
                   <span v-if="info.rhScaleNear" class="scale-tag scale-tag-near"
                     :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
                   <span v-if="info.rhScaleAnnotation.outOfKey.length" class="scale-tag"
@@ -662,6 +669,7 @@ function generalTableClick(event) {
                             {{ info.rhScale2Name }}</code><code v-else>none</code><span v-if="info.rhScale2IsLocked"
                         class="scale-lock" title="This scale is locked (press 5 to unlock)">🔒</span></span>&nbsp;&nbsp; 
                 <div v-if="info.rhScale2Name" class="scale-tags">
+                  <span v-if="info.lhChordIsCurrent && info.rhScale2IsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
                   <span v-if="info.rhScale2Near" class="scale-tag scale-tag-near"
                     :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
                   <span v-if="info.rhScale2Annotation.outOfKey.length" class="scale-tag"
@@ -684,6 +692,7 @@ function generalTableClick(event) {
                 <span v-if="info.rhScale3IsLocked" class="scale-lock"
                     title="This scale is locked (press 5 to unlock)">🔒</span>
                 <div v-if="info.rhScale3Name" class="scale-tags">
+                  <span v-if="info.lhChordIsCurrent && info.rhScale3IsCurrent" class="scale-tag scale-tag-chosen">chosen</span>
                   <span v-if="info.rhScale3Near" class="scale-tag scale-tag-near"
                     :title="closestTagTitle(info.rhScaleNearCommon)">closest</span>
                   <span v-if="info.rhScale3Annotation.outOfKey.length" class="scale-tag"
@@ -745,6 +754,13 @@ table.scale-filters td {
 /* selected cell, turn border colour on */
 .td-highlight {
   border-color: #a5673f !important;
+}
+
+/* Follow is deterministic: soften the slot highlight so the chosen scale name
+   and its "chosen" tag carry the eye, and the mode does not look static. */
+.follow-grid .td-highlight {
+  border-color: #d9c9b0 !important;
+  background: #faf6ef;
 }
 
 /* closest stored alternative while a live shuffle scale sounds: dashed amber,
@@ -959,6 +975,13 @@ table.scale-filters td {
   background: #fbeecb;
   color: #8a6d1a;
   border-color: #e6cf8b;
+}
+
+.scale-tag-chosen {
+  background: #d8f0d8;
+  color: #256b25;
+  border-color: #a8d8a8;
+  font-weight: bold;
 }
 
 /* When Solo in key is sounding, the stored per-chord scales are dormant. */
