@@ -36,6 +36,11 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
                 yoffset:            {type:Number, value:60, observer:'layout'},
                 grid:               {type:Number, value:4},
                 snap:               {type:Number, value:1},
+                // Length in ticks of a newly drawn note (1 = the historical default).
+                deflen:             {type:Number, value:1},
+                // When 1, new notes may only be drawn on rows listed in allownotes.
+                rowrestrict:        {type:Number, value:0},
+                allownotes:         {type:String, value:""},
                 wheelzoom:          {type:Number, value:0},
                 wheelzoomx:         {type:Number, value:0},
                 wheelzoomy:         {type:Number, value:0},
@@ -434,6 +439,26 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
             ht.m="s";
             return ht;
         };
+        // Whether a row may receive a new note. rowrestrict=0 allows every row.
+        this.rowAllowed=function(n){
+            if(!this.rowrestrict)
+                return true;
+            if(!this.allownotes)
+                return false;
+            return this.allownotes.split(',').indexOf(String(n|0))>=0;
+        };
+        // The allowed row nearest to `n`, used to keep dragged notes on allowed rows.
+        this.nearestAllowedNote=function(n){
+            const list=this.allownotes?this.allownotes.split(',').map(Number):[];
+            if(list.length==0)
+                return n;
+            let best=list[0];
+            for(const cand of list){
+                if(Math.abs(cand-n)<Math.abs(best-n))
+                    best=cand;
+            }
+            return best;
+        };
         this.addNote=function(t,n,g,v,f){
             if(t>=0 && n>=0 && n<128){
                 const ev={t:t,c:0x90,n:n,g:g,v:v,f:f};
@@ -503,7 +528,7 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
                 const ev=this.sequence[i];
                 if(ev.f){
                     ev.t=(((ev.ot+dt)/this.snap+.5)|0)*this.snap;
-                    ev.n=ev.on+dn;
+                    ev.n=this.rowrestrict?this.nearestAllowedNote(ev.on+dn):ev.on+dn;
                 }
             }
         };
@@ -550,10 +575,13 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
                 this.dragging={o:"D", m:"B", i:ht.i, t:ev.t, g:ev.g, ev:this.selectedNotes()};
             }
             else if(ht.m=="s"&&ht.t>=0){
+                if(!this.rowAllowed(ht.n))
+                    return;
                 this.clearSel();
                 var t=((ht.t/this.snap)|0)*this.snap;
-                this.sequence.push({t:t, n:ht.n|0, g:1, f:1});
-                this.dragging={o:"D",m:"E",i:this.sequence.length-1, t:t, g:1, ev:[{t:t,g:1,ev:this.sequence[this.sequence.length-1]}]};
+                const g=this.deflen>0?this.deflen:1;
+                this.sequence.push({t:t, n:ht.n|0, g:g, f:1});
+                this.dragging={o:"D",m:"E",i:this.sequence.length-1, t:t, g:g, ev:[{t:t,g:g,ev:this.sequence[this.sequence.length-1]}]};
                 this.redraw();
             }
         };
@@ -626,10 +654,13 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
                 this.dragging={o:"G",m:"0"};
             }
             else if(ht.m=="s"&&ht.t>=0){
+                if(!this.rowAllowed(ht.n))
+                    return;
                 const pt=Math.floor(ht.t);
+                const g=this.deflen>0?this.deflen:1;
                 if(this.editmode=="gridmono")
-                    this.delAreaNote(pt,1,ht.i);
-                this.addNote(pt,ht.n|0,1,this.defvelo);
+                    this.delAreaNote(pt,g,ht.i);
+                this.addNote(pt,ht.n|0,g,this.defvelo);
                 this.dragging={o:"G",m:"1"};
             }
         };
@@ -639,10 +670,11 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
                 switch(this.dragging.m){
                 case "1":
                     const px=Math.floor(ht.t);
-                    if(ht.m=="s"){
+                    if(ht.m=="s"&&this.rowAllowed(ht.n)){
+                        const g=this.deflen>0?this.deflen:1;
                         if(this.editmode=="gridmono")
-                            this.delAreaNote(px,1,ht.i);
-                        this.addNote(px,ht.n|0,1,this.defvelo);
+                            this.delAreaNote(px,g,ht.i);
+                        this.addNote(px,ht.n|0,g,this.defvelo);
                     }
                     break;
                 case "0":

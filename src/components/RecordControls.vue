@@ -7,9 +7,24 @@ import { downloadRecording } from '@/lib/midi/export-recording.js'
 
 const rec = globals.recording
 
-const chordCount = computed(() => rec.take.chords.length)
-const jamCount = computed(() => rec.take.jam.length)
-const noteCount = computed(() => chordCount.value + jamCount.value)
+// The take plus anything the chord sequencer is sounding right now, so the
+// counts tick up live while a pattern plays (the pattern is merged into the
+// take when it stops). Chords are counted once each: the chord tones and bass
+// of one trigger share a trigger key and an onset, so group on those and snap
+// to a 16th note in case the tones landed a tick or two apart.
+const takeChordCount = computed(() => {
+  const grid = Math.max(1, Math.round((rec.ppq || 480) / 4))
+  const chords = new Set()
+  for (const note of rec.take.chords) {
+    const onset = Math.round(note.startTick / grid)
+    const trigger = typeof note.playedMidi === 'number' ? note.playedMidi : '?'
+    chords.add(`${trigger}:${onset}`)
+  }
+  return chords.size
+})
+const chordCount = computed(() => takeChordCount.value + rec.live.chords)
+const jamCount = computed(() => rec.take.jam.length + rec.live.jam)
+const takeNoteCount = computed(() => rec.take.chords.length + rec.take.jam.length)
 const canClear = computed(() => rec.hasTake || rec.isRecording || rec.playback.isPlaying)
 const durationSec = computed(() => takeDurationSec(rec))
 
@@ -128,7 +143,7 @@ defineExpose({ toggleRecord, exportTake })
               </div>
               <div class="statistic">
                 <div class="value">{{ chordCount }}</div>
-                <div class="label">Chord notes</div>
+                <div class="label">Chords</div>
               </div>
               <div class="statistic">
                 <div class="value">{{ rec.bpm }}</div>
@@ -199,10 +214,10 @@ defineExpose({ toggleRecord, exportTake })
           </div>
         </div>
 
-        <div class="row" v-if="!rec.isRecording && noteCount > 0">
+        <div class="row" v-if="!rec.isRecording && rec.hasTake && takeNoteCount > 0">
           <div class="sixteen wide column">
             <div class="ui positive message">
-              Take ready: {{ noteCount }} notes. Play it back or export it as a two-track MIDI file.
+              Take ready: {{ takeNoteCount }} notes. Play it back or export it as a two-track MIDI file.
             </div>
           </div>
         </div>

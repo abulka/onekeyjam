@@ -275,10 +275,25 @@ export function startPlayback(fromSec = 0) {
     }
 
     startOffsetSec = offset
-    playbackBase = ctx.currentTime
+    // Notes are scheduled relative to `base`, so the play head and the
+    // metronome use the same clock and stay in step with the sound.
+    playbackBase = base
     rec.playback.positionSec = offset
     rec.playback.isPlaying = true
     rafId = requestAnimationFrame(update)
+}
+
+/**
+ * The playback clock, so the metronome can line its clicks up with the take.
+ * `baseTime` is the audio-context time that corresponds to `offsetSec`.
+ * @returns {{ isPlaying: boolean, baseTime: number, offsetSec: number }}
+ */
+export function getPlaybackClock() {
+    return {
+        isPlaying: globals.recording.playback.isPlaying,
+        baseTime: playbackBase,
+        offsetSec: startOffsetSec,
+    }
 }
 
 function update() {

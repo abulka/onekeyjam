@@ -1,8 +1,20 @@
 import { globals } from "../globals.js"
 import { changeScaleFilter, applyKeyScale, applyScalePolicy } from "../change-scale.js"
 import { recordChordHistory } from "../autoScale.js"
-import { playGmNote, stopGmNote } from "../audio/general-midi"
+import { audioContext, playGmNote, stopGmNote } from "../audio/general-midi"
 import { recordChordNoteOn, recordChordNoteOff } from "./recorder.js"
+
+// Chord/scale state changes that are waiting to be applied on the audio clock.
+// Sequenced playback schedules them a little ahead (see `deferStateToWhen`), so
+// stopping the sequence must be able to cancel them.
+let pendingStateTimers = []
+
+/** Cancel any chord/scale state changes scheduled for the future. */
+export function clearPendingChordState() {
+    for (const id of pendingStateTimers)
+        clearTimeout(id)
+    pendingStateTimers = []
+}
 
 export function playChord(singleNote, options) {
     /*
@@ -13,15 +25,35 @@ export function playChord(singleNote, options) {
            infinite, and only a noteOff stops it.  *NEW* 
         - when: the time at which the chord should start playing  *NEW* 
         - silent: if true, the chord is not sounded.  *NEW*
+        - deferStateToWhen: when true, the scale/chord state is applied at `when`
+           rather than now. The sequencer pre-schedules notes and would otherwise
+           change the scale (and the live-solo filtering) up to a second early.
     */
     if (!(singleNote in globals.chordTriggerMap))
         throw new Error(`${singleNote} not in globals.chordTriggerMap`);
 
-    // Record current current chord trigger note e.g. e.g. "D2"
-    changeChordTriggerNoteAndThusScale(singleNote, options);
+    const applyState = () => {
+        // Record current current chord trigger note e.g. e.g. "D2"
+        changeChordTriggerNoteAndThusScale(singleNote, options);
 
-    // Update UI of chord piano keyboard
-    document.broadcastEvent('chord-changed', { notes: globals.currentLhNotes(), bass: globals.currentBass() });
+        // Update UI of chord piano keyboard
+        document.broadcastEvent('chord-changed', { notes: globals.currentLhNotes(), bass: globals.currentBass() });
+    }
+
+    const delayMs = (options.deferStateToWhen && typeof options.when === 'number' && audioContext)
+        ? Math.max(0, (options.when - audioContext.currentTime) * 1000)
+        : 0
+
+    if (delayMs > 8) {
+        const id = setTimeout(() => {
+            pendingStateTimers = pendingStateTimers.filter(timerId => timerId !== id)
+            applyState()
+        }, delayMs)
+        pendingStateTimers.push(id)
+    }
+    else {
+        applyState()
+    }
 
     if (options.silent)
         return

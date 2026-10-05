@@ -130,6 +130,31 @@ export function onNoteOn(e) {
     }
 }
 
+/**
+ * Note-on for sequenced playback (the chord sequencer). A chord-trigger note
+ * still plays its chord and drives the scale, but the live left- and right-hand
+ * modifier keys are ignored. Otherwise a black note in a pattern (for example
+ * D#, the "scale filter off" key) would silently switch scale filtering off
+ * when the sequence plays.
+ * @param {*} e webmidi-style event with a `.note`
+ */
+export function onNoteOnSequenced(e) {
+    if (globals.enableLhChordTriggers && e.note.identifier in globals.chordTriggerMap) {
+        // The chord audio is scheduled at `when` immediately, but the scale and
+        // chord state must wait until then, so a live solo is filtered by the
+        // scale that is actually sounding.
+        playChord(e.note.identifier, {
+            originNote: e.note,
+            duration: e.duration,
+            when: e.when,
+            silent: e.note.attack == 0,
+            deferStateToWhen: true,
+        })
+        return
+    }
+    jam(e.note)
+}
+
 export function onNoteOff(e) {
     if (!globals.enableLhChordTriggers) {
         globals.scaleFilteringEnabled = false // no point disabling lh triggers when can't jam in that area

@@ -327,6 +327,14 @@ export const globals = reactive({
         lhTriggerOctave: 3,
         rhJamSoundOctave: 4,
     },
+    // Number of octaves shown on the on-screen performance keyboard (2-6).
+    // The lowest key is always the chord-trigger octave, and extra octaves
+    // extend upward, so the chord trigger octave stays first/lowest. This only
+    // changes what is drawn; notes can still be played anywhere. Persisted via
+    // src/lib/uiPrefs.js.
+    keyboardOctaves: 2,
+    // Click track on/off, toggled next to the BPM in the top bar.
+    metronomeEnabled: false,
     computerKeyboard: {     // normal-piano computer-keyboard state
         octaveShift: 0,
     },
@@ -358,6 +366,10 @@ export const globals = reactive({
         held: { chords: {}, jam: {} },  // noteName -> { midi, velocity, startTick }
         hasTake: false,  // a take with at least one note is ready to export
         lastRecordingSeconds: 0,  // wall-clock length of the last recording
+        // Notes sounded by the chord sequencer since it last started. They are
+        // merged into the take on stop, so this gives the Record section a live
+        // count while the pattern plays.
+        live: { chords: 0, jam: 0 },
         // When true the recorder ignores incoming notes. Used while the pattern
         // sequencer loops, so its notes are not captured live (they are merged
         // into the take on stop instead) and for piano-strip auditions.

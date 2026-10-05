@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { readPrefs, writePrefs, loadUiPrefs, currentPrefs, KEYBOARD_HELP_MODES } from '@/lib/uiPrefs.js'
+import { readPrefs, writePrefs, loadUiPrefs, currentPrefs, KEYBOARD_HELP_MODES, KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX, clampKeyboardOctaves, BPM_MIN, BPM_MAX, clampBpm } from '@/lib/uiPrefs.js'
 import { globals } from '@/lib/globals.js'
 
 function fakeStorage(initial = {}) {
@@ -16,6 +16,10 @@ describe('uiPrefs', () => {
 
     it('defaults the keyboard help mode to black and white', () => {
         assert.equal(globals.keyboardHelpMode, 'all')
+    })
+
+    it('defaults the keyboard to two octaves', () => {
+        assert.equal(globals.keyboardOctaves, 2)
     })
 
     it('defaults the scale policy options panel to hidden', () => {
@@ -123,6 +127,9 @@ describe('uiPrefs', () => {
     it('reports the current prefs from globals', () => {
         globals.keyboardHelpMode = 'white'
         globals.showKeyShortcuts = true
+        globals.keyboardOctaves = 5
+        globals.recording.bpm = 140
+        globals.metronomeEnabled = true
         globals.showWelcomeDialog = false
         globals.showFavouriteBinColumns = true
         globals.helpPage = 'tutorial'
@@ -144,6 +151,9 @@ describe('uiPrefs', () => {
         assert.deepEqual(currentPrefs(), {
             keyboardHelpMode: 'white',
             showKeyShortcuts: true,
+            keyboardOctaves: 5,
+            bpm: 140,
+            metronomeEnabled: true,
             showWelcomeDialog: false,
             showFavouriteBinColumns: true,
             helpPage: 'tutorial',
@@ -158,6 +168,76 @@ describe('uiPrefs', () => {
         globals.showFavouriteBinColumns = false
         globals.helpPage = 'overview'
         globals.showScaleCellFill = false
+        globals.keyboardOctaves = 2
+        globals.recording.bpm = 120
+        globals.metronomeEnabled = false
+    })
+
+    it('reads, loads and round-trips the metronome flag', () => {
+        const on = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ metronomeEnabled: true }) })
+        assert.equal(readPrefs(on).metronomeEnabled, true)
+        loadUiPrefs(on)
+        assert.equal(globals.metronomeEnabled, true)
+        globals.metronomeEnabled = false
+        const roundTrip = fakeStorage()
+        writePrefs({ metronomeEnabled: true }, roundTrip)
+        assert.equal(readPrefs(roundTrip).metronomeEnabled, true)
+    })
+
+    it('clamps the keyboard octave count to the supported range', () => {
+        assert.equal(clampKeyboardOctaves(1), KEYBOARD_OCTAVE_MIN)
+        assert.equal(clampKeyboardOctaves(99), KEYBOARD_OCTAVE_MAX)
+        assert.equal(clampKeyboardOctaves(4.6), 5)
+        assert.equal(clampKeyboardOctaves('nonsense'), undefined)
+    })
+
+    it('reads and validates the keyboard octave count', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyboardOctaves: 5 }) })
+        assert.equal(readPrefs(good).keyboardOctaves, 5)
+        const clamped = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyboardOctaves: 99 }) })
+        assert.equal(readPrefs(clamped).keyboardOctaves, KEYBOARD_OCTAVE_MAX)
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyboardOctaves: 'wide' }) })
+        assert.equal(readPrefs(bad).keyboardOctaves, undefined)
+    })
+
+    it('loads the keyboard octave count into globals', () => {
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyboardOctaves: 3 }) }))
+        assert.equal(globals.keyboardOctaves, 3)
+        globals.keyboardOctaves = 2
+    })
+
+    it('round-trips the keyboard octave count', () => {
+        const storage = fakeStorage()
+        writePrefs({ keyboardOctaves: 6 }, storage)
+        assert.equal(readPrefs(storage).keyboardOctaves, 6)
+    })
+
+    it('clamps the BPM to the supported range', () => {
+        assert.equal(clampBpm(10), BPM_MIN)
+        assert.equal(clampBpm(999), BPM_MAX)
+        assert.equal(clampBpm(128.4), 128)
+        assert.equal(clampBpm('fast'), undefined)
+    })
+
+    it('reads and validates the BPM', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ bpm: 128 }) })
+        assert.equal(readPrefs(good).bpm, 128)
+        const clamped = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ bpm: 999 }) })
+        assert.equal(readPrefs(clamped).bpm, BPM_MAX)
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ bpm: 'fast' }) })
+        assert.equal(readPrefs(bad).bpm, undefined)
+    })
+
+    it('loads the BPM into globals', () => {
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ bpm: 132 }) }))
+        assert.equal(globals.recording.bpm, 132)
+        globals.recording.bpm = 120
+    })
+
+    it('round-trips the BPM', () => {
+        const storage = fakeStorage()
+        writePrefs({ bpm: 96 }, storage)
+        assert.equal(readPrefs(storage).bpm, 96)
     })
 
     it('reads, validates and clamps the shuffle options', () => {

@@ -228,6 +228,7 @@ export function startRecording(now) {
     const rec = globals.recording
     rec.take = { chords: [], jam: [] }
     rec.held = { chords: {}, jam: {} }
+    rec.live = { chords: 0, jam: 0 }
     rec.startedAt = getNow(now)
     rec.isRecording = true
     rec.hasTake = false
@@ -263,6 +264,7 @@ export function clearTake() {
     rec.isRecording = false
     rec.take = { chords: [], jam: [] }
     rec.held = { chords: {}, jam: {} }
+    rec.live = { chords: 0, jam: 0 }
     rec.startedAt = 0
     rec.hasTake = false
     rec.playback.durationSec = 0

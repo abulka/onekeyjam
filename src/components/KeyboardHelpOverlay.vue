@@ -10,13 +10,35 @@ const props = defineProps({
   keys: { type: Number, default: 49 },
 })
 
-const BLACK_FONT_PX = 9
 const WHITE_FONT_PX = 10
-const BLACK_FONT = `${BLACK_FONT_PX}px sans-serif`
 const WHITE_FONT = `${WHITE_FONT_PX}px sans-serif`
 
-const BADGE_WIDTH = 15
-const BADGE_HEIGHT = 12
+// Black-key labels start below a small top gap, and the text grows with the key
+// width (wide keys come from showing few octaves), within readable limits.
+const BLACK_LABEL_TOP = 4
+const BLACK_FONT_MIN = 9
+const BLACK_FONT_MAX = 12
+
+// Computer-keyboard shortcut badges grow with the key they sit on, so a wide
+// keyboard gets larger, more legible badges.
+const BADGE_MIN_WIDTH = 15
+const BADGE_MAX_WIDTH = 24
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function blackFontSize(blackKeyWidth) {
+  return clamp(Math.round(blackKeyWidth * 0.3), BLACK_FONT_MIN, BLACK_FONT_MAX)
+}
+
+/** Size a shortcut badge for the key width it sits on. */
+function badgeMetrics(keyWidth) {
+  const width = clamp(Math.round(keyWidth * 0.5), BADGE_MIN_WIDTH, BADGE_MAX_WIDTH)
+  const height = Math.round(width * 0.8)
+  const fontSize = clamp(Math.round(height * 0.72), 9, 15)
+  return { width, height, fontSize }
+}
 
 const DEFAULT_KF = [0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0]
 const DEFAULT_KO = [0, 0, (7 * 2) / 12 - 1, 0, (7 * 4) / 12 - 2, (7 * 5) / 12 - 3, 0, (7 * 7) / 12 - 4, 0, (7 * 9) / 12 - 5, 0, (7 * 11) / 12 - 6]
@@ -98,24 +120,28 @@ const keyLabels = computed(() => {
 
   const minMod = ((geo.min % 12) + 12) % 12
   const shiftActive = globals.blackShiftState
+  const blackBadge = badgeMetrics(geo.bwidth)
   // Keep the bottom of the black key clear for the shortcut badge (magic mode only)
-  const blackReserve = (globals.showKeyShortcuts && !globals.bypass) ? BADGE_HEIGHT + 4 : 2
+  const blackReserve = (globals.showKeyShortcuts && !globals.bypass) ? blackBadge.height + 4 : 2
+  const blackFontPx = blackFontSize(geo.bwidth)
+  const blackFont = `${blackFontPx}px sans-serif`
 
   return raw.map((item) => {
     if (item.isBlack) {
       const { help, shiftHelp } = getBlackKeyDisplay(item.help, item.shiftHelp, item.isLeftHand && shiftActive, item.isShiftKey)
       const x = geo.wwidth * geo.ko[minMod] + geo.bwidth * (item.semitoneIndex - geo.min) + 1
       const lines = [shiftHelp, help].filter(Boolean)
+      const bottom = geo.bheight - blackReserve
       return {
         ...item,
         help,
         shiftHelp,
         x,
-        y: 1,
+        y: BLACK_LABEL_TOP,
         width: geo.bwidth,
-        height: geo.bheight - blackReserve,
-        fontSize: `${BLACK_FONT_PX}px`,
-        orientation: chooseTextOrientation(longestLine(lines), geo.bwidth, BLACK_FONT),
+        height: Math.max(bottom - BLACK_LABEL_TOP, 0),
+        fontSize: `${blackFontPx}px`,
+        orientation: chooseTextOrientation(longestLine(lines), geo.bwidth, blackFont),
       }
     }
 
@@ -155,6 +181,8 @@ const shortcutBadges = computed(() => {
   const blackBase = geo.wwidth * geo.ko[minMod]
   const blackKeyX = (semitone) => blackBase + geo.bwidth * (semitone - geo.min) + 1
   const isBlackAt = (semitone) => geo.kf[((semitone % 12) + 12) % 12] === 1
+  const blackBadge = badgeMetrics(geo.bwidth)
+  const whiteBadge = badgeMetrics(geo.wwidth)
   const badges = []
   let whiteIndex = 0
 
@@ -181,8 +209,11 @@ const shortcutBadges = computed(() => {
           id: `black-${i}`,
           label: badgeLabel,
           isBlack: true,
-          x: keyX + geo.bwidth / 2 - BADGE_WIDTH / 2,
-          y: geo.bheight - BADGE_HEIGHT - 1,
+          x: keyX + geo.bwidth / 2 - blackBadge.width / 2,
+          y: geo.bheight - blackBadge.height - 1,
+          width: blackBadge.width,
+          height: blackBadge.height,
+          fontSize: blackBadge.fontSize,
         })
       }
     }
@@ -202,11 +233,11 @@ const shortcutBadges = computed(() => {
           freeRight = Math.min(freeRight, blackKeyX(i + 1))
 
         let x
-        if (freeRight - freeLeft >= BADGE_WIDTH)
-          x = freeLeft + (freeRight - freeLeft) / 2 - BADGE_WIDTH / 2
+        if (freeRight - freeLeft >= whiteBadge.width)
+          x = freeLeft + (freeRight - freeLeft) / 2 - whiteBadge.width / 2
         else
-          x = keyX + (geo.wwidth - 1) / 2 - BADGE_WIDTH / 2
-        x = Math.max(keyX, Math.min(x, keyRight - BADGE_WIDTH))
+          x = keyX + (geo.wwidth - 1) / 2 - whiteBadge.width / 2
+        x = Math.max(keyX, Math.min(x, keyRight - whiteBadge.width))
 
         badges.push({
           id: `white-${i}`,
@@ -214,6 +245,9 @@ const shortcutBadges = computed(() => {
           isBlack: false,
           x,
           y: 3,
+          width: whiteBadge.width,
+          height: whiteBadge.height,
+          fontSize: whiteBadge.fontSize,
         })
       }
       whiteIndex++
@@ -241,7 +275,7 @@ const shortcutBadges = computed(() => {
     </template>
     <div v-for="badge in shortcutBadges" :key="badge.id" class="key-shortcut-badge"
       :class="badge.isBlack ? 'key-shortcut-badge-black' : 'key-shortcut-badge-white'"
-      :style="{ left: `${badge.x}px`, top: `${badge.y}px`, width: `${BADGE_WIDTH}px`, height: `${BADGE_HEIGHT}px` }">
+      :style="{ left: `${badge.x}px`, top: `${badge.y}px`, width: `${badge.width}px`, height: `${badge.height}px`, fontSize: `${badge.fontSize}px` }">
       {{ badge.label }}
     </div>
   </div>
@@ -312,7 +346,6 @@ const shortcutBadges = computed(() => {
   justify-content: center;
   box-sizing: border-box;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 9px;
   font-weight: bold;
   color: #fff;
   background: #4a6fd4;

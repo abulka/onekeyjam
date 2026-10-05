@@ -211,3 +211,13 @@ The widget's default `grid` of 4 ticks is only sensible at a `timebase` of 16.
 At the recording panel's `timebase` of 1920 the vertical grid lines landed a
 fraction of a pixel apart and merged into a solid grey background. The panel now
 sets `grid` to `timebase / 4` (one line per quarter note).
+
+Three defaulted properties were also added, so the chord sequencer can restrict
+editing without another overlay hack (the recording panel leaves them at their
+defaults and is unaffected):
+
+- `deflen` (default 1) — the length in ticks of a note drawn on empty grid.
+  `PianoRollPanel.vue` sets it to a whole bar (16 ticks) for the chord sequencer.
+- `rowrestrict` (default 0) and `allownotes` (comma-separated rows) — when
+  `rowrestrict` is 1, new notes may only be drawn on the listed rows, and a
+  dragged note snaps to the nearest listed row (`nearestAllowedNote`).

@@ -5,6 +5,8 @@ import mainOneKeyJam from '../src/lib/main.js';
 import { globals } from './lib/globals.js';
 import { wireHelpShortcuts } from './lib/helpShortcuts.js';
 import { projectKeyName } from './lib/projectKey.js';
+import { clampBpm } from './lib/uiPrefs.js';
+import { setMetronomeEnabled } from './lib/audio/metronome.js';
 import DemoIntroDialog from './components/DemoIntroDialog.vue';
 
 // The Research view is a development-only playground; hide it from production builds.
@@ -24,11 +26,33 @@ const projectKeyLabel = computed(() => {
   return key ? projectKeyName(key) : ''
 })
 
+// The app-wide tempo. It drives the chord sequencer and the recorder.
+function onBpmInput(event) {
+  const clamped = clampBpm(event.target.value)
+  if (clamped !== undefined)
+    globals.recording.bpm = clamped
+}
+
+function onBpmChange(event) {
+  const clamped = clampBpm(event.target.value)
+  const value = clamped === undefined ? (globals.recording.bpm || 120) : clamped
+  globals.recording.bpm = value
+  event.target.value = String(value)
+}
+
+function toggleMetronome() {
+  setMetronomeEnabled(!globals.metronomeEnabled)
+}
+
 onMounted(() => {
   console.log('App onMounted')
 
   // one time OneKeyJam application and webmidi initialisation (non vue related)
   mainOneKeyJam()
+
+  // Restore the metronome if it was left on.
+  if (globals.metronomeEnabled)
+    setMetronomeEnabled(true)
 
   // Tab toggles between the Edit page and the Help page.
   wireHelpShortcuts(router)
@@ -71,6 +95,17 @@ onMounted(() => {
         <!-- <div class="item"> <a href="#" @click="fileImportMidiDialog.open()">dialog</a> </div> -->
 
         <div class="right menu">
+          <div class="item app-bpm" title="Global tempo (BPM) for the chord sequencer and recording.">
+            <span class="app-bpm-label">BPM:</span>
+            <input class="app-bpm-input" type="number" min="40" max="240" step="1" :value="globals.recording.bpm"
+              @input="onBpmInput" @change="onBpmChange" />
+            <button type="button" class="metronome-toggle" :class="{ active: globals.metronomeEnabled }"
+              :aria-pressed="globals.metronomeEnabled ? 'true' : 'false'"
+              :title="globals.metronomeEnabled ? 'Metronome click: on' : 'Metronome click: off'"
+              @click="toggleMetronome()">
+              <i :class="globals.metronomeEnabled ? 'volume up icon' : 'volume off icon'"></i>
+            </button>
+          </div>
           <div v-if="projectKeyLabel" class="item app-key-name" title="The resolved project key. It moves with live transposition.">
             <span class="app-key-label">Key:</span>
             <strong class="app-key-value">{{ projectKeyLabel }}</strong>
@@ -97,6 +132,54 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Global tempo, shown before the key and project name at the right of the tabs. */
+.app-bpm {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.app-bpm-label {
+  font-size: 0.95rem;
+  font-weight: normal;
+  color: #7a6547;
+}
+
+.app-bpm-input {
+  width: 4.2rem;
+  padding: 1px 3px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  color: #5a3d1a;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #b99b6b;
+  border-radius: 4px;
+}
+
+.metronome-toggle {
+  margin-left: 0.35rem;
+  padding: 2px 6px;
+  font-size: 0.95rem;
+  line-height: 1;
+  color: #7a6547;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #b99b6b;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.metronome-toggle.active {
+  color: #2f6b3f;
+  background: #d8efdc;
+  border-color: #2e8b57;
+  box-shadow: 0 0 4px rgba(46, 139, 87, 0.6);
+}
+
+.metronome-toggle .icon {
+  margin: 0;
+}
+
 /* Resolved project key, shown beside the project name at the right of the tabs. */
 .app-key-name {
   display: inline-flex;

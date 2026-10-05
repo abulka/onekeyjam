@@ -99,7 +99,9 @@ logic.
   `options` and `chordSequences`. `options.key` declares the musical key
   (`{ tonic, type, source }`, where `type` may be a mode), `options.soloMode`
   is `'chord'` or `'key'`, and `options.colour` is `'diatonic'`, `'jazz'` or
-  `'adventurous'`; see `doco/MUSIC-THEORY.md`.
+  `'adventurous'`; see `doco/MUSIC-THEORY.md`. `chordSequences.default` holds
+  the Chord Sequencer's pattern (MML, loop markers and the include-in-recording
+  flag), so it is saved and restored with the project.
 - A chord config has a chord symbol, its `chordNotes`, an optional `bass`, up
   to three scale names (`scale1`, `scale2`, `scale3`) and the notes of the
   chord as a scale (`scaleNotesOfChord`). Scale names can be rewritten by the
@@ -173,8 +175,17 @@ and the validation commands.
   points where the sounding notes are known: `playChordNote`/`playChordOff`
   record the left-hand chord and bass notes, and `jam`/`jamOff` record the
   scale-filtered right-hand notes. Timing comes from `audioContext.currentTime`
-  and the pure helpers in `src/lib/midi/timing.js` (120 BPM, 480 PPQ, no
-  quantisation). `src/lib/midi/playback.js` plays the take back through the
+  and the pure helpers in `src/lib/midi/timing.js` (480 PPQ, no quantisation).
+  The tempo is a single app-wide BPM (`globals.recording.bpm`, default 120),
+  edited from the numeric control next to the Key and Project names in the top
+  bar and persisted through `src/lib/uiPrefs.js`; the recorder, playback, export
+  and the Chord Sequencer all read it. A metronome toggle sits beside it
+  (`src/lib/audio/metronome.js`); it does not run free, but follows the recorded
+  take's playback, clicking each beat with the downbeat accented and staying
+  silent otherwise. It is persisted too. The Record section's counters show the
+  number of chords (one per chord onset, not per chord tone) and solo notes,
+  including anything the Chord Sequencer is sounding right now via
+  `globals.recording.live`; they settle back to the take's counts when it stops. `src/lib/midi/playback.js` plays the take back through the
   in-browser General MIDI sounds and supports scrubbing. While it plays (and
   while the scrubber is dragged) the keys light up: the sounding notes light red
   through the same `live-note` document event that real MIDI input uses, and the
@@ -200,16 +211,48 @@ and the validation commands.
   between take notes and widget notes.
 - The Chord Sequencer is a chord-sequence loop. It can be auditioned (a chord
   trigger plays its chord, anything else a single note) from the piano strip or
-  by clicking a note, its loop markers can be fitted to the notes, and it is
-  auto-saved to `localStorage` (`onekeyjam.pattern`) so a refresh does not lose
-  it. While it plays, the trigger keys light up on the main keyboard and the
+  by clicking a note, and its loop markers can be fitted to the notes. The
+  pattern lives in the current project (`globals.project.chordSequences.default`):
+  it loads whenever a project loads (`project-loaded`) and is written back on
+  every edit, so it is kept by the current-project autosave and travels with the
+  project when it is saved. Notes may only be entered on the seven white trigger keys of the
+  chord-trigger octave (C–B); every trigger row is marked over the piano key
+  with its chord name (green) or "no chord" (grey, to prompt assigning one), and
+  a click adds a one-bar note. Notes loaded on any other row are removed, and a
+  note dragged off a trigger row snaps back to the nearest one. A "Trigger
+  pattern" dropdown fills the sequencer with ready-made patterns expressed as
+  trigger numbers (ascending 1-7, descending 7-1, ii–V–I as 1-2-3 with the I
+  held for two bars, I–V–vi–IV as 1-5-6-4, up-and-down), since progressions in
+  this app are trigger order rather than musical intervals. Loading a pattern
+  also fits the view to it. The loop end is kept fitted to the notes and saved as
+  `loopManual` once the user drags a marker by hand, after which it is left
+  alone; it is also included in the scrollable range so the end marker can
+  always be reached. While it plays, the trigger keys light up on the main keyboard and the
   panel strips in time with the sound (a `live-note` event tagged
-  `source: 'pattern'`). With "Include in recording" ticked, pressing Record
+  `source: 'pattern'`). Sequenced notes go through `onNoteOnSequenced()`, so a
+  chord-trigger note still plays its chord and drives the scale, but the live
+  left/right-hand modifier keys are ignored — a black note in the pattern
+  cannot switch scale filtering on or off. The widget pre-schedules notes about
+  a second ahead, so `playChord` takes a `deferStateToWhen` flag: the chord
+  audio is still scheduled at the note's time, but the scale, chord highlight and
+  the live-solo filtering map are applied at that same time, keeping a solo in
+  step with the sounding chord. Changing the global BPM while the loop plays
+  restarts it from the current position (debounced), so the new tempo is heard
+  at once. With "Include in recording" ticked, pressing Record
   starts the pattern looping; its notes drive chords and scale changes but are
   not captured live (`globals.recording.suppressCapture`), and on Stop the loop
   is rendered to fill the take and merged into the Chords track
   (`patternToTakeNotes`), expanding each chord trigger into its chord notes.
   The recorder broadcasts `recording-started`/`recording-stopped` for this.
+- Both sequencer panels (`PianoRollPanel.vue`) can be panned and zoomed with a
+  mouse or trackpad: two-finger/wheel scrolling pans (Shift+wheel pans the time
+  axis), while Ctrl/Cmd+wheel or a trackpad pinch zooms and holds the point
+  under the pointer still. The scroll and zoom sliders also respond to the wheel
+  with a gentle step instead of the vendor's coarse 5%-of-range jump. Horizontal
+  scrolling is bounded to the notes and loop markers, so it cannot drift into
+  empty space, and "Fit width"/"Fit height"/"Fit all" buttons after the horizontal
+  zoom slider frame the notes. The pure pan/zoom maths lives in
+  `src/lib/sequencer-view.js` so it can be unit tested.
 - Left-hand black keys act as modifiers: `C#` is a shift key, `D#` turns scale
   filtering off and `F#` turns it on, while `G#` and `A#` transpose the chords
   and Shift+A#/Bb toggles Solo in key. Right-hand black keys switch scale as
@@ -241,6 +284,13 @@ and the validation commands.
   so the computer keyboard plays whenever the app window is focused and only
   pauses while typing in a form field. The shortcuts help dialog is opened from
   the button above the on-screen keyboard, next to the Key labels control.
+- The number of octaves shown on the main keyboard (2 to 6, default 2) is set
+  by the "Octaves" -/+ stepper in that row and saved as `globals.keyboardOctaves`
+  by `src/lib/uiPrefs.js`. The keyboard keeps a fixed pixel width while the keys
+  grow or shrink, and the black-key label font and the computer-key shortcut
+  badges grow with the key width. Only the display changes: the leftmost key is
+  always the chord-trigger octave, extra octaves extend upward, and notes
+  outside the visible range still play (they simply do not light up).
 - The separate `src/components/PianoKeyboard.vue` component (reachable only from
   the research view) is an older experiment. It highlights keys when computer
   keys are pressed but does not emit events, so it does not produce sound.

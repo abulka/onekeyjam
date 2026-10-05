@@ -8,6 +8,7 @@ import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events"
 import { getNoteKeyForCode } from "@/lib/midi/piano-key-map.js"
 import { isTypingTarget } from "@/lib/is-typing-target.js"
 import { consumePendingKeyboardFocus } from "@/lib/demo-project.js"
+import { KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX } from "@/lib/uiPrefs.js"
 import KeyboardHelpOverlay from "./KeyboardHelpOverlay.vue"
 import PlaybackKeysOverlay from "./PlaybackKeysOverlay.vue"
 import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.vue"
@@ -16,6 +17,12 @@ import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.vue"
 const isLargeScreen = computed({
   get: () => window.innerWidth > 768,
 })
+
+// The keyboard keeps a fixed pixel width; changing the octave count makes the
+// keys wider or narrower rather than resizing the whole keyboard.
+const LARGE_KEYBOARD_WIDTH = 1130
+const SMALL_KEYBOARD_WIDTH = 710
+const keyboardWidth = computed(() => (isLargeScreen.value ? LARGE_KEYBOARD_WIDTH : SMALL_KEYBOARD_WIDTH))
 
 const NONOTE = ' '
 let lhCsharpStuckDown = false
@@ -34,7 +41,19 @@ const keysDown = new Map()
 const PIANO_OCTAVE = 12
 // Normal piano mode uses the Ableton/Logic computer-keyboard layout.
 const isPianoMode = () => globals.bypass
-const keyboardKeyCount = computed(() => isLargeScreen.value ? 49 : 25)
+// The widget's leftmost key is always index 0 = the chord-trigger octave, and
+// extra octaves extend upward (each octave ends on a C, so the widget never
+// nudges the range for a black key).
+const keyboardKeys = computed(() => globals.keyboardOctaves * PIANO_OCTAVE + 1)
+
+/**
+ * Bump the displayed octave count within the supported range.
+ * @param {number} delta +1 or -1
+ */
+function changeOctaves(delta) {
+  const next = Math.min(KEYBOARD_OCTAVE_MAX, Math.max(KEYBOARD_OCTAVE_MIN, globals.keyboardOctaves + delta))
+  globals.keyboardOctaves = next
+}
 // Index of the A/C key of the piano mapping: the right-hand sound octave.
 const pianoBaseIndex = () => PIANO_OCTAVE * (globals.getRhJamSoundOctave() - globals.getLhTriggerOctave())
 
@@ -96,7 +115,7 @@ function onFocusKeyboardRequest() {
 // Stop any notes still held when the app loses focus, so nothing gets stuck on.
 function releaseAllKeys() {
   keysDown.forEach((index) => {
-    if (index >= 0 && index < keyboardKeyCount.value)
+    if (index >= 0 && index < keyboardKeys.value)
       pianoKeyboard.value?.setNote(false, index)
     handleNote(false, index)
   })
@@ -194,7 +213,7 @@ function onKeyDown(e) {
     return
   const index = resolveKeyboardIndex(key)
   keysDown.set(e.code, index)
-  if (index >= 0 && index < keyboardKeyCount.value)
+  if (index >= 0 && index < keyboardKeys.value)
     pianoKeyboard.value?.setNote(true, index)
   handleNote(true, index)
 }
@@ -204,7 +223,7 @@ function onKeyUp(e) {
     return
   const index = keysDown.get(e.code)
   keysDown.delete(e.code)
-  if (index >= 0 && index < keyboardKeyCount.value)
+  if (index >= 0 && index < keyboardKeys.value)
     pianoKeyboard.value?.setNote(false, index)
   handleNote(false, index)
 }
@@ -235,6 +254,18 @@ function detachKeyboard() {
   attachedEl = null
 }
 
+// The widget only reads `keys`/`width` once, and it defines their setters in
+// connectedCallback, so apply the geometry by property after mount. Setting
+// `keys` reruns the widget's layout, which also redraws at the new key width.
+function applyKeyboardGeometry() {
+  const el = pianoKeyboard.value
+  if (!el)
+    return
+  el.min = 0
+  el.width = keyboardWidth.value
+  el.keys = keyboardKeys.value
+}
+
 async function attachKeyboard() {
   await nextTick()
   detachKeyboard()
@@ -246,6 +277,7 @@ async function attachKeyboard() {
   // not play notes itself. Mouse/touch and drawing are unaffected.
   el.keycodes1 = []
   el.keycodes2 = []
+  applyKeyboardGeometry()
 
   el.addEventListener('change', onChange)
   attachedEl = el
@@ -257,6 +289,7 @@ async function attachKeyboard() {
 }
 
 watch(pianoKeyboard, attachKeyboard)
+watch([keyboardKeys, keyboardWidth], applyKeyboardGeometry)
 
 onMounted(() => {
   attachKeyboard()
@@ -298,6 +331,15 @@ onUnmounted(() => {
         Computer-keyboard notes pause while you type in a field.
       </p>
       <div class="key-labels-group">
+        <div class="octave-control"
+          title="Change how many octaves are shown. Playing is not limited to the visible keys, and the chord-trigger octave is always the lowest.">
+          <span class="octave-label">Octaves</span>
+          <button type="button" class="octave-button" :disabled="globals.keyboardOctaves <= KEYBOARD_OCTAVE_MIN"
+            aria-label="Show fewer octaves" @click="changeOctaves(-1)">&minus;</button>
+          <span class="octave-value">{{ globals.keyboardOctaves }}</span>
+          <button type="button" class="octave-button" :disabled="globals.keyboardOctaves >= KEYBOARD_OCTAVE_MAX"
+            aria-label="Show more octaves" @click="changeOctaves(1)">+</button>
+        </div>
         <label class="key-labels-control"
           title="Show the meaning of the black keys and the chord/scale mappings of the white keys on the main keyboard.">
           Key labels
@@ -317,11 +359,10 @@ onUnmounted(() => {
       </div>
     </div>
     <div class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }">
-      <webaudio-keyboard v-if="isLargeScreen" keys="49" ref="pianoKeyboard" width="1130"></webaudio-keyboard>
-      <webaudio-keyboard v-else keys="25" ref="pianoKeyboard" width="710"></webaudio-keyboard>
-      <PlaybackKeysOverlay :keyboard-el="pianoKeyboard" :keys="isLargeScreen ? 49 : 25" />
+      <webaudio-keyboard ref="pianoKeyboard" keys="49" width="1130"></webaudio-keyboard>
+      <PlaybackKeysOverlay :keyboard-el="pianoKeyboard" :keys="keyboardKeys" />
       <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off' || globals.showKeyShortcuts" :keyboard-el="pianoKeyboard"
-        :keys="isLargeScreen ? 49 : 25" />
+        :keys="keyboardKeys" />
     </div>
     <KeyboardShortcutsHelp v-model="showShortcutsHelp" />
   </div>
@@ -371,6 +412,49 @@ onUnmounted(() => {
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-left: auto;
+}
+
+.octave-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: #333;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.octave-label {
+  margin-right: 0.1rem;
+}
+
+.octave-button {
+  width: 1.35rem;
+  height: 1.35rem;
+  line-height: 1;
+  padding: 0;
+  border: 1px solid #2f4fa8;
+  border-radius: 4px;
+  background: #4a6fd4;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.octave-button:hover:not(:disabled) {
+  background: #3a5cc0;
+}
+
+.octave-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.octave-value {
+  min-width: 1em;
+  text-align: center;
+  font-weight: bold;
 }
 
 .key-labels-control {

@@ -131,6 +131,20 @@ export function fitRange(notes) {
 }
 
 /**
+ * Keep only the notes whose row is in `allowedRows`. Returns the same array
+ * when no whitelist is given, so callers can use it unconditionally.
+ * @param {PanelNote[]} notes
+ * @param {number[]|null} [allowedRows]
+ * @returns {PanelNote[]}
+ */
+export function filterAllowedRows(notes, allowedRows) {
+    if (!Array.isArray(allowedRows))
+        return notes
+    const allowed = new Set(allowedRows.map(Number))
+    return notes.filter(note => allowed.has(Number(note.n)))
+}
+
+/**
  * Repeat a looping pattern's notes from `loopStart` up to `totalTicks`.
  * Notes that do not fall inside the loop are ignored; notes are not clipped at
  * the loop end (the repeated note at the boundary simply belongs to the next

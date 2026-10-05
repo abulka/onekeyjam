@@ -14,11 +14,42 @@ const STORAGE_KEY = 'onekeyjam.uiPrefs'
 
 export const KEYBOARD_HELP_MODES = ['off', 'black', 'white', 'all']
 export const HELP_PAGES = ['overview', 'tutorial', 'reference']
+export const KEYBOARD_OCTAVE_MIN = 2
+export const KEYBOARD_OCTAVE_MAX = 6
+export const BPM_MIN = 40
+export const BPM_MAX = 240
+
+/**
+ * Clamp a stored octave count to the supported 2-6 range.
+ * @param {*} value
+ * @returns {number|undefined}
+ */
+export function clampKeyboardOctaves(value) {
+    const n = Number(value)
+    if (!Number.isFinite(n))
+        return undefined
+    return Math.min(KEYBOARD_OCTAVE_MAX, Math.max(KEYBOARD_OCTAVE_MIN, Math.round(n)))
+}
+
+/**
+ * Clamp a stored BPM to the supported 40-240 range.
+ * @param {*} value
+ * @returns {number|undefined}
+ */
+export function clampBpm(value) {
+    const n = Number(value)
+    if (!Number.isFinite(n))
+        return undefined
+    return Math.min(BPM_MAX, Math.max(BPM_MIN, Math.round(n)))
+}
 
 /**
  * @typedef {Object} UiPrefs
  * @property {string} [keyboardHelpMode]
  * @property {boolean} [showKeyShortcuts]
+ * @property {number} [keyboardOctaves]
+ * @property {number} [bpm]
+ * @property {boolean} [metronomeEnabled]
  * @property {boolean} [showWelcomeDialog]
  * @property {boolean} [showFavouriteBinColumns]
  * @property {string} [helpPage]
@@ -129,6 +160,16 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.keyboardHelpMode = stored.keyboardHelpMode
         if (stored && typeof stored.showKeyShortcuts === 'boolean')
             prefs.showKeyShortcuts = stored.showKeyShortcuts
+        if (stored) {
+            const octaves = clampKeyboardOctaves(stored.keyboardOctaves)
+            if (octaves !== undefined)
+                prefs.keyboardOctaves = octaves
+            const bpm = clampBpm(stored.bpm)
+            if (bpm !== undefined)
+                prefs.bpm = bpm
+        }
+        if (stored && typeof stored.metronomeEnabled === 'boolean')
+            prefs.metronomeEnabled = stored.metronomeEnabled
         if (stored && typeof stored.showWelcomeDialog === 'boolean')
             prefs.showWelcomeDialog = stored.showWelcomeDialog
         if (stored && typeof stored.showFavouriteBinColumns === 'boolean')
@@ -166,6 +207,9 @@ export function currentPrefs() {
     return {
         keyboardHelpMode: globals.keyboardHelpMode,
         showKeyShortcuts: globals.showKeyShortcuts,
+        keyboardOctaves: globals.keyboardOctaves,
+        bpm: globals.recording.bpm,
+        metronomeEnabled: globals.metronomeEnabled,
         showWelcomeDialog: globals.showWelcomeDialog,
         showFavouriteBinColumns: globals.showFavouriteBinColumns,
         helpPage: globals.helpPage,
@@ -204,6 +248,12 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.keyboardHelpMode = prefs.keyboardHelpMode
     if (typeof prefs.showKeyShortcuts === 'boolean')
         globals.showKeyShortcuts = prefs.showKeyShortcuts
+    if (typeof prefs.keyboardOctaves === 'number')
+        globals.keyboardOctaves = prefs.keyboardOctaves
+    if (typeof prefs.bpm === 'number')
+        globals.recording.bpm = prefs.bpm
+    if (typeof prefs.metronomeEnabled === 'boolean')
+        globals.metronomeEnabled = prefs.metronomeEnabled
     if (typeof prefs.showWelcomeDialog === 'boolean')
         globals.showWelcomeDialog = prefs.showWelcomeDialog
     if (typeof prefs.showFavouriteBinColumns === 'boolean')
@@ -234,6 +284,9 @@ export function initUiPrefs(storage = defaultStorage()) {
     watch(() => [
         globals.keyboardHelpMode,
         globals.showKeyShortcuts,
+        globals.keyboardOctaves,
+        globals.recording.bpm,
+        globals.metronomeEnabled,
         globals.showWelcomeDialog,
         globals.showFavouriteBinColumns,
         globals.helpPage,
