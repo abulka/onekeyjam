@@ -148,6 +148,8 @@ describe('uiPrefs', () => {
         globals.heldNoteRepair.windowMs = 40
         globals.showScaleHistory = false
         globals.showScaleCellFill = true
+        globals.recording.background.enabled = true
+        globals.recording.background.windowSec = 120
         assert.deepEqual(currentPrefs(), {
             keyboardHelpMode: 'white',
             showKeyShortcuts: true,
@@ -163,6 +165,8 @@ describe('uiPrefs', () => {
             showScaleCellFill: true,
             policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' },
             heldNoteRepair: { enabled: true, windowMs: 40 },
+            backgroundCaptureEnabled: true,
+            backgroundCaptureWindowSec: 120,
         })
         globals.showWelcomeDialog = true
         globals.showFavouriteBinColumns = false
@@ -366,5 +370,30 @@ describe('uiPrefs', () => {
         const storage = fakeStorage()
         writePrefs({ scalePolicy: 'follow' }, storage)
         assert.equal(readPrefs(storage).scalePolicy, 'follow')
+    })
+
+    it('reads and validates the background capture settings', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureEnabled: false, backgroundCaptureWindowSec: 300 }) })
+        assert.equal(readPrefs(good).backgroundCaptureEnabled, false)
+        assert.equal(readPrefs(good).backgroundCaptureWindowSec, 300)
+        const badWindow = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureWindowSec: 7 }) })
+        assert.equal(readPrefs(badWindow).backgroundCaptureWindowSec, undefined)
+        const badFlag = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureEnabled: 'yes' }) })
+        assert.equal(readPrefs(badFlag).backgroundCaptureEnabled, undefined)
+    })
+
+    it('loads the background capture settings into globals', () => {
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureEnabled: false, backgroundCaptureWindowSec: 600 }) }))
+        assert.equal(globals.recording.background.enabled, false)
+        assert.equal(globals.recording.background.windowSec, 600)
+        globals.recording.background.enabled = true
+        globals.recording.background.windowSec = 120
+    })
+
+    it('round-trips the background capture settings', () => {
+        const storage = fakeStorage()
+        writePrefs({ backgroundCaptureEnabled: true, backgroundCaptureWindowSec: 60 }, storage)
+        assert.equal(readPrefs(storage).backgroundCaptureEnabled, true)
+        assert.equal(readPrefs(storage).backgroundCaptureWindowSec, 60)
     })
 })

@@ -172,8 +172,10 @@ export function playChordNote(noteName, toneType, options, channel, triggerNote,
 
     // Capture the note that actually sounds, but only for live chord triggers
     // (triggerNote is undefined for auditions, which we do not record). The
-    // trigger key is remembered separately so playback can show the keys played.
-    if (globals.recording.isRecording && triggerNote !== undefined)
+    // recorder decides whether it goes into the live take or only the hidden
+    // background buffer. The trigger key is remembered separately so playback
+    // can show the keys played.
+    if (triggerNote !== undefined)
         recordChordNoteOn(noteName, options.originNote && options.originNote.attack, { playedNote: triggerNote })
 
     if (globals.GM)
@@ -199,8 +201,7 @@ export function playChordOff(singleNote) {
     // Turn off all notes of chord (on channel 2)
     if (singleNote in globals.pendingChordNoteOffs) {
         for (let noteOffInfo of globals.pendingChordNoteOffs[singleNote]) {
-            if (globals.recording.isRecording)
-                recordChordNoteOff(noteOffInfo.allowedNote)
+            recordChordNoteOff(noteOffInfo.allowedNote)
             if (globals.GM)
                 stopGmNote(noteOffInfo)
             else
@@ -219,8 +220,7 @@ export function playChordOff(singleNote) {
         if (noteOffInfo) {
             let oldNote = noteOffInfo.allowedNote
             delete globals.pendingChordBassNoteOffs[singleNote]
-            if (globals.recording.isRecording)
-                recordChordNoteOff(oldNote)
+            recordChordNoteOff(oldNote)
             if (globals.GM)
                 stopGmNote(noteOffInfo)
             else

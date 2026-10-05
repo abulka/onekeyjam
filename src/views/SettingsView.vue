@@ -5,6 +5,11 @@ import MidiKeyboardsDetected from '@/components/MidiKeyboardsDetected.vue'
 import DebugAdmin from '@/components/DebugAdmin.vue'
 import { registerAccordion } from '@/lib/accordionState.js'
 import { globals } from '@/lib/globals.js'
+import { BACKGROUND_WINDOW_OPTIONS } from '@/lib/midi/background-recorder.js'
+
+function backgroundWindowLabel(sec) {
+  return sec < 60 ? `${sec} seconds` : `${sec / 60} minute${sec / 60 === 1 ? '' : 's'}`
+}
 
 let stopAccordion = () => {}
 
@@ -67,6 +72,29 @@ onUnmounted(() => stopAccordion())
               background, in manual, follow and shuffle modes alike. Leave it off
               for a quieter grid where only the border marks the current cell.
             </p>
+          </div>
+          <div class="mt-2">
+            <label class="checkboxLabel" title="Keep the last few minutes of playing in a hidden buffer so you can recover a take you forgot to record.">
+              <input type="checkbox" v-model="globals.recording.background.enabled" />
+              Flashback Capture: keep the last few minutes of playing in the background
+            </label>
+            <p class="settings-hint">
+              With this on, whatever you play is kept in a hidden rolling buffer.
+              The "Flashback Capture" action in the Record section, the Edit and
+              Perform Actions menus turns the recent playing into the current
+              take, so nothing is lost when you forget to press Record. The buffer
+              is held in memory only.
+            </p>
+          </div>
+          <div class="mt-2" v-if="globals.recording.background.enabled">
+            <label title="How far back the hidden buffer keeps notes.">
+              Capture window:
+              <select v-model.number="globals.recording.background.windowSec">
+                <option v-for="sec in BACKGROUND_WINDOW_OPTIONS" :key="sec" :value="sec">
+                  {{ backgroundWindowLabel(sec) }}
+                </option>
+              </select>
+            </label>
           </div>
         </div>
 

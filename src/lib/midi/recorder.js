@@ -4,6 +4,7 @@ import { globals } from '../globals.js'
 import { audioContext } from '../audio/general-midi.js'
 import { secondsPerTick, secondsToTicks, recordedNoteDuration } from './timing.js'
 import { stopPlayback, takeDurationSec } from './playback.js'
+import { recordBackgroundNoteOn, recordBackgroundNoteOff, captureBufferedTake, clearBackgroundCapture } from './background-recorder.js'
 
 /**
  * @module lib/midi/recorder
@@ -269,7 +270,47 @@ export function clearTake() {
     rec.hasTake = false
     rec.playback.durationSec = 0
     rec.playback.positionSec = 0
+    // Start a fresh background window from now, so a cleared take cannot be
+    // resurrected by a later capture.
+    clearBackgroundCapture()
     persistTake()
+}
+
+/**
+ * Recover the last few minutes of playing from the hidden background buffer and
+ * make it the current take. Returns a small result for the UI.
+ * @param {number} [windowSec] override the configured capture window
+ * @param {number} [now] clock override, mainly for tests
+ * @returns {{ ok: boolean, reason?: string, noteCount?: number, durationSec?: number }}
+ */
+export function captureTakeFromBackground(windowSec, now) {
+    const rec = globals.recording
+    if (rec.isRecording)
+        return { ok: false, reason: 'recording' }
+    if (!rec.background || !rec.background.enabled)
+        return { ok: false, reason: 'disabled' }
+    const take = captureBufferedTake({ windowSec, now })
+    if (!take)
+        return { ok: false, reason: 'empty' }
+
+    stopPlayback(true)
+    rec.take = take
+    rec.held = { chords: {}, jam: {} }
+    rec.live = { chords: 0, jam: 0 }
+    rec.isRecording = false
+    rec.hasTake = take.chords.length > 0 || take.jam.length > 0
+    rec.lastRecordingSeconds = 0
+    rec.playback.durationSec = takeDurationSec(rec)
+    rec.playback.positionSec = 0
+    rec.playback.isPlaying = false
+    rec.playback.isScrubbing = false
+    clearBackgroundCapture()
+    persistTake()
+    return {
+        ok: true,
+        noteCount: take.chords.length + take.jam.length,
+        durationSec: rec.playback.durationSec,
+    }
 }
 
 /**
@@ -292,7 +333,12 @@ export function commitTakeEdit() {
  */
 function recordNoteOn(track, noteName, velocity, now, playedNote) {
     const rec = globals.recording
-    if (!rec.isRecording || rec.suppressCapture)
+    if (rec.suppressCapture)
+        return
+    // Always feed the hidden background buffer, whether or not a take is being
+    // recorded, so a forgotten performance can be recovered later.
+    recordBackgroundNoteOn(track, noteName, velocity, playedNote)
+    if (!rec.isRecording)
         return
     const midi = noteNameToMidi(noteName)
     if (midi == null)
@@ -319,7 +365,10 @@ function recordNoteOn(track, noteName, velocity, now, playedNote) {
  */
 function recordNoteOff(track, noteName, now) {
     const rec = globals.recording
-    if (!rec.isRecording || rec.suppressCapture)
+    if (rec.suppressCapture)
+        return
+    recordBackgroundNoteOff(track, noteName)
+    if (!rec.isRecording)
         return
     const held = rec.held[track]
     const entry = held[noteName]

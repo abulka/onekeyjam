@@ -2,6 +2,7 @@
 import { watch } from 'vue'
 import { globals } from './globals.js'
 import { SCALE_POLICIES } from './autoScale.js'
+import { BACKGROUND_WINDOW_OPTIONS } from './midi/background-recorder.js'
 
 /**
  * @module lib/uiPrefs
@@ -59,6 +60,8 @@ export function clampBpm(value) {
  * @property {boolean} [showScaleCellFill]
  * @property {PolicyOptions} [policyOptions]
  * @property {HeldNoteRepair} [heldNoteRepair]
+ * @property {boolean} [backgroundCaptureEnabled]
+ * @property {number} [backgroundCaptureWindowSec]
  */
 
 /**
@@ -192,6 +195,10 @@ export function readPrefs(storage = defaultStorage()) {
         const repair = readHeldNoteRepair(stored && (stored.heldNoteRepair ?? stored.policyOptions))
         if (Object.keys(repair).length > 0)
             prefs.heldNoteRepair = repair
+        if (stored && typeof stored.backgroundCaptureEnabled === 'boolean')
+            prefs.backgroundCaptureEnabled = stored.backgroundCaptureEnabled
+        if (stored && BACKGROUND_WINDOW_OPTIONS.includes(stored.backgroundCaptureWindowSec))
+            prefs.backgroundCaptureWindowSec = stored.backgroundCaptureWindowSec
         return prefs
     }
     catch (error) {
@@ -219,6 +226,8 @@ export function currentPrefs() {
         showScaleCellFill: globals.showScaleCellFill,
         policyOptions: { ...globals.scaleFiltering.policyOptions },
         heldNoteRepair: { ...globals.heldNoteRepair },
+        backgroundCaptureEnabled: globals.recording.background.enabled,
+        backgroundCaptureWindowSec: globals.recording.background.windowSec,
     }
 }
 
@@ -272,6 +281,10 @@ export function loadUiPrefs(storage = defaultStorage()) {
         Object.assign(globals.scaleFiltering.policyOptions, prefs.policyOptions)
     if (prefs.heldNoteRepair)
         Object.assign(globals.heldNoteRepair, prefs.heldNoteRepair)
+    if (typeof prefs.backgroundCaptureEnabled === 'boolean')
+        globals.recording.background.enabled = prefs.backgroundCaptureEnabled
+    if (typeof prefs.backgroundCaptureWindowSec === 'number')
+        globals.recording.background.windowSec = prefs.backgroundCaptureWindowSec
 }
 
 /**
@@ -305,6 +318,8 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.scaleFiltering.policyOptions.palette,
         globals.heldNoteRepair.enabled,
         globals.heldNoteRepair.windowMs,
+        globals.recording.background.enabled,
+        globals.recording.background.windowSec,
     ], () => {
         writePrefs(currentPrefs(), storage)
     })

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onUnmounted, ref, watch } from 'vue'
 import { globals } from '@/lib/globals.js'
-import { startRecording, stopRecording, clearTake } from '@/lib/midi/recorder.js'
+import { startRecording, stopRecording, clearTake, captureTakeFromBackground } from '@/lib/midi/recorder.js'
 import { startPlayback, stopPlayback, seekPlayback, previewVisuals, takeDurationSec } from '@/lib/midi/playback.js'
 import { downloadRecording } from '@/lib/midi/export-recording.js'
 
@@ -27,6 +27,35 @@ const jamCount = computed(() => rec.take.jam.length + rec.live.jam)
 const takeNoteCount = computed(() => rec.take.chords.length + rec.take.jam.length)
 const canClear = computed(() => rec.hasTake || rec.isRecording || rec.playback.isPlaying)
 const durationSec = computed(() => takeDurationSec(rec))
+
+// Hidden background capture: the last few minutes of playing are kept so they
+// can be recovered even though Record was never pressed.
+const background = globals.recording.background
+const captureMessage = ref('')
+const canCapture = computed(() => background.enabled && !rec.isRecording && background.available)
+const backgroundWindowLabel = computed(() => formatWindow(background.windowSec))
+const readyLabel = computed(() => `${background.noteCount} note${background.noteCount === 1 ? '' : 's'} ready`)
+
+function formatWindow(sec) {
+  const value = Number(sec) || 0
+  if (value < 60)
+    return `${value}s`
+  return `${Math.round(value / 60)} min`
+}
+
+function requestCapture() {
+  if (!canCapture.value)
+    return
+  // Capture overwrites any existing take straight away, with no confirmation,
+  // so recovering a doodle stays a single click.
+  const result = captureTakeFromBackground()
+  if (result.ok)
+    captureMessage.value = `Flashback Capture recovered ${result.noteCount} note${result.noteCount === 1 ? '' : 's'}, replacing the previous take.`
+  else if (result.reason === 'empty')
+    captureMessage.value = 'Nothing has been played in the capture window yet.'
+  else if (result.reason === 'disabled')
+    captureMessage.value = 'Background capture is turned off in Settings.'
+}
 
 // The scrubber tracks the play head unless the user is dragging it.
 const scrubbing = ref(false)
@@ -113,7 +142,7 @@ onUnmounted(() => {
 })
 
 // Exposed so the Perform page's Actions menu can drive the same controls.
-defineExpose({ toggleRecord, exportTake })
+defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
 </script>
 
 <template>
@@ -121,21 +150,32 @@ defineExpose({ toggleRecord, exportTake })
     <div class="ui segment">
       <div class="ui grid middle aligned">
         <div class="row">
-          <div class="five wide column">
-            <button
-              class="ui large red button"
-              :class="{ pulsing: rec.isRecording }"
-              @click="toggleRecord"
-            >
-              <i class="circle icon"></i>
-              {{ rec.isRecording ? 'Stop' : 'Record' }}
-            </button>
-            <span v-if="rec.isRecording" class="recording-label">
-              <i class="red circle icon"></i> Recording
-            </span>
+          <div class="six wide column">
+            <div class="record-actions">
+              <button
+                class="ui large red button"
+                :class="{ pulsing: rec.isRecording }"
+                @click="toggleRecord"
+              >
+                <i class="circle icon"></i>
+                {{ rec.isRecording ? 'Stop' : 'Record' }}
+              </button>
+              <button
+                class="ui teal button capture-button"
+                :class="{ disabled: !canCapture }"
+                :disabled="!canCapture"
+                :title="`Flashback Capture: recover the last ${backgroundWindowLabel} of playing, even though Record was not pressed`"
+                @click="requestCapture"
+              >
+                <i class="undo icon"></i> Flashback Capture
+              </button>
+              <span v-if="rec.isRecording" class="recording-label">
+                <i class="red circle icon"></i> Recording
+              </span>
+            </div>
           </div>
 
-          <div class="seven wide column">
+          <div class="six wide column">
             <div class="ui small statistics">
               <div class="statistic">
                 <div class="value">{{ jamCount }}</div>
@@ -159,6 +199,25 @@ defineExpose({ toggleRecord, exportTake })
             <button class="ui basic button" :class="{ disabled: !canClear }" :disabled="!canClear" @click="clear">
               Clear
             </button>
+          </div>
+        </div>
+
+        <div class="row" v-if="captureMessage">
+          <div class="sixteen wide column">
+            <div class="ui info message capture-confirm">
+              <span>{{ captureMessage }}</span>
+              <button class="ui small basic button" @click="captureMessage = ''">Dismiss</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="row" v-if="background.enabled">
+          <div class="sixteen wide column">
+            <p class="capture-hint">
+              Flashback Capture is on: the last {{ backgroundWindowLabel }} of playing is kept
+              <span v-if="background.available">({{ readyLabel }})</span>
+              even if you never pressed Record.
+            </p>
           </div>
         </div>
 
@@ -242,10 +301,39 @@ defineExpose({ toggleRecord, exportTake })
   background-color: rgba(232, 245, 224, 0.9);
 }
 
+/* Record and Capture share one row so they stay aligned with each other. */
+.record-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+}
+
+.record-actions .capture-button {
+  white-space: nowrap;
+}
+
 .recording-label {
   color: #db2828;
   font-weight: bold;
   margin-left: 0.5rem;
+}
+
+.capture-confirm {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.capture-confirm span {
+  flex: 1 1 auto;
+}
+
+.capture-hint {
+  margin: 0;
+  color: #6b5a45;
+  font-size: 0.82rem;
 }
 
 .ui.statistics .statistic {

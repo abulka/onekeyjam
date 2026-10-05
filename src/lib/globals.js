@@ -374,6 +374,16 @@ export const globals = reactive({
         // sequencer loops, so its notes are not captured live (they are merged
         // into the take on stop instead) and for piano-strip auditions.
         suppressCapture: false,
+        // A hidden, always-on buffer that keeps the last few minutes of playing
+        // so a take the user forgot to record can be recovered. `enabled` and
+        // `windowSec` are persisted in uiPrefs; the rest is a read-only summary
+        // of the module-local buffer in src/lib/midi/background-recorder.js.
+        background: {
+            enabled: true,
+            windowSec: 120,
+            noteCount: 0,
+            available: false,
+        },
         playback: {
             isPlaying: false,
             isScrubbing: false,

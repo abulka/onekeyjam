@@ -32,6 +32,13 @@ function exportTake() {
   recorder.value?.exportTake()
 }
 
+function captureTake() {
+  // The capture prompt and result live in the Record section, so make sure it
+  // is open even when the action is triggered from this menu.
+  $('#big-accordion-perform').accordion('open', 0)
+  recorder.value?.captureTake()
+}
+
 let stopAccordion = () => {}
 
 onMounted(() => {
@@ -62,6 +69,7 @@ onUnmounted(() => {
         {{ sequencer?.isPlaying ? 'Stop Chord Sequencer' : 'Play Chord Sequencer' }}
       </a>
       <a class="item" @click="toggleRecord()">{{ globals.recording.isRecording ? 'Stop Recording' : 'Record' }}</a>
+      <a class="item" :class="{ disabled: globals.recording.isRecording || !globals.recording.background.enabled || !globals.recording.background.available }" @click="captureTake()">Flashback Capture</a>
       <a class="item" :class="{ disabled: !globals.recording.hasTake }" @click="exportTake()">Export MIDI</a>
     </template>
   </PageMenubar>

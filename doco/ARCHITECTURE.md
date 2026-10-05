@@ -197,6 +197,24 @@ and the validation commands.
   `localStorage` (key `onekeyjam.latestTake`) and restored at boot, so a refresh
   does not lose it. The Perform view's Actions menu offers Record/Stop and
   Export MIDI, driven through the exposed methods on `RecordControls.vue`.
+- Beside the live take there is a hidden, always-on **background capture** so a
+  doodle the user forgot to record is not lost (like Logic's "Capture as
+  Recording" or Ableton's "Capture MIDI"). `src/lib/midi/background-recorder.js`
+  keeps the last few minutes of notes in a plain module-local ring buffer, fed
+  from the same funnel as the live recorder (`recordNoteOn`/`recordNoteOff` in
+  `src/lib/midi/recorder.js`), so it captures whether or not Record was pressed.
+  It uses a monotonic `performance.now()` clock (not the audio context, which
+  can be suspended), respects `globals.recording.suppressCapture` so auditions
+  and sequencer-pattern notes stay out, and publishes only a small summary to
+  `globals.recording.background` (`enabled`, `windowSec`, `noteCount`,
+  `available`) rather than the raw events, to keep Vue's reactivity cheap.
+  `captureTakeFromBackground()` turns the window into the current take: it
+  clips notes that started before the window, closes still-held notes, trims
+  leading silence and gives every note the same one-tick minimum as the live
+  recorder. The Record section and the Edit and Perform Actions menus expose a
+  "Flashback Capture" action, which replaces any existing take straight away
+  with no confirmation, and the enable flag and window length live in Settings
+  Preferences and `uiPrefs`. The capture window defaults to two minutes.
 - The Perform view's accordions are, in order: Record (`RecordControls.vue`),
   Recording Sequencer (`RecordingPianoRoll.vue`), Chord Sequencer
   (`Sequencer.vue`), Chord / Scale Table (`GrandSummary.vue`), Active Chord and

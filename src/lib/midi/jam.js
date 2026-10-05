@@ -28,8 +28,7 @@ export function jam(note) {
         }
         globals.pendingNoteOffs[note.identifier] = noteOffInfo
         recordSoloNote(note.identifier)
-        if (globals.recording.isRecording)
-            recordJamNoteOn(note.identifier, note.attack, { playedNote: note.identifier })
+        recordJamNoteOn(note.identifier, note.attack, { playedNote: note.identifier })
         if (globals.GM)
             playGmNote(note.identifier, noteOffInfo, { velocity: note.attack })
         else
@@ -56,8 +55,7 @@ export function jam(note) {
         globals.currentJamNote.mapped = allowedNote
 
         recordSoloNote(allowedNote)
-        if (globals.recording.isRecording)
-            recordJamNoteOn(allowedNote, note.attack, { playedNote: note.identifier })
+        recordJamNoteOn(allowedNote, note.attack, { playedNote: note.identifier })
 
         if (globals.GM)
             playGmNote(allowedNote, noteOffInfo, { velocity: note.attack })
@@ -76,8 +74,7 @@ export function jamOff(note) {
         const allowedNote = noteOffInfo.allowedNote
         delete globals.pendingNoteOffs[note.identifier]
 
-        if (globals.recording.isRecording)
-            recordJamNoteOff(allowedNote)
+        recordJamNoteOff(allowedNote)
 
         // window.document.querySelector('#currentJamNote').innerHTML = `${note.identifier} -x-> ${allowedNote}`;
         // console.log(`${note.identifier} -x-> ${allowedNote} OFF`, 'pendingNoteOffs', globals.pendingNoteOffs)
