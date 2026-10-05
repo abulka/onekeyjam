@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { unsafeCharsIn } from '../src/lib/filename.js'
 
 /*
 Generates manifest files for the static project and keyboard JSON libraries.
@@ -41,8 +42,39 @@ function makeManifest(dir, urlPrefix, options = {}) {
         })
 }
 
+/*
+Fail the build early (this runs in prebuild, including on Netlify) if any
+library file has a name Netlify cannot deploy, such as a `#` or `?`. Netlify
+only rejects these at the deploy step, which produces a confusing error, so we
+catch it here with a clear message instead.
+*/
+function assertSafeFilenames() {
+    const bad = []
+    for (const dir of ['projects/featured', 'projects/classic', 'keyboards']) {
+        const fullDir = path.join(root, 'public', dir)
+        if (!fs.existsSync(fullDir))
+            continue
+        for (const file of fs.readdirSync(fullDir)) {
+            if (!file.endsWith('.json') || file.endsWith('-manifest.json'))
+                continue
+            const unsafe = unsafeCharsIn(file)
+            if (unsafe.length > 0)
+                bad.push(`  public/${dir}/${file}  (contains ${unsafe.join(' ')})`)
+        }
+    }
+    if (bad.length > 0) {
+        throw new Error(
+            `Unsafe library filenames found (Netlify cannot deploy '#', '?' and similar):\n` +
+            bad.join('\n') +
+            `\nRename them to safe names (for example use 'Gsharp minor' instead of 'G# minor') and regenerate.`
+        )
+    }
+}
+
+assertSafeFilenames()
+
 const featured = makeManifest('projects/featured', '/projects/featured', { manifestFile: 'featured-manifest.json' })
-const classic = makeManifest('projects/classic', '/projects/classic', { manifestFile: 'classic-manifest.json' })
+const classic = makeManifest('projects/classic', '/projects/classic', { manifestFile: 'classic-manifest.json', useJsonName: true })
 const keyboards = makeManifest('keyboards', '/keyboards', { useJsonName: true })
 
 fs.writeFileSync(

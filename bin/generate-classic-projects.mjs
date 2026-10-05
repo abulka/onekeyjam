@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as Tonal from '@tonaljs/tonal'
 import { chordScaleNamesFor } from '../src/lib/chordScaleEngine.js'
+import { sanitizeFilename } from '../src/lib/filename.js'
 import { DEFINITIONS } from './classic-project-definitions.mjs'
 
 /*
@@ -62,7 +63,9 @@ for (const definition of DEFINITIONS) {
             default: { ids, favourites: ids, blacklist: [] },
         },
     }
-    writeFileSync(join(outDir, `${definition.name}.json`), `${JSON.stringify(project, null, 2)}\n`)
+    // The project keeps its pretty display name (e.g. "ii-V-i in G# minor");
+    // only the filename is sanitised so Netlify can deploy it.
+    writeFileSync(join(outDir, `${sanitizeFilename(definition.name)}.json`), `${JSON.stringify(project, null, 2)}\n`)
     written++
 }
 

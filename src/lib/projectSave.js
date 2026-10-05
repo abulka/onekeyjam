@@ -5,6 +5,7 @@ import { getProjectForPersistence } from './projectConfig'
 import { saveUserProject } from './projectLibrary'
 import { loadUserProject } from '../../src/lib/boot-project'
 import { exportMidiChords, exportMidiChordsForChordMemoryTrigger } from './parse-midi';
+import { sanitizeFilename } from './filename.js';
 
 async function _saveProject(name, project) {
     // Save the project to local storage (IndexedDB)
@@ -72,7 +73,9 @@ export function downloadProject() {
         a.href = URL.createObjectURL(
             new Blob([json], { type: "application/json" })
         )
-        a.download = `${name} project.json`
+        // The project name may contain characters such as '#'; keep it as
+        // the label but give the downloaded file a safe name.
+        a.download = `${sanitizeFilename(name)} project.json`
 
         a.click()  // causes auto download
     }
@@ -104,7 +107,7 @@ function downloadFileTrick(midiObj) {
     a.href = URL.createObjectURL(
         new Blob([midiBuffer], { type: "audio/midi" })
     )
-    a.download = `chords-${globals.project.name}.mid`
+    a.download = `chords-${sanitizeFilename(globals.project.name)}.mid`
     a.click()
 }
 

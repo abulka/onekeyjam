@@ -4,6 +4,7 @@
 // the browser (Vite), in node and in the Vitest environment.
 import * as pkg from '@tonejs/midi'
 const { Midi } = pkg
+import { sanitizeFilename } from '../filename.js'
 
 /**
  * @module lib/midi/export-recording
@@ -68,7 +69,8 @@ function downloadBlob(data, filename) {
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
     anchor.href = url
-    anchor.download = filename.endsWith('.mid') ? filename : `${filename}.mid`
+    const safeName = sanitizeFilename(filename)
+    anchor.download = safeName.endsWith('.mid') ? safeName : `${safeName}.mid`
     document.body.appendChild(anchor)
     anchor.click()
     document.body.removeChild(anchor)

@@ -176,8 +176,8 @@
   },
   {
     "text": "ii-V-i in C# minor",
-    "value": "/projects/classic/ii-V-i%20in%20C%23%20minor.json",
-    "file": "ii-V-i in C# minor.json"
+    "value": "/projects/classic/ii-V-i%20in%20Csharp%20minor.json",
+    "file": "ii-V-i in Csharp minor.json"
   },
   {
     "text": "ii-V-I in D major",
@@ -226,13 +226,13 @@
   },
   {
     "text": "ii-V-I in F# major",
-    "value": "/projects/classic/ii-V-I%20in%20F%23%20major.json",
-    "file": "ii-V-I in F# major.json"
+    "value": "/projects/classic/ii-V-I%20in%20Fsharp%20major.json",
+    "file": "ii-V-I in Fsharp major.json"
   },
   {
     "text": "ii-V-i in F# minor",
-    "value": "/projects/classic/ii-V-i%20in%20F%23%20minor.json",
-    "file": "ii-V-i in F# minor.json"
+    "value": "/projects/classic/ii-V-i%20in%20Fsharp%20minor.json",
+    "file": "ii-V-i in Fsharp minor.json"
   },
   {
     "text": "ii-V-I in G major",
@@ -246,8 +246,8 @@
   },
   {
     "text": "ii-V-i in G# minor",
-    "value": "/projects/classic/ii-V-i%20in%20G%23%20minor.json",
-    "file": "ii-V-i in G# minor.json"
+    "value": "/projects/classic/ii-V-i%20in%20Gsharp%20minor.json",
+    "file": "ii-V-i in Gsharp minor.json"
   },
   {
     "text": "Minor ii-V-i with tritone sub in C minor",

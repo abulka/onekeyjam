@@ -3,6 +3,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import Ajv from 'ajv'
+import { unsafeCharsIn } from '../src/lib/filename.js'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 
@@ -45,6 +46,12 @@ for (const target of targets) {
 
         for (const file of files) {
             checked++
+            const unsafe = unsafeCharsIn(file)
+            if (unsafe.length > 0) {
+                failures++
+                console.error(`✗ ${target.label}: ${file} - unsafe filename character(s): ${unsafe.join(' ')}`)
+                continue
+            }
             const data = loadJson(join(dir, file))
             if (!validate(data)) {
                 failures++
