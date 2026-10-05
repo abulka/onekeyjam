@@ -32,10 +32,19 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
   text, on the top navigation bar in `App.vue`, next to the page tabs.
 - `src/views/` holds the routed pages. `src/components/` holds the UI widgets
   such as the piano keyboards, chord pickers, scale pickers and status panels.
-  The Help view (`AboutView.vue`) has a small help-pages menu: an overview and
-  an Improvising tutorial rendered from `doco/IMPROVISING-TUTORIAL.md` through
-  the small Markdown renderer in `src/lib/markdown.js`
-  (`src/components/help/ImprovisingTutorial.vue`). The chosen page is
+  The Help view (`AboutView.vue`) is a two-column documentation layout: the
+  article on the left and a sticky right-hand sidebar on wide screens that holds
+  the page links (Overview, Improvise, Reference) and a hierarchical
+  "On this page" section list. The Overview is hand-written; Improvise renders
+  `doco/IMPROVISING-TUTORIAL.md` and Reference renders `doco/REFERENCE.md`
+  through the small renderer in `src/lib/markdown.js`
+  (`src/components/help/HelpArticle.vue`). The renderer gives each heading a
+  stable id and `extractHeadings()` lists them; the hand-written Overview
+  headings carry their own ids, and the sidebar reads them from the rendered
+  DOM. `AboutView.vue` can therefore build the section list for all three pages,
+  highlight the current section while scrolling and jump to a section on click.
+  On narrow screens the page links move above the article and
+  the section list collapses into an "On this page" dropdown. The chosen page is
   remembered in `src/lib/uiPrefs.js`, so returning to Help restores it.
 - `src/lib/` holds the framework-independent domain logic and the MIDI and
   audio plumbing. This is the largest part of the codebase. The hardware MIDI

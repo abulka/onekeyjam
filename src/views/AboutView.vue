@@ -1,34 +1,169 @@
 <script setup>
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import { globals } from '../lib/globals.js'
-import ImprovisingTutorial from '../components/help/ImprovisingTutorial.vue'
+import HelpArticle from '../components/help/HelpArticle.vue'
+import { extractHeadings } from '../lib/markdown.js'
+import tutorialMarkdown from '../../doco/IMPROVISING-TUTORIAL.md?raw'
+import referenceMarkdown from '../../doco/REFERENCE.md?raw'
 
 import mainView from '../../doco/images/onekeyjam-main-view.png'
 import performanceView from '../../doco/images/onekeyjam-performance-view.png'
 import sequencerView from '../../doco/images/onekeyjam-screenshot-2-sequencer.png'
 import featuresView from '../../doco/images/onekeyjam-screenshot-4-features.png'
 import externalKeyboard from '../../doco/images/example-external-midi-keyboard.avif'
+
+// The Help pages menu; the selection is remembered in uiPrefs, so you can flip
+// to the Perform or Edit view and come back to the same page.
+const HELP_PAGE_LINKS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'tutorial', label: 'Improvise' },
+  { id: 'reference', label: 'Reference' },
+]
+
+// The markdown page currently shown, or '' for the Overview.
+const markdownForPage = computed(() => {
+  if (globals.helpPage === 'tutorial')
+    return tutorialMarkdown
+  if (globals.helpPage === 'reference')
+    return referenceMarkdown
+  return ''
+})
+
+// The section list in the right-hand sidebar. Markdown pages come from the
+// same source as the rendered article, so the anchors always match; the
+// hand-written Overview is read from the rendered headings (which carry ids).
+const tocHeadings = ref([])
+
+const bodyEl = ref(null)
+const activeId = ref('')
+
+function buildToc() {
+  const body = bodyEl.value
+  if (!body) {
+    tocHeadings.value = []
+    return
+  }
+  if (markdownForPage.value) {
+    tocHeadings.value = extractHeadings(markdownForPage.value)
+      .filter(heading => heading.level === 2 || heading.level === 3)
+    return
+  }
+  tocHeadings.value = Array.from(body.querySelectorAll('h2[id], h3[id]')).map((element) => ({
+    id: element.id,
+    text: (element.textContent || '').replace(/\s+/g, ' ').trim(),
+    level: element.tagName === 'H3' ? 3 : 2,
+  }))
+}
+
+let ticking = false
+
+function updateActive() {
+  ticking = false
+  const body = bodyEl.value
+  if (!body)
+    return
+  const nodes = Array.from(body.querySelectorAll('h2[id], h3[id]'))
+  if (nodes.length === 0) {
+    activeId.value = ''
+    return
+  }
+  const offset = 96
+  let current = nodes[0].id
+  for (const node of nodes) {
+    if (node.getBoundingClientRect().top <= offset)
+      current = node.id
+    else
+      break
+  }
+  activeId.value = current
+}
+
+function onScroll() {
+  if (ticking)
+    return
+  ticking = true
+  requestAnimationFrame(updateActive)
+}
+
+function jump(id, event) {
+  const body = bodyEl.value
+  if (!body)
+    return
+  const target = body.querySelector(`#${CSS.escape(id)}`)
+  if (!target)
+    return
+  target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  activeId.value = id
+  const link = event?.target
+  if (link && typeof link.scrollIntoView === 'function')
+    link.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' })
+}
+
+async function showPage(id) {
+  if (globals.helpPage !== id) {
+    globals.helpPage = id
+    await nextTick()
+  }
+  buildToc()
+  window.scrollTo({ top: 0, behavior: 'auto' })
+  updateActive()
+}
+
+function scrollTop() {
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+// On narrow screens the section list collapses into a dropdown above the
+// article; on wide screens it is the sticky right-hand sidebar.
+const narrowQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+  ? window.matchMedia('(max-width: 900px)')
+  : null
+const isNarrow = ref(narrowQuery ? narrowQuery.matches : false)
+
+function onNarrowChange(event) {
+  isNarrow.value = event.matches
+}
+
+onMounted(async () => {
+  await nextTick()
+  buildToc()
+  updateActive()
+  window.addEventListener('scroll', onScroll, { passive: true })
+  if (narrowQuery)
+    narrowQuery.addEventListener('change', onNarrowChange)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', onScroll)
+  if (narrowQuery)
+    narrowQuery.removeEventListener('change', onNarrowChange)
+})
+
+watch(() => globals.helpPage, async () => {
+  activeId.value = ''
+  await nextTick()
+  buildToc()
+  updateActive()
+})
 </script>
 
 <template>
   <main class="help">
     <div class="ui container">
 
-      <!-- Help pages menu: the selection is remembered, so you can flip to the
-           Perform or Edit view and come back to the same page. -->
-      <div class="help-nav">
-        <span class="help-nav-label">Help:</span>
-        <button type="button" class="ui tiny button" :class="{ brown: globals.helpPage === 'overview' }"
-          @click="globals.helpPage = 'overview'">Overview</button>
-        <button type="button" class="ui tiny button" :class="{ brown: globals.helpPage === 'tutorial' }"
-          @click="globals.helpPage = 'tutorial'">Improvising tutorial</button>
-      </div>
+      <div class="help-layout">
+        <div ref="bodyEl" class="help-body">
 
-      <template v-if="globals.helpPage === 'tutorial'">
-        <ImprovisingTutorial />
-      </template>
+          <template v-if="globals.helpPage === 'tutorial'">
+            <HelpArticle :markdown="tutorialMarkdown" />
+          </template>
 
-      <template v-else>
+          <template v-else-if="globals.helpPage === 'reference'">
+            <HelpArticle :markdown="referenceMarkdown" />
+          </template>
+
+          <template v-else>
 
       <!-- Hero -->
       <div class="ui center aligned pad-top hero">
@@ -40,12 +175,13 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
 
       <div class="ui message tutorial-callout">
         <strong>Want to improvise a whole performance?</strong>
-        Read the <a href="#" @click.prevent="globals.helpPage = 'tutorial'">Improvising tutorial</a>
-        - step-by-step song walkthroughs with the scales and the notes to play.
+        Start with the <a href="#" @click.prevent="globals.helpPage = 'tutorial'">Improvise</a> page
+        - a quick start and song walkthroughs with sample solos. Every control and
+        setting is explained on the <a href="#" @click.prevent="globals.helpPage = 'reference'">Reference</a> page.
       </div>
 
       <!-- What it is -->
-      <h2 class="ui header">What is OneKeyJam?</h2>
+      <h2 id="what-is-onekeyjam" class="ui header">What is OneKeyJam?</h2>
       <p>
         OneKeyJam is a browser-based MIDI app. Left-hand notes trigger whole chords
         with a single finger, and right-hand notes are filtered into the current
@@ -55,14 +191,77 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         General MIDI sounds.
       </p>
 
-      <!-- Explore -->
-      <h2 class="ui header">Explore the app</h2>
+      <!-- Getting started -->
+      <h2 id="getting-started" class="ui header">Getting started</h2>
+      <ol class="steps">
+        <li>Open the app and choose <strong>File &rarr; Open Featured...</strong> to load a demo project.</li>
+        <li>Play the highlighted left-hand keys to trigger chords. On a MIDI keyboard these are the white keys in the chord trigger octave (C3 to B3 by default); on the computer keyboard they are <code>z x c v b n m</code>.</li>
+        <li>Play the white keys to the right to jam - the notes are filtered to fit the chord. On the computer keyboard that is <code>q w e r t y u</code>, starting at C4 by default.</li>
+        <li>Use the black keys to switch scale or transpose: the left hand for the modifiers, the right hand to choose the scale filter.</li>
+      </ol>
+      <p>
+        In a hurry? Click <strong>DEMO</strong> in the menu bar to load a demo
+        project, focus the keyboard and see a short guide with a
+        <strong>Jam!</strong> button. A guided tour is available from the
+        <strong>Start Tour</strong> item in the menu. To build a project from an
+        existing song, choose <strong>File &rarr; Import MIDI file...</strong> and
+        OneKeyJam will detect the chords and lay them out on the keyboard.
+      </p>
+
+      <figure>
+        <img class="screenshot" :src="mainView" alt="OneKeyJam edit view, where you edit your project" />
+        <figcaption class="screenshot-caption">
+          The Edit view, where you edit your project: one-finger chords, scale
+          filters and the piano keyboard.
+        </figcaption>
+      </figure>
+
+      <h3 id="midi-keyboard" class="ui header">Play with a MIDI keyboard</h3>
+      <img class="midi-keyboard-image" :src="externalKeyboard" alt="An external MIDI keyboard connected to OneKeyJam" />
+      <p>
+        Plug in a MIDI keyboard and Chrome connects to it automatically through
+        the built-in Web MIDI support - no setup needed. Sound is made in the
+        browser out of the box, and you can also route notes to a DAW or synth
+        such as Ableton via the macOS IAC Driver. MIDI needs a secure context, so
+        the page must be served over HTTPS (or <code>localhost</code>).
+      </p>
+      <p>
+        The left-hand black keys are the performance modifiers: <code>C#</code> is
+        shift (hold it), <code>D#</code> turns filtering off, <code>F#</code> turns
+        it on, and <code>G#</code> / <code>A#</code> transpose. With <code>C#</code>
+        held, <code>A#</code> toggles Solo in key and <code>G#</code> resets
+        transpositions. The right-hand black keys (<code>C#</code>, <code>D#</code>,
+        <code>F#</code>, <code>G#</code>, <code>A#</code>) pick the scale filters.
+        The <a href="#" @click.prevent="globals.helpPage = 'reference'">Reference</a>
+        page lists every mapping for MIDI and computer keyboards.
+      </p>
+      <p>
+        See the
+        <a href="https://github.com/abulka/onekeyjam/blob/main/doco/NOTES.md" target="_blank" rel="noopener">MIDI setup notes</a>
+        for the full MIDI and DAW configuration.
+      </p>
+
+      <h3 id="computer-keyboard" class="ui header">Play with your computer keyboard</h3>
+      <ol class="steps">
+        <li>Make sure the app window has focus (click anywhere in it).</li>
+        <li>Trigger chords with the lower row, <code>z x c v b n m</code> (the white keys of the chord trigger octave).</li>
+        <li>The black keys <code>s d g h j</code> in that octave are the chord modifiers. Hold <code>s</code> as a shift key and use the others to switch scales or transpose.</li>
+        <li>Play solo notes with the upper row, <code>q w e r t y u</code>. These are filtered into the current scale.</li>
+      </ol>
+      <p>
+        The keys play whenever the app window is focused; they pause only while
+        you are typing in a form field. The octaves follow the keyboard config, so
+        a different project or keyboard may shift the notes that each key plays.
+      </p>
+
+      <!-- Edit view -->
+      <h2 id="the-edit-view" class="ui header">The Edit view</h2>
       <p>
         The screen gives away more than it first appears. Opening up the sections
         of the UI and drilling in reveals all sorts of features, such as:
       </p>
 
-      <h3 class="ui header">Edit view accordions</h3>
+      <h3 id="edit-view-accordions" class="ui header">Edit view accordions</h3>
       <ul class="ui list">
         <li>
           <strong>Edit Chords</strong> - add, edit and audition the chords in your
@@ -85,23 +284,12 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         <RouterLink to="/settings">Settings view</RouterLink>.
       </p>
 
-      <h3 class="ui header">Menu bar</h3>
+      <h3 id="actions-menu" class="ui header">Actions menu</h3>
       <p>
-        The <strong>File</strong> menu, <strong>DEMO</strong>, <strong>Start
-        Tour</strong> and the current project name appear on the Edit, Perform and
-        Settings views. The <strong>Actions</strong> menu changes with the view:
-        the Edit view has project actions, while the Perform view has playing and
-        recording actions. The Help view has no menu bar.
+        The <strong>Actions</strong> menu changes with the view: the Edit view has
+        project actions, while the Perform view has playing and recording actions.
+        On the Edit view it offers:
       </p>
-      <p>
-        Use the <strong>File</strong> menu to open and save projects. It includes
-        <em>New</em>, <em>Open</em>, <em>Open Featured</em>, <em>Save</em>,
-        <em>Save As</em>, <em>Reload current Project</em>, <em>Import MIDI file</em>,
-        <em>Download / Upload Project</em> (to back up or move projects between
-        machines), and <em>Download MIDI Chords</em> in a couple of formats.
-      </p>
-
-      <h3 class="ui header">Edit view Actions menu</h3>
       <ul class="ui list">
         <li><strong>Reallocate Chords</strong> - shuffle the chord triggers across the keyboard.</li>
         <li><strong>Find Matching Scales</strong> - suggest scales that fit the chords, guided by the project key and colour.</li>
@@ -110,19 +298,8 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         <li>The <strong>Key Detection</strong> section sets the project key, while <strong>Solo in key</strong> and the colour selector sit above the chord/scale grid. Changing the key or colour re-ranks the scales automatically.</li>
       </ul>
 
-      <h3 class="ui header">And there is more</h3>
-      <ul class="ui list">
-        <li><strong>DEMO</strong> - load the C Major II-V-I demo project, focus the keyboard and show a short getting-started guide with a <strong>Jam!</strong> button.</li>
-        <li><strong>Random project</strong> - load a random project from the Classic collection, for when you cannot decide what to play.</li>
-        <li><strong>Start Tour</strong> - a guided tour of the controls on the current view.</li>
-        <li>The chord and scale pickers, with search and audition buttons.</li>
-        <li>The <strong>Circle of Fifths</strong> helper.</li>
-        <li>The <strong>Shortcuts help</strong> button above the keyboard, with a quick reference for every key.</li>
-        <li>The <strong>scale filtering toggles</strong> for switching filtering on and off.</li>
-      </ul>
-
       <!-- Perform view -->
-      <h2 class="ui header">The Perform view</h2>
+      <h2 id="the-perform-view" class="ui header">The Perform view</h2>
       <p>
         The <RouterLink to="/perform">Perform view</RouterLink> is where you play
         and record; playing and recording share one page. It shows the active
@@ -156,8 +333,38 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         </figcaption>
       </figure>
 
+      <!-- Menu bar -->
+      <h2 id="the-menu-bar" class="ui header">The menu bar</h2>
+      <p>
+        The <strong>File</strong> menu, <strong>DEMO</strong>, <strong>Start
+        Tour</strong> and the current project name appear on the Edit, Perform and
+        Settings views. The <strong>Actions</strong> menu changes with the view:
+        the Edit view has project actions, while the Perform view has playing and
+        recording actions. The Help view has no menu bar.
+      </p>
+
+      <h3 id="the-file-menu" class="ui header">The File menu</h3>
+      <p>
+        Use the <strong>File</strong> menu to open and save projects. It includes
+        <em>New</em>, <em>Open</em>, <em>Open Featured</em>, <em>Save</em>,
+        <em>Save As</em>, <em>Reload current Project</em>, <em>Import MIDI file</em>,
+        <em>Download / Upload Project</em> (to back up or move projects between
+        machines), and <em>Download MIDI Chords</em> in a couple of formats.
+      </p>
+
+      <h3 id="quick-actions-and-helpers" class="ui header">Quick actions and helpers</h3>
+      <ul class="ui list">
+        <li><strong>DEMO</strong> - load the C Major II-V-I demo project, focus the keyboard and show a short getting-started guide with a <strong>Jam!</strong> button.</li>
+        <li><strong>Random project</strong> - load a random project from the Classic collection, for when you cannot decide what to play.</li>
+        <li><strong>Start Tour</strong> - a guided tour of the controls on the current view.</li>
+        <li>The chord and scale pickers, with search and audition buttons.</li>
+        <li>The <strong>Circle of Fifths</strong> helper.</li>
+        <li>The <strong>Shortcuts help</strong> button above the keyboard, with a quick reference for every key.</li>
+        <li>The <strong>scale filtering toggles</strong> for switching filtering on and off.</li>
+      </ul>
+
       <!-- Features -->
-      <h2 class="ui header">Features</h2>
+      <h2 id="features" class="ui header">Features</h2>
       <ul class="ui list">
         <li>
           <strong>Single-finger chords</strong> - each left-hand key plays a full
@@ -199,62 +406,8 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         </li>
       </ul>
 
-      <!-- Getting started -->
-      <h2 class="ui header">Getting started</h2>
-      <ol class="steps">
-        <li>Open the app and choose <strong>File &rarr; Open Featured...</strong> to load a demo project.</li>
-        <li>Play the highlighted left-hand keys to trigger chords.</li>
-        <li>Play anywhere to the right to jam - the notes are filtered to fit the chord.</li>
-        <li>Use the black keys to switch scale or transpose.</li>
-      </ol>
-      <p>
-        In a hurry? Click <strong>DEMO</strong> in the menu bar to load a demo
-        project, focus the keyboard and see a short guide with a
-        <strong>Jam!</strong> button. A guided tour is available from the
-        <strong>Start Tour</strong> item in the menu. To build a project from an
-        existing song, choose <strong>File &rarr; Import MIDI file...</strong> and
-        OneKeyJam will detect the chords and lay them out on the keyboard.
-      </p>
-
-      <figure>
-        <img class="screenshot" :src="mainView" alt="OneKeyJam edit view, where you edit your project" />
-        <figcaption class="screenshot-caption">
-          The Edit view, where you edit your project: one-finger chords, scale
-          filters and the piano keyboard.
-        </figcaption>
-      </figure>
-
-      <!-- Playing -->
-      <h2 class="ui header">Use a MIDI keyboard</h2>
-      <img class="midi-keyboard-image" :src="externalKeyboard" alt="An external MIDI keyboard connected to OneKeyJam" />
-      <p>
-        Plug in a MIDI keyboard and Chrome connects to it automatically through
-        the built-in Web MIDI support - no setup needed. Sound is made in the
-        browser out of the box, and you can also route notes to a DAW or synth
-        such as Ableton via the macOS IAC Driver. MIDI needs a secure context, so
-        the page must be served over HTTPS (or <code>localhost</code>).
-      </p>
-      <p>
-        See the
-        <a href="https://github.com/abulka/onekeyjam/blob/main/doco/NOTES.md" target="_blank" rel="noopener">MIDI setup notes</a>
-        for the full MIDI and DAW configuration.
-      </p>
-
-      <h2 class="ui header">Play with your computer keyboard</h2>
-      <ol class="steps">
-        <li>Make sure the app window has focus (click anywhere in it).</li>
-        <li>Trigger chords with the lower row, <code>z x c v b n m</code> (the white keys of the chord trigger octave).</li>
-        <li>The black keys <code>s d g h j</code> in that octave are the chord modifiers. Hold <code>s</code> as a shift key and use the others to switch scales or transpose.</li>
-        <li>Play solo notes with the upper row, <code>q w e r t y u</code>. These are filtered into the current scale.</li>
-      </ol>
-      <p>
-        The keys play whenever the app window is focused; they pause only while
-        you are typing in a form field. The octaves follow the keyboard config, so
-        a different project or keyboard may shift the notes that each key plays.
-      </p>
-
       <!-- Sequencer & features screenshots -->
-      <h2 class="ui header">More screenshots</h2>
+      <h2 id="more-screenshots" class="ui header">More screenshots</h2>
 
       <figure>
         <img class="screenshot" :src="sequencerView" alt="OneKeyJam built-in sequencer" />
@@ -264,14 +417,16 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         </figcaption>
       </figure>
 
-      <h3 class="ui header">Features at a glance</h3>
+      <h3 id="features-at-a-glance" class="ui header">Features at a glance</h3>
       <div class="features-scroll">
         <img :src="featuresView" alt="A summary of OneKeyJam features" />
       </div>
       <p class="screenshot-caption">A quick visual summary of the main features.</p>
 
-      <!-- Free to use -->
-      <h2 class="ui header">Free to use</h2>
+      <!-- About -->
+      <h2 id="about-this-project" class="ui header">About this project</h2>
+
+      <h3 id="free-to-use" class="ui header">Free to use</h3>
       <p>
         OneKeyJam is free and open source, with no subscriptions. All features are
         available to everyone. See the
@@ -279,13 +434,13 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         for the source code.
       </p>
 
-      <h2 class="ui header">Issues and bugs</h2>
+      <h3 id="issues-and-bugs" class="ui header">Issues and bugs</h3>
       <p>
         Report any issues, feature requests or bugs in the
         <a href="https://github.com/abulka/onekeyjam/issues" target="_blank" rel="noopener">OneKeyJam issue tracker</a>.
       </p>
 
-      <h2 class="ui header">Further reading</h2>
+      <h3 id="further-reading" class="ui header">Further reading</h3>
       <ul class="ui list">
         <li>
           <a href="https://github.com/abulka/onekeyjam/blob/main/doco/ARCHITECTURE.md" target="_blank" rel="noopener">Architecture</a>
@@ -301,12 +456,48 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
         </li>
         <li>
           <a href="https://github.com/abulka/onekeyjam/blob/main/doco/IMPROVISING-TUTORIAL.md" target="_blank"
-            rel="noopener">Improvising tutorial</a>
-          - how to play a whole performance, with song walkthroughs.
+            rel="noopener">Improvise</a>
+          - quick start and song walkthroughs with sample solos.
+        </li>
+        <li>
+          <a href="https://github.com/abulka/onekeyjam/blob/main/doco/REFERENCE.md" target="_blank"
+            rel="noopener">Reference</a>
+          - every control, setting and scale-policy option in detail.
         </li>
       </ul>
 
-      </template>
+          </template>
+
+        </div>
+
+        <aside class="help-side">
+          <nav class="help-pages" aria-label="Help pages">
+            <div class="side-title">Help</div>
+            <a v-for="page in HELP_PAGE_LINKS" :key="page.id" href="#"
+              :class="{ active: globals.helpPage === page.id }"
+              @click.prevent="showPage(page.id)">{{ page.label }}</a>
+          </nav>
+
+          <template v-if="tocHeadings.length">
+            <details v-if="isNarrow" class="help-toc-mobile">
+              <summary>On this page</summary>
+              <nav class="help-toc">
+                <a v-for="heading in tocHeadings" :key="heading.id" href="#"
+                  :class="{ active: heading.id === activeId, sub: heading.level === 3 }"
+                  @click.prevent="jump(heading.id, $event)">{{ heading.text }}</a>
+              </nav>
+            </details>
+            <nav v-else class="help-toc" aria-label="On this page">
+              <div class="side-title">On this page</div>
+              <a v-for="heading in tocHeadings" :key="heading.id" href="#"
+                :class="{ active: heading.id === activeId, sub: heading.level === 3 }"
+                @click.prevent="jump(heading.id, $event)">{{ heading.text }}</a>
+            </nav>
+          </template>
+
+          <a class="help-top-link" href="#" @click.prevent="scrollTop">↑ Back to top</a>
+        </aside>
+      </div>
 
     </div>
   </main>
@@ -317,18 +508,125 @@ import externalKeyboard from '../../doco/images/example-external-midi-keyboard.a
   padding-bottom: 4rem;
 }
 
-.help .help-nav {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 0 0.25rem;
-  border-bottom: 1px solid #e0d3bd;
-  margin-bottom: 0.5rem;
+/* Help shell: the article on the left, page links and the section list on the
+   right, like a traditional documentation site. */
+.help .help-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 15rem;
+  gap: 2rem;
+  align-items: start;
+  padding-top: 0.5rem;
 }
 
-.help .help-nav-label {
-  color: #6b5a45;
+.help .help-side {
+  position: sticky;
+  top: 1rem;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+  padding: 0.75rem;
+  border: 1px solid #d9c9b0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.help .side-title {
+  color: #5a3d1a;
   font-weight: bold;
+  margin: 0 0 0.35rem;
+}
+
+.help .help-pages {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding-bottom: 0.6rem;
+  margin-bottom: 0.6rem;
+  border-bottom: 1px solid #e0d3bd;
+}
+
+.help .help-pages a,
+.help .help-toc a {
+  display: block;
+  padding: 0.2rem 0.45rem;
+  border-radius: 4px;
+  color: #5b4326;
+  text-decoration: none;
+  line-height: 1.3;
+}
+
+.help .help-pages a:hover,
+.help .help-toc a:hover {
+  background: #e6d7bd;
+}
+
+.help .help-pages a.active {
+  background: #7a5230;
+  color: #fff;
+}
+
+.help .help-toc a {
+  font-size: 0.85rem;
+}
+
+.help .help-toc a.sub {
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.help .help-toc a.active {
+  background: #f3ead9;
+  color: #5a3d1a;
+  font-weight: bold;
+}
+
+.help .help-top-link {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: #6b5a45;
+}
+
+.help .help-toc-mobile summary {
+  cursor: pointer;
+  color: #5a3d1a;
+  font-weight: bold;
+  margin-bottom: 0.25rem;
+}
+
+/* Overview headings are hand-written; keep anchor jumps clear of the top. */
+.help .help-body h2,
+.help .help-body h3 {
+  scroll-margin-top: 1rem;
+}
+
+@media (max-width: 900px) {
+  .help .help-layout {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .help .help-side {
+    position: static;
+    max-height: none;
+    order: -1;
+  }
+
+  .help .help-pages {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .help .help-pages .side-title {
+    margin: 0 0.3rem 0 0;
+  }
+
+  .help .help-top-link {
+    display: none;
+  }
 }
 
 .help .tutorial-callout {

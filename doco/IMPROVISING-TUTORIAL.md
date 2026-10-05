@@ -1,455 +1,200 @@
-# Improvising with OneKeyJam: a practical tutorial
+# Improvising with OneKeyJam: quick start and song walkthroughs
 
-This tutorial is for someone who wants to sit down and improvise a whole
-performance, not just press keys. It explains the controls that matter, when to
-use them, and walks through several songs chord by chord. Everything here uses
-the built-in projects, so you can follow along immediately.
-
-If you only read one thing: **OneKeyJam is a safety net, not a substitute for
-listening.** The left hand plays the changes, the right hand is filtered to a
-scale that fits, and your job is to make phrases with the notes on offer. The
-key, the colour and Solo in key are set-up decisions, not playing decisions.
+This page gets you playing straight away, then walks through six songs with
+sample solos. Every control, setting and scale-policy detail lives on the
+**Reference** page; you do not need any of it to start.
 
 ---
 
-## 1. The mental model
+## Quick start
 
-There are only three things happening.
+1. Click **DEMO** in the menu bar, or load a project from the **File** menu, or
+   click **Random project**.
+2. On a MIDI keyboard, play the white keys in the left-hand trigger octave
+   (C D E F G A B, C3 to B3 by default). Each one triggers a whole chord. On the
+   computer keyboard those keys are `z x c v b n m`; click the on-screen keyboard
+   once first so it has focus.
+3. Play the white keys to the right for the solo (from C4 upwards by default, or
+   `q w e r t y u` on the computer keyboard). They are filtered into a scale that
+   fits the current chord, so you cannot play a wrong note. An external MIDI
+   keyboard connects automatically.
+4. Shape the sound with the right-hand black keys `C#`, `D#`, `F#`, `G#` and
+   `A#`, or the computer keys `1`-`4` and `5`: `1` is the home scale, `2` and
+   `3` are colour alternatives, `4` is the notes of the chord, and `5` locks the
+   scale so chord changes do not move it. `0` (or hold `C#` and press `A#`)
+   toggles Solo in key.
 
-1. **The left hand plays chords.** Each trigger key plays a whole chord with
-   one finger, plus its bass note. You never play chord shapes.
-2. **The right hand plays a filtered scale.** White solo keys are mapped onto
-   the notes of the current scale, so whatever you play fits. You can still
-   play the black solo notes for chromatic colour.
-3. **The chord you last triggered chooses the scale.** That is why chord order
-   matters: the left hand is really steering the harmony, and the right hand
-   follows it.
+That is the whole setup. The project key, colour and Solo in key all have
+sensible defaults, so you can play immediately. When you want to know what a
+control does, read the Reference page or open **Shortcuts help** above the
+keyboard.
 
-On top of that, three settings shape the whole session:
+### The keys you need first
 
-- the **project key** (for example C major or C minor),
-- the **colour** (how jazzy the scale suggestions are),
-- **Solo in key** (whether the right hand follows each chord, or stays on the
-  key scale).
+MIDI keys are named by note; the trigger and jam octaves follow the keyboard
+config and any project override, and the on-screen keyboard labels show the
+matching computer keys.
 
----
-
-## 2. Before you play: the five-minute setup
-
-Do this once per song, then leave it alone while you play. The **key** lives in
-the **Key Detection** accordion on the Edit view (its own section), while
-**Solo in key** and **Colour** sit directly above the chord/scale grid on both
-the Edit and Perform pages.
-
-### Step 1: set the project key
-
-The key is the song's home. In the **Project Key** row, pick the tonic and the
-type (major, minor, or a mode such as dorian). The label beside it explains
-where the key came from:
-
-- `(detected)` - guessed from the chords, with nothing stored.
-- `✅✅ (set by project, matches detected)` - stored, and it is the top detected
-  key. (A saved detection shows as `✅✅ (detected, saved)`.)
-- `✅ (set by project, another detected key)` - stored, and it is one of the
-  valid detected keys, just not the top choice. This is not a mistake: several
-  keys can fit the same chords.
-- `⚠️ (set by project, differs from detected)` - stored, and no detected key
-  matches it.
-- `(set by project, modal key)` - a mode (such as D dorian) that the
-  major/minor detection cannot see.
-- `(set by project, no chords yet)` and `(no chords yet, default key)` - an
-  empty project, with or without a key already chosen.
-
-Hover the label to see the full list of detected keys. If a stored major/minor
-key disagrees with every detected key, a red warning also appears with a
-one-click "Use the detected key".
-
-Why it matters: the key decides which scales the engine suggests, so the safe
-notes agree with the song, and it keeps chromatic chords such as tritone
-substitutes sounding intentional rather than random.
-
-### Step 2: set the colour
-
-Above the scale grid, next to **Solo in key**, is the **Colour** dropdown:
-
-- **jazz** (the default) keeps the idiomatic colours: dorian on minor seventh
-  chords, locrian #2 on half-diminished chords, and the right dominant scales.
-  Use this for almost everything.
-- **diatonic** stays strictly in key. Use it for folk, pop, modal vamps and
-  teaching, where you do not want any outside notes.
-- **adventurous** leans into lydian and lydian-dominant colour. Use it when you
-  want the solo to sound modern and a little outside.
-
-Changing the key or the colour re-ranks every chord scale automatically, so you
-do not need to do anything else.
-
-### Step 3: decide on Solo in key
-
-**Solo in key** (the checkbox) keeps the right hand on the project key scale
-while the chords change. It is perfect for:
-
-- modal tunes such as *So What*,
-- a simple minor vamp where you want to float over everything,
-- beginners who want one scale for a whole song.
-
-Leave it **off** for standards with lots of changes (Autumn Leaves, All the
-Things You Are), where each chord's own scale is the point. The `1` `2` `3`
-shortcuts still switch scales temporarily even when Solo in key is on.
-
-### Step 3b: choose how the scale is picked
-
-Next to Solo in key is the **Scales** dropdown. Its three modes decide how the
-right hand's scale is chosen each time you trigger a chord:
-
-- **manual** (the default) carries the scale1/2/3 slot you last chose to the
-  next chord. You are always in charge.
-- **follow history** picks the stored alternative that continues the scale you
-  just played and the function of the chord you played before it. A `1 2 3`
-  press still overrides it for that chord.
-- **shuffle** draws a live scale from the top-ranked alternatives, weighted
-  towards the primary scale and towards notes that connect with the last one.
-  It only changes when the chord changes, so repeated stabs of one chord hold
-  the scale. It is a safe way to hear colours you would not have picked.
-
-A short reason appears beside the control after each automatic choice, for
-example `ii-V into G: diatonic dominant` or
-`shuffle: rank 2 of 6, 3 common tones`. Treat the mode like the colour and
-Solo in key: a performance setting you choose before you start.
-
-Press **Options** next to the Scales control for the policy controls. For
-shuffle you can set the **Pool** of alternatives, the **Dwell** (how many
-chords to hold a choice), the **Change** chance and **Reroll**; for follow you
-can set the **Context** to one or two chords. The **Phrase** option biases the
-next scale by the last solo note so phrases resolve, and **History** shows a
-strip of the last four chord-to-scale choices. All of it is optional; the
-defaults behave like the plain mode. Section 4b explains each control, its
-benefit and how to try it.
-
-### Step 4: check scale filtering and learn the trigger keys
-
-In the Perform view, make sure the scale-filtering switch is on (the left-hand
-toggle is for chords, the right-hand toggle is for solo filtering). Then look at
-the **chord table**: the Trigger column shows which left-hand key plays which
-chord. By default the white trigger keys run `C D E F G A B` from C3, which are
-the computer keys `z x c v b n m`. The demo welcome lists them too.
-
-### Step 5: know the solo keys
-
-On the computer keyboard, the solo notes are the upper row `q w e r t y u`,
-starting at C4 by default. On a MIDI keyboard, anything to the right of the
-chord triggers works.
-
----
-
-## 3. The controls you will actually use
-
-| Control | Computer keys | What it does |
+| Control | MIDI keyboard | Computer keyboard |
 |---|---|---|
-| Chord trigger | `z x c v b n m` | plays the chord mapped to that white key |
-| Solo note | `q w e r t y u` | plays a filtered note in the current scale |
-| Scale filter 1 | `1` | the primary scale for the current chord |
-| Scale filter 2 | `2` | the first colour alternative |
-| Scale filter 3 | `3` | the second colour alternative |
-| Notes of chord | `4` | filters the solo to the chord's own notes |
-| Lock scale | `5` | freezes the scale so chord changes do not move it |
-| Toggle Solo in key | `0` | on/off, with a toast naming the key scale |
-| Filter off | `d` (left black key) | turns solo filtering off, so the keyboard is a plain piano |
-| Filter on | `g` (left black key) | turns solo filtering back on |
-| Transpose down/up | `h` / `j` (left black keys) | shifts the chords a semitone |
-| Shift | hold `s` (left black key) | modifies the other left black keys, for example `s`+`j` toggles Solo in key |
-
-The **Active Scale** panel shows what the right hand is doing: the scale name,
-its notes, and the mapping from your solo keys to sounding notes.
-
-**Scale filters are your tone controls.** Filter 1 is home. Filter 2 is one step
-beyond home and is where a lot of the interest lives: lydian dominant over a
-dominant, locrian or locrian #2 over a half-diminished. Filter 3 tends to be a
-pentatonic or an accessible colour. Filter 4 (notes of chord) is for playing the
-actual chord tones, which is great at a cadence or when you want the solo to
-stop and spell out the harmony.
-
-**The Scales mode can do the switching for you.** With **follow history** the
-grid still shows the stored alternatives, but the app sets the slot for each
-chord and the active one is bolded; with **shuffle** the chosen scale may not
-be a stored slot, in which case it appears in an `auto:` chip above the grid,
-and the closest stored scale in the current row is marked with a dashed border
-and a **closest** tag. Pressing `1`-`4` at any time takes over for that chord,
-and the next chord trigger returns to the chosen mode.
-
-**Tiny labels in the scale grid.** Under each scale you may see a small tag:
-**out of key** means the scale uses notes outside the project key (hover to see
-which notes), and **jazz** or **adventurous** marks a scale that is a colour
-choice of the active profile. With the colour set to `diatonic`, or on music
-that never leaves the key, most scales are unlabelled.
-
-**When Solo in key is on**, a `Solo in key → C major` badge appears above the
-grid, the stored scale names dim, and the **out of key** tags are struck
-through, because every chord is now filtered to the key scale. If you press
-`1`-`4` to inspect a chord scale, the dimming pauses for that chord and a muted
-`Solo in key (temporarily overridden)` note appears, then the key scale returns
-on the next chord trigger.
-
-**When you lock the scale** (`5`), the locked scale is bolded in the grid with a
-padlock 🔒, so you can see at a glance which scale the right hand is frozen into
-even as the chords change.
+| Trigger a chord | white keys in the trigger octave, C D E F G A B (C3-B3 by default) | `z x c v b n m` |
+| Solo note | white keys from the jam octave upwards (C4 by default) | `q w e r t y u` |
+| Scale filter 1 | `C#` in the jam octave and above | `1` |
+| Scale filter 2 | `D#` in the jam octave and above | `2` |
+| Scale filter 3 | `F#` in the jam octave and above | `3` |
+| Notes of chord | `G#` in the jam octave and above | `4` |
+| Lock scale | `A#` in the jam octave and above | `5` |
+| Solo in key | hold `C#` (shift) and press `A#` | `0` |
 
 ---
 
-## 4. The universal performance recipe
+## Song walkthroughs
 
-This works on every song in this tutorial.
+The tables name each chord's first three scale filters. Trigger notes are shown
+as MIDI notes, for example C3; the on-screen keyboard labels show the matching
+computer keys, for example `z`. Which chord lands on which key depends on the
+project and the current allocation, so read the **Trigger** column of the chord
+table in the app, or the welcome message. Unless a song says otherwise, start
+each chord on filter 1.
 
-1. **Start with the left hand alone.** Trigger the first chord and hear it.
-2. **Enter with the chord tones.** On filter 4, play the chord's notes as an
-   arpeggio to establish the harmony.
-3. **Move to filter 1 and phrase.** Play short phrases of three to five notes,
-   then rest for as long as the phrase lasted. Silence is part of the solo.
-4. **Aim at guide tones.** The third and seventh of each chord carry its
-   identity. Land on them at the end of phrases.
-5. **Use filter 2 for colour** for one phrase per chord, then return to filter 1.
-   This is the single biggest thing that makes a solo sound professional.
-6. **At the end of a section, drop to filter 4** and play the chord up or down
-   to make the cadence clear.
-7. **When you change chord, change late.** Hold the previous phrase until the
-   new chord arrives, then resolve onto one of its guide tones.
+If a project has more chords than the chord-count slider shows, some chords are
+not on a key. On the Edit view, open **Number of Chords to display**, raise the
+slider, then click **Reallocate Chords** to fit them all on. The Blue Bossa
+walkthrough below needs this.
 
-If you get lost, press `5` to lock the current scale, `4` for the chord notes to
-re-orient, then `1` to carry on.
+### C Major II-V-I (featured)
 
----
+Load **File -> Open Featured... -> C Major II-V-I**. Three chords plus a tritone
+substitute on the fourth.
 
-## 4b. The scale policy engine: follow and shuffle
-
-Everything in section 3 is manual: you press `1`, `2`, `3` and the right hand
-follows. The **Scales** dropdown next to Solo in key lets the changes choose
-for you, which is where a lot of the "professional" sound comes from. There are
-three modes:
-
-- **manual** (the default): you stay in charge of the scale1/2/3 slots.
-- **follow history**: for each chord the app picks the stored scale that
-  continues the scale you just played and fits the function of the progression.
-- **shuffle**: when the chord changes, the app draws a close colour shift from
-  the top-ranked alternatives. A repeated trigger of the same chord holds the
-  scale, so it varies the harmony without moving the notes under your fingers.
-
-Why this helps:
-
-- **The changes steer the colour.** Follow hears a ii-V, a tritone substitute,
-  a backdoor dominant or a full ii-V-I and picks the idiomatic scale, so the
-  solo sounds intentional instead of accidentally outside.
-- **Variety on demand.** Shuffle is a safe way to hear colours you would not
-  have reached for; every choice still fits the chord, and it changes only on a
-  chord change, so you cannot play a wrong note and the mapping stays put while
-  you hold a phrase.
-- **Phrases resolve.** The phrase bias follows your last solo note, so a line
-  does not get cut off by the next chord.
-- **Nothing is a trap.** You can always override with `1`-`4` or a grid click,
-  and the app goes back to the policy on the next chord you play.
-
-### What the controls are
-
-Open the **Options** button beside the **Scales** dropdown to reveal these. They
-only appear when the project is loaded.
-
-| Control | Mode | Benefit | Default |
+| Chord | Filter 1 | Filter 2 | Filter 3 |
 |---|---|---|---|
-| `Preset` | both | One-click options for the active mode. Choose a starting point, then fine-tune. | Varied / Simple |
-| `Pool` (3-8) | shuffle | How many alternatives the draw uses. 3 = the stored scales only; 8 = more colour. | 5 |
-| `Dwell` (1-4) | shuffle | How many chord changes to hold one draw before changing. Longer is steadier. | 1 |
-| `Change` (0-100%) | shuffle | The chance of a new draw at each boundary. Lower keeps a colour longer. | 100% |
-| `Spread` | shuffle | How far a change may move the notes: `same notes`, `1 note`, `2 notes` or `Wild`. | 1 note |
-| `Hold` | shuffle | Do not jump the scale while solo notes are sounding; take the closest fit instead. | on |
-| `Reroll` | shuffle | Draw a new scale for the current chord right now. | - |
-| `Context` (1-2) | follow | Whether to look one chord back or two, so a full ii-V-I is recognised. | 1 chord |
-| `Phrase` + `Strength` | either | Bias the next scale by your last solo note so the line resolves. | off |
-| `History` | either | Show the last four chord-to-scale choices above the grid. | off |
+| Dm7 | D dorian | D aeolian | D minor pentatonic |
+| G7 | G mixolydian | G lydian dominant | G mixolydian b6 |
+| Cmaj7 | C major | C lydian | C harmonic major |
+| Db7 | Db lydian dominant | Db mixolydian | Db mixolydian b6 |
 
-The single most important thing to know: **shuffle only changes the scale when
-the chord changes.** Repeated stabs of the same chord (`Z Z Z Z Z`) hold the
-scale, so the notes never move under your fingers. That is what makes it
-playable.
+**What to aim for.** Over Dm7 the guide tones are F (the third) and C (the
+seventh); end phrases on one of them. Over G7 the guide tones are B and F, and
+they want to resolve to C and E at the Cmaj7. The Db7 is the tritone substitute
+for G7; its lydian-dominant scale contains G natural, which is what makes the
+substitution sound intentional.
 
-The presets are the easiest way in. For **shuffle** they are **Subtle** (only
-the stored scales, held longer), **Varied** (the default: a close colour change
-on each chord change) and **Wild** (no limits, for experimenting). For
-**follow** they are **Simple** (one chord), **Progression** (two chords),
-**Lyrical** (two chords plus phrase) and **Resolve** (strong phrase bias). The
-selector shows `Custom` once you change any value by hand, so you always know
-when you have moved away from a preset.
-
-Above the grid you also get the live read-outs: an `auto: <scale>` chip when a
-policy chose a scale that is not one of the stored slots, a short reason line
-(for example `ii-V-I into C: major`, `shuffle: 1 note change` or
-`shuffle: closest fit`), and, when a shuffled scale is not a stored slot, a
-dashed `closest` marker on the nearest stored scale in that row. None of this
-changes the notes you can play; it just tells you what the app chose and why.
-
-### How to try each feature (smoke tests)
-
-Use the demo projects so you always hear a known progression.
-
-**Follow and the progression context.** Load **C Major II-V-I**, set `Scales`
-to `follow history`, open `Options` and set `Context` to `2 chords`. Play the
-trigger keys `C3` (Dm7), `D3` (G7), `E3` (Cmaj7). The reason above the grid on
-the Cmaj7 should read `ii-V-I into C: major`. Set `Context` back to `1 chord`
-and repeat: the Cmaj7 reason changes to a plain resolution. Now play `F3`
-(Db7, the tritone substitute) then `E3`, and listen for the lydian-dominant
-resolution.
-
-**Shuffle is stable on repeated chords.** Set `Scales` to `shuffle`. Play the
-same trigger key several times (`Z Z Z Z Z`): the scale must stay the same and
-the reason should say `holding`. Then play two different chords in turn: each
-chord change may draw once, and the reason names a close shift such as
-`shuffle: 1 note change`. This is the behaviour that makes shuffle usable for a
-solo.
-
-**Shuffle spread and hold.** Set `Spread` to `same notes`: changes keep the same
-note set (only the label moves). Set it to `Wild`: changes may jump. Play a long
-solo note, then change chord while it rings: the reason reads `closest fit` and
-the notes move as little as possible. Press `Reroll` to force a new draw on the
-current chord. Set `Change` to `0%` to keep the same colour across changes.
-
-**Presets.** With `shuffle` selected, compare `Subtle`, `Varied` and `Wild` from
-the `Preset` dropdown and listen to how much each one changes. With `follow
-history` selected, compare `Simple`, `Progression` and `Lyrical`, and listen for
-the ii-V-I and the phrase resolution. After you move any value by hand the
-dropdown shows `Custom`, and picking a preset again restores a known
-combination.
-
-**Phrase bias.** Set `follow history`, tick `Phrase`, and play a long solo note
-that is the third or seventh of the next chord, then trigger that chord. With
-`Phrase` on the chosen scale contains your note (watch which cell is bolded);
-turn it off and repeat to hear the difference. Set `Strength` to `high` for a
-stronger pull.
-
-**History strip.** Open `Options` and tick `History`. Play a few chords and
-watch the `Recent:` strip list the last four `chord -> scale` choices, each
-with a `manual`, `follow` or `shuffle` badge. This is the best way to learn
-what the policy is doing.
-
-**Manual override.** Set `Scales` to `shuffle` or `follow history`, press `1`-`4`
-(or click a scale cell in a chord row) to pick a scale, then play that chord's
-trigger key. Your pick is respected: the scale stays on the chosen slot while
-that chord sounds. Trigger a different chord and the policy resumes for it, so
-the override is never a permanent lock.
-
-The full developer reference, including the theory and the exact scoring, is in
-`doco/SCALE-POLICIES.md`.
-
----
-
-## 5. Song walkthroughs
-
-The trigger keys below assume the default keyboard (chord triggers from C3) and
-that every chord in the project is allocated. If a project has more chords than
-fit on the trigger keys, the chord table shows which ones are playable; the rest
-are still in the project but not on a key.
-
-### 5.1 C Major II-V-I (featured)
-
-Load **File -> Open Featured... -> C Major II-V-I**. Three chords, plus a
-tritone substitute on the fourth trigger.
-
-| Trigger | Chord | Filter 1 | Filter 2 | Filter 3 |
-|---|---|---|---|---|
-| C3 (`z`) | Dm7 | D dorian | D minor pentatonic | D aeolian |
-| D3 (`x`) | G7 | G mixolydian | G lydian dominant | G mixolydian b6 |
-| E3 (`c`) | Cmaj7 | C major | C lydian | C harmonic major |
-| F3 (`v`) | Db7 | Db lydian dominant | Db mixolydian | Db mixolydian b6 |
-
-**Over Dm7 (D dorian, D E F G A B C):** the guide tones are F (the third) and C
-(the seventh). Play `D F A C`, end phrases on F or C. For colour, play E and B.
-
-**Over G7 (G mixolydian, G A B C D E F):** the guide tones are B and F, which
-want to resolve to C and E when the Cmaj7 arrives. Lean on F, then resolve.
-Switch to filter 2 (G lydian dominant, which contains C#) for a brighter phrase.
-
-**Over Cmaj7 (C major):** target E and B. Filter 2 is C lydian, the same notes
-with F# instead of F; use it for a modern ending. Filter 3 is C harmonic major
-if you want a darker, more exotic colour.
-
-**The fourth trigger is the interesting one.** F3 (`v`) plays a Db7, the tritone
-substitute for G7. Its filter 1 is Db lydian dominant, which contains G natural.
-Play around G, Ab and F and you will hear the classic tritone-substitution
-sound. This is the chord that the key-aware engine changed, so it is a good
-place to test your ear.
-
-**A sample solo for the ii-V-I:**
+**A sample solo (manual mode):**
 
 ```text
-Dm7:  A  F  E  D        (filter 1)
-G7:   F  D  B  A        (filter 1) then hold F
-Cmaj7: E  B  G  E       (filter 1) then rest
+Dm7:   A  F  E  D        (filter 1)
+G7:    F  D  B  A        (filter 1) then hold F
+Cmaj7: E  B  G  E        (filter 1)
+Db7:   G  Ab F  Eb       (filter 1, the tritone substitute)
+Cmaj7: E  B  C  E        (resolve, then rest)
 ```
 
-Do that twice, then repeat with filter 2 on the G7 and filter 2 on the Cmaj7 to
-hear the colour difference.
+Do the first three lines twice, then add the Db7 line and resolve again. Repeat
+the whole thing with filter 2 on the G7 and the Cmaj7 to hear the brighter
+colour.
 
-### 5.2 C Minor II-V-I (featured)
+**A sample solo (follow history mode):**
 
-Load **File -> Open Featured... -> C Minor II-V-I**. This is the darker,
-jazzier cousin.
-
-| Trigger | Chord | Filter 1 | Filter 2 | Filter 3 |
-|---|---|---|---|---|
-| C3 (`z`) | Dm7b5 | D locrian #2 | D locrian | D minor blues |
-| D3 (`x`) | G7alt | G altered | G phrygian dominant | G half-whole diminished |
-| E3 (`c`) | Cm(maj9) | C melodic minor | C harmonic minor | C minor bebop |
-
-**Over Dm7b5 (D locrian #2, D E F G Ab Bb C):** the guide tones are F and C.
-Locrian #2 has a natural E, which is what keeps it from sounding sour; use E as
-a passing note. Filter 2 (D locrian) uses Eb instead, a more old-fashioned
-sound.
-
-**Over G7alt (G altered, G Ab Bb B Db Eb F):** this is a fully altered dominant,
-the most tense chord in the progression. Target B and F, and use the altered
-tensions Ab, Db and Eb as colour. Filter 2 (G phrygian dominant) is the
-harmonic-minor sound with a natural fifth; filter 3 is the half-whole diminished
-scale, which sounds almost orchestral. Try one phrase on each and pick your
-favourite.
-
-**Over Cm(maj9) (C melodic minor, C D Eb F G A B):** the tension resolves here.
-Target Eb and B (the minor third and major seventh), the two notes that give
-melodic minor its bittersweet sound. Filter 2 (C harmonic minor) has Ab instead
-of A; filter 3 is a bebop scale.
-
-**A sample solo over the minor ii-V-i:**
+Set **Scales** to `follow history`, open **Options** and set **Context** to
+`2 chords`, then play. The app chooses the scale slot for each chord; the notes
+below are guide tones that sit well in whatever it picks.
 
 ```text
-Dm7b5: C  F  E  D          (filter 1)
-G7alt: F  Eb Db B          (filter 1, altered tensions)
-Cm:    Eb B  G  Eb         (filter 1, land on the major seventh then rest)
+Dm7:   F  A  C  D        (guide tones)
+G7:    B  F  D  B        (the third and seventh)
+Cmaj7: E  G  B  E        (land on the third, then rest)
+Db7:   F  Ab B  G        (the app hears the substitution)
+Cmaj7: E  B  C  E        (resolve, then rest)
 ```
 
-### 5.3 12-bar blues in C (classic)
+### C Minor II-V-I (featured)
 
-Load **File -> Open Classic... -> 12-bar blues in C**. Eight bars, all dominant
-seventh chords.
+Load **File -> Open Featured... -> C Minor II-V-I**. The darker, jazzier cousin.
+
+| Chord | Filter 1 | Filter 2 | Filter 3 |
+|---|---|---|---|
+| Dm7b5 | D locrian #2 | D locrian | D minor blues |
+| G7alt | G altered | G phrygian dominant | G half-whole diminished |
+| Cm(maj9) | C melodic minor | C harmonic minor | C minor bebop |
+
+**What to aim for.** Locrian #2 has a natural E, which keeps the half-diminished
+chord from sounding sour; use E as a passing note. Over the altered dominant,
+target B and F, and use the altered tensions Ab, Db and Eb as colour. At the
+minor chord, target Eb and B, the two notes that give melodic minor its
+bittersweet sound.
+
+**A sample solo (manual mode):**
+
+```text
+Dm7b5: C  E  F  D        (filter 1; E natural is the locrian #2 colour)
+G7alt: F  Eb Db B        (filter 1; altered tensions)
+Cm:    Eb B  G  Eb       (filter 1; land on the major seventh)
+Cm:    D  B  G  Eb       (second time, with the melodic minor A natural)
+```
+
+**A sample solo (follow history mode):**
+
+Set **Scales** to `follow history` and **Context** to `2 chords`. Follow makes
+the ii-V-i sound deliberate: it hears the three-chord function and picks the
+idiomatic scale for each.
+
+```text
+Dm7b5: F  Ab C  D        (guide tones)
+G7alt: F  B  Eb Ab       (guide tones with altered colour)
+Cm:    B  Eb G  A        (the leading tone resolves)
+```
+
+### 12-bar blues in C (classic)
+
+Load **File -> Open Classic... -> 12-bar blues in C**. The project lays out
+eight bars that alternate the I chord (C7) and the IV chord (F7), starting and
+ending on C7. One bar is a repeat, so the default seven trigger keys cover
+everything you need.
 
 | Chord | Filter 1 | Filter 2 | Filter 3 |
 |---|---|---|---|
 | C7 | C mixolydian | C lydian dominant | C mixolydian b6 |
 | F7 | F mixolydian | F lydian dominant | F mixolydian b6 |
-| G7 | G mixolydian | G lydian dominant | G mixolydian b6 |
 
-Blues is where you can be the most rhythmic and the least scale-conscious. Stay
-on filter 1 (mixolydian, which has the essential minor seventh, Bb on C7) and
-play blues phrases that repeat and answer each other. The trick is repetition:
-play a two-bar idea, repeat it, then change its ending as the chord changes.
+**What to aim for.** Blues is where you can be the most rhythmic and the least
+scale-conscious. Stay on filter 1 (mixolydian, which has the essential minor
+seventh, Bb on C7) and play short phrases that repeat and answer each other.
+The trick is repetition: play a two-bar idea, repeat it, then change its ending
+as the chord changes. The minor third (Eb over C7) is the blues note; it is a
+black key, so filtering never stops you.
 
-**When to use filter 2:** on the last two bars, or any time you want to lift the
-tension. C lydian dominant has F#, which is the bright #11; it sounds modern
-over the I chord. A classic move is to play the same phrase three times over
-C7, F7 and C7 on filter 1, then play it once on filter 2 over G7 and resolve.
+**A sample solo (manual mode):**
 
-**The blues scale:** you can also press `5` to lock C mixolydian for a whole
-chorus and just play. The minor third (Eb) over C7 is the blues note; the key
-filtering will not stop you, because it is a black solo key.
+```text
+C7:  E  G  Bb A  G        (filter 1: third, fifth, flat seventh)
+F7:  A  C  Eb D  C        (filter 1)
+C7:  E  Bb A  G           (settle)
+F7:  A  Eb C  A           (turnaround)
+C7:  G  Eb E  C           (the blues note, then home)
+```
 
-### 5.4 Blue Bossa in C minor (classic)
+**A sample solo (follow history mode):**
 
-Load **File -> Open Classic... -> Blue Bossa in C minor**. This tune moves
+Set **Scales** to `follow history`. On a simple I-IV blues the app mostly holds
+mixolydian, so the difference is subtle here; watch the reason line as you move
+between C7 and F7. The policy earns its keep on the ii-V-I songs.
+
+```text
+C7:  G  A  Bb A  G        (filter 1)
+F7:  A  C  D  Eb          (the app handles the move to IV)
+C7:  E  G  Eb E           (the blues note a black key away, then home)
+F7:  A  C  A  F           (settle)
+```
+
+### Blue Bossa in C minor (classic)
+
+Load **File -> Open Classic... -> Blue Bossa in C minor**. The tune moves
 between C minor and its relative major, with a beautiful bII chord.
+
+This project has eight chords, so the default seven trigger keys hide one. On
+the Edit view, open **Number of Chords to display**, drag the slider from 7 to
+14 and click **Reallocate Chords**, so the Dbmaj7 is on a key too.
 
 | Chord | Filter 1 | Filter 2 | Filter 3 |
 |---|---|---|---|
@@ -461,24 +206,43 @@ between C minor and its relative major, with a beautiful bII chord.
 | Ab7 | Ab mixolydian | Ab lydian dominant | Ab mixolydian b6 |
 | Dbmaj7 | Db lydian | Db major | Db harmonic major |
 
-**The opening Cm7 to Fm7** is a minor i to iv. Over both, target the guide tones
-(Eb and Bb on Cm7, Ab and Eb on Fm7) and use A natural (the dorian sixth) as the
-note that makes it sound like jazz rather than folk.
+**What to aim for.** The opening Cm7 to Fm7 is a minor i to iv; use A natural
+(the dorian sixth) to make it sound like jazz rather than folk. The Dm7b5 to G7
+is the same ii-V into C minor as the previous song. The Ebm7 to Ab7 to Dbmaj7 is
+a ii-V-I in Db major; over the Ab7, filter 2 (lydian dominant) has D natural as
+its #11, the signature sound of the key change.
 
-**The ii-V into C minor** (Dm7b5 to G7) is the same move as the C Minor II-V-I:
-locrian #2, then phrygian dominant on the G7. The phrygian dominant contains Ab
-and Eb, so it sits perfectly in C minor while the B natural pulls to C.
+**A sample solo (manual mode):**
 
-**The Ebm7 to Ab7 to Dbmaj7** is a ii-V-I in Db major. Over the Ab7 the engine
-gives you Ab lydian dominant on filter 2, whose D natural is the #11, the
-signature sound of the key change. This is a great place to switch to filter 2
-for one phrase and back.
+```text
+Cm7:   Eb Bb G  A         (filter 1; A natural is the dorian sixth)
+Fm7:   Ab Eb C  D         (filter 1)
+Dm7b5: F  Ab C  D         (filter 1; locrian #2)
+G7:    F  Eb B  Ab        (filter 1; phrygian dominant)
+Cm7:   G  Eb A  Bb        (home)
+Ebm7:  Gb Db Bb C         (filter 1; the move to Db major)
+Ab7:   Eb C  Db F         (filter 1; the #11 is D natural)
+Dbmaj7: F Ab Db F         (filter 1; land and rest)
+```
 
-**When to use Solo in key here?** Not for the whole tune, because the changes to
-Db major are the point. But you could switch it on for the opening Cm7/Fm7 vamp
-to float, then turn it off before the Dm7b5.
+**A sample solo (follow history mode):**
 
-### 5.5 Autumn Leaves in G minor (classic)
+Set **Scales** to `follow history` and **Context** to `2 chords`. Follow tracks
+the two key centres for you, so the Cm7/Fm7 vamp and the Db-major section each
+get the right scales without you touching the filters.
+
+```text
+Cm7:   G  Bb Eb F         (guide tones)
+Fm7:   Ab C  Eb D         (the move to iv)
+Dm7b5: F  Ab C  Eb        (ii-V into C minor)
+G7:    B  F  Ab Eb        (phrygian dominant)
+Cm7:   Eb G  Bb C         (resolve)
+Ebm7:  Db F  Ab Bb        (the Db-major section)
+Ab7:   C  Eb F  Db        (guide tones and the #11)
+Dbmaj7: F Ab Db F         (home in Db)
+```
+
+### Autumn Leaves in G minor (classic)
 
 Load **File -> Open Classic... -> Autumn Leaves in G minor**. A cycle of ii-V-I
 progressions in Bb major and G minor.
@@ -493,17 +257,42 @@ progressions in Bb major and G minor.
 | D7 | D phrygian dominant | D lydian dominant | D mixolydian |
 | Gm7 | G dorian | G aeolian | G minor pentatonic |
 
-The first four bars are a ii-V-I in Bb major: Cm7 (dorian), F7 (mixolydian),
-Bbmaj7 (major), Ebmaj7 (lydian). Play long, lyrical lines and aim at the third of
-each chord. The engine gives Ebmaj7 lydian on filter 1, which adds A natural,
-the note that makes the IV chord sound open rather than heavy.
-
-The last four bars are a ii-V-i in G minor: Am7b5 (locrian #2), D7 (phrygian
-dominant), Gm7 (dorian). Over the D7, filter 2 (D lydian dominant) is the
-bright alternative, but the phrygian dominant is the more "minor" sound and
+**What to aim for.** The first half is a ii-V-I in Bb major: Cm7, F7, Bbmaj7,
+Ebmaj7. Play long, lyrical lines and aim at the third of each chord. The engine
+gives Ebmaj7 lydian on filter 1, which adds A natural, the note that makes the
+IV chord sound open rather than heavy. The second half is a ii-V-i in G minor:
+Am7b5, D7, Gm7. Over the D7 the phrygian dominant is the more "minor" sound and
 resolves beautifully to Gm7. End the tune on G, D and Bb.
 
-### 5.6 Key awareness demo (featured)
+**A sample solo (manual mode):**
+
+```text
+Cm7:   Eb C  G  Bb        (filter 1; the ii of Bb major)
+F7:    A  F  Eb C         (filter 1)
+Bbmaj7: D F  A  Bb        (filter 1; land on the third)
+Ebmaj7: D G  Bb A         (filter 1; A natural is the lydian #11)
+Am7b5: G  Eb C  B         (filter 1; locrian #2)
+D7:    C  F# A  D         (filter 1; phrygian dominant's F#)
+Gm7:   Bb G  D  F         (filter 1; home, then rest)
+```
+
+**A sample solo (follow history mode):**
+
+Set **Scales** to `follow history` and **Context** to `2 chords`. Follow makes
+the two key centres clear: it resolves the Bb-major ii-V-I and then the G-minor
+ii-V-i without any filter switching.
+
+```text
+Cm7:   G  Bb C  D         (guide tones)
+F7:    A  F  D  C         (the V of Bb)
+Bbmaj7: D Bb F  D         (resolve)
+Ebmaj7: Bb G  D  A        (the IV, lydian)
+Am7b5: G  C  Eb A         (ii of G minor)
+D7:    F# C  A  D         (the V of G minor)
+Gm7:   F  D  Bb G         (home)
+```
+
+### Key awareness demo (featured)
 
 Load **File -> Open Featured... -> Key awareness demo**. This project exists to
 demonstrate the key and colour system. Its chord names tell you what to listen
@@ -519,16 +308,98 @@ for.
 | A3 | Bb7 | Bb lydian dominant | E natural, the backdoor dominant. |
 | B3 | Abmaj7 | Ab lydian | D natural, the borrowed bVI. |
 
-Play each chord's filter 1, then filter 2, and listen to the chromatic notes the
-engine puts in. Then switch the colour to **diatonic** above the scale grid and
-play Am7 again; the B natural is replaced by Bb, and the chord sounds much
-plainer. That contrast is the whole feature in one chord.
+**What to aim for.** Play each chord's filter 1, then filter 2, and listen to
+the chromatic notes the engine puts in. Then switch the colour to **diatonic**
+above the scale grid and play Am7 again; the B natural is replaced by Bb, and
+the chord sounds much plainer. That contrast is the whole feature in one chord.
+
+**A sample solo (manual mode):**
+
+```text
+Cmaj7: E  G  B  D         (filter 1; home, all white notes)
+Am7:   B  C  E  G         (filter 1; B natural is the dorian colour)
+Dm7:   D  F  A  C         (filter 1; the diatonic ii)
+G7:    F  D  B  G         (filter 1; F natural is the dominant seventh)
+Db7:   G  Ab F  Eb        (filter 1; G natural is the tritone substitute)
+Bb7:   E  F  D  Bb        (filter 1; E natural is the backdoor dominant)
+Abmaj7: D C  Ab Eb        (filter 1; D natural is the borrowed bVI)
+```
+
+**A sample solo (follow history mode):**
+
+Set **Scales** to `follow history`, open **Options** and tick **History**. Play
+the same progression and watch the `Recent:` strip: it lists the chord-to-scale
+choices with a `follow` badge, so you can see the engine name the substitutions
+as they go.
+
+```text
+Cmaj7: E  B  G  E         (come home)
+Am7:   G  E  C  A         (guide tones)
+Dm7:   A  C  D  F         (the ii)
+G7:    F  B  D  G         (the V)
+Db7:   F  Ab B  G         (the substitution)
+Bb7:   D  F  Ab Bb        (the backdoor)
+Abmaj7: C  Eb G  Ab       (the borrowed bVI)
+```
 
 ---
 
-## 6. When to change the key, colour and Solo in key
+## Advanced improvising
 
-Treat these as **performance settings**, set before you start:
+Everything below makes your solos sound better. The Reference page has the full
+detail behind each idea.
+
+### The universal performance recipe
+
+This works on every song in this tutorial.
+
+1. **Start with the left hand alone.** Trigger the first chord and hear it.
+2. **Enter with the chord tones.** On filter 4, play the chord's notes as an
+   arpeggio to establish the harmony.
+3. **Move to filter 1 and phrase.** Play short phrases of three to five notes,
+   then rest for as long as the phrase lasted. Silence is part of the solo.
+4. **Aim at guide tones.** The third and seventh of each chord carry its
+   identity. Land on them at the end of phrases.
+5. **Use filter 2 for colour** for one phrase per chord, then return to
+   filter 1. This is the single biggest thing that makes a solo sound
+   professional.
+6. **At the end of a section, drop to filter 4** and play the chord up or down
+   to make the cadence clear.
+7. **When you change chord, change late.** Hold the previous phrase until the
+   new chord arrives, then resolve onto one of its guide tones.
+
+If you get lost, press `5` (`A#` on a MIDI keyboard) to lock the current scale,
+`4` (`G#`) for the chord notes to re-orient, then `1` (`C#`) to carry on.
+
+### Filters are your tone controls
+
+Filter 1 is home. Filter 2 is where a lot of the interest lives: lydian dominant
+over a dominant, locrian or locrian #2 over a half-diminished. Filter 3 tends to
+be a pentatonic or an accessible colour. Filter 4 (notes of chord) is for
+spelling out the harmony at a cadence. Locking (`5`, or `A#` on a MIDI keyboard)
+freezes the scale so chord changes do not move it, which is great for a modal
+vamp or when you want to develop one idea.
+
+### Let the changes choose the scale
+
+The **Scales** dropdown next to Solo in key has three modes:
+
+- **manual** (the default) keeps you in charge of the filters.
+- **follow history** picks the stored alternative that continues the scale you
+  just played and fits where the progression is going.
+- **shuffle** draws a live scale from the top-ranked alternatives for variety.
+
+Follow is the thoughtful mode: it recognises a ii-V-I, a tritone substitute or a
+backdoor dominant and picks the idiomatic scale, so the harmony steers the
+colour for you. Shuffle is the explorer: it changes only when the chord changes,
+holds the scale when you repeat a chord, and every pick still fits. Both are
+never traps, because `1`-`4` always take over for the chord you are on.
+
+The full options, presets and smoke tests are on the **Reference** page.
+
+### When to change key, colour and Solo in key
+
+Treat these as performance settings, set before you start:
 
 - **Key:** set it once per song. Change it only when the song's key changes, or
   when you deliberately want to re-harmonise.
@@ -538,32 +409,15 @@ Treat these as **performance settings**, set before you start:
 - **Solo in key:** on for modal tunes and vamps; off for standards with rich
   changes. If you are recording, decide before you press Record.
 - **Scales mode:** manual while you are learning a tune or following a plan;
-  follow history when you want the changes to steer the colour for you; shuffle
-  for practice and for finding new sounds. If you are recording, pick one
-  before you press Record, so the take is coherent.
+  follow history when you want the changes to steer the colour; shuffle for
+  practice and for finding new sounds. If you are recording, pick one before you
+  press Record, so the take is coherent.
 
-The one exception is transpose: the left-hand `g` and `h` black keys shift the
-chords mid-performance, which is a quick way to change key for a verse or to
-save a singer.
+The one exception is transpose: the left-hand black keys shift the chords
+mid-performance, which is a quick way to change key for a verse or to save a
+singer.
 
----
-
-## 7. Troubleshooting and a practice plan
-
-- **"I am playing and nothing changes."** The on-screen keyboard needs focus;
-  click it first. MIDI keyboards connect automatically.
-- **"The solo sounds wrong over a chord."** Check which trigger you last
-  pressed; the scale follows the chord. Press `4` to play the chord notes and
-  re-orient, then `1`.
-- **"Everything sounds the same."** You are probably staying on filter 1. Spend
-  one full chord on filter 2, then return.
-- **"I changed the key and the scales look different."** That is expected: the
-  engine re-ranks every chord in the new key and colour.
-- **"Solo in key does nothing."** On a diatonic major tune the key scale and the
-  per-chord scales share the same notes, so it sounds identical. Try it over the
-  tritone substitute on the C Major demo, or over So What.
-
-A simple four-week practice plan:
+### A four-week practice plan
 
 1. **Week 1:** one song, filter 1 only, guide tones only, lots of rests.
 2. **Week 2:** the same song, adding filter 2 for one phrase per chord.

@@ -134,7 +134,7 @@ export const globals = reactive({
     showScaleHistory: false,  // show the recent chord-to-scale strip above the grid
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
     showFavouriteBinColumns: false,  // show the favourite and bin columns in the chord/scale table
-    helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial'
+    helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial' | 'reference'
     debugJamChord: false,
     syncChordPickerToJamChord: true,
     syncChordPickerToCurrentTriggeredChord: true,

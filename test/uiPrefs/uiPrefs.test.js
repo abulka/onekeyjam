@@ -187,9 +187,12 @@ describe('uiPrefs', () => {
 
     it('reads, validates and loads the Help page', () => {
         assert.equal(readPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ helpPage: 'tutorial' }) })).helpPage, 'tutorial')
+        assert.equal(readPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ helpPage: 'reference' }) })).helpPage, 'reference')
         assert.equal(readPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ helpPage: 'nonsense' }) })).helpPage, undefined)
         loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ helpPage: 'tutorial' }) }))
         assert.equal(globals.helpPage, 'tutorial')
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ helpPage: 'reference' }) }))
+        assert.equal(globals.helpPage, 'reference')
         globals.helpPage = 'overview'
     })
 

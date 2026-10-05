@@ -13,7 +13,7 @@ import { SCALE_POLICIES } from './autoScale.js'
 const STORAGE_KEY = 'onekeyjam.uiPrefs'
 
 export const KEYBOARD_HELP_MODES = ['off', 'black', 'white', 'all']
-export const HELP_PAGES = ['overview', 'tutorial']
+export const HELP_PAGES = ['overview', 'tutorial', 'reference']
 
 /**
  * @typedef {Object} UiPrefs

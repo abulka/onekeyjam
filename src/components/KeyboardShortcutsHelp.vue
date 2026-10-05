@@ -51,8 +51,51 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
         <div class="shortcuts-body">
           <h4>Quick reference</h4>
           <p class="shortcuts-lead"><strong>Magic mode</strong> (default): a left-hand key plays a
-            chord and the right hand is filtered to the current scale. The note keys play whenever
-            the app window is focused, and pause while you type in a field.</p>
+            chord and the right hand is filtered to the current scale. The trigger octave and jam
+            octave follow your keyboard config (C3 and C4 by default).</p>
+
+          <h4>MIDI keyboard</h4>
+          <div class="sc-item">
+            <div class="sc-label">Left hand, white keys (trigger octave)</div>
+            <div class="sc-body">trigger chords</div>
+          </div>
+          <div class="sc-item">
+            <div class="sc-label">Left hand, black keys (trigger octave)</div>
+            <div class="sc-body">
+              <code class="kb">C#</code> shift ·
+              <code class="kb">D#</code> filter OFF ·
+              <code class="kb">F#</code> filter ON ·
+              <code class="kb">G#</code> transpose down ·
+              <code class="kb">A#</code> transpose up
+            </div>
+          </div>
+          <div class="sc-item">
+            <div class="sc-label">Shift held (<code class="kb">C#</code>)</div>
+            <div class="sc-body">
+              <code class="kb">D#</code> all notes off ·
+              <code class="kb">F#</code> add chord ·
+              <code class="kb">G#</code> reset transpositions ·
+              <code class="kb">A#</code> toggle Solo in key
+            </div>
+          </div>
+          <div class="sc-item">
+            <div class="sc-label">Right hand, white keys (jam octave and up)</div>
+            <div class="sc-body">play the current scale</div>
+          </div>
+          <div class="sc-item">
+            <div class="sc-label">Right hand, black keys (any octave)</div>
+            <div class="sc-body">
+              <code class="kb">C#</code> scale1 ·
+              <code class="kb">D#</code> scale2 ·
+              <code class="kb">F#</code> scale3 ·
+              <code class="kb">G#</code> notes of chord ·
+              <code class="kb">A#</code> lock scale
+            </div>
+          </div>
+
+          <h4>Computer keyboard</h4>
+          <p class="shortcuts-lead">The note keys play whenever the app window is focused, and
+            pause while you type in a field.</p>
 
           <div class="sc-item">
             <div class="sc-label">Left hand, white</div>

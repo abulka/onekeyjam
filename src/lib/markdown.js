@@ -2,10 +2,12 @@
 
 /**
  * A small Markdown renderer for the in-app Help pages. It supports the subset
- * used by `doco/IMPROVISING-TUTORIAL.md`: headings, paragraphs, unordered and
- * ordered lists, bold, italic, inline code, links, blockquotes, horizontal
- * rules, fenced code blocks and GitHub-style tables. The input is our own
- * trusted documentation, so it is HTML-escaped but not otherwise sanitised.
+ * used by `doco/IMPROVISING-TUTORIAL.md` and `doco/REFERENCE.md`: headings,
+ * paragraphs, unordered and ordered lists, bold, italic, inline code, links,
+ * blockquotes, horizontal rules, fenced code blocks and GitHub-style tables.
+ * Headings get stable `id`s, and `extractHeadings()` returns them so the Help
+ * pages can build a sticky section navigation. The input is our own trusted
+ * documentation, so it is HTML-escaped but not otherwise sanitised.
  */
 
 /**
@@ -28,6 +30,77 @@ function inline(text) {
     result = result.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     result = result.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
     return result;
+}
+
+/**
+ * Heading text with the inline markdown removed, for ids and navigation labels.
+ * @param {string} text
+ * @returns {string}
+ */
+function plainHeading(text) {
+    return text
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\*([^*]+)\*/g, '$1')
+        .trim();
+}
+
+/**
+ * A URL-friendly version of heading text.
+ * @param {string} text
+ * @returns {string}
+ */
+function slugify(text) {
+    const slug = text
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    return slug || 'section';
+}
+
+/**
+ * A unique id for a heading within one document.
+ * @param {string} base
+ * @param {Set<string>} used
+ * @returns {string}
+ */
+function uniqueId(base, used) {
+    let id = base;
+    let n = 2;
+    while (used.has(id)) {
+        id = `${base}-${n}`;
+        n++;
+    }
+    used.add(id);
+    return id;
+}
+
+/**
+ * @typedef {object} MarkdownHeading
+ * @property {number} level 1-6
+ * @property {string} text plain heading text, without markdown
+ * @property {string} id anchor id used in the rendered HTML
+ */
+
+/**
+ * The headings in a Markdown document, in order, with the same ids that
+ * `renderMarkdown` puts on the rendered heading elements. Used to build the
+ * Help pages' section navigation.
+ * @param {string} markdown
+ * @returns {Array<MarkdownHeading>}
+ */
+export function extractHeadings(markdown) {
+    const headings = [];
+    const used = new Set();
+    for (const line of String(markdown).replace(/\r\n/g, '\n').split('\n')) {
+        const match = line.match(/^(#{1,6})\s+(.*)$/);
+        if (match) {
+            const text = plainHeading(match[2]);
+            headings.push({ level: match[1].length, text, id: uniqueId(slugify(text), used) });
+        }
+    }
+    return headings;
 }
 
 /**
@@ -60,6 +133,10 @@ function renderTable(lines, start, html) {
  */
 export function renderMarkdown(markdown) {
     const lines = String(markdown).replace(/\r\n/g, '\n').split('\n');
+    // Pre-compute the heading ids so the rendered headings and
+    // extractHeadings() always agree, including duplicate-heading suffixes.
+    const headings = extractHeadings(markdown);
+    let headingIndex = 0;
     const html = [];
     let i = 0;
     let listType = /** @type {'ul'|'ol'|null} */ (null);
@@ -74,7 +151,9 @@ export function renderMarkdown(markdown) {
     };
     const flushItem = () => {
         if (currentItem !== null) {
-            html.push(`<li>${currentItem}</li>`);
+            // Format the whole item at once, so inline markup that wraps across
+            // source lines (for example a long **bold** run) is still matched.
+            html.push(`<li>${inline(currentItem)}</li>`);
             currentItem = null;
         }
     };
@@ -118,7 +197,10 @@ export function renderMarkdown(markdown) {
         if (heading) {
             flushAll();
             const level = heading[1].length;
-            html.push(`<h${level}>${inline(heading[2])}</h${level}>`);
+            const record = headings[headingIndex];
+            headingIndex++;
+            const id = record ? record.id : uniqueId(slugify(plainHeading(heading[2])), new Set());
+            html.push(`<h${level} id="${id}">${inline(heading[2])}</h${level}>`);
             i++;
             continue;
         }
@@ -152,7 +234,7 @@ export function renderMarkdown(markdown) {
             flushParagraph();
             openList('ul');
             flushItem();
-            currentItem = inline(unordered[1]);
+            currentItem = unordered[1];
             i++;
             continue;
         }
@@ -162,15 +244,16 @@ export function renderMarkdown(markdown) {
             flushParagraph();
             openList('ol');
             flushItem();
-            currentItem = inline(ordered[1]);
+            currentItem = ordered[1];
             i++;
             continue;
         }
 
         // An indented line while a list is open is a continuation of the
-        // current item (soft-wrapped text in the markdown source).
+        // current item (soft-wrapped text in the markdown source). Keep it raw:
+        // flushItem() runs the inline formatting once the item is complete.
         if (listType !== null && currentItem !== null && /^\s+\S/.test(line)) {
-            currentItem += ` ${inline(line.trim())}`;
+            currentItem += ` ${line.trim()}`;
             i++;
             continue;
         }

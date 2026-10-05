@@ -188,9 +188,10 @@ Other hosting options are documented in [doco/NOTES.md](doco/NOTES.md).
   model, plus the validation commands.
 - [doco/MUSIC-THEORY.md](doco/MUSIC-THEORY.md) - how the chord-scale engine
   works, the project key model, key-aware scoring and solo-in-key mode.
-- [doco/IMPROVISING-TUTORIAL.md](doco/IMPROVISING-TUTORIAL.md) - how to
-  improvise a whole performance, with song walkthroughs; also readable in the
-  Help view.
+- [doco/IMPROVISING-TUTORIAL.md](doco/IMPROVISING-TUTORIAL.md) - quick start and
+  song walkthroughs with sample solos; also readable in the Help view.
+- [doco/REFERENCE.md](doco/REFERENCE.md) - every control, setting and
+  scale-policy option in detail; also readable in the Help view.
 - [doco/NOTES.md](doco/NOTES.md) - detailed MIDI setup, usage reference,
   deployment history and development notes.
 
