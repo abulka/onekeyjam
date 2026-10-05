@@ -402,7 +402,7 @@ watch(() => globals.helpPage, async () => {
           (<code>q w e r t y u</code>). The black keys are <code>s d g h j</code>
           on the left and <code>2 3 5 6 7</code> on the right. Open
           <strong>Shortcuts help</strong> above the keyboard, next to Key labels,
-          for the full quick reference, including function keys and Ctrl shortcuts.
+          for the full quick reference, including function keys and Alt shortcuts.
         </li>
       </ul>
 

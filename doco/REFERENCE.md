@@ -262,6 +262,13 @@ you are typing in a form field. Open **Shortcuts help** above the on-screen
 keyboard for the full list, including octave shifts. In normal piano mode
 (filtering and chord triggers off) every key plays a plain note.
 
+**App shortcuts.** `Alt+1` magic mode, `Alt+2` normal piano, `Alt+3`/`Alt+4`
+transpose down/up a semitone, `Alt+5`/`Alt+6` invert the chord voicing down/up,
+and `Alt+7`/`Alt+8` move down/up the circle of fifths. Transpose and fifths
+change every chord and the sounding key; invert rotates each chord's voicing.
+Reset Transpositions undoes all three. These use `Alt`, not `Ctrl`, because
+`Ctrl`+digit switches browser tabs.
+
 ### Trigger keys and solo keys
 
 The chord table's **Trigger** column shows which left-hand key plays which chord.

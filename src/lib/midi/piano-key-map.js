@@ -8,7 +8,7 @@
  * configure shortcuts. OneKeyJam therefore clears the widget's own key codes
  * (see LivePianoKeyboard.vue) and handles keyboard input itself using this
  * table, so the shortcuts are ours to change and app shortcuts such as
- * Ctrl+digit do not also sound a note.
+ * Alt+digit do not also sound a note.
  */
 
 /**

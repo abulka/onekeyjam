@@ -161,14 +161,13 @@ export function _transposeChordConfigs(chordConfigs, intervalName) {
 //  │ ├┬┘├─┤│││└─┐├─┘│ │└─┐├┤   ├─┤│  │    ├─┘├┬┘│ │ │├┤ │   │   │  │ ││││├┤ ││ ┬└─┐
 //  ┴ ┴└─┴ ┴┘└┘└─┘┴  └─┘└─┘└─┘  ┴ ┴┴─┘┴─┘  ┴  ┴└─└─┘└┘└─┘└─┘ ┴   └─┘└─┘┘└┘└  ┴└─┘└─┘
 
-export function transposeChordTriggerMap(degrees) {
-    // Transposes all chord configs
-    const intervalName = (degrees > 0 ? '2m' : '-2m')  // ignore degree amount for now
-    _transposeChordConfigs(Object.values(globals.chordTriggerMap), intervalName)  // in place
+function transposeChordTriggerMapBy(intervalName, semitoneDelta) {
+    // Transposes all chord configs, in place.
+    _transposeChordConfigs(Object.values(globals.chordTriggerMap), intervalName)
 
     // The sounding key moves with the chords, so key-aware ranking, the Key:
     // chip and Solo in key stay in step. The written project key is untouched.
-    globals.transpositionSemitones = (globals.transpositionSemitones ?? 0) + (degrees > 0 ? 1 : -1)
+    globals.transpositionSemitones = (globals.transpositionSemitones ?? 0) + semitoneDelta
 
     // A transposition starts a new musical context, so the follow/shuffle
     // history and any held draw are cleared.
@@ -180,4 +179,57 @@ export function transposeChordTriggerMap(degrees) {
         bass: globals.currentBass()
     })
     changeScaleFilter()  // broadcast a scale change since the scale is affected by the chord change
+}
+
+export function transposeChordTriggerMap(degrees) {
+    transposeChordTriggerMapBy(degrees > 0 ? '2m' : '-2m', degrees > 0 ? 1 : -1)  // degree amount ignored, a semitone is used
+}
+
+/** Move every chord a fifth; up a fifth is +7 semitones, down a fifth is -5. */
+export function circleOfFifthsChordTriggerMap(direction) {
+    transposeChordTriggerMapBy(direction > 0 ? '5P' : '-5P', direction > 0 ? 7 : -5)
+}
+
+// ┌┬┐┌┐┌┬  ┬┌─┐┬─┐┌┬┐  ┌─┐┬ ┬┌─┐┬─┐┌┬┐┌─┐
+//  │││││└┐┌┘├┤ ├┬┘ │   │  ├─┤│ │├┬┘ ││└─┐
+// ─┘┘└┘┴ └┘ └─┘┴└─ ┴   └─┘┴ ┴└─┘┴└──┴┘└─┘
+
+const rotateNote = (note, up) => Tonal.Note.simplify(Tonal.Note.transpose(note, up ? '8P' : '-8P'))
+
+function _invertChordConfig(chordConfig, up) {
+    if (!chordConfig.chordNotes || chordConfig.chordNotes.length < 2)
+        return
+    const notes = chordConfig.chordNotes.slice()
+    let index = 0
+    for (let i = 1; i < notes.length; i++) {
+        if (up ? Tonal.Note.midi(notes[i]) < Tonal.Note.midi(notes[index]) : Tonal.Note.midi(notes[i]) > Tonal.Note.midi(notes[index]))
+            index = i
+    }
+    const [moved] = notes.splice(index, 1)
+    if (up)
+        notes.push(rotateNote(moved, true))
+    else
+        notes.unshift(rotateNote(moved, false))
+
+    // The bass follows the new lowest note, like the chord picker inversion.
+    chordConfig.chordNotes = notes
+    chordConfig.bassNote = notes[0]
+    chordConfig.bass = Tonal.Note.get(notes[0]).pc
+    expandChordConfig(chordConfig)
+}
+
+/** Rotate every chord's voicing one step: up lifts the lowest note, down drops the highest. */
+export function invertChordTriggerMap(direction) {
+    const up = direction > 0
+    for (const chordConfig of Object.values(globals.chordTriggerMap))
+        _invertChordConfig(chordConfig, up)
+
+    // A voicing change starts a new musical context, like a transposition.
+    resetChordHistory()
+    // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+    document.broadcastEvent('chord-changed', {
+        notes: globals.currentLhNotes(),
+        bass: globals.currentBass()
+    })
+    changeScaleFilter()
 }

@@ -248,9 +248,10 @@ export const globals = reactive({
     // The resolved project key { tonic, type, source }, set when a project is
     // loaded. See src/lib/projectKey.js and doco/MUSIC-THEORY.md.
     projectKey: null,
-    // Semitones the live trigger map has been transposed by (Ctrl+2 or the
-    // left-hand black keys). The written project key never changes; this offset
-    // is applied on top of it by getProjectKey().
+    // Semitones the live trigger map has been transposed by (Alt+3/Alt+4, the
+    // left-hand black keys, or the circle-of-fifths shortcuts). The written
+    // project key never changes; this offset is applied on top of it by
+    // getProjectKey().
     transpositionSemitones: 0,
     getProjectKey() {
         const key = this.projectKey ?? resolveProjectKey(this.project)

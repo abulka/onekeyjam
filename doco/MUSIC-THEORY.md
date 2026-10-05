@@ -480,9 +480,9 @@ only on a chord trigger.
 
 ### Live transposition
 
-The left-hand black keys and Ctrl+2 shift every chord up or down a semitone
-mid-performance. Transposition moves the whole musical context, not just the
-notes:
+The left-hand black keys and `Alt+3`/`Alt+4` shift every chord down or up a
+semitone mid-performance. Transposition moves the whole musical context, not
+just the notes:
 
 - The key context moves with the chords. `globals.transpositionSemitones`
   records the offset and `getProjectKey()` applies it on top of the written

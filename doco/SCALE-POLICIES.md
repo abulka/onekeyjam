@@ -271,12 +271,13 @@ value a preset sets is visible in the Options panel.
    off.
 8. While holding a long solo note, change chord: the reason should read
    `closest fit`, and the scale should move as little as possible.
-9. Transpose the C Major II-V-I demo up a semitone (Ctrl+2, or hold the
+9. Transpose the C Major II-V-I demo up a semitone (`Alt+4`, or hold the
    left-hand `C#` and press `A#`), then trigger the second chord: the `Key:`
    chip should read `Db major`, the chord row should show `Ab7/Eb`, and
    shuffle should offer Ab scales (Ab mixolydian, Ab lydian dominant, Ab
-   mixolydian b6), never a G scale. Press Ctrl+Shift+2 (or Shift+`G#`) to reset:
-   the key returns to C major and the chord to `G7/D`.
+   mixolydian b6), never a G scale. Press Shift+`G#` (or the Reset
+   Transpositions button) to reset: the key returns to C major and the chord to
+   `G7/D`.
 
 ### Phase 2 - progression context
 

@@ -233,7 +233,7 @@ and the validation commands.
   keyboard input in `LivePianoKeyboard.vue`: it clears the widget's hard-wired
   key codes (`keycodes1`/`keycodes2`) and handles the keys itself using the
   table in `src/lib/midi/piano-key-map.js`. This keeps the shortcuts under our
-  control (for example Ctrl+digit does not also sound a note) and lets the
+  control (for example Alt+digit does not also sound a note) and lets the
   keyboard shortcut list in `KeyboardShortcutsHelp.vue` be generated from
   the same table. Both mouse/touch and computer keys flow through the same
   `handleNote()` and then `onNoteOn()`/`onNoteOff()` in

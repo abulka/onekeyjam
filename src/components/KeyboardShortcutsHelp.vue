@@ -186,10 +186,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
           <div class="sc-item"><div class="sc-body"><code class="kb">F3</code> (hold) step to and play the next left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">F4</code> previous left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">F5</code> add the currently jammed chord</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">Ctrl+1</code> / <code class="kb">Ctrl+Shift+1</code> normal piano / magic mode</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">Ctrl+2</code> / <code class="kb">Ctrl+Shift+2</code> transpose up / down a semitone</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">Ctrl+3</code> / <code class="kb">Ctrl+Shift+3</code> invert chord up / down</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">Ctrl+5</code> / <code class="kb">Ctrl+Shift+5</code> circle of fifths up / down</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">Alt+1</code> magic mode · <code class="kb">Alt+2</code> normal piano</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">Alt+3</code> / <code class="kb">Alt+4</code> transpose down / up a semitone</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">Alt+5</code> / <code class="kb">Alt+6</code> invert chord voicing down / up</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">Alt+7</code> / <code class="kb">Alt+8</code> circle of fifths down / up</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Esc</code> close this help or the welcome message</div></div>
 
           <h4>File <span class="shortcuts-muted">(main page only)</span></h4>
@@ -197,7 +197,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 
           <h4>Notes</h4>
           <ul class="shortcuts-notes">
-            <li><strong>Magic mode</strong> turns one left-hand white key into a chord and filters the right hand into the current scale. <strong>Normal piano</strong> plays a plain keyboard. Switch with the Magic / Normal buttons, or <code class="kb">Ctrl+1</code> / <code class="kb">Ctrl+Shift+1</code>.</li>
+            <li><strong>Magic mode</strong> turns one left-hand white key into a chord and filters the right hand into the current scale. <strong>Normal piano</strong> plays a plain keyboard. Switch with the Magic / Normal buttons, or <code class="kb">Alt+1</code> / <code class="kb">Alt+2</code>.</li>
             <li>The number keys <code class="kb">1</code>-<code class="kb">5</code> switch scales on every octave; <code class="kb">0</code> toggles <strong>Solo in key</strong>.</li>
             <li>On Mac laptops the function keys may need <code class="kb">Fn</code>.</li>
             <li><code class="kb">F5</code> reloads the page on Windows and Linux.</li>

@@ -1,5 +1,4 @@
 <script setup>
-import { onMounted, onUnmounted } from "vue";
 import { globals } from '@/lib/globals.js'
 
 function setMagicMode() {
@@ -9,28 +8,6 @@ function setMagicMode() {
 function setNormalPiano() {
   globals.bypass = true
 }
-
-function keyUpListener(e) {
-  // console.log('keyup', e.key, e.keyCode, 'this', this, 'meta', e.metaKey, 'ctrl', e.ctrlKey, 'shift', e.shiftKey);  // 'this' is the window
-
-  const normal = () => e.ctrlKey && !e.shiftKey
-  const shifted = () => e.ctrlKey && e.shiftKey
-
-  if (e.code === "Digit1" && normal()) {
-    globals.bypass = true  // if want to toggle instead use !globals.bypass
-  }
-  if (e.code === "Digit1" && shifted()) {
-    globals.bypass = false
-  }
-}
-
-onMounted(() => {
-  window.addEventListener('keyup', keyUpListener);
-});
-
-onUnmounted(() => {
-  window.removeEventListener("keyup", keyUpListener);
-});
 
 
 </script>
