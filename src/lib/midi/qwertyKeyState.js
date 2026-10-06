@@ -37,7 +37,15 @@ function listenForAnyKeyEventsGlobally() {
 // EXPORT
 
 
+let wired = false
+
 export function wireQwertyKeyState() {
+    // linkProjectToKeyboard() calls this on every project load and on every
+    // MIDI device change, so only attach the global listeners once.
+    if (wired)
+        return
+    wired = true
+
     if (document.readyState === "complete" || document.readyState === "loaded")
         listenForAnyKeyEventsGlobally();
     else

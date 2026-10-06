@@ -138,6 +138,23 @@ onMounted(() => {
 
     <div class="title">
       <i class="dropdown icon"></i>
+      MIDI
+    </div>
+    <div class="content">
+      <p>midiAccess: <strong>{{ globals.midiAccess.status }}</strong> {{ globals.midiAccess.message }}</p>
+      <p>keyboardsDetected: {{ globals.keyboardsDetected }}</p>
+      <p>midiActivity seen: {{ globals.midiActivity.seen }}, last:
+        {{ globals.midiActivity.lastState }} {{ globals.midiActivity.lastNote }}
+        <template v-if="globals.midiActivity.lastInput">from {{ globals.midiActivity.lastInput }}</template>
+      </p>
+      <p v-if="globals.superUser">keyboardsAvailable:</p>
+      <pre v-if="globals.superUser" class="mono-json">{{ globals.keyboardsAvailable }}</pre>
+      <p>Current keyboard config:</p>
+      <pre class="mono-json">{{ globals.keyboard }}</pre>
+    </div>
+
+    <div class="title">
+      <i class="dropdown icon"></i>
       Volume
     </div>
     <div class="content">

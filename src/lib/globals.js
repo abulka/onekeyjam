@@ -322,6 +322,24 @@ export const globals = reactive({
         status: 'unknown',
         message: '',
     },
+    // Live hardware-MIDI activity, updated by src/lib/midi/midi-monitor.js for
+    // every incoming message on any input, whether or not a keyboard config is
+    // selected. Drives the top-bar activity dot and the MIDI Keyboard Config
+    // debug log.
+    midiActivity: {
+        seen: false,       // true once any note has been received
+        pulse: 0,          // increments on each message, used to trigger the dot
+        lastAt: 0,         // Date.now() of the last message
+        lastNote: '',      // note identifier (or formatted message) last seen
+        lastOctave: null,  // octave of the last note, e.g. 3 for C3
+        lastState: '',     // last message type, e.g. 'noteon'
+        lastInput: '',     // name of the input the last message came from
+        // The raw message log is only kept while the debug area is open, so a
+        // busy keyboard cannot fill memory during normal use.
+        captureLog: false,
+        log: [],           // recent formatted messages, newest last
+        logLimit: 100,
+    },
     keyboard: {             // current keyboard config JSON
         name: '',
         lhTriggerOctave: 3,

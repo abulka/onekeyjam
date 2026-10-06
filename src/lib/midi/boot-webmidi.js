@@ -1,5 +1,6 @@
 import { globals } from "../globals.js"
 import { WebMidi } from "./webmidi.js"
+import { wireMidiMonitor } from "./midi-monitor.js"
 
 /**
  * @module lib/boot-webmidi
@@ -35,9 +36,11 @@ export async function requestMidiAccess() {
         wireStateChange()
         return true
     } catch (error) {
-        if (error && error.name === 'SecurityError') {
+        // Chrome rejects with NotAllowedError when no user gesture is available
+        // or the prompt was dismissed; older browsers use SecurityError.
+        if (error && (error.name === 'SecurityError' || error.name === 'NotAllowedError')) {
             globals.midiAccess.status = 'denied'
-            globals.midiAccess.message = 'MIDI access is blocked for this site. Allow MIDI devices in your browser site settings, then reload.'
+            globals.midiAccess.message = 'MIDI access is blocked for this site. Click "Enable MIDI access", allow MIDI devices in your browser site settings, then try again.'
         } else {
             globals.midiAccess.status = 'error'
             globals.midiAccess.message = `Could not enable MIDI access: ${error && error.message ? error.message : error}`
@@ -50,6 +53,19 @@ export async function requestMidiAccess() {
 function onWebMidiEnabled() {
     globals.keyboardsDetected = WebMidi.inputs.map(device => device.name)
     prepareAbleton()
+    // Watch every input for raw activity, so the UI can show whether MIDI is
+    // arriving even when no keyboard config is selected.
+    wireMidiMonitor()
+    // Let the rest of the app re-select and re-wire the keyboard. The project
+    // layer only acts on this once boot has finished.
+    broadcastDevicesChanged()
+}
+
+function broadcastDevicesChanged() {
+    // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+    if (typeof document !== 'undefined' && typeof document.broadcastEvent === 'function')
+        // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+        document.broadcastEvent('midi-devices-changed', {})
 }
 
 function wireStateChange() {
@@ -57,8 +73,12 @@ function wireStateChange() {
         return
     wireStateChange.done = true
     try {
-        // Re-detect devices when they are plugged in or removed
-        WebMidi.addListener('statechange', () => onWebMidiEnabled())
+        // webmidi v3 emits 'portschanged' when a device appears or disappears
+        // (the v3 alpha used 'statechange', which no longer fires).
+        const refresh = () => onWebMidiEnabled()
+        WebMidi.addListener('portschanged', refresh)
+        WebMidi.addListener('connected', refresh)
+        WebMidi.addListener('disconnected', refresh)
     } catch (error) {
         console.warn('Could not subscribe to MIDI state changes', error)
     }

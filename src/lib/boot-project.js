@@ -3,6 +3,8 @@ import { globals } from "./globals.js"
 import { WebMidi } from "./midi/webmidi.js"
 import { changeScaleFilter } from "./change-scale.js" // for testing
 import { wireNoteOnEvents, wireNoteOffEvents, wireCCEvents, calculateRhBlackNoteModifierNotes } from './midi/wire-events.js';
+import { isSelfOutputDevice } from './midi/midi-monitor.js'
+import { suggestConfigName } from './keyboardStore.js'
 import { wireQwertyKeyState } from "./midi/qwertyKeyState.js"
 import { wireScaleFilterShortcuts } from "./midi/scaleFilterShortcuts.js"
 import { emergencyRepairProject } from './emergencyRepairProject.js';
@@ -280,6 +282,23 @@ export function wireProjectEvents() {
         regen();
         linkProjectToKeyboard()
     })
+
+    // A MIDI device appeared or disappeared, or access was granted after boot
+    // (the "Re-scan"/"Enable MIDI access" button). Re-select and re-wire the
+    // keyboard, which is what a page refresh would otherwise be needed for.
+    // Device changes arrive in bursts, so debounce the re-link.
+    let midiRelinkTimer = null
+    document.addEventListener("midi-devices-changed", function () {
+        if (globals.boot.status !== 'ready')
+            return
+        if (midiRelinkTimer)
+            clearTimeout(midiRelinkTimer)
+        midiRelinkTimer = setTimeout(async () => {
+            midiRelinkTimer = null
+            await bootKeyboard()
+            linkProjectToKeyboard()
+        }, 100)
+    })
 }
 
 // ┬  ┌─┐┬ ┬  ┬  ┌─┐┬  ┬┌─┐┬  
@@ -349,15 +368,24 @@ export function regen(updateSong = false, useExistingChordMap = false, idsInOrde
 // ╩ ╩└─┘ ┴ └─┘└─┘┴ ┴┴└──┴┘  └─┘└─┘┘└┘└  ┴└─┘
 
 export async function bootKeyboard() {
-    // Load the first keyboard config from the static library that was actually physically detected
+    // Pick a detected input. A physical keyboard often exposes both a USB MIDI
+    // input and output endpoint under one name, so nothing is filtered out for
+    // having an output port. The only thing avoided in auto-selection is the
+    // device the app itself sends to (the IAC Driver), because wiring that back
+    // in could loop the app's own notes; the user can still choose it by hand.
     await listKeyboardConfigs()
-    let keyboardName
-    for (let name of globals.keyboardsDetected) {
-        if (globals.keyboardsAvailable.includes(name)) {
-            keyboardName = name
-            break
-        }
-    }
+    const detected = [...globals.keyboardsDetected]
+    // If the current keyboard is still connected, keep its config (including any
+    // unsaved octave edits); the caller still re-wires it afterwards.
+    if (globals.keyboard.name && detected.includes(globals.keyboard.name))
+        return
+    // Otherwise prefer a device that has a config, then any other detected
+    // device, and only fall back to the app's own output device last.
+    let keyboardName = detected.find(name => globals.keyboardsAvailable.includes(name) && !isSelfOutputDevice(name))
+    if (!keyboardName)
+        keyboardName = detected.find(name => !isSelfOutputDevice(name))
+    if (!keyboardName)
+        keyboardName = detected[0]
     if (keyboardName) {
         try {
             await switchKeyboard(keyboardName)
@@ -378,8 +406,11 @@ async function switchKeyboard(name) {
         keyboardConfig = await fetchKeyboardConfig(name)
     }
     catch (e) {
-        console.warn('Could not get midi keyboard config', name, '- caught and continuing with emergency settings...')
-        keyboardConfig = { name: 'Dummy (emergency)', description: '', rhJamSoundOctave: 4, lhTriggerOctave: 3 }
+        // No bundled or saved config for this device. Still select it under its
+        // own name so the input can be opened, using default octaves. It can be
+        // saved from the MIDI Keyboard Config section.
+        console.warn('No keyboard config for', name, '- using default octaves')
+        keyboardConfig = { name, description: suggestConfigName(name), rhJamSoundOctave: 4, lhTriggerOctave: 3 }
     }
 
     // Emergency defaults, based on a small, two octave keyboard
@@ -387,6 +418,8 @@ async function switchKeyboard(name) {
         keyboardConfig.rhJamSoundOctave = 4
     if (!keyboardConfig.lhTriggerOctave)
         keyboardConfig.lhTriggerOctave = 3
+    if (!keyboardConfig.name)
+        keyboardConfig.name = name
 
     globals.keyboard = keyboardConfig  // current keyboard config JSON
 }
@@ -415,7 +448,7 @@ export function linkProjectToKeyboard() {
         wireCCEvents(false)
     }
 
-    if (keyboardName) {  // current keyboard config JSON
+    if (keyboardName && WebMidi.enabled) {  // current keyboard config JSON
 
         // Open INPUT of hardware MIDI keyboard, so that we can later listen for notes on it
         globals.mySynth = WebMidi.getInputByName(keyboardName)
@@ -441,6 +474,10 @@ export function linkProjectToKeyboard() {
         }
 
         pingOut()
+    }
+    else if (keyboardName) {
+        // MIDI access is blocked or not granted, so there is no input to open.
+        globals.mySynth = undefined
     }
 
     wireQwertyKeyState()

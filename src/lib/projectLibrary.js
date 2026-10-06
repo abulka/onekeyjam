@@ -5,6 +5,7 @@ import {
     fetchUserProject as fetchStoredProject,
     saveUserProject as saveStoredProject,
 } from './localStore.js'
+import { listCustomKeyboards, fetchCustomKeyboard } from './keyboardStore.js'
 
 /**
  * @module lib/projectLibrary
@@ -88,11 +89,64 @@ export async function saveUserProject(name, data) {
 export async function listKeyboardConfigs() {
     const manifest = await fetchManifest(KEYBOARDS_MANIFEST)
     globals.keyboardsManifest = manifest
-    globals.keyboardsAvailable = manifest.map(entry => entry.text)
+    const staticNames = manifest.map(entry => entry.text)
+    let customNames = []
+    try {
+        customNames = listCustomKeyboards()
+    } catch (e) {
+        customNames = []
+    }
+    // Custom configs come first, so a saved config shadows a bundled one with
+    // the same device name.
+    globals.keyboardsAvailable = [...new Set([...customNames, ...staticNames])]
 }
 
 export async function fetchKeyboardConfig(name) {
+    const custom = fetchCustomKeyboard(name)
+    if (custom)
+        return custom
     const entry = globals.keyboardsManifest.find(k => k.text === name)
     const url = entry ? entry.value : `/keyboards/${encodeURIComponent(name + '.json')}`
     return fetchJson(url)
+}
+
+/**
+ * Every keyboard config with the metadata the MIDI Keyboard Config UI needs:
+ * whether it is built-in or a local custom config, its description and octaves,
+ * and whether a custom config is shadowing a built-in one of the same name.
+ * @returns {Promise<Array<{name: string, source: 'builtin'|'custom', overridesBuiltin: boolean, description: string, lhTriggerOctave: number, rhJamSoundOctave: number}>>}
+ */
+export async function listKeyboardConfigDetails() {
+    const staticNames = globals.keyboardsManifest.map(entry => entry.text)
+    let customNames = []
+    try {
+        customNames = listCustomKeyboards()
+    } catch (e) {
+        customNames = []
+    }
+    // Custom first so a saved config shadows a built-in with the same name.
+    const names = [...new Set([...customNames, ...staticNames])]
+    /** @type {Array<{name: string, source: 'builtin'|'custom', overridesBuiltin: boolean, description: string, lhTriggerOctave: number, rhJamSoundOctave: number}>} */
+    const details = []
+    for (const name of names) {
+        const custom = fetchCustomKeyboard(name)
+        let config = custom
+        if (!config) {
+            try {
+                config = await fetchKeyboardConfig(name)
+            }
+            catch (e) {
+                config = { name, description: '', lhTriggerOctave: 3, rhJamSoundOctave: 4 }
+            }
+        }
+        details.push({
+            name,
+            source: custom ? 'custom' : 'builtin',
+            overridesBuiltin: !!custom && staticNames.includes(name),
+            description: config.description || '',
+            lhTriggerOctave: config.lhTriggerOctave ?? 3,
+            rhJamSoundOctave: config.rhJamSoundOctave ?? 4,
+        })
+    }
+    return details
 }

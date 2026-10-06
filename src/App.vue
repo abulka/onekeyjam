@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import mainOneKeyJam from '../src/lib/main.js';
 import { globals } from './lib/globals.js';
@@ -44,6 +44,24 @@ function toggleMetronome() {
   setMetronomeEnabled(!globals.metronomeEnabled)
 }
 
+// Hardware-MIDI activity. `midiActivity.pulse` ticks on every incoming message,
+// so a watch briefly lights the dot. `seen` keeps it discoverable once any note
+// has arrived, even after the pulse fades.
+const midiDotActive = ref(false)
+let midiDotTimer = null
+watch(() => globals.midiActivity.pulse, () => {
+  midiDotActive.value = true
+  if (midiDotTimer)
+    clearTimeout(midiDotTimer)
+  midiDotTimer = setTimeout(() => { midiDotActive.value = false }, 200)
+})
+const midiDotTitle = computed(() => {
+  if (!globals.midiActivity.seen)
+    return 'No MIDI notes received yet. Play your MIDI keyboard; this dot lights when messages arrive.'
+  const input = globals.midiActivity.lastInput ? ` from ${globals.midiActivity.lastInput}` : ''
+  return `MIDI received${input}: ${globals.midiActivity.lastState} ${globals.midiActivity.lastNote}`
+})
+
 onMounted(() => {
   console.log('App onMounted')
 
@@ -56,6 +74,11 @@ onMounted(() => {
 
   // Tab toggles between the Edit page and the Help page.
   wireHelpShortcuts(router)
+})
+
+onUnmounted(() => {
+  if (midiDotTimer)
+    clearTimeout(midiDotTimer)
 })
 
 </script>
@@ -109,6 +132,10 @@ onMounted(() => {
           <div v-if="projectKeyLabel" class="item app-key-name" title="The resolved project key. It moves with live transposition.">
             <span class="app-key-label">Key:</span>
             <strong class="app-key-value">{{ projectKeyLabel }}</strong>
+          </div>
+          <div class="item app-midi-activity" :title="midiDotTitle">
+            <span class="midi-dot" :class="{ active: midiDotActive, seen: globals.midiActivity.seen }"></span>
+            <span class="midi-dot-label">MIDI</span>
           </div>
           <div class="item app-project-name" :title="projectName">
             <span class="app-project-label">Project:</span>
@@ -178,6 +205,40 @@ onMounted(() => {
 
 .metronome-toggle .icon {
   margin: 0;
+}
+
+/* Hardware-MIDI activity indicator. */
+.app-midi-activity {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.midi-dot {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: #c4b8a5;
+  border: 1px solid #9c8c73;
+  transition: background 0.1s, box-shadow 0.1s;
+}
+
+.midi-dot.seen:not(.active) {
+  background: #7fa87f;
+  border-color: #4f7a4f;
+}
+
+.midi-dot.active {
+  background: #2e8b57;
+  border-color: #1f5f3a;
+  box-shadow: 0 0 6px rgba(46, 139, 87, 0.9);
+}
+
+.midi-dot-label {
+  font-size: 0.8rem;
+  color: #7a6547;
 }
 
 /* Resolved project key, shown beside the project name at the right of the tabs. */
