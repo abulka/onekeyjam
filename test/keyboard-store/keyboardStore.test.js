@@ -7,6 +7,8 @@ import {
     deleteCustomKeyboard,
     suggestConfigName,
     keyboardSaveActionLabel,
+    readDisabledKeyboards,
+    saveDisabledKeyboards,
 } from '@/lib/keyboardStore.js'
 
 function fakeStorage() {
@@ -87,5 +89,21 @@ describe('keyboardStore', () => {
         assert.equal(keyboardSaveActionLabel({ hasCustom: false, hasBuiltin: true }), 'Save as custom config (replaces built-in)')
         assert.equal(keyboardSaveActionLabel({ hasCustom: true, hasBuiltin: true }), 'Save config')
         assert.equal(keyboardSaveActionLabel({ hasCustom: true, hasBuiltin: false }), 'Save config')
+    })
+
+    it('starts with no disabled keyboards', () => {
+        assert.deepEqual(readDisabledKeyboards(fakeStorage()), [])
+    })
+
+    it('remembers which keyboards are switched off', () => {
+        const storage = fakeStorage()
+        saveDisabledKeyboards(['LPK25', 'SL MkII Port 1'], storage)
+        assert.deepEqual(readDisabledKeyboards(storage), ['LPK25', 'SL MkII Port 1'])
+    })
+
+    it('ignores corrupt disabled-keyboard storage', () => {
+        const storage = fakeStorage()
+        storage.setItem('onekeyjam.keyboardsDisabled', 'not json')
+        assert.deepEqual(readDisabledKeyboards(storage), [])
     })
 })

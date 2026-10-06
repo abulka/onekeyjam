@@ -9,6 +9,7 @@
  */
 
 const STORAGE_KEY = 'onekeyjam.keyboards'
+const DISABLED_STORAGE_KEY = 'onekeyjam.keyboardsDisabled'
 
 /**
  * Tokens that describe the port or model revision rather than the keyboard, so
@@ -134,6 +135,41 @@ export function deleteCustomKeyboard(name, storage = defaultStorage()) {
     delete all[name]
     try {
         storage.setItem(STORAGE_KEY, JSON.stringify(all))
+    }
+    catch (error) {
+        // Persistence is best effort.
+    }
+}
+
+/**
+ * The device names the user has switched off. Every connected keyboard is live
+ * by default, so only the exceptions need remembering.
+ * @param {Storage|null} [storage]
+ * @returns {string[]}
+ */
+export function readDisabledKeyboards(storage = defaultStorage()) {
+    if (!storage)
+        return []
+    try {
+        const raw = storage.getItem(DISABLED_STORAGE_KEY)
+        const data = raw ? JSON.parse(raw) : []
+        return Array.isArray(data) ? data.filter(name => typeof name === 'string' && name) : []
+    }
+    catch (error) {
+        return []
+    }
+}
+
+/**
+ * @param {string[]} names
+ * @param {Storage|null} [storage]
+ */
+export function saveDisabledKeyboards(names, storage = defaultStorage()) {
+    if (!storage)
+        return
+    try {
+        const clean = Array.isArray(names) ? names.filter(name => typeof name === 'string' && name) : []
+        storage.setItem(DISABLED_STORAGE_KEY, JSON.stringify(clean))
     }
     catch (error) {
         // Persistence is best effort.

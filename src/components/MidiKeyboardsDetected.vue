@@ -3,10 +3,10 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { globals } from '../../src/lib/globals.js'
 import { requestMidiAccess } from '@/lib/midi/boot-webmidi.js'
-import { linkProjectToKeyboard } from '@/lib/boot-project.js'
+import { linkProjectToKeyboard, isKeyboardEnabled } from '@/lib/boot-project.js'
 import { listKeyboardConfigs, listKeyboardConfigDetails } from '@/lib/projectLibrary.js'
-import { saveCustomKeyboard, deleteCustomKeyboard, keyboardSaveActionLabel, suggestConfigName } from '@/lib/keyboardStore.js'
-import { clearMidiActivityLog, wireMidiMonitor, looksLikeRoutingDevice } from '@/lib/midi/midi-monitor.js'
+import { saveCustomKeyboard, deleteCustomKeyboard, keyboardSaveActionLabel, suggestConfigName, saveDisabledKeyboards } from '@/lib/keyboardStore.js'
+import { clearMidiActivityLog, wireMidiMonitor, looksLikeRoutingDevice, isSelfOutputDevice } from '@/lib/midi/midi-monitor.js'
 
 const router = useRouter()
 
@@ -114,18 +114,16 @@ function sourceLabel(detail) {
 
 /** The type/status badges shown in the all-configs table. */
 function statusLabel(detail) {
-  if (detail.name === globals.keyboard.name && matchesDetected(detail.name))
-    return 'In use'
   if (matchesDetected(detail.name))
-    return 'Plugged in'
+    return isKeyboardEnabled(detail.name) ? 'On' : 'Plugged in'
   return 'Not detected'
 }
 
 /** The pill colour for a table row's status. */
 function statusClass(detail) {
-  if (detail.name === globals.keyboard.name && matchesDetected(detail.name))
-    return 'badge-inuse'
-  return matchesDetected(detail.name) ? 'badge-ok' : 'badge-muted'
+  if (matchesDetected(detail.name))
+    return isKeyboardEnabled(detail.name) ? 'badge-inuse' : 'badge-ok'
+  return 'badge-muted'
 }
 
 async function refreshConfigDetails() {
@@ -142,12 +140,12 @@ onMounted(async () => {
   loadEditor(editorName.value)
   // Open the form at start only when a keyboard is already selected but not
   // usable yet (no config, or its keyboard is unplugged). Otherwise leave it
-  // collapsed; clicking Use in the table must not force it open.
+  // collapsed; switching a keyboard on in the table must not force it open.
   configOpen.value = !!globals.keyboard.name && !(editorHasConfig.value && editorConnected.value)
 })
 
-// Follow the current keyboard when it changes (boot auto-selection, hot-plug,
-// or the Use button), as long as the user is not editing another config.
+// Follow the current keyboard when it changes (boot auto-selection or
+// hot-plug), as long as the user is not editing another config.
 watch(() => globals.keyboard.name, (name) => {
   if (configOpen.value)
     return
@@ -202,11 +200,14 @@ function loadEditor(name) {
   }
 }
 
-/** Wire the app to the given device/config name and point the form at it. */
-function useConfig(name) {
-  document.broadcastEvent("switch-keyboard", { name })
-  editorName.value = name
-  loadEditor(name)
+/** Switch a connected keyboard on or off. Several can be live at the same time. */
+function toggleKeyboard(name) {
+  if (globals.keyboardsDisabled.includes(name))
+    globals.keyboardsDisabled = globals.keyboardsDisabled.filter(disabled => disabled !== name)
+  else
+    globals.keyboardsDisabled = [...globals.keyboardsDisabled, name]
+  saveDisabledKeyboards(globals.keyboardsDisabled)
+  linkProjectToKeyboard()
 }
 
 /** Open the form for an arbitrary config, even one that is not connected. */
@@ -255,9 +256,11 @@ async function saveEditor() {
     globals.keyboard.description = editorFields.value.description
     globals.keyboard.lhTriggerOctave = editorFields.value.lhTriggerOctave
     globals.keyboard.rhJamSoundOctave = editorFields.value.rhJamSoundOctave
-    linkProjectToKeyboard()
   }
   await refreshConfigDetails()
+  // A newly saved config makes its keyboard available, so re-wire to switch it
+  // on (or to pick up new octaves for the live reference keyboard).
+  linkProjectToKeyboard()
   savedMessage.value = `Saved config for '${name}'`
   setTimeout(() => { savedMessage.value = '' }, 2500)
 }
@@ -274,11 +277,14 @@ async function deleteEditor() {
   const name = editorName.value
   const wasOverriding = editorOverridesBuiltin.value
   deleteCustomKeyboard(name)
-  // Re-fetch so the built-in (or default) config comes back when this was the
-  // live keyboard.
+  await refreshConfigDetails()
+  // Re-wire so a keyboard whose only config was deleted switches off. When the
+  // live reference keyboard lost its config, reload the built-in (or default)
+  // config first, which re-wires as well.
   if (name === globals.keyboard.name)
     document.broadcastEvent("switch-keyboard", { name })
-  await refreshConfigDetails()
+  else
+    linkProjectToKeyboard()
   loadEditor(name)
   savedMessage.value = wasOverriding
     ? `Reverted '${name}' to the built-in config`
@@ -327,11 +333,21 @@ async function openRoutingHelp() {
             · {{ configForDevice(deviceName).description }}
           </span>
         </template>
-        <span v-else class="midi-note">No config yet — default octaves</span>
+        <span v-else class="midi-note">No config yet — add one to use this keyboard</span>
       </td>
       <td class="midi-action-cell">
-        <span v-if="deviceName === globals.keyboard.name" class="badge badge-inuse badge-status">In use</span>
-        <button v-else class="ui mini button midi-use-button" @click="useConfig(deviceName)">Use</button>
+        <template v-if="isSelfOutputDevice(deviceName)">
+          <span class="midi-note">Output device</span>
+        </template>
+        <button v-else-if="!configForDevice(deviceName)" class="ui mini button midi-use-button"
+          title="Add a keyboard config for this device"
+          @click="openEditor(deviceName)">Add config</button>
+        <button v-else class="ui mini button midi-use-button"
+          :class="{ primary: isKeyboardEnabled(deviceName) }"
+          :title="isKeyboardEnabled(deviceName) ? 'Switch this keyboard off' : 'Switch this keyboard on'"
+          @click="toggleKeyboard(deviceName)">
+          {{ isKeyboardEnabled(deviceName) ? 'On' : 'Off' }}
+        </button>
       </td>
     </tr>
   </table>
@@ -483,8 +499,8 @@ async function openRoutingHelp() {
     </details>
   </div>
   <p v-else class="midi-note">
-    No MIDI keyboard is selected. Play a key, or use Re-scan above; choose a
-    detected device with its Use button.
+    No keyboard config is selected. Play a key, or use Re-scan above; switch on
+    any detected keyboard with its On/Off button.
   </p>
 
   <h5>All configs</h5>
@@ -503,7 +519,7 @@ async function openRoutingHelp() {
         <th>Type</th>
         <th>Description</th>
         <th>Status</th>
-        <th class="midi-action-cell">Use</th>
+        <th class="midi-action-cell">Live</th>
         <th class="midi-action-cell">Edit</th>
       </tr>
     </thead>
@@ -523,10 +539,12 @@ async function openRoutingHelp() {
           </span>
         </td>
         <td class="midi-action-cell">
-          <button v-if="detail.name !== globals.keyboard.name" class="ui mini button midi-use-button"
-            :disabled="!matchesDetected(detail.name)"
-            :title="matchesDetected(detail.name) ? '' : 'Not detected — connect this keyboard to use its config'"
-            @click="useConfig(detail.name)">Use</button>
+          <button v-if="matchesDetected(detail.name)" class="ui mini button midi-use-button"
+            :class="{ primary: isKeyboardEnabled(detail.name) }"
+            :title="isKeyboardEnabled(detail.name) ? 'Switch this keyboard off' : 'Switch this keyboard on'"
+            @click="toggleKeyboard(detail.name)">
+            {{ isKeyboardEnabled(detail.name) ? 'On' : 'Off' }}
+          </button>
         </td>
         <td class="midi-action-cell">
           <button class="ui mini button midi-use-button" @click="openEditor(detail.name)">Edit</button>
@@ -587,7 +605,7 @@ async function openRoutingHelp() {
   overflow: hidden;
 }
 
-/* A fixed row height stops rows jumping when the Use button appears or not. */
+/* A fixed row height stops rows jumping when an action button appears or not. */
 .midi-table tr {
   height: 2.2rem;
 }
@@ -608,6 +626,25 @@ async function openRoutingHelp() {
 .midi-action-cell {
   text-align: right;
   white-space: nowrap;
+}
+
+/* Center the Live and Edit headings over their buttons, so each heading sits
+   directly above the content of its column rather than just sharing its edge. */
+.midi-all-table th.midi-action-cell,
+.midi-all-table td.midi-action-cell {
+  text-align: center;
+}
+
+/* A badge on its own in an all-configs cell has nothing to its left, so drop
+   its spacing. This lines the pill up exactly under the left-aligned heading. */
+.midi-all-table td .badge {
+  margin-left: 0;
+}
+
+/* Semantic UI gives buttons a small right margin. Remove it so the button's
+   right edge lines up with the right-aligned heading in the action columns. */
+.midi-use-button {
+  margin-right: 0;
 }
 
 /* A fixed width so In use / Plugged in / Not detected never reflow the row. */

@@ -340,11 +340,14 @@ export const globals = reactive({
         log: [],           // recent formatted messages, newest last
         logLimit: 100,
     },
-    keyboard: {             // current keyboard config JSON
+    keyboard: {             // current keyboard config JSON (the shared octave reference)
         name: '',
         lhTriggerOctave: 3,
         rhJamSoundOctave: 4,
     },
+    keyboardConfigs: {},    // effective config (custom or built-in) per device name, keyed by name
+    keyboardsDisabled: [],  // device names switched off; every other connected keyboard is live
+    midiInputs: [],         // opened Web MIDI inputs currently wired for note/CC events
     // Number of octaves shown on the on-screen performance keyboard (2-6).
     // The lowest key is always the chord-trigger octave, and extra octaves
     // extend upward, so the chord trigger octave stays first/lowest. This only

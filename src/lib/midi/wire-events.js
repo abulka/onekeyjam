@@ -1,4 +1,5 @@
 import { globals } from "../globals.js"
+import { Note } from "./webmidi.js"
 import { playChord, playChordOff } from "./play-chord.js"
 import { transposeChordTriggerMap } from "../transpose"
 import { stopAllNotes } from "./stop-all-notes.js"
@@ -213,6 +214,29 @@ function onCC(event) {
         globals.channel2.sendControlChange(event.controller.number, event.rawValue)
 }
 
+/**
+ * Several keyboards can be live at once, and each config may place its chord
+ * triggers in a different octave. Shift the played note by the difference
+ * between the input's own trigger octave and the shared reference octave, so
+ * every keyboard triggers the same chords no matter where its octaves sit.
+ * @param {*} e webmidi event with a `.note` and a `.port`
+ * @returns {*} the event, with an aligned note when a shift is needed
+ */
+function alignNoteForInput(e) {
+    const inputName = e.port && e.port.name
+    const config = inputName ? globals.keyboardConfigs[inputName] : null
+    const referenceOctave = globals.keyboard.lhTriggerOctave
+    if (!config || typeof config.lhTriggerOctave !== 'number' || config.lhTriggerOctave === referenceOctave)
+        return e
+    const shift = referenceOctave - config.lhTriggerOctave
+    const shiftedNote = new Note(e.note.midi + shift * 12, {
+        duration: e.note.duration,
+        attack: e.note.attack,
+        release: e.note.release,
+    })
+    return { ...e, note: shiftedNote }
+}
+
 // Real MIDI keyboard events
 function onNoteOnRealMidi(e) {
     // console.log('ON', e.note)
@@ -222,30 +246,38 @@ function onNoteOnRealMidi(e) {
         return
     }
     document.broadcastEvent('live-note', { state: true, note: e.note })
-    onNoteOn(e)
+    onNoteOn(alignNoteForInput(e))
 }
 function onNoteOffRealMidi(e) {
     // console.log('OFF', e.note)
     document.broadcastEvent('live-note', { state: false, note: e.note })
-    onNoteOff(e)
+    onNoteOff(alignNoteForInput(e))
 }
 
-// Wire
+// Wire: these act on every keyboard opened by linkProjectToKeyboard().
 
 export function wireNoteOnEvents(on = true) {
-    on ? globals.mySynth.channels[1].addListener("noteon", onNoteOnRealMidi) :
-        globals.mySynth.channels[1].removeListener("noteon", onNoteOnRealMidi)
+    // Attach to the input itself so notes are heard on every MIDI channel, not
+    // just channel 1: different keyboards transmit on different channels.
+    for (const { input } of globals.midiInputs) {
+        on ? input.addListener("noteon", onNoteOnRealMidi) :
+            input.removeListener("noteon", onNoteOnRealMidi)
+    }
 }
 
 export function wireNoteOffEvents(on = true) {
-    on ? globals.mySynth.channels[1].addListener("noteoff", onNoteOffRealMidi) :
-        globals.mySynth.channels[1].removeListener("noteoff", onNoteOffRealMidi)
+    for (const { input } of globals.midiInputs) {
+        on ? input.addListener("noteoff", onNoteOffRealMidi) :
+            input.removeListener("noteoff", onNoteOffRealMidi)
+    }
 }
 
 export function wireCCEvents(on = true) {
-    // Pass sustain pedal from main input to chord channel, as well as other CCs
-    on ? globals.mySynth.addListener("controlchange", "all", onCC) :
-        globals.mySynth.removeListener("controlchange", "all", onCC)
+    // Pass sustain pedal from each input to chord channel, as well as other CCs
+    for (const { input } of globals.midiInputs) {
+        on ? input.addListener("controlchange", "all", onCC) :
+            input.removeListener("controlchange", "all", onCC)
+    }
 }
 
 // Other

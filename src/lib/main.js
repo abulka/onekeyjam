@@ -6,6 +6,7 @@ import { restoreTake } from "./midi/recorder.js"
 import { keyDetection } from "./keyDetection"
 import { initChordPlayEvents } from './midi/wire-chord-play-events';
 import { initCurrentProjectAutosave } from './currentProjectStore.js';
+import { readDisabledKeyboards } from './keyboardStore.js';
 
 export default async function () {
     globals.boot.status = 'booting'
@@ -14,6 +15,8 @@ export default async function () {
     try {
         wireProjectEvents() // register project/keyboard event handlers before the UI can use them
         bootGeneralMidi()
+        // Every connected keyboard is live unless the user switched it off.
+        globals.keyboardsDisabled = readDisabledKeyboards()
         await bootWebMidi()  // wait for WebMidi.js to be ready so that it populates globals.keyboardsDetected
 
         // Keyboard and project boot in parallel; both fall back to safe

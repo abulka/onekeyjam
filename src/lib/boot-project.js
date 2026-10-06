@@ -20,7 +20,7 @@ import { resolveProjectKey } from './projectKey.js'
 import { applyProjectKeySettings } from './projectScaleSettings.js'
 import { deletePendingChordConfigs } from './massOperationsOnChordConfigs'
 import { fetchFeaturedProject, fetchClassicProject, fetchUserProject } from './projectLibrary';
-import { listKeyboardConfigs, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listUserProjects } from './projectLibrary';
+import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listUserProjects } from './projectLibrary';
 import { restoreCurrentProject } from './currentProjectStore.js';
 
 /** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
@@ -374,6 +374,9 @@ export async function bootKeyboard() {
     // device the app itself sends to (the IAC Driver), because wiring that back
     // in could loop the app's own notes; the user can still choose it by hand.
     await listKeyboardConfigs()
+    // Cache every config's octaves, so each connected keyboard can be aligned to
+    // the shared reference while notes are playing.
+    await listKeyboardConfigDetails()
     const detected = [...globals.keyboardsDetected]
     // If the current keyboard is still connected, keep its config (including any
     // unsaved octave edits); the caller still re-wires it afterwards.
@@ -422,6 +425,7 @@ async function switchKeyboard(name) {
         keyboardConfig.name = name
 
     globals.keyboard = keyboardConfig  // current keyboard config JSON
+    globals.keyboardConfigs[name] = keyboardConfig
 }
 
 
@@ -430,6 +434,28 @@ async function switchKeyboard(name) {
 // ╔═╗┌┬┐┬ ┬┌─┐┬─┐
 // ║ ║ │ ├─┤├┤ ├┬┘
 // ╚═╝ ┴ ┴ ┴└─┘┴└─
+
+/**
+ * A detected keyboard is live only when it has a config and the user has not
+ * switched it off. A keyboard with no config has no known octaves to align to,
+ * so it is not wired; the UI offers to add a config for it instead. The app's
+ * own output device is never treated as a keyboard.
+ * @param {string} name
+ */
+export function isKeyboardEnabled(name) {
+    return globals.keyboardsAvailable.includes(name)
+        && !globals.keyboardsDisabled.includes(name)
+        && !isSelfOutputDevice(name)
+}
+
+/**
+ * The detected keyboards that should be wired right now: everything with a
+ * config that the user has not switched off, in the order detected.
+ * @returns {string[]}
+ */
+export function enabledKeyboardNames() {
+    return globals.keyboardsDetected.filter(name => isKeyboardEnabled(name))
+}
 
 export function linkProjectToKeyboard() {
     // combination of keyboard and project init
@@ -440,44 +466,39 @@ export function linkProjectToKeyboard() {
     else if (!keyboardName)
         console.warn('linkProjectToKeyboard: keyboardName is undefined, probably no matching midi keyboard detected')
 
-    // Disconnect from existing keyboard if necessary
-    if (globals.mySynth) {
-        // globals.mySynth.disconnect()  // TODO what would this do?
+    // Disconnect every input that was wired on the previous pass.
+    if (globals.midiInputs.length) {
         wireNoteOnEvents(false)
         wireNoteOffEvents(false)
         wireCCEvents(false)
     }
+    globals.midiInputs = []
+    globals.mySynth = undefined
 
-    if (keyboardName && WebMidi.enabled) {  // current keyboard config JSON
-
-        // Open INPUT of hardware MIDI keyboard, so that we can later listen for notes on it
-        globals.mySynth = WebMidi.getInputByName(keyboardName)
-
-        // Scraps - other ways of detecting the external MIDI keyboard
-        // globals.mySynth = WebMidi.getInputByName("Arturia MiniLab mkII")  // be specific if you have multiple devices
-        // globals.mySynth = WebMidi.getInputByName("SL MkII Port 1")  // be specific if you have multiple devices
-        // globals.mySynth = WebMidi.inputs[0]  // pick the first one available
-
-        if (!globals.mySynth) {  // TODO is this safe to check for undefined, as it is a reactive variable?
-
-            if (keyboardName == 'Dummy Keyboard') {
-                // console.log("Skipping connect to hardware INPUT synth", keyboardName)
-            }
-            else
-                console.warn("Failed to connect to hardware INPUT synth", keyboardName)
+    if (WebMidi.enabled) {
+        // Every connected keyboard that is switched on is live at the same time,
+        // so one can trigger chords while another solos. Notes are aligned to the
+        // shared reference octaves as they arrive (see wire-events.js).
+        for (const name of enabledKeyboardNames()) {
+            const input = WebMidi.getInputByName(name)
+            if (!input)
+                continue
+            globals.midiInputs.push({ name, input })
+            if (name === keyboardName)
+                globals.mySynth = input  // the reference keyboard, for compatibility
         }
-        else {
-            // Listen for input events from a MIDI keyboard to trigger chords and jam notes
+
+        if (globals.midiInputs.length) {
+            // Listen for input events from any wired keyboard.
             wireNoteOnEvents()
             wireNoteOffEvents()
             wireCCEvents()
         }
+        else if (keyboardName && keyboardName !== 'Dummy Keyboard') {
+            console.warn('Failed to connect to hardware INPUT synth', keyboardName)
+        }
 
         pingOut()
-    }
-    else if (keyboardName) {
-        // MIDI access is blocked or not granted, so there is no input to open.
-        globals.mySynth = undefined
     }
 
     wireQwertyKeyState()

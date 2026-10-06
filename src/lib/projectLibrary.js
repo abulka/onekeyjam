@@ -139,6 +139,9 @@ export async function listKeyboardConfigDetails() {
                 config = { name, description: '', lhTriggerOctave: 3, rhJamSoundOctave: 4 }
             }
         }
+        // Cache the effective config so note handling can align each keyboard's
+        // octaves to the shared reference without another fetch.
+        globals.keyboardConfigs[name] = config
         details.push({
             name,
             source: custom ? 'custom' : 'builtin',
