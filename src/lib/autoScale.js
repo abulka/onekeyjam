@@ -35,16 +35,56 @@ export const POLICY_PRESETS = {
         // scales with close, infrequent shifts; Varied takes one close colour
         // from a larger pool on each chord change; Wild lifts the spread band
         // and the hold rule.
-        { name: 'subtle', label: 'Subtle', options: { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true } },
-        { name: 'varied', label: 'Varied', options: { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true } },
-        { name: 'wild', label: 'Wild', options: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: false } },
+        {
+            name: 'subtle',
+            label: 'Subtle',
+            description: 'The default. Stays on the three stored scales, holds the same one for two chord changes, and only makes small shifts. It never jumps while you are playing.',
+            options: { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true },
+        },
+        {
+            name: 'varied',
+            label: 'Varied',
+            description: 'Chooses from a wider pool of scales and can change on every chord, for a little more variety while staying close.',
+            options: { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true },
+        },
+        {
+            name: 'wild',
+            label: 'Wild',
+            description: 'Removes the limits: a larger pool, no hold while playing, and changes that can leap to a very different scale.',
+            options: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: false },
+        },
     ],
     follow: [
-        { name: 'simple', label: 'Simple', options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' } },
-        { name: 'progression', label: 'Progression', options: { contextChords: 2, phraseBias: false, phraseStrength: 1, palette: 'primary' } },
-        { name: 'lyrical', label: 'Lyrical', options: { contextChords: 2, phraseBias: true, phraseStrength: 1, palette: 'primary' } },
-        { name: 'resolve', label: 'Resolve', options: { contextChords: 1, phraseBias: true, phraseStrength: 2, palette: 'primary' } },
-        { name: 'colourful', label: 'Colourful', options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'colour' } },
+        {
+            name: 'simple',
+            label: 'Simple',
+            description: 'Follows the single chord just played and picks its most natural stored scale. The safest choice when you are reading the changes closely.',
+            options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' },
+        },
+        {
+            name: 'progression',
+            label: 'Progression',
+            description: 'Looks at the last two chords, so it can recognise a ii-V-I or similar chain and lean toward the scale that leads into the next chord.',
+            options: { contextChords: 2, phraseBias: false, phraseStrength: 1, palette: 'primary' },
+        },
+        {
+            name: 'lyrical',
+            label: 'Lyrical',
+            description: 'Looks at the last two chords and also remembers the last solo note you played, so the new scale does not cut your phrase off.',
+            options: { contextChords: 2, phraseBias: true, phraseStrength: 1, palette: 'primary' },
+        },
+        {
+            name: 'resolve',
+            label: 'Resolve',
+            description: 'Uses only the current chord but strongly favours the scale that resolves the last solo note you played. Best when you want clear endings.',
+            options: { contextChords: 1, phraseBias: true, phraseStrength: 2, palette: 'primary' },
+        },
+        {
+            name: 'colourful',
+            label: 'Colourful',
+            description: 'Keeps the follow logic but prefers stored scales that add colour, so each change introduces a new note that still fits the chord.',
+            options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'colour' },
+        },
     ],
 }
 

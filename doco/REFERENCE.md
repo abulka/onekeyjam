@@ -269,6 +269,27 @@ change every chord and the sounding key; invert rotates each chord's voicing.
 Reset Transpositions undoes all three. These use `Alt`, not `Ctrl`, because
 `Ctrl`+digit switches browser tabs.
 
+### Computer keyboards: pressing several keys at once
+
+A computer keyboard is not a piano. Many models can only report two or three
+keys held down at the same time, and certain combinations are blocked
+completely. This is called **key ghosting**, and it is a limit of your
+keyboard, not a bug in OneKeyJam. When the keyboard does not report a key
+press, the app never receives it, so it cannot play the note.
+
+You will notice it most when you hold a chord trigger (`z x c v b n m`) and
+add two or more solo notes (`q w e r t y u`). For example, `M` and `U` sit in
+the same column of the keyboard's internal matrix, so holding `M`, `U` and `O`
+together can drop one note, while `M`, `I` and `O` (or a MIDI keyboard) plays
+all three.
+
+If a note goes missing:
+
+- Hold fewer keys at once.
+- Choose solo keys that are not in the same vertical column as the trigger you
+  are holding.
+- Use a MIDI keyboard or the on-screen keyboard, which have no such limit.
+
 ### Trigger keys and solo keys
 
 The chord table's **Trigger** column shows which left-hand key plays which chord.
@@ -358,6 +379,9 @@ The full developer reference, including the theory and the exact scoring, is in
 
 - **"I am playing and nothing changes."** The on-screen keyboard needs focus;
   click it first. MIDI keyboards connect automatically.
+- **"One of my solo notes goes silent when I add a trigger key."** Your
+  computer keyboard is dropping the key (key ghosting, a hardware limit), not
+  the app. See **Computer keyboards: pressing several keys at once** above.
 - **"The solo sounds wrong over a chord."** Check which trigger you last pressed;
   the scale follows the chord. Press `4` to play the chord notes and re-orient,
   then `1`.

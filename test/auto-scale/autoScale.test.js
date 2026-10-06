@@ -63,6 +63,8 @@ describe('autoScale policies', () => {
                 for (const preset of presets) {
                     assert.equal(typeof preset.name, 'string')
                     assert.equal(typeof preset.label, 'string')
+                    assert.equal(typeof preset.description, 'string', `${mode}/${preset.name} needs a description`)
+                    assert.ok(preset.description.trim().length > 0, `${mode}/${preset.name} description must not be empty`)
                     for (const [key, value] of Object.entries(preset.options)) {
                         assert.ok(KNOWN_OPTIONS.has(key), `${mode}/${preset.name} sets unknown ${key}`)
                         assert.notEqual(value, undefined)

@@ -201,6 +201,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
             <li>The number keys <code class="kb">1</code>-<code class="kb">5</code> switch scales on every octave; <code class="kb">0</code> toggles <strong>Solo in key</strong>.</li>
             <li>On Mac laptops the function keys may need <code class="kb">Fn</code>.</li>
             <li><code class="kb">F5</code> reloads the page on Windows and Linux.</li>
+            <li>Many computer keyboards can only report two or three keys held at
+              once (key ghosting). If a solo note drops out while you hold a chord
+              and play two notes, use different keys or a MIDI keyboard.</li>
           </ul>
         </div>
       </div>

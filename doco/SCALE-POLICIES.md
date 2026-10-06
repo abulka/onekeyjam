@@ -249,6 +249,8 @@ The presets are defined in `POLICY_PRESETS` in `src/lib/autoScale.js`. Shuffle:
 close shifts), **Varied** (a close colour from a pool of five on each chord
 change) and **Wild** (no band, no hold). The shipped defaults match Subtle; the
 `Subtle` preset keeps `Spread` at one note, so it never uses the Wild spread.
+The `?` beside the `Preset` select opens a one-line explanation of each preset
+for the active mode.
 Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
 (two chords plus phrase bias) and **Resolve** (one chord, strong phrase bias)
 all use `Palette: Primary`; **Colourful** uses `Palette: Close colour`. Every

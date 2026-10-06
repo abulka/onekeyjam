@@ -376,6 +376,32 @@ Some might could go into a special `options.modifierKeys` area.
 
 There will also be a GUI to manage the config rather than dealing with JSON.
 
+### Computer keyboard ghosting (dropped keys)
+
+A computer keyboard is wired as a matrix of rows and columns, and the
+controller cannot always tell which keys are down when three or more are held.
+When three held keys form the corners of a rectangle in that matrix, a phantom
+fourth key appears ("ghosting") and the controller silently blocks one of the
+real keys. This is a hardware limit of the keyboard, not the app or the
+browser.
+
+In the standard QWERTY layout the matrix columns run diagonally, so letters
+that look unrelated share a column: `Q A Z`, `W S X`, `E D C`, `R F V`,
+`T G B`, `Y H N`, `U J M`, `I K ,`, `O L .`, `P ; /`. This is why holding a
+chord trigger plus two solo notes can drop a note depending on which keys are
+used. A concrete example: `U` (jam note B4) and `M` (trigger B3) are in the
+same column, so `M` + `U` + `O` can drop one key, while `M` + `I` + `O` does
+not. The exact matrix varies between keyboard models; keyboards advertising
+N-key rollover (NKRO) or "anti-ghosting" do not have this problem.
+
+The app cannot detect or work around this. Computer-keyboard notes are mapped
+from `KeyboardEvent.code` in `src/lib/midi/piano-key-map.js` and delivered
+through the window `keydown`/`keyup` listeners in
+`src/components/LivePianoKeyboard.vue`. If the keyboard firmware never emits
+the keydown, no event reaches the app, so there is nothing to play, warn about
+or recover. The on-screen keyboard and a MIDI keyboard are not affected by the
+host computer keyboard's matrix, so use those when holding several notes.
+
 ## Old sample project config (deprecated)
 
 ```javascript

@@ -114,6 +114,14 @@ function scrollTop() {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
+// Switch to a markdown Help page and scroll to one of its sections. Used by
+// links from the hand-written Overview into the Reference page.
+async function goToPageSection(page, sectionId) {
+  await showPage(page)
+  await nextTick()
+  jump(sectionId)
+}
+
 // On narrow screens the section list collapses into a dropdown above the
 // article; on wide screens it is the sticky right-hand sidebar.
 const narrowQuery = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
@@ -252,6 +260,14 @@ watch(() => globals.helpPage, async () => {
         The keys play whenever the app window is focused; they pause only while
         you are typing in a form field. The octaves follow the keyboard config, so
         a different project or keyboard may shift the notes that each key plays.
+      </p>
+      <p>
+        One thing a computer keyboard cannot do well is hold many keys at once.
+        Most models can only report two or three, so a solo note can drop out
+        when you hold a chord and add two notes. If that happens, try different
+        keys, or use a MIDI keyboard. See
+        <a href="#" @click.prevent="goToPageSection('reference', 'computer-keyboards-pressing-several-keys-at-once')">Computer
+        keyboards: pressing several keys at once</a> on the Reference page.
       </p>
 
       <!-- Edit view -->

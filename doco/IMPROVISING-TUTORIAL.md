@@ -24,6 +24,11 @@ sample solos. Every control, setting and scale-policy detail lives on the
    scale so chord changes do not move it. `0` (or hold `C#` and press `A#`)
    toggles Solo in key.
 
+A computer keyboard can only report a few keys held at once, so a solo note can
+drop out when you hold a chord and add two notes. If that happens, try
+different keys or use a MIDI keyboard. See the Reference page,
+**Computer keyboards: pressing several keys at once**.
+
 That is the whole setup. The project key, colour and Solo in key all have
 sensible defaults, so you can play immediately. When you want to know what a
 control does, read the Reference page or open **Shortcuts help** above the

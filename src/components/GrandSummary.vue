@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { globals } from '../../src/lib/globals.js'
 import { setSoloMode, setScalePolicy, rerollShuffleScale, applyScalePolicy } from '../../src/lib/change-scale.js'
 import { samePitchClasses, closestScaleIndex, pitchClassSet, POLICY_PRESETS } from '../../src/lib/autoScale.js'
@@ -39,6 +39,17 @@ const scalePolicy = computed({
 // Presets for the active policy, and a selector that shows "Custom" when the
 // current options do not match any preset.
 const presetsForMode = computed(() => POLICY_PRESETS[globals.scaleFiltering.policy] ?? [])
+
+// Opening paragraph for the "?" popover, phrased for the active mode so the
+// user knows what this whole feature is doing before reading the presets.
+const presetHelpPrelude = computed(() => {
+  const mode = globals.scaleFiltering.policy
+  if (mode === 'follow')
+    return 'You are in follow mode, configuring how the scale filter changes automatically as you play. Each chord\'s scale is chosen from the stored alternatives so it follows the chords along. These presets are starting points: pick one, then fine-tune it with Options.'
+  if (mode === 'shuffle')
+    return 'You are in shuffle mode, configuring how the scale filter changes automatically as you play. Each chord\'s scale is drawn from the ranked alternatives for variety. These presets are starting points: pick one, then fine-tune it with Options.'
+  return 'You are configuring how the scale filter changes automatically as you play. These presets are starting points: pick one, then fine-tune it with Options.'
+})
 const scalePreset = computed({
   get: () => {
     const options = globals.scaleFiltering.policyOptions
@@ -63,6 +74,59 @@ function releaseControlFocus(event) {
   if (el && typeof el.blur === 'function')
     el.blur()
 }
+
+// The "?" popover that explains each preset for the active policy. It closes
+// when the policy or preset changes, on Escape, or on a click outside it.
+const showPresetHelp = ref(false)
+const presetHelpUp = ref(false)
+const presetHelpMaxHeight = ref('')
+const presetField = ref(null)
+
+async function togglePresetHelp(event) {
+  releaseControlFocus(event)
+  if (showPresetHelp.value) {
+    showPresetHelp.value = false
+    return
+  }
+  showPresetHelp.value = true
+  presetHelpUp.value = false
+  presetHelpMaxHeight.value = ''
+  // Open upward when the panel would not fit below the field, and cap the
+  // height to the room on that side so every preset stays on screen.
+  await nextTick()
+  const wrapper = presetField.value
+  const panel = wrapper?.querySelector('.preset-help')
+  if (wrapper && panel) {
+    const rect = wrapper.getBoundingClientRect()
+    const room = window.innerHeight - rect.bottom
+    presetHelpUp.value = room < panel.scrollHeight + 16 && rect.top > room
+    const available = (presetHelpUp.value ? rect.top : room) - 10
+    if (panel.scrollHeight > available)
+      presetHelpMaxHeight.value = `${Math.max(120, available)}px`
+  }
+}
+
+function onPresetHelpKeyDown(event) {
+  if (event.key === 'Escape' && showPresetHelp.value)
+    showPresetHelp.value = false
+}
+
+function onPresetHelpClickOutside(event) {
+  if (showPresetHelp.value && presetField.value && !presetField.value.contains(event.target))
+    showPresetHelp.value = false
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onPresetHelpKeyDown)
+  window.addEventListener('pointerdown', onPresetHelpClickOutside)
+})
+onUnmounted(() => {
+  window.removeEventListener('keydown', onPresetHelpKeyDown)
+  window.removeEventListener('pointerdown', onPresetHelpClickOutside)
+})
+
+watch(() => globals.scaleFiltering.policy, () => { showPresetHelp.value = false })
+watch(scalePreset, () => { showPresetHelp.value = false })
 
 // keyModeActive is true while the project key scale is actually sounding; a
 // temporary 1-4 scale switch clears it until the next chord trigger.
@@ -435,15 +499,31 @@ function generalTableClick(event) {
         <option value="shuffle">shuffle</option>
       </select>
     </span>
-    <label v-if="globals.scaleFiltering.policy !== 'manual'" class="preset-field"
-      :class="{ 'paused-control': soloInKey }"
-      :title="soloInKey ? 'Paused while Solo in key is on' : 'Presets: one-click options for the active mode. Custom means the values have been hand-tuned; open Options to see and adjust them.'">
-      <span>Preset:</span>
-      <select v-model="scalePreset" :disabled="soloInKey" :class="{ 'preset-custom': scalePreset === 'custom' }">
-        <option value="custom" disabled>Custom</option>
-        <option v-for="preset in presetsForMode" :key="preset.name" :value="preset.name">{{ preset.label }}</option>
-      </select>
-    </label>
+    <div v-if="globals.scaleFiltering.policy !== 'manual'" ref="presetField"
+      class="preset-field-wrap" :class="{ 'paused-control': soloInKey }">
+      <label class="preset-field"
+        :title="soloInKey ? 'Paused while Solo in key is on' : 'Presets: one-click options for the active mode. Custom means the values have been hand-tuned; open Options to see and adjust them.'">
+        <span>Preset:</span>
+        <select v-model="scalePreset" :disabled="soloInKey" :class="{ 'preset-custom': scalePreset === 'custom' }">
+          <option value="custom" disabled>Custom</option>
+          <option v-for="preset in presetsForMode" :key="preset.name" :value="preset.name">{{ preset.label }}</option>
+        </select>
+      </label>
+      <button class="preset-help-toggle" type="button" :disabled="soloInKey"
+        :aria-expanded="showPresetHelp ? 'true' : 'false'"
+        aria-label="What each preset does" title="What each preset does"
+        @click="togglePresetHelp">?</button>
+      <div v-if="showPresetHelp" class="preset-help" :class="{ 'preset-help-up': presetHelpUp }"
+        :style="{ maxHeight: presetHelpMaxHeight }" role="note">
+        <p class="preset-help-lead">{{ presetHelpPrelude }}</p>
+        <dl class="preset-help-list">
+          <template v-for="preset in presetsForMode" :key="preset.name">
+            <dt>{{ preset.label }}</dt>
+            <dd>{{ preset.description }}</dd>
+          </template>
+        </dl>
+      </div>
+    </div>
     <button class="advanced-toggle" type="button"
       title="Scale policy options for the follow and shuffle modes"
       :class="{ 'paused-control': soloInKey }"
@@ -839,6 +919,13 @@ table.scale-filters td {
 
 /* Preset selector surfaced beside the Options button, so the active
    shuffle/follow flavour stays visible even when the options are hidden. */
+.preset-field-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
 .preset-field {
   display: inline-flex;
   align-items: center;
@@ -851,6 +938,80 @@ table.scale-filters td {
   background: #f6e3c8;
   color: #8a4a12;
   font-weight: bold;
+}
+
+/* "?" that opens a one-line description of every preset in the active mode. */
+.preset-help-toggle {
+  width: 1.15rem;
+  height: 1.15rem;
+  padding: 0;
+  border: 1px solid #b9a98e;
+  border-radius: 50%;
+  background: #efe3cf;
+  color: #6b5a45;
+  font-size: 0.72rem;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.preset-help-toggle:hover {
+  background: #e6d7bd;
+}
+
+.preset-help-toggle[aria-expanded='true'] {
+  background: #e6d7bd;
+  border-color: #8a6a3a;
+}
+
+.preset-help {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  z-index: 1200;
+  width: min(38rem, 92vw);
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #b9915a;
+  border-radius: 6px;
+  background: #fdf6e3;
+  color: #3a2c1a;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+/* Flip above the field when there is not enough room below. */
+.preset-help.preset-help-up {
+  top: auto;
+  bottom: calc(100% + 0.35rem);
+}
+
+.preset-help-lead {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  color: #6b5a45;
+}
+
+.preset-help-list {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.preset-help-list dt {
+  margin-top: 0.35rem;
+  font-weight: bold;
+  color: #5b4326;
+}
+
+.preset-help-list dt:first-child {
+  margin-top: 0;
+}
+
+.preset-help-list dd {
+  margin: 0.05rem 0 0 0;
+  color: #4a3418;
 }
 
 /* Scale policy options row, shown under the scale settings. */
