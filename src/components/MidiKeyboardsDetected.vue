@@ -5,7 +5,7 @@ import { globals } from '../../src/lib/globals.js'
 import { requestMidiAccess } from '@/lib/midi/boot-webmidi.js'
 import { linkProjectToKeyboard } from '@/lib/boot-project.js'
 import { listKeyboardConfigs, listKeyboardConfigDetails } from '@/lib/projectLibrary.js'
-import { saveCustomKeyboard, deleteCustomKeyboard, fetchCustomKeyboard, keyboardSaveActionLabel } from '@/lib/keyboardStore.js'
+import { saveCustomKeyboard, deleteCustomKeyboard, keyboardSaveActionLabel, suggestConfigName } from '@/lib/keyboardStore.js'
 import { clearMidiActivityLog, wireMidiMonitor, looksLikeRoutingDevice } from '@/lib/midi/midi-monitor.js'
 
 const router = useRouter()
@@ -14,25 +14,41 @@ const savedMessage = ref('')
 // Every built-in and custom config, with source and description.
 const configDetails = ref([])
 // The Keyboard config form is collapsed when a usable keyboard is already
-// connected, and expanded when the user needs to set one up.
+// connected, and expanded when the user needs to set one up. It can also be
+// opened for a config that is not the current keyboard (the Edit button).
 const configOpen = ref(false)
+// The config the form is editing. It follows the current keyboard by default
+// and is retargeted by the Edit button, so any config can be edited without
+// switching the live keyboard.
+const editorName = ref('')
+// The working copy of the edited config. Changes only reach the live keyboard
+// when Save is pressed.
+const editorFields = ref({ description: '', lhTriggerOctave: 3, rhJamSoundOctave: 4 })
 // The log element, so it can be scrolled to the newest line.
 const logEl = ref(null)
+// The config disclosure, so Edit can scroll it into view.
+const configEl = ref(null)
 
 // Newest first, so the latest line is always visible in the scroll box. The
 // log is only filled while the activity area is open (see onDebugToggle).
 const recentMessages = computed(() => [...globals.midiActivity.log].reverse())
 
-// The selected keyboard looks like a virtual/DAW routing port rather than a
+// The edited config looks like a virtual/DAW routing port rather than a
 // physical keyboard.
-const routingWarning = computed(() => looksLikeRoutingDevice(globals.keyboard.name))
+const routingWarning = computed(() => looksLikeRoutingDevice(editorName.value))
 
 const lastOctave = computed(() => globals.midiActivity.lastOctave)
 
-const currentConfig = computed(() => configForDevice(globals.keyboard.name))
+// The config currently open in the form, if its name matches a known config.
+const editorConfig = computed(() => configForDevice(editorName.value))
 
-// True when the current keyboard has a matching config and is plugged in.
-const configReady = computed(() => !!currentConfig.value && matchesDetected(globals.keyboard.name))
+// Whether the edited config exists, whether its keyboard is plugged in, and
+// whether it is a local custom config (and shadows a built-in of the same name).
+const editorHasConfig = computed(() => !!editorConfig.value)
+const editorConnected = computed(() => matchesDetected(editorName.value))
+const editorIsCustom = computed(() => editorConfig.value?.source === 'custom')
+const editorOverridesBuiltin = computed(() => !!editorConfig.value?.overridesBuiltin)
+const editorHasBuiltin = computed(() => globals.keyboardsManifest.some(entry => entry.text === editorName.value))
 
 // A one-line status to glance at, next to the section heading.
 const connectionStatusText = computed(() => {
@@ -75,8 +91,8 @@ const sortedConfigs = computed(() => {
 // Button label depends on whether this is a new config, a built-in override or
 // an edit of an existing custom config.
 const saveActionLabel = computed(() => keyboardSaveActionLabel({
-  hasCustom: isCustomCurrent(),
-  hasBuiltin: globals.keyboardsManifest.some(entry => entry.text === globals.keyboard.name),
+  hasCustom: editorIsCustom.value,
+  hasBuiltin: editorHasBuiltin.value,
 }))
 
 /** The config that matches a detected device, if any. */
@@ -98,8 +114,8 @@ function sourceLabel(detail) {
 
 /** The type/status badges shown in the all-configs table. */
 function statusLabel(detail) {
-  if (detail.name === globals.keyboard.name)
-    return matchesDetected(detail.name) ? 'In use' : 'In use, not connected'
+  if (detail.name === globals.keyboard.name && matchesDetected(detail.name))
+    return 'In use'
   if (matchesDetected(detail.name))
     return 'Plugged in'
   return 'Not detected'
@@ -107,20 +123,9 @@ function statusLabel(detail) {
 
 /** The pill colour for a table row's status. */
 function statusClass(detail) {
-  if (detail.name === globals.keyboard.name && !matchesDetected(detail.name))
-    return 'badge-not-connected'
-  if (detail.name === globals.keyboard.name)
+  if (detail.name === globals.keyboard.name && matchesDetected(detail.name))
     return 'badge-inuse'
   return matchesDetected(detail.name) ? 'badge-ok' : 'badge-muted'
-}
-
-/** A hover hint for the status pill. */
-function statusTitle(detail) {
-  if (detail.name === globals.keyboard.name && !matchesDetected(detail.name)) {
-    return `Not connected. This config's keyboard ${detail.name} is not currently detected, `
-      + 'so no MIDI input will be received. Plug it in, or use a plugged-in device.'
-  }
-  return ''
 }
 
 async function refreshConfigDetails() {
@@ -133,10 +138,21 @@ onMounted(async () => {
   // appeared in a way the boot events missed.
   wireMidiMonitor()
   await refreshConfigDetails()
+  editorName.value = globals.keyboard.name
+  loadEditor(editorName.value)
   // Open the form at start only when a keyboard is already selected but not
-  // usable yet. Otherwise leave it collapsed; clicking Use in the table must
-  // not force it open.
-  configOpen.value = !!globals.keyboard.name && !configReady.value
+  // usable yet (no config, or its keyboard is unplugged). Otherwise leave it
+  // collapsed; clicking Use in the table must not force it open.
+  configOpen.value = !!globals.keyboard.name && !(editorHasConfig.value && editorConnected.value)
+})
+
+// Follow the current keyboard when it changes (boot auto-selection, hot-plug,
+// or the Use button), as long as the user is not editing another config.
+watch(() => globals.keyboard.name, (name) => {
+  if (configOpen.value)
+    return
+  editorName.value = name
+  loadEditor(name)
 })
 
 function formatTime(ms) {
@@ -167,61 +183,103 @@ watch(() => globals.midiActivity.pulse, () => {
     el.scrollTop = 0
 })
 
-/** Wire the app to the given device/config name. */
+/** Fill the edit buffer from the named config (or the live keyboard's defaults). */
+function loadEditor(name) {
+  const detail = configForDevice(name)
+  if (detail) {
+    editorFields.value = {
+      description: detail.description || '',
+      lhTriggerOctave: detail.lhTriggerOctave ?? 3,
+      rhJamSoundOctave: detail.rhJamSoundOctave ?? 4,
+    }
+    return
+  }
+  const isCurrent = name === globals.keyboard.name
+  editorFields.value = {
+    description: (isCurrent ? globals.keyboard.description : '') || suggestConfigName(name),
+    lhTriggerOctave: isCurrent ? (globals.keyboard.lhTriggerOctave ?? 3) : 3,
+    rhJamSoundOctave: isCurrent ? (globals.keyboard.rhJamSoundOctave ?? 4) : 4,
+  }
+}
+
+/** Wire the app to the given device/config name and point the form at it. */
 function useConfig(name) {
   document.broadcastEvent("switch-keyboard", { name })
+  editorName.value = name
+  loadEditor(name)
 }
 
-function isCustomCurrent() {
-  return !!fetchCustomKeyboard(globals.keyboard.name)
-}
-
-/** True when the current custom config shadows a built-in one. */
-function currentOverridesBuiltin() {
-  return isCustomCurrent() && globals.keyboardsManifest.some(entry => entry.text === globals.keyboard.name)
+/** Open the form for an arbitrary config, even one that is not connected. */
+function openEditor(name) {
+  editorName.value = name
+  loadEditor(name)
+  configOpen.value = true
+  nextTick(() => {
+    if (configEl.value)
+      configEl.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  })
 }
 
 /** Keep the open/closed state of the config disclosure in the ref. */
 function onConfigToggle(event) {
   configOpen.value = event.target.open
+  // Closing discards unsaved edits and returns the form to the current keyboard.
+  if (!configOpen.value) {
+    editorName.value = globals.keyboard.name
+    loadEditor(editorName.value)
+  }
 }
 
-/** Re-apply the edited octaves to the live mappings. */
-function onConfigChanged() {
-  linkProjectToKeyboard()
-}
-
-/** Copy the octave of the last note played into a config field. */
+/** Copy the octave of the last note played into the live config and the form. */
 function applyOctave(field) {
   if (lastOctave.value === null)
     return
   globals.keyboard[field] = lastOctave.value
-  onConfigChanged()
+  if (editorName.value === globals.keyboard.name)
+    editorFields.value[field] = lastOctave.value
+  linkProjectToKeyboard()
 }
 
-async function saveCurrentKeyboard() {
-  if (!globals.keyboard.name)
+/** Apply the edit buffer to the live keyboard and persist it. */
+async function saveEditor() {
+  if (!editorName.value)
     return
+  const name = editorName.value
   saveCustomKeyboard({
-    name: globals.keyboard.name,
-    description: globals.keyboard.description,
-    lhTriggerOctave: globals.keyboard.lhTriggerOctave,
-    rhJamSoundOctave: globals.keyboard.rhJamSoundOctave,
+    name,
+    description: editorFields.value.description,
+    lhTriggerOctave: editorFields.value.lhTriggerOctave,
+    rhJamSoundOctave: editorFields.value.rhJamSoundOctave,
   })
+  if (name === globals.keyboard.name) {
+    globals.keyboard.description = editorFields.value.description
+    globals.keyboard.lhTriggerOctave = editorFields.value.lhTriggerOctave
+    globals.keyboard.rhJamSoundOctave = editorFields.value.rhJamSoundOctave
+    linkProjectToKeyboard()
+  }
   await refreshConfigDetails()
-  savedMessage.value = `Saved config for '${globals.keyboard.name}'`
+  savedMessage.value = `Saved config for '${name}'`
   setTimeout(() => { savedMessage.value = '' }, 2500)
 }
 
-async function deleteCurrentKeyboard() {
-  if (!globals.keyboard.name)
+/** Collapse the form. Closing reloads the buffer, so edits are discarded. */
+function cancelEditor() {
+  configOpen.value = false
+}
+
+/** Remove the edited custom config, falling back to the built-in/default. */
+async function deleteEditor() {
+  if (!editorName.value)
     return
-  const name = globals.keyboard.name
-  const wasOverriding = currentOverridesBuiltin()
+  const name = editorName.value
+  const wasOverriding = editorOverridesBuiltin.value
   deleteCustomKeyboard(name)
-  // Re-fetch so the built-in (or default) config comes back.
-  document.broadcastEvent("switch-keyboard", { name })
+  // Re-fetch so the built-in (or default) config comes back when this was the
+  // live keyboard.
+  if (name === globals.keyboard.name)
+    document.broadcastEvent("switch-keyboard", { name })
   await refreshConfigDetails()
+  loadEditor(name)
   savedMessage.value = wasOverriding
     ? `Reverted '${name}' to the built-in config`
     : `Removed saved config for '${name}'`
@@ -347,20 +405,22 @@ async function openRoutingHelp() {
     </div>
   </details>
 
-  <div v-if="globals.keyboard.name">
-    <!-- Hidden behind a disclosure when the keyboard already works. -->
-    <details class="midi-disclosure" :open="configOpen" @toggle="onConfigToggle">
+  <div v-if="editorName">
+    <!-- Hidden behind a disclosure when the keyboard already works. Opened by
+         the Edit button for any config, connected or not. -->
+    <details ref="configEl" class="midi-disclosure" :open="configOpen" @toggle="onConfigToggle">
       <summary class="midi-summary">
         <span class="chevron" aria-hidden="true">▸</span>
         <strong>Keyboard config:</strong>
-        <template v-if="currentConfig">
-          {{ globals.keyboard.name }}
-          <span class="midi-note">({{ sourceLabel(currentConfig) }})</span>
-          <span v-if="currentConfig.description" class="midi-note">· {{ currentConfig.description }}</span>
+        <template v-if="editorConfig">
+          {{ editorName }}
+          <span class="midi-note">({{ sourceLabel(editorConfig) }})</span>
+          <span v-if="editorConfig.description" class="midi-note">· {{ editorConfig.description }}</span>
         </template>
-        <template v-else>{{ globals.keyboard.name }}</template>
-        <span v-if="configReady" class="badge badge-inuse">ready</span>
-        <span v-else class="badge badge-routing">needs setup</span>
+        <template v-else>{{ editorName }}</template>
+        <span v-if="!editorHasConfig" class="badge badge-routing">needs setup</span>
+        <span v-else-if="editorConnected" class="badge badge-inuse">ready</span>
+        <span v-else class="badge badge-muted">not connected</span>
       </summary>
 
       <div class="midi-disclosure-body">
@@ -374,44 +434,44 @@ async function openRoutingHelp() {
         <div class="midi-form">
           <div class="form-row">
             <label>Device</label>
-            <div class="form-static">{{ globals.keyboard.name }}</div>
+            <div class="form-static">{{ editorName }}</div>
           </div>
           <div class="form-row">
             <label>Config</label>
             <div class="form-static">
-              {{ sourceLabel(currentConfig) }}
-              <span v-if="matchesDetected(globals.keyboard.name)" class="badge badge-inuse">Plugged in</span>
+              {{ sourceLabel(editorConfig) }}
+              <span v-if="editorConnected" class="badge badge-inuse">Plugged in</span>
               <span v-else class="badge badge-muted">Not detected</span>
             </div>
           </div>
           <div class="form-row">
             <label for="midi-config-desc">Description</label>
-            <input id="midi-config-desc" type="text" v-model="globals.keyboard.description"
-              @change="onConfigChanged" />
+            <input id="midi-config-desc" type="text" v-model="editorFields.description" />
           </div>
           <div class="form-row">
             <label for="midi-config-lh" title="The octave where the left-hand chord trigger keys are.">
               Chord trigger octave
             </label>
             <input id="midi-config-lh" type="number" min="0" max="8"
-              v-model.number="globals.keyboard.lhTriggerOctave" @change="onConfigChanged" />
+              v-model.number="editorFields.lhTriggerOctave" />
           </div>
           <div class="form-row">
             <label for="midi-config-rh" title="The octave where right-hand jam notes sound.">
               Jam sound octave
             </label>
             <input id="midi-config-rh" type="number" min="0" max="8"
-              v-model.number="globals.keyboard.rhJamSoundOctave" @change="onConfigChanged" />
+              v-model.number="editorFields.rhJamSoundOctave" />
           </div>
         </div>
 
         <div class="midi-form-actions">
-          <button class="ui tiny primary button" @click="saveCurrentKeyboard()">
+          <button class="ui tiny primary button" @click="saveEditor()">
             {{ saveActionLabel }}
           </button>
-          <button v-if="isCustomCurrent()" class="ui tiny button" @click="deleteCurrentKeyboard()">
-            {{ currentOverridesBuiltin() ? 'Revert to built-in' : 'Delete saved config' }}
+          <button v-if="editorIsCustom" class="ui tiny button" @click="deleteEditor()">
+            {{ editorOverridesBuiltin ? 'Revert to built-in' : 'Delete saved config' }}
           </button>
+          <button class="ui tiny button" @click="cancelEditor()">Cancel</button>
           <span v-if="savedMessage" class="midi-saved">{{ savedMessage }}</span>
         </div>
         <p class="midi-note">
@@ -435,6 +495,7 @@ async function openRoutingHelp() {
       <col class="col-description">
       <col class="col-status">
       <col class="col-action">
+      <col class="col-edit">
     </colgroup>
     <thead>
       <tr>
@@ -442,7 +503,8 @@ async function openRoutingHelp() {
         <th>Type</th>
         <th>Description</th>
         <th>Status</th>
-        <th class="midi-action-cell"></th>
+        <th class="midi-action-cell">Use</th>
+        <th class="midi-action-cell">Edit</th>
       </tr>
     </thead>
     <tbody>
@@ -456,13 +518,18 @@ async function openRoutingHelp() {
         </td>
         <td class="midi-note">{{ detail.description || '—' }}</td>
         <td>
-          <span class="badge badge-status" :class="statusClass(detail)" :title="statusTitle(detail)">
+          <span class="badge badge-status" :class="statusClass(detail)">
             {{ statusLabel(detail) }}
           </span>
         </td>
         <td class="midi-action-cell">
           <button v-if="detail.name !== globals.keyboard.name" class="ui mini button midi-use-button"
+            :disabled="!matchesDetected(detail.name)"
+            :title="matchesDetected(detail.name) ? '' : 'Not detected — connect this keyboard to use its config'"
             @click="useConfig(detail.name)">Use</button>
+        </td>
+        <td class="midi-action-cell">
+          <button class="ui mini button midi-use-button" @click="openEditor(detail.name)">Edit</button>
         </td>
       </tr>
     </tbody>
@@ -531,11 +598,12 @@ async function openRoutingHelp() {
 .midi-detected-table .col-action { width: 16%; }
 
 /* Column widths for the all-configs table. */
-.midi-all-table .col-config-name { width: 17%; }
-.midi-all-table .col-type { width: 18%; }
-.midi-all-table .col-description { width: 38%; }
-.midi-all-table .col-status { width: 14%; }
-.midi-all-table .col-action { width: 13%; }
+.midi-all-table .col-config-name { width: 15%; }
+.midi-all-table .col-type { width: 15%; }
+.midi-all-table .col-description { width: 30%; }
+.midi-all-table .col-status { width: 13%; }
+.midi-all-table .col-action { width: 12%; }
+.midi-all-table .col-edit { width: 15%; }
 
 .midi-action-cell {
   text-align: right;
