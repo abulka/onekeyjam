@@ -8,35 +8,36 @@ reference for the theory it encodes.
 
 When you trigger a chord, the right hand is filtered to a scale. The scale
 should sound like it belongs to the chord: it should contain the chord's
-defining notes, avoid notes that fight the chord, and stay close to the
-idioms of jazz and popular music. The old implementation did not do this
-reliably, for three reasons:
+defining notes, keep the conventional avoid relationships under control, and
+stay close to the idioms of jazz and popular music. The engine exists because
+the obvious shortcuts are not musical recommendations:
 
-1. **It trusted chord detection too much.** `Tonal.Chord.detect()` guesses
-   chord symbols from a voicing, and the first guess is often a different root
-   or quality. A rootless Dm7b5 voicing (F, Ab, C, D) is detected as `Fm6`
-   first; an Eb6-sounding Cm7 voicing (Eb, G, Bb, C) is detected as `Eb6`
-   first. Scales were then computed for the wrong chord.
-2. **It used a mathematical superset test as a musical recommendation.**
+1. **Chord detection is a guess.** `Tonal.Chord.detect()` infers chord
+   symbols from a voicing, and the first guess is often a different root or
+   quality. A Dm7b5 voicing in an F-rooted shape (F, Ab, C, D) is detected as
+   `Fm6` first; an Eb6-sounding Cm7 voicing (Eb, G, Bb, C) is detected as
+   `Eb6` first. Trusting the first guess computes scales for the wrong chord.
+2. **A mathematical superset test is not a musical recommendation.**
    `Tonal.Chord.chordScales()` returns every scale whose pitch-class set
    contains the chord's notes, including Persian, Balinese, Hungarian major,
-   Messiaen modes and chromatic. These were hand-sorted into positional lists,
-   so slots two and three often offered obscure or avoid-note-laden scales.
-3. **It had no theory model.** There was no notion of guide tones, avoid
-   notes, chord function or scale family, so a scale that merely contained the
-   chord tones could outrank the idiomatic choice.
+   Messiaen modes and chromatic. Presenting that list in dictionary order puts
+   obscure or avoid-note-laden scales in the top slots.
+3. **Names alone are not a theory model.** Guide tones, avoid notes, chord
+   function and scale family all matter, so a scale that merely contains the
+   chord tones can outrank the idiomatic choice.
 
-The replacement is a general engine: no chord-to-scale lookup table. It builds
-candidate scales from Tonal's scale dictionary rooted on the chord and ranks
-them with interval theory. Any chord works, including unusual or imported
-ones; the engine degrades to the best partial matches instead of failing.
+The engine therefore builds candidate scales from Tonal's scale dictionary
+rooted on the chord and ranks them with interval theory: no per-chord lookup
+table, but a weighted, theory-informed ranking with hand-tuned preferences.
+Any chord works, including unusual or imported ones; the engine degrades to
+the best partial matches instead of failing.
 
-On top of that, the engine now accepts an optional **project key**. The key
-does not replace the chord scale; it is a bias. Key context fixes the cases
-where the same chord has different idiomatic scales depending on its function
-(a iiø versus a viiø, a major-key V7 versus a minor-key V7, a tritone
-substitute) and keeps the runner-up suggestions close to the key. Without a
-key the original chord-by-chord behaviour is unchanged.
+The engine also accepts an optional **project key**. The key does not replace
+the chord scale; it is a bias. Key context fixes the cases where the same
+chord has different idiomatic scales depending on its function (a iiø versus a
+viiø, a major-key V7 versus a minor-key V7, a tritone substitute) and keeps
+the runner-up suggestions close to the key. Without a key the engine ranks
+each chord purely on its own shape.
 
 ## Chord resolution
 
@@ -45,14 +46,16 @@ relative to the root.
 
 - A valid chord symbol (for example `G7b9`, `Dm7b5`) is trusted via
   `Tonal.Chord.get()`, but only when it contains every note of the voicing.
-  Symbols like `Dø7` or custom voicing names (`Dm7b5ChordNicerVoicing`) are
-  not Tonal symbols, so the engine falls back to the voicing notes.
-- **The sounding voicing is authoritative.** If a symbol and a voicing
-  disagree, the notes that actually play win and the symbol only supplies the
-  root. For example, a chord labelled `G7alt` but voiced F-Ab-B-D contains an
-  Ab and a D that Tonal's altered chord does not; the engine roots a G chord
-  on the four sounding notes instead, so the suggested scales fit what is
-  heard rather than the label. This case is reported by
+  `Dø` parses (it is an alias of `m7b5`), but `Dø7` does not; symbols like
+  `Dø7` and custom voicing names (`Dm7b5ChordNicerVoicing`) therefore fall
+  back to the voicing notes.
+- **The sounding voicing is authoritative** (a deliberate design decision).
+  If a symbol and a voicing disagree, the notes that actually play win and the
+  symbol only supplies the root. Tonal spells `7alt` as 1 3 #5 b7 #9, so
+  `G7alt` is G B D# F A#; a chord labelled `G7alt` but voiced F-Ab-B-D sounds
+  an Ab and a natural D that the symbol does not name. The engine roots a G
+  chord on the four sounding notes instead, so the suggested scales fit what
+  is heard rather than the label. The mismatch is reported by
   `chordSymbolVoicingMismatch()`.
 - When only notes are available, the engine runs `Tonal.Chord.detect()` and
   chooses the detected symbol whose root matches a hint. Hints come from, in
@@ -93,28 +96,29 @@ the declared key. The same happens when the colour preference changes.
 
 ### Colour preference
 
-The key is a bias, and `options.colour` decides how hard it pushes:
+The key is a bias, and `options.colour` decides how hard it pushes. Function
+rules (minor-key V7, tritone substitutes, backdoor dominants, the iiø default)
+apply in every profile: they are about function, not taste.
 
-- **diatonic** stays strictly in key. Dorian flattens to aeolian on m7 chords,
-  locrian #2 flattens to locrian on half-diminished chords, and the in-key
-  bonus is strong.
-- **jazz** (the default) restores the idiomatic primaries while the key still
+- **diatonic** removes the colour bonuses and gives the in-key bonus its full
+  weight, so dorian flattens to aeolian on m7 chords and locrian #2 flattens
+  to locrian on most half-diminished chords. The functional iiø in a minor key
+  is the exception: it keeps locrian #2 as its primary, because that colour is
+  idiomatic for the chord's role (see Function preferences).
+- **jazz** (the default) restores the idiomatic colour while the key still
   shapes the alternative scales: dorian on m7, locrian #2 on half-diminished,
-  lydian on IV/bVI/bIII and the Neapolitan bIImaj7, and mixolydian on the
-  natural-minor bVII triad.
+  lydian on IV/bVI/bIII in a major key and on the Neapolitan bIImaj7 in a
+  minor key, and mixolydian on the natural-minor bVII triad.
 - **adventurous** prefers lydian on maj7 chords and lydian dominant on
   dominants, on top of the jazz choices.
 
-Function rules (minor-key V7, tritone substitutes, backdoor dominants) apply
-in every profile: they are about function, not taste.
-
 ## Candidate scales
 
-Every scale type in Tonal's dictionary (about 92) is generated on the chord
-root, for example `D locrian #2` or `G altered`. Names are therefore always
-anchored to the chord, which is what the piano roll and scale picker display.
-Each candidate is reduced to a set of semitone offsets from the root, called
-its relative set.
+Every scale type in Tonal's scale dictionary (92 in the pinned version) is
+generated on the chord root, for example `D locrian #2` or `G altered`. Names
+are therefore always anchored to the chord, which is what the piano roll and
+scale picker display. Each candidate is reduced to a set of semitone offsets
+from the root, called its relative set.
 
 ## Scale families
 
@@ -137,21 +141,22 @@ families and their weights are:
 | minor pentatonic | minor pentatonic | 11 |
 | major blues | major blues | 10 |
 | minor blues | minor blues | 10 |
-| bebop | bebop dominant | 4 |
+| bebop | bebop | 4 |
 | bebop major | bebop major | 4 |
-| bebop minor | dorian bebop | 4 |
+| bebop minor | bebop minor | 4 |
 | exotic | anything else | -10 |
 
 A rotation match means the candidate is a mode of that parent. The octatonic
 "whole-half" and "half-whole" scales are modes of one another, so both land in
-the diminished family.
+the diminished family. Tonal's `bebop` scale is the dominant bebop scale, and
+its `bebop minor` scale is the one often called dorian bebop.
 
 ## Scale type priority
 
 Family alone is not enough: a mode can belong to a good family yet be an
 unusual choice. `C lydian #9` is the sixth mode of harmonic minor and contains
-every note of a Cm6 chord, but it also contains both Eb and E natural, and no
-one reaches for it over a minor sixth chord. Conversely `C locrian #2` and
+every note of a Cm6 chord, but it also contains both Eb and E natural, and it
+is rarely chosen over a minor sixth chord. Conversely `C locrian #2` and
 `C altered` are standard jazz choices.
 
 To capture this, scale types are placed in tiers of recognised practice:
@@ -163,14 +168,16 @@ To capture this, scale types are placed in tiers of recognised practice:
 - **Tier 2 (+3)**: phrygian, locrian, harmonic major, lydian augmented,
   mixolydian b6, dorian b2, locrian 6, dorian #4, ultralocrian, major
   augmented, the named pentatonic variants, minor hexatonic, minor six
-  diminished, and the bebop scales.
+  diminished, and the bebop types (`bebop`, `bebop major`, `bebop minor`,
+  `minor bebop`).
 - **All other names (-8)**: exotic ragas, Messiaen modes, composite blues,
   chromatic, and the rare named modes. They are not banned; they simply rank
   below recognised names, and they still appear when nothing better fits an
   unusual chord.
 
-This is a weighting of scale names, not a chord-to-scale lookup. It is a
-preference, not a gate.
+The family weights, tier bonuses and function bonuses are engineering
+heuristics, not theory facts; they are tuned so the recognised choices win by
+comfortable margins. This is a preference, not a gate.
 
 ## Scoring
 
@@ -191,12 +198,12 @@ subtracts. The weights reflect structural importance:
 | sharp fifth | +10 | -6 |
 | other extensions and alterations | +8 | -6 |
 
-A dominant chord's minor third spelling (#9, e.g. Bb in C7#9) is treated as a
-colour tone: present +8, missing -6, so an altered dominant is not punished for
-offering a different combination of altered tensions. A major chord's `#11`
-(the interval a tritone above the root) is also a colour tone: +10 present,
--6 missing, so `C major` remains a sensible alternative to `C lydian` over
-Cmaj7#11.
+A dominant chord's minor third spelling (#9, e.g. D# or Eb in C7#9) is treated
+as a colour tone: present +8, missing -6, so an altered dominant is not
+punished for offering a different combination of altered tensions. A major
+chord's `#11` (the interval a tritone above the root) is also a colour tone:
++10 present, -6 missing, so `C major` remains a sensible alternative to
+`C lydian` over Cmaj7#11.
 
 ### 2. Characteristic alteration bonus
 
@@ -208,7 +215,8 @@ scale cannot buy its way to the top simply by stacking altered notes.
 ### 3. Avoid notes
 
 An avoid note is a scale tone a semitone away from an important chord tone.
-The engine penalises the relationships that genuinely sound wrong:
+The engine penalises the strongest, most conventional of those relationships,
+not everything the textbooks list:
 
 - A semitone above the root: -12 on major and minor chords (the b9), but only
   -4 on dominant chords, where the b9 is an available tension. Half-diminished
@@ -217,9 +225,11 @@ The engine penalises the relationships that genuinely sound wrong:
 - A semitone above the third:
   - major third: -6 on major and maj7 chords that contain a #11, where the
     natural 11 fights the raised 11; 0 otherwise, because on a plain major
-    chord the natural 11 is a passing tone and ionian stays the home scale;
-    0 on dominant chords, where the natural 11 is common modal colour
-    (mixolydian).
+    chord the natural 11 is a passing tone and ionian stays the home scale.
+    It is also 0 on dominant chords as a deliberate design choice: the natural
+    11 over a dominant (F over C7) is a textbook avoid note, but penalising it
+    would demote mixolydian, so the engine keeps it as available colour, which
+    players use as a passing or colour tone in practice.
   - minor third: -6, because a major third above a minor third is a modal
     clash (Eb and E in C). This demotes scales such as lydian #9.
 - A semitone below the major third on major and maj7 chords: -12 (the #9
@@ -238,8 +248,8 @@ Small bonuses settle near-ties in favour of idiomatic defaults:
 
 - mixolydian and lydian dominant on dominant chords (+3 each)
 - mixolydian on sus chords (+3)
-- major on non-dominant major-quality chords without a #11 (+6)
-- lydian on major-quality chords with a #11 (+6)
+- major on non-dominant major-quality chords: +6 without a #11, +3 with one
+- lydian on major-quality chords: +6 with a #11, +3 without one
 - dorian on m7 (+3)
 - melodic minor on m(maj7) (+3)
 - locrian #2 and locrian on half-diminished (+3 each)
@@ -274,19 +284,26 @@ The engine looks at the chord root's scale degree and its quality and adds a
 bonus to the appropriate scale type:
 
 - **Half-diminished chords**: in the jazz and adventurous profiles, locrian #2
-  (from melodic minor) +6 with locrian +2 everywhere, which is the colour choice.
-  In the diatonic profile the distinction is functional: **iiø in a minor key**
-  gets locrian #2 +8 with locrian +2, and **viiø in a major key** gets locrian
-  +8. Both are licence-checked together.
+  (from melodic minor) +6 with locrian +2, which is the colour choice. In the
+  diatonic profile the distinction is functional: **iiø in a minor key** still
+  gets locrian #2 +8 with locrian +2, because its raised 9th is a standard
+  melodic-minor colour for that role, while **viiø in a major key** gets
+  locrian +8. Locrian #2's chromatic note is licensed so the out-of-key
+  penalty does not fight the functional choice.
 - **V7 in a minor key**: phrygian dominant +12 (harmonic minor), altered +10,
   half-whole diminished +8, mixolydian b6 +6, lydian dominant +4. When the
   chord itself has a #9 or #5, altered is promoted to +16 and phrygian
   dominant drops to +8. These types license their chromatic notes; lydian
-  dominant is not licensed, because a bright #11 is out of place over a
-  minor-key dominant.
+  dominant is deliberately left unlicensed by default, because its bright #11
+  is not idiomatic over a minor-key dominant, though it still ranks as a
+  colour alternative.
 - **bII7** (tritone substitute) and **bVII7** (backdoor dominant): lydian
   dominant +6 and +4.
 - **bIImaj7** in a minor key (the Neapolitan chord): lydian +6.
+- **Major chords on IV, bVI and bIII in a major key**: lydian +3, because
+  their #11 is in the key (Ab lydian's D natural over a C major bVI, for
+  example). On IV the lydian mode is already the in-key scale, so the audible
+  difference shows mainly on bVI and bIII.
 - **bVII major** in a minor key (the natural-minor VII): mixolydian +3, whose
   notes are the natural minor set.
 - **iii7 in a major key**: aeolian and dorian +3 each, so the sparse in-key
@@ -301,13 +318,14 @@ function preferences only decide between scales that already fit the chord.
 Candidates are sorted by score, duplicate pitch sets are removed, and the top
 three are returned. Because scores already separate the families, the result
 is usually: the primary chord scale, a close alternative, and an accessible
-colour scale. Typical outcomes:
+colour scale. Example outcomes from the current engine (close scores can
+reorder when a rule changes):
 
 | Chord | Primary | Second | Third |
 |---|---|---|---|
 | Cm7 | C dorian | C aeolian | C minor pentatonic |
 | Cmaj7 | C major | C lydian | C harmonic major |
-| Cmaj7#11 | C lydian | C major | C lydian augmented |
+| Cmaj7#11 | C lydian | C major | C lydian pentatonic |
 | C7 | C mixolydian | C lydian dominant | C mixolydian b6 |
 | C7alt | C altered | C whole tone | C phrygian dominant |
 | C7b9 | C phrygian dominant | C half-whole diminished | C mixolydian |
@@ -318,7 +336,8 @@ colour scale. Typical outcomes:
 | C13sus4 | C mixolydian | C dorian | C bebop |
 
 With a key and the default jazz colour, function and idiomatic colour both
-show:
+show (the half-diminished rows are the jazz-profile result; see the note
+below):
 
 | Chord and key | Primary | Second | Third |
 |---|---|---|---|
@@ -331,9 +350,10 @@ show:
 | Am7 in C major | A dorian | A aeolian | A minor pentatonic |
 | Cm7 in C minor | C dorian | C aeolian | C minor pentatonic |
 
-The diatonic colour flattens the m7 and half-diminished rows (`Am7` becomes
-A aeolian, `Bm7b5` becomes B locrian); the adventurous colour turns `Cmaj7`
-into C lydian and `G7` in C major into G lydian dominant.
+The diatonic colour flattens the m7 and most half-diminished rows (`Am7`
+becomes A aeolian, `Bm7b5` in C major becomes B locrian), while a minor-key
+iiø keeps locrian #2; the adventurous colour turns `Cmaj7` into C lydian and
+`G7` in C major into G lydian dominant.
 
 The engine never returns empty for a resolvable chord. If no scale contains
 every chord tone, the penalties simply produce the best partial matches.
@@ -532,7 +552,7 @@ npm run regenerate:scales          # dry run the engine's replacements
 npm run regenerate:scales -- --write
 ```
 
-`validate:scales` now passes each project's declared key and colour into the
+`validate:scales` passes each project's declared key and colour into the
 checker, so it also prints deliberate out-of-key colour notes as information.
 The regeneration script re-ranks all three scale slots for projects that
 declare a key, and otherwise only touches the slots that fail the check. It
@@ -554,7 +574,7 @@ view).
 The key work is subtle in a diatonic major tune and clear in the places where
 function and colour matter. Good static projects to smoke test:
 
-| Project | Chord | What changed |
+| Project | Chord | What to listen for |
 |---|---|---|
 | C Major II-V-I (featured) | Db7 (4th trigger) | lydian dominant, adds G natural |
 | Minor ii-V-i with tritone sub in C minor | Db7 | lydian dominant instead of mixolydian |
@@ -576,28 +596,22 @@ scale.
 
 ### C minor ii-V-i
 
-The featured `C Minor II-V-I.json` used C major blues as the first scale for
-every chord. C major blues is C D Eb E G A. Over Dm7b5 it adds A natural
-against the chord's Ab and omits the third F; over G7 it omits B, F and Ab
-entirely; over Cm(maj7) it adds E natural against Eb. That is the jarring
-sound. The progression is a correct minor ii-V-i:
+The featured `C Minor II-V-I.json` demonstrates a correct minor ii-V-i:
 
 - Dø7 (Dm7b5), voiced F-Ab-C-D.
 - G7alt, voiced F-Ab-B-Eb (a true altered shape: b7, b9, 3, b13).
-- Cm(maj9), voiced Eb-G-B-D.
+- Cm(maj9), voiced Eb-G-B-D (a rootless voicing: b3, 5, maj7, 9).
 
-Both upper chords were once voiced so that the label and the sounding notes
-disagreed, and the suggested scales followed the label:
+Two traps explain the choices. C major blues (C D Eb E G A) over every chord
+is jarring: over Dm7b5 it adds A natural against the chord's Ab and omits the
+third F; over G7 it omits B, F and Ab entirely; over Cm(maj7) it adds E
+natural against Eb. And a `G7alt` label over F-Ab-B-D sounds a G7b9 with a
+natural D, which the altered scale's Eb rubs a semitone against; a Cm(maj9)
+voiced Eb-G-B-C puts the major 7th a minor 2nd under the root.
 
-- The V was labelled `G7alt` but voiced F-Ab-B-D, a G7b9 with a natural D.
-  The altered scale replaces the D with an Eb, so the two rubbed a semitone
-  apart. It is now voiced F-Ab-B-Eb so the altered scale fits.
-- The i was voiced Eb-G-B-C, which puts the major 7th a minor 2nd under the
-  root. It is now voiced Eb-G-B-D, a rootless Cm(maj9), which is smooth.
-
-The engine now treats the sounding voicing as authoritative when it disagrees
-with a symbol. The project declares C minor, so the key-aware engine picks the
-minor-function scales:
+The engine treats the sounding voicing as authoritative when it disagrees
+with a symbol, and the project declares C minor, so the key-aware engine
+picks the minor-function scales:
 
 - Dm7b5 (iiø): D locrian #2 (= F melodic minor), D locrian, D minor blues.
 - G7alt (V7): G altered (= Ab melodic minor), G phrygian dominant, G half-whole diminished.
@@ -605,23 +619,23 @@ minor-function scales:
 
 ### Tritone substitution
 
-`C Major II-V-I.json` used G mixolydian over the Db7 tritone substitute of the
-G7 chord, and F minor over the G7 itself. G mixolydian contains no Db and
-clashes with the Db7's Cb; F minor has Bb against G7's B natural. The engine
-replaces these with G mixolydian over the G7 and, because the project declares
-C major and Db7 is its bII7, Db lydian dominant over the substitute (the G
-natural is the note that makes a tritone substitute work), with Db mixolydian
-and Db mixolydian b6 as the alternatives.
+Db7 is the tritone substitute for G7 in `C Major II-V-I.json`. G mixolydian
+over it would lack the Db root and the Ab fifth (it does contain the third F
+and, as B natural, the b7 Cb), and F minor over the G7 has Bb against G7's B
+natural. Because the project declares C major and Db7 is its bII7, the engine
+chooses G mixolydian over the G7 and Db lydian dominant over the substitute
+(the G natural is the note that makes a tritone substitute work), with Db
+mixolydian and Db mixolydian b6 as the alternatives.
 
 ### Why the same set can have two names
 
-F melodic minor, D locrian #2 and Ab lydian dominant are all rotations of one
+F melodic minor, D locrian #2 and Bb lydian dominant are all rotations of one
 pitch-class set, and G altered and Ab melodic minor are rotations of another.
-The app may show either the chord-rooted mode name or the parent-scale name,
-depending on what was already stored in a project. They sound identical; the
-chord-rooted name is usually easier to read against the chord, while the
-parent-scale name is the traditional jazz short-hand ("play Ab melodic minor
-over G7alt").
+(Ab lydian dominant belongs to a third set, Eb melodic minor.) The app may
+show either the chord-rooted mode name or the parent-scale name, depending on
+what was already stored in a project. They sound identical; the chord-rooted
+name is usually easier to read against the chord, while the parent-scale name
+is the traditional jazz short-hand ("play Ab melodic minor over G7alt").
 
 ## References
 
