@@ -311,7 +311,7 @@ watch(() => globals.helpPage, async () => {
         <li><strong>Find Matching Scales</strong> - suggest scales that fit the chords, guided by the project key and colour.</li>
         <li><strong>Reset Transpositions</strong> - undo any transposing you did while playing.</li>
         <li><strong>Fill with Key Signature</strong> - detect the key, save it on the project and re-rank every chord scale in that key.</li>
-        <li>The <strong>Key Detection</strong> section sets the project key, while <strong>Solo in key</strong> and the colour selector sit above the chord/scale grid. Changing the key or colour re-ranks the scales automatically.</li>
+        <li>The <strong>Key Detection</strong> section sets the project key, while the <strong>Scale changes</strong> selector above the chord/scale grid chooses what the right hand does when the chord changes. Its <strong>Options</strong> panel holds the colour, mode and preset, and changing the key or colour re-ranks the scales automatically. The <strong>Solo in key</strong> safety switch sits above the keyboard with the scale-filtering toggles.</li>
       </ul>
 
       <!-- Perform view -->
@@ -320,7 +320,8 @@ watch(() => globals.helpPage, async () => {
         The <RouterLink to="/perform">Perform view</RouterLink> is where you play
         and record; playing and recording share one page. It shows the active
         chord and the active scale as you go, together with a live piano keyboard,
-        the scale-filtering toggles and the scale policy Options panel. The
+        the scale-filtering toggles, the <strong>Scale changes</strong> selector
+        and its Options panel. The
         <strong>File</strong> menu is the same as on the Edit view, while the
         <strong>Actions</strong> menu offers <strong>Play Pattern
         Sequencer</strong>, <strong>Record</strong> and <strong>Export
@@ -384,6 +385,13 @@ watch(() => globals.helpPage, async () => {
         <li>
           <strong>Single-finger chords</strong> - each left-hand key plays a full
           chord from your project. No chord shapes to learn.
+        </li>
+        <li>
+          <strong>Scale changes</strong> - one selector above the chord/scale
+          grid decides how the right-hand scale moves as you play: I choose,
+          Follow the chords, Follow the melody, Vary it or Adventurous. Open
+          Options to see the colour, mode and preset it sets, and to fine-tune
+          them. Each project remembers its style.
         </li>
         <li>
           <strong>Scale filtering</strong> - right-hand notes snap to the scale

@@ -126,7 +126,8 @@ describe('manual scale picks vs the follow/shuffle policy', () => {
         assert.equal(globals.scaleFiltering.autoScaleNotes.length, 0, 'no auto scale on the carried hit')
         // The hit after that resumes the follow/shuffle policy.
         triggerChord('C3')
-        assert.ok(globals.scaleFiltering.autoScaleNotes.length > 0, 'shuffle chooses again after the carried hit')
+        assert.match(globals.scaleFiltering.autoReason, /shuffle/, 'shuffle chooses again after the carried hit')
+        assert.notEqual(globals.scaleFiltering.shuffleRank, null)
     })
 
     it('carries a 1-4 shortcut pick to the next different chord', () => {

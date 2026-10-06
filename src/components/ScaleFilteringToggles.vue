@@ -1,5 +1,8 @@
 <script setup>
+import { computed } from 'vue'
 import { globals } from '@/lib/globals.js'
+import { setSoloMode } from '@/lib/change-scale.js'
+import { projectKeyName } from '@/lib/projectKey.js'
 
 function setMagicMode() {
   globals.bypass = false
@@ -9,6 +12,19 @@ function setNormalPiano() {
   globals.bypass = true
 }
 
+// Solo in key sits with the other performance switches above the keyboard:
+// it is a safety toggle you flip while playing, not a scale setting.
+const soloInKey = computed({
+  get: () => globals.soloMode === 'key',
+  set: (value) => setSoloMode(value ? 'key' : 'chord'),
+})
+
+const keyModeActive = computed(() => globals.scaleFiltering.keyModeActive)
+
+const soloKeyName = computed(() => {
+  const key = globals.getProjectKey()
+  return key ? projectKeyName(key) : ''
+})
 
 </script>
 
@@ -45,11 +61,29 @@ function setNormalPiano() {
         </div>
       </div>
       <div class="center aligned column">
-        <label class="checkboxLabel"
-          title="Right hand: filter white notes by scale on/off. 🥸 turn this off to play proper jam chords.">
-          White notes C{{globals.keyboard.rhJamSoundOctave}}⇢ conform to current Scale
-          <input type="checkbox" v-model="globals.scaleFilteringEnabled" />
-        </label>
+        <div class="rh-toggles">
+          <label class="checkboxLabel"
+            title="Right hand: filter white notes by scale on/off. 🥸 turn this off to play proper jam chords.">
+            White notes C{{globals.keyboard.rhJamSoundOctave}}⇢ conform to current Scale
+            <input type="checkbox" v-model="globals.scaleFilteringEnabled" />
+          </label>
+          <label v-if="globals.isProjectLoaded" class="checkboxLabel solo-label"
+            title="Solo in key: while the chords change, the right hand stays on the project key scale instead of switching to each chord's scale. You cannot play a wrong note. The 1-4 shortcuts still switch temporarily; press 0 or Shift+Bb on a MIDI keyboard to toggle this. A safety switch for performing.">
+            <!-- The badge sits to the left of the label. The row is
+                 right-aligned, so the checkbox keeps its position whether or
+                 not the badge is shown. -->
+            <span v-if="keyModeActive" class="solo-active-badge"
+              title="Every chord is currently filtered to this key scale">
+              Solo in key → {{ soloKeyName }}
+            </span>
+            <span v-else-if="soloInKey" class="solo-paused-note"
+              title="A temporary scale switch is in force until the next chord trigger">
+              Solo in key (overridden)
+            </span>
+            <span class="solo-label-text">Solo in key</span>
+            <input type="checkbox" v-model="soloInKey" />
+          </label>
+        </div>
       </div>
     </div>
   </div>
@@ -91,6 +125,65 @@ function setNormalPiano() {
 .mode-description {
   font-size: 0.9rem;
   color: #5b4326;
+}
+
+/* Right-hand toggles. The column shrinks to the widest label and right-aligns
+   its content, so the Solo in key checkbox lines up with the "White notes
+   conform" checkbox. */
+.rh-toggles {
+  display: inline-block;
+  text-align: right;
+}
+
+.rh-toggles > .checkboxLabel {
+  display: block;
+}
+
+.rh-toggles .checkboxLabel input[type="checkbox"] {
+  vertical-align: middle;
+}
+
+/* Keep the label text and its checkbox apart. */
+.rh-toggles .solo-label input[type="checkbox"] {
+  margin-left: 0.55rem;
+}
+
+.rh-toggles .solo-label {
+  /* inline-flex keeps the row a fixed height, so the checkbox is steady
+     whether or not the badge is shown. */
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.4rem;
+  margin-top: 0.35rem;
+}
+
+/* Solo in key: a performance safety switch. The badge sits to the left of the
+   label; the row is right-aligned and narrower than the "White notes conform"
+   row, so the checkbox cannot move when the badge appears. */
+.solo-active-badge {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.5rem 0 0;
+  padding: 0.02rem 0.4rem;
+  border-radius: 999px;
+  /* A muted status green, so it does not read as a clickable blue button. */
+  background: #d8f0d8;
+  color: #256b25;
+  border: 1px solid #a8d8a8;
+  font-size: 0.7rem;
+  font-weight: bold;
+  line-height: 1.5;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.solo-paused-note {
+  margin: 0 0.5rem 0 0;
+  font-size: 0.72rem;
+  color: #8a6d3b;
+  font-style: italic;
+  white-space: nowrap;
+  cursor: default;
 }
 
 .ui.column.OFFLINE {

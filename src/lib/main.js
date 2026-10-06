@@ -7,6 +7,7 @@ import { keyDetection } from "./keyDetection"
 import { initChordPlayEvents } from './midi/wire-chord-play-events';
 import { initCurrentProjectAutosave } from './currentProjectStore.js';
 import { readDisabledKeyboards } from './keyboardStore.js';
+import { applyProjectScaleStyle } from './scaleStyles.js';
 
 export default async function () {
     globals.boot.status = 'booting'
@@ -25,6 +26,9 @@ export default async function () {
 
         regen()
         keyDetection()
+        // Apply the restored project's scale style before the keyboard is
+        // linked, so the first chord already sounds with it.
+        applyProjectScaleStyle()
         initChordPlayEvents() // one time only, no need to wire again
 
         linkProjectToKeyboard() // done every time a new project is loaded

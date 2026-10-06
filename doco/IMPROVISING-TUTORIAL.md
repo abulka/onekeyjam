@@ -29,7 +29,7 @@ drop out when you hold a chord and add two notes. If that happens, try
 different keys or use a MIDI keyboard. See the Reference page,
 **Computer keyboards: pressing several keys at once**.
 
-That is the whole setup. The project key, colour and Solo in key all have
+That is the whole setup. The project key and the Scale changes style have
 sensible defaults, so you can play immediately. When you want to know what a
 control does, read the Reference page or open **Shortcuts help** above the
 keyboard.
@@ -388,12 +388,19 @@ vamp or when you want to develop one idea.
 
 ### Let the changes choose the scale
 
-The **Scales** dropdown next to Solo in key has three modes:
+Above the chord/scale grid, the **Scale changes** selector is the easy way in:
 
-- **manual** (the default) keeps you in charge of the filters.
-- **follow history** picks the stored alternative that continues the scale you
+- **I choose** keeps you in charge of the filters.
+- **Follow the chords** picks the stored alternative that continues the scale you
   just played and fits where the progression is going.
-- **shuffle** draws a live scale from the top-ranked alternatives for variety.
+- **Follow the melody** follows the chords and adds a colour note at each
+  change that fits your last solo note, so the line keeps moving.
+- **Vary it** shifts the stored filters on most chord changes, staying close to
+  each chord.
+- **Adventurous** allows bolder scales and bigger shifts.
+
+The **Options** panel beside it shows the engine underneath (colour, mode and
+preset) and lets you fine-tune; the selector then reads `Custom`.
 
 Follow is the thoughtful mode: it recognises a ii-V-I, a tritone substitute or a
 backdoor dominant and picks the idiomatic scale, so the harmony steers the
@@ -403,21 +410,22 @@ never traps, because `1`-`4` always take over for the chord you are on.
 
 The full options, presets and smoke tests are on the **Reference** page.
 
-### When to change key, colour and Solo in key
+### When to change the key, colour and Solo in key
 
 Treat these as performance settings, set before you start:
 
 - **Key:** set it once per song. Change it only when the song's key changes, or
   when you deliberately want to re-harmonise.
 - **Colour:** jazz for most things, diatonic for modal or simple material,
-  adventurous when you want to push. Do not change it mid-solo; change it
-  between takes if at all.
+  adventurous when you want to push. It lives in the scale Options. Do not
+  change it mid-solo; change it between takes if at all.
 - **Solo in key:** on for modal tunes and vamps; off for standards with rich
-  changes. If you are recording, decide before you press Record.
-- **Scales mode:** manual while you are learning a tune or following a plan;
-  follow history when you want the changes to steer the colour; shuffle for
-  practice and for finding new sounds. If you are recording, pick one before you
-  press Record, so the take is coherent.
+  changes. The switch is above the piano keyboard with the other performance
+  toggles. If you are recording, decide before you press Record.
+- **Scale changes style:** `I choose` while you are learning a tune or following
+  a plan; `Follow the chords` when you want the changes to steer the colour;
+  `Vary it` for practice and for finding new sounds. If you are recording, pick
+  one before you press Record, so the take is coherent.
 
 The one exception is transpose: the left-hand black keys shift the chords
 mid-performance, which is a quick way to change key for a verse or to save a

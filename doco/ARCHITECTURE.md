@@ -133,22 +133,28 @@ and the validation commands.
   variety). The policy, history scoring and choosers live in
   `src/lib/autoScale.js`; `applyScalePolicy()` in `src/lib/change-scale.js`
   applies the decision, and `globals.chordHistory` holds the recent chord and
-  scale pairs. Follow and shuffle can sound a scale that is not a stored slot;
-  it is held in `globals.scaleFiltering.autoScaleName/Notes` and shown as
-  `(auto)`. Shuffle's options (pool, dwell, change chance, reroll) live in
+  scale pairs. Shuffle builds its candidate pool from the chord's stored
+  `scale1/2/3` first, then fills it from the engine's ranking; a draw that lands
+  on a stored scale is applied as that slot, and only an engine-only scale is
+  held in `globals.scaleFiltering.autoScaleName/Notes` and shown as
+  `(auto)`. Shuffle's options (pool, dwell, change chance, variety, reroll) live
+  in
   `globals.scaleFiltering.policyOptions` and is persisted in `uiPrefs`; the
   ranked candidates are cached per chord, key, colour and pool size. The policy
-  is remembered in `uiPrefs`, and the control sits above the chord/scale grid
-  in `GrandSummary.vue`, next to Solo in key and Colour. The roadmap and full
-  control reference are in `doco/SCALE-POLICIES.md`.
+  and its options are remembered in `uiPrefs`; the beginner-facing **Scale
+  changes** style (which bundles the colour, policy and preset) is remembered on
+  the project and applied on load. Both controls sit above the chord/scale grid
+  in `GrandSummary.vue`. The roadmap and full
+  control reference are in `doco/SCALE-POLICIES.md`; the styles are defined in
+  `src/lib/scaleStyles.js`.
 - Separately from the policies, `globals.heldNoteRepair` (`enabled`,
   `windowMs`) is a global preference on the Settings page: when a chord trigger
   changes the scale just after a solo note started, the still-sounding note is
   moved onto the new scale. It is applied by
   `src/lib/midi/remap-held-solo-notes.js` and persisted in `uiPrefs`. It is not
   part of the per-policy options.
-- Changing the project key in the Key Detection section, or the colour above
-  the scale grid, goes through `applyProjectKeySettings()` in
+- Changing the project key in the Key Detection section, or the colour in the
+  scale Options panel, goes through `applyProjectKeySettings()` in
   `src/lib/projectScaleSettings.js`, which saves the setting, re-ranks every
   chord scale with the new key and colour
   (`findMatchingScalesForAllProjectChords()` in `src/lib/findMatchingScales.js`),
@@ -161,9 +167,10 @@ and the validation commands.
   project key", which re-ranks the scales, and it warns when a declared
   major/minor key disagrees with the whole-project detection. music21 is an
   optional local Python server on `localhost:8082`; with it off the panel
-  ignores it. The **Solo in key** checkbox and the colour selector sit above
-  the chord/scale grid in `GrandSummary.vue`, so they appear on both the Edit
-  and Perform views.
+  ignores it. The **Scale changes** selector and its Options panel (colour,
+  mode, preset) sit above the chord/scale grid in `GrandSummary.vue`, and the
+  **Solo in key** safety switch sits above the piano keyboard with the other
+  filtering toggles, so they appear on both the Edit and Perform views.
 - Playing any other note calls `jam()` in `src/lib/midi/jam.js`. If scale
   filtering is on, the played note is translated through `scaleTriggerMap` to an allowed
   note; otherwise it is echoed through. Pending note-offs are tracked in

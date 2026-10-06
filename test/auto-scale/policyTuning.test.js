@@ -71,12 +71,12 @@ describe('shuffle policy options', () => {
     it('holds the scale when the same chord is triggered again', () => {
         applyScalePolicy({ rng: () => 0 })
         assert.equal(globals.scaleFiltering.shuffleRank, 0)
-        const heldName = globals.scaleFiltering.autoScaleName
+        const heldFilter = globals.currentScaleFilter
 
         applyScalePolicy({ rng: () => 0.999 })
         assert.equal(globals.scaleFiltering.shuffleRank, 0, 'a repeat must not redraw')
         assert.match(globals.scaleFiltering.autoReason, /holding rank 1/)
-        assert.equal(globals.scaleFiltering.autoScaleName, heldName)
+        assert.equal(globals.currentScaleFilter, heldFilter)
     })
 
     it('draws again after the chord changes', () => {
@@ -127,9 +127,9 @@ describe('shuffle policy options', () => {
     it('with a pool of three the draw is always a stored scale', () => {
         globals.scaleFiltering.policyOptions.poolSize = 3
         applyScalePolicy({ rng: () => 0.999 })
-        const autoNotes = globals.scaleFiltering.autoScaleNotes
-        const stored = ['C major', 'C lydian', 'C harmonic major'].map(scaleNameToNotes)
-        assert.ok(stored.some((notes) => samePitchClasses(autoNotes, notes)), autoNotes.join(','))
+        assert.equal(globals.currentScaleFilter, 'scale3')
+        assert.ok(samePitchClasses(globals.currentScaleNotes, scaleNameToNotes('C harmonic major')), globals.currentScaleNotes.join(','))
+        globals.scaleFiltering.policyOptions.poolSize = 5
     })
 
     it('never offers a G scale for a transposed G7inversion2 that sounds Ab7', () => {

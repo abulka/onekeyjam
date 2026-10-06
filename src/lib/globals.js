@@ -173,6 +173,7 @@ export const globals = reactive({
             changeChance: 1,        // shuffle: chance to redraw at a dwell boundary (0-1)
             maxNewNotes: 1,         // shuffle: max pitch classes a change may move (0-7)
             deferWhilePlaying: true,// shuffle: wait for held solo notes to release
+            variety: 'gentle',      // shuffle: how strongly the top-ranked scale is favoured (gentle|balanced|lively)
             contextChords: 1,       // follow: how many previous chords to consider (1-2)
             phraseBias: false,      // follow/shuffle: bias by the last solo note
             phraseStrength: 1,      // phrase bias strength (0.5 low, 1 medium, 2 high)

@@ -19,12 +19,13 @@ There are only three things happening.
    matters: the left hand is really steering the harmony, and the right hand
    follows it.
 
-On top of that, three settings shape the whole session:
+On top of that, two settings shape the whole session:
 
 - the **project key** (for example C major or C minor),
-- the **colour** (how jazzy the scale suggestions are),
-- **Solo in key** (whether the right hand follows each chord, or stays on the
-  key scale).
+- the **Scale changes** style (what the right hand does when the chord changes).
+
+**Solo in key** is the third: a safety switch that keeps the whole solo on the
+key scale, handy mid-performance.
 
 Set these before you start; they are performance settings, not playing decisions.
 
@@ -59,8 +60,9 @@ substitutes sounding intentional rather than random.
 
 ### Colour
 
-Above the chord/scale grid, next to **Solo in key**, is the **Colour** dropdown.
-It sets how much chromatic colour the scale suggestions keep:
+Above the chord/scale grid, open the **Options** panel beside **Scale changes**
+to reach the **Colour** dropdown. It sets how much chromatic colour the scale
+suggestions keep:
 
 - **jazz** (the default) keeps the idiomatic colours: dorian on minor seventh
   chords, locrian #2 on half-diminished chords, and the right dominant scales.
@@ -71,12 +73,14 @@ It sets how much chromatic colour the scale suggestions keep:
   want the solo to sound modern and a little outside.
 
 Changing the key or the colour re-ranks every chord scale automatically, so you
-do not need to do anything else.
+do not need to do anything else. The Scale changes style sets the colour for you;
+change it by hand and the style reads `Custom`.
 
 ### Solo in key
 
 **Solo in key** keeps the right hand on the project key scale while the chords
-change. It is perfect for:
+change. It sits above the piano keyboard, with the other performance switches
+such as Magic mode and scale filtering. It is perfect for:
 
 - modal tunes such as *So What*,
 - a simple minor vamp where you want to float over everything,
@@ -116,22 +120,25 @@ right hand is frozen into even as the chords change.
 
 ---
 
-## The scale policy engine: manual, follow and shuffle
+## The Scale changes styles
 
-Everything above is manual: you press `1`, `2`, `3` and the right hand follows.
-The **Scales** dropdown next to Solo in key can instead let the changes choose
-for you. There are three modes:
+Above the chord/scale grid there is one selector: **Scale changes**. It names
+what happens to the right-hand scale when the chord changes, and each choice
+sets the colour, mode and preset for you:
 
-- **manual** (the default): you stay in charge of the scale1/2/3 slots.
-- **follow history**: for each chord the app picks the stored scale that
-  continues the scale you just played and fits the function of the progression.
-- **shuffle**: when the chord changes, the app draws from the top-ranked
-  alternatives. The idiomatically correct primary scale is the usual choice and
-  a close colour shift is occasional, so it varies the harmony gently. A
-  repeated trigger of the same chord holds the scale, so it does not move the
-  notes under your fingers.
+| Style | What happens | Engine settings |
+|---|---|---|
+| **I choose** | You stay in charge of the scale1/2/3 slots with the filters. | `manual` mode, jazz colour |
+| **Follow the chords** | Each chord picks its most natural stored scale. | `follow`, Simple preset |
+| **Follow the melody** | Follows the chords and adds a colour note at each change that fits your phrase. | `follow`, Melodic preset |
+| **Vary it** | The scale shifts on most chord changes, staying close to each chord. | `shuffle`, Varied preset |
+| **Adventurous** | Bolder scales and bigger shifts. | `shuffle`, Wild preset, adventurous colour |
 
-Why this helps:
+The engine underneath has three modes (`manual`, `follow`, `shuffle`); the
+Options panel shows them, and changing any value by hand makes the selector read
+`Custom`. A project remembers its style, so a song reopens sounding as you left it.
+
+Why the automatic styles help:
 
 - **The changes steer the colour.** Follow hears a ii-V, a tritone substitute, a
   backdoor dominant or a full ii-V-I and picks the idiomatic scale, so the solo
@@ -141,31 +148,35 @@ Why this helps:
   change, so you cannot play a wrong note and the mapping stays put while you
   hold a phrase.
 - **Phrases resolve (follow).** The phrase bias follows your last solo note, so a
-  line does not get cut off by the next chord. It only changes the pick when
-  that note distinguishes the stored scales; in a diatonic tune it correctly
-  stays quiet. Shuffle ignores the last note; held notes are repaired instead
+  line does not get cut off by the next chord. On its own it only changes the
+  pick when that note distinguishes the stored scales; in a diatonic tune it
+  correctly stays quiet. **Follow the melody** pairs the phrase with the
+  close-colour palette, so each change adds a note and your phrase picks which
+  one. Shuffle ignores the last note; held notes are repaired instead
   (see `Settings` > `Preferences`).
 - **Nothing is a trap.** You can always override with the filters (`1`-`4`, or
-  the right-hand black keys) or a grid click, and the app goes back to the policy
+  the right-hand black keys) or a grid click, and the app goes back to the style
   on the next chord you play.
 
 ### Options reference
 
-The **Preset** selector sits in the main row beside the **Scales** dropdown, so
-the active flavour is always visible. The **Options** button next to it reveals
+The **Options** button beside **Scale changes** reveals the full mechanism and
 the fine-tuning controls. They only appear when a project is loaded.
 
 | Control | Mode | Benefit | Default |
 |---|---|---|---|
-| `Preset` | both | One-click options for the active mode. Choose a starting point, then fine-tune. Always visible in the main row; shows a highlighted `Custom` when the values are hand-tuned. | Subtle / Simple |
-| `Pool` (3-8) | shuffle | How many alternatives the draw uses. 3 = the stored scales only; 8 = more colour. | 3 |
+| `Colour` | all | How chromatic the scale suggestions are: `jazz` (default), `diatonic` or `adventurous`. | jazz |
+| `Mode` | all | `manual`, `follow history` or `shuffle`. | manual |
+| `Preset` | both | One-click options for the active mode. Shows a highlighted `Custom` when the values are hand-tuned. | Subtle / Simple |
+| `Pool` (3-8) | shuffle | How many candidates the draw uses. The stored scale1/2/3 always come first; 3 uses only those, larger pools add the engine's colours. | 3 |
 | `Dwell` (1-4) | shuffle | How many chord changes to hold one draw before changing. Longer is steadier. | 2 |
 | `Change` (0-100%) | shuffle | The chance of a new draw at each boundary. Lower keeps a colour longer. | 100% |
 | `Spread` | shuffle | How far a change may move the notes: `same notes`, `1 note`, `2 notes` or `Wild`. | 1 note |
+| `Variety` | shuffle | How strongly the draw favours the top-ranked scale: `Gentle` keeps the primary nearly always, `Lively` makes the alternatives genuinely likely. | Gentle |
 | `Hold` | shuffle | Do not jump the scale while solo notes are sounding; take the closest fit instead. | on |
 | `Reroll` | shuffle | Draw a new scale for the current chord right now. | - |
 | `Context` (1-2) | follow | Whether to look one chord back or two, so a full ii-V-I is recognised. | 1 chord |
-| `Palette` | follow | Which stored scale follow prefers: `Primary` (best continuation), `Close colour` (best alternative that adds a note at each change) or `Bold` (biggest colour shift among the stored scales). Different from the project-wide `Colour:` selector. | Primary |
+| `Palette` | follow | Which stored scale follow prefers: `Primary` (best continuation), `Close colour` (best alternative that adds a note at each change) or `Bold` (biggest colour shift among the stored scales). | Primary |
 | `Phrase` + `Strength` | follow | Bias the next stored scale by your last solo note so the line resolves. Shuffle ignores the last note. | off |
 
 The recent chord-to-scale **History** strip, and the optional pale fill on the
@@ -179,15 +190,19 @@ the notes never move under your fingers. That is what makes it playable.
 
 ### Presets
 
-The presets are the easiest way in. For **shuffle** they are **Subtle** (the
-default: only the stored scales, held longer, with rare close shifts), **Varied**
+For **shuffle** the presets are **Subtle** (the
+default: only the stored scales, held longer, with rare close shifts, Gentle
+variety), **Varied**
 (a close
-colour from a pool of five on each chord change) and **Wild** (no limits, for
-experimenting). For **follow** they are **Simple** (one chord), **Progression**
-(two chords), **Lyrical** (two chords plus phrase), **Resolve** (strong
-phrase bias) and **Colourful** (`Palette: Close colour`). The selector shows a
-highlighted `Custom` once you change any value by hand, so you always know when
-you have moved away from a preset.
+colour from a pool of five on each chord change, Lively) and **Wild** (no
+limits, for
+experimenting, Lively). For **follow** they are **Simple** (one chord),
+**Progression**
+(two chords), **Lyrical** (two chords plus phrase), **Melodic** (two chords,
+strong phrase and close colour, so each change adds a note), **Resolve** (strong
+phrase bias) and **Colourful** (`Palette: Close colour`). The preset selector
+lives in Options; it shows a highlighted `Custom` once you change any value by
+hand, so you always know when you have moved away from a preset.
 
 ### Live read-outs
 
@@ -219,16 +234,16 @@ which notes), and **jazz** or **adventurous** marks a scale that is a colour
 choice of the active profile. With the colour set to `diatonic`, or on music that
 never leaves the key, most scales are unlabelled.
 
-**When Solo in key is on**, a `Solo in key -> C major` badge appears above the
-grid, the stored scale names dim, and the **out of key** tags are struck through,
+**When Solo in key is on**, a `Solo in key -> C major` badge appears under the
+toggle above the keyboard, the stored scale names dim, and the **out of key** tags are struck through,
 because every chord is now filtered to the key scale. The per-slot markers (the
 cell highlight, the bold scale name and the `chosen` tag) pause too, since no
-stored scale is the one sounding, and the Colour, Scales, Preset and Options
-controls are dimmed and disabled until the mode is switched off. If you press
+stored scale is the one sounding, and the Scale changes and Options controls are
+dimmed and disabled until the mode is switched off. If you press
 `1`-`4` (or the right-hand black keys `C#`-`G#` on a MIDI keyboard) to inspect a
 chord scale, the markers and dimming pause for that chord and a muted `Solo in
 key (temporarily overridden)` note appears, then the key scale returns on the
-next chord trigger. The Colour, Scales, Preset and Options controls stay
+next chord trigger. The Scale changes and Options controls stay
 disabled through that temporary override.
 
 ---
@@ -308,31 +323,38 @@ so always read the trigger key from the chord table rather than assuming.
 
 Use the demo projects so you always hear a known progression.
 
-**Follow and the progression context.** Load **C Major II-V-I**, set `Scales` to
-`follow history`, open `Options` and set `Context` to `2 chords`. Play the trigger
-keys for Dm7, G7 and Cmaj7. The reason above the grid on the Cmaj7 should read
+**Follow and the progression context.** Load **C Major II-V-I**, set the
+**Scale changes** style to `Follow the chords`, open `Options`, set `Mode` to
+`follow history` and `Context` to `2 chords`. Play the trigger
+keys for Dm7, G7 and Cmaj7. The reason in the Options panel on the Cmaj7 should read
 `ii-V-I into C: major`. Set `Context` back to `1 chord` and repeat: the Cmaj7
 reason changes to a plain resolution. Now play the Db7 trigger (the tritone
 substitute) then Cmaj7, and listen for the lydian-dominant resolution.
 
-**Shuffle is stable on repeated chords.** Set `Scales` to `shuffle`. Play the
+**Shuffle is stable on repeated chords.** Set the **Scale changes** style to
+`Vary it`. Play the
 same trigger key several times (one white MIDI key, or `Z Z Z Z Z` on the
 computer keyboard): the scale must stay the same and the reason should say
 `holding`. Then play two different chords in turn: each chord change may draw
 once, and the reason names a close shift such as `shuffle: 1 note change`. This
 is the behaviour that makes shuffle usable for a solo.
 
-**Shuffle spread and hold.** Set `Spread` to `same notes`: changes keep the same
+**Shuffle spread and hold.** In `Options`, set `Spread` to `same notes`: changes
+keep the same
 note set (only the label moves). Set it to `Wild`: changes may jump. Play a long
 solo note, then change chord while it rings: the reason reads `closest fit` and
 the notes move as little as possible. Press `Reroll` to force a new draw on the
-current chord. Set `Change` to `0%` to keep the same colour across changes.
+current chord. Set `Change` to `0%` to keep the same colour across changes. Set
+`Variety` to `Gentle` and the draw stays on the primary scale most of the time;
+set it to `Lively` and the stored alternatives become genuinely likely.
 
-**Presets.** With `shuffle` selected, compare `Subtle`, `Varied` and `Wild` from
-the `Preset` dropdown and listen to how much each one changes. With `follow
-history` selected, compare `Simple`, `Progression` and `Lyrical`, and listen for
+**Presets.** In `Options`, compare `Subtle`, `Varied` and `Wild` from
+the `Preset` dropdown with `Mode` set to `shuffle` and listen to how much each
+one changes. With `Mode` set to `follow history`, compare `Simple`, `Progression`,
+`Lyrical` and `Melodic`, and listen for
 the ii-V-I and the phrase resolution. After you move any value by hand the
-dropdown shows `Custom`, and picking a preset again restores a known combination.
+style selector above the grid shows `Custom`, and picking a preset again
+restores a known combination.
 
 **Follow palette.** Follow normally sounds the best continuation, which in a
 diatonic tune is always `scale1`, so it can look static. Set `Palette` to
@@ -341,15 +363,21 @@ the reason line occasionally reads `palette: close colour (G lydian dominant
 adds C#)` and the grid bolds a colour scale with a green `chosen` tag. `Bold`
 takes the biggest colour shift the stored scales allow. All choices fit the
 chord; `Primary` keeps the original sound. This is separate from the
-project-wide `Colour:` selector, which decides how the stored scales are ranked.
+project-wide `Colour` setting in `Options`, which decides how the stored scales
+are ranked.
 
-**Phrase bias (follow).** Set `follow history`, tick `Phrase`, and play a long
+**Phrase bias (follow).** Set the style to `Follow the melody`, or in `Options`
+set `Mode` to `follow history`, `Palette` to `Primary` and tick `Phrase`, then
+play a long
 solo note that only one stored scale contains, for example a held `C#` over
 `G7`, then trigger that chord. The chosen scale contains your note and the
 reason line reads `keeps your last note C#`; turn `Phrase` off and the pick
 follows continuity instead. In a diatonic tune every stored scale already
-contains the notes you are playing, so `Phrase` correctly changes nothing. Set
-`Strength` to `high` for a stronger pull. Shuffle ignores the last note.
+contains the notes you are playing, so the phrase on its own correctly changes
+nothing; that is why the `Follow the melody` style pairs it with
+`Palette: Close colour`, which adds a note at each change for the phrase to
+choose. Set `Strength` to `high` for a stronger pull. Shuffle ignores the last
+note.
 
 **Scale-cell fill.** In `Settings` > `Preferences`, `Fill the current scale
 filter cell` paints a pale background behind the sounding scale filter's cell in
@@ -362,12 +390,12 @@ the `Recent:` strip list the last four chord-to-scale choices, each with a
 `manual`, `follow` or `shuffle` badge. This is the best way to learn what the
 policy is doing.
 
-**Manual override.** Set `Scales` to `shuffle` or `follow history`, then press
+**Manual override.** Set the style to `Vary it` or `Follow the chords`, then press
 `1`-`4` (the right-hand black keys `C#`-`G#` on a MIDI keyboard, or click a scale
 cell in a chord row) to pick a scale, then play that chord's trigger key. Your
 pick is respected: the scale stays on the chosen slot while that chord sounds.
 It is then carried to the next different chord once, using that chord's own
-scale for the slot, after which the policy resumes, so the override is never a
+scale for the slot, after which the style resumes, so the override is never a
 permanent lock.
 
 The full developer reference, including the theory and the exact scoring, is in

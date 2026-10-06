@@ -368,15 +368,16 @@ chord tones. Chord triggers still sound their chords and still change the
 underlying chord config; they just do not swap the scale. The `1`-`3` scale
 shortcuts remain a deliberate temporary switch and the `4` shortcut still
 gives the notes of the current chord, until the next chord trigger returns to
-the key. The toggle lives directly above the chord/scale grid on the Edit and
-Perform views, next to the colour selector, and the project key lives in its
+the key. The toggle sits directly above the piano keyboard, with the other
+performance switches, on the Edit and
+Perform views, and the project key lives in its
 own Key Detection section on the Edit view. These are set-up decisions rather
 than things to change mid-performance. While the key scale is sounding, a
-`Solo in key → C major` badge appears above the grid, the stored scale names
+`Solo in key → C major` badge appears under the toggle, the stored scale names
 dim, and their out-of-key tags are struck through, because every chord is
 filtered to the key. The slot markers (cell highlight, bold name, `chosen` tag
 and the bold filter buttons) are suppressed too, since no stored slot is the
-sounding scale, and the Colour, Scales, Preset and Options controls are dimmed
+sounding scale, and the Scale changes and Options controls are dimmed
 and disabled for as long as the mode is checked. Press `0` (or hold the
 left-hand `C#` shift and press `A#`/`Bb` on a MIDI keyboard) to toggle the
 mode, with a toast naming the key scale.
@@ -452,13 +453,16 @@ choice; the next chord trigger follows the history again.
 
 ### Shuffle
 
-Shuffle generates ranked candidates for the chord with the same key-aware
-engine and draws one at random, but it is anchored to the harmony: it only
-changes when the **chord changes**, and a repeated trigger of the same chord
-holds the scale. Inside that, the draw is weighted by:
+Shuffle builds its candidates from the chord's own stored `scale1`/`scale2`/
+`scale3` first, so the grid can highlight exactly and hand-edited scales are
+respected, then fills the pool up to the `Pool` size with the same key-aware
+engine ranking. It draws one at random, but it is anchored to the harmony: it
+only changes when the **chord changes**, and a repeated trigger of the same
+chord holds the scale. Inside that, the draw is weighted by:
 
-- the rank position, steeply, so the idiomatic primary scale is the usual
-  choice and a colour alternative is occasional;
+- the rank position, with the steepness set by the `Variety` control: `Gentle`
+  keeps the idiomatic primary scale nearly always, while `Lively` makes the
+  stored alternatives and engine colours genuinely likely;
 - the common tones with the reference scale, so the changes still connect;
 - novelty relative to the last few scales, applied only to the alternatives, so
   recently heard colour sets are unlikely to return.
@@ -473,17 +477,20 @@ To keep a change musical, the draw is limited to candidates within
 `maxNewNotes` substituted notes of the reference scale (the `Spread` control),
 so a change is a close colour shift rather than a jump. If solo notes are
 sounding when the chord changes, shuffle takes the **closest fit** instead of a
-random draw, so the mapping barely moves under the player's fingers. Every
-candidate is a scale the engine already rates for the chord, so variety cannot
-produce a scale that clashes with the harmony.
+random draw, so the mapping barely moves under the player's fingers. A candidate
+from the engine's list is a scale it already rates for the chord, so variety
+cannot produce a scale that clashes with the harmony; the stored filters are the
+player's own chosen scales, which the grid shows.
 
-Because the pool can be larger than the three stored slots, a draw is often a
-scale the grid does not contain. The header above the grid always names the
-live scale in an `auto:` chip, and the current chord row marks the closest
-stored alternative with a dashed amber border and a **closest** tag, whose
-tooltip gives the number of shared notes. When the drawn scale does coincide
-with a stored slot, that cell keeps the solid highlight and bold name and no
-closest marker is shown. Matches are compared by pitch class, so enharmonic
+With a `Pool` of three the candidates are exactly the three stored scales, so
+the grid always contains the sounding scale. Larger pools add engine colours on
+top, and a draw can then be a scale the grid does not contain. The header above
+the grid names such a live scale in an `auto:` chip, and the current chord row
+marks the closest stored alternative with a dashed amber border and a
+**closest** tag, whose tooltip gives the number of shared notes. When the drawn
+scale coincides with a stored slot, that slot becomes the current filter, so its
+cell keeps the solid highlight and bold name, the filter buttons follow it, and
+no closest marker is shown. Matches are compared by pitch class, so enharmonic
 spellings and parent-scale names (for example `G altered` against
 `Ab melodic minor`) count as the same scale.
 

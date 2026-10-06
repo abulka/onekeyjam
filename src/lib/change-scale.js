@@ -407,6 +407,11 @@ export function applyScalePolicy(options = {}) {
         globals.scaleFiltering.autoReason = decision.reason
     }
     else {
+        setAutoScaleFilter(decision.tonic ?? '', decision.scaleType ?? '', decision.notes ?? [], decision.scaleTypes ?? [], decision.reason)
+    }
+    // Shuffle tracks its drawn rank and dwell whatever kind of decision it
+    // made, because a stored-slot draw still counts as the drawn rank.
+    if (policy === 'shuffle') {
         if (mode === 'hold') {
             if (currentChordId !== state.shuffleChordId)
                 state.shuffleDwellRemaining = Math.max(0, state.shuffleDwellRemaining - 1)
@@ -417,7 +422,6 @@ export function applyScalePolicy(options = {}) {
         }
         state.shuffleChordId = currentChordId
         state.shuffleDeferred = mode === 'closest'
-        setAutoScaleFilter(decision.tonic ?? '', decision.scaleType ?? '', decision.notes ?? [], decision.scaleTypes ?? [], decision.reason)
     }
     return true
 }
@@ -437,8 +441,10 @@ export function rerollShuffleScale() {
  * Change the scale policy from the UI and apply it to the current chord so the
  * effect is immediate. Switching back to manual restores the stored slot.
  * @param {'manual'|'follow'|'shuffle'} policy
+ * @param {{quiet?: boolean}} [options] quiet suppresses the toast, used when a
+ * scale style sets the policy on project load.
  */
-export function setScalePolicy(policy) {
+export function setScalePolicy(policy, options = {}) {
     if (!SCALE_POLICIES.includes(policy))
         policy = 'manual'
     globals.scaleFiltering.policy = policy
@@ -459,7 +465,8 @@ export function setScalePolicy(policy) {
     if (globals.soloMode === 'key' || globals.scaleFiltering.frozen)
         return
     applyScalePolicy()
-    showScalePolicyToast(policy)
+    if (!options.quiet)
+        showScalePolicyToast(policy)
 }
 
 /** @param {string} policy */

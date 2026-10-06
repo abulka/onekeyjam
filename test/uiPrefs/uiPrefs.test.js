@@ -140,6 +140,7 @@ describe('uiPrefs', () => {
         globals.scaleFiltering.policyOptions.changeChance = 1
         globals.scaleFiltering.policyOptions.maxNewNotes = 1
         globals.scaleFiltering.policyOptions.deferWhilePlaying = true
+        globals.scaleFiltering.policyOptions.variety = 'gentle'
         globals.scaleFiltering.policyOptions.contextChords = 1
         globals.scaleFiltering.policyOptions.phraseBias = false
         globals.scaleFiltering.policyOptions.phraseStrength = 1
@@ -163,7 +164,7 @@ describe('uiPrefs', () => {
             scaleAdvanced: false,
             scaleHistory: false,
             showScaleCellFill: true,
-            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' },
+            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, variety: 'gentle', contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' },
             heldNoteRepair: { enabled: true, windowMs: 40 },
             backgroundCaptureEnabled: true,
             backgroundCaptureWindowSec: 120,
@@ -251,17 +252,28 @@ describe('uiPrefs', () => {
         assert.deepEqual(readPrefs(bad).policyOptions, { poolSize: 8, dwell: 1, changeChance: 1, maxNewNotes: 7, contextChords: 2 })
     })
 
+    it('reads, validates and loads the shuffle variety', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { variety: 'lively' } }) })
+        assert.deepEqual(readPrefs(good).policyOptions, { variety: 'lively' })
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ policyOptions: { variety: 'wild' } }) })
+        assert.equal(readPrefs(bad).policyOptions, undefined)
+        loadUiPrefs(good)
+        assert.equal(globals.scaleFiltering.policyOptions.variety, 'lively')
+        globals.scaleFiltering.policyOptions.variety = 'gentle'
+    })
+
     it('loads the shuffle options and advanced flag into globals', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scaleAdvanced: true, policyOptions: { poolSize: 4, dwell: 2, changeChance: 0.25 } }) })
         loadUiPrefs(storage)
         assert.equal(globals.showScaleAdvanced, true)
-        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' })
+        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, variety: 'gentle', contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' })
         globals.showScaleAdvanced = false
         globals.scaleFiltering.policyOptions.poolSize = 6
         globals.scaleFiltering.policyOptions.dwell = 1
         globals.scaleFiltering.policyOptions.changeChance = 1
         globals.scaleFiltering.policyOptions.maxNewNotes = 1
         globals.scaleFiltering.policyOptions.deferWhilePlaying = true
+        globals.scaleFiltering.policyOptions.variety = 'gentle'
     })
 
     it('round-trips the shuffle options', () => {

@@ -71,6 +71,7 @@ export function clampBpm(value) {
  * @property {number} [changeChance]
  * @property {number} [maxNewNotes]
  * @property {boolean} [deferWhilePlaying]
+ * @property {string} [variety]  'gentle' | 'balanced' | 'lively'
  * @property {number} [contextChords]
  * @property {boolean} [phraseBias]
  * @property {number} [phraseStrength]
@@ -78,6 +79,7 @@ export function clampBpm(value) {
  */
 
 const PALETTES = ['primary', 'colour', 'bold']
+const VARIETIES = ['gentle', 'balanced', 'lively']
 
 /**
  * @typedef {Object} HeldNoteRepair
@@ -105,6 +107,8 @@ function readPolicyOptions(stored) {
         options.maxNewNotes = Math.min(7, Math.max(0, Math.round(stored.maxNewNotes)))
     if (typeof stored.deferWhilePlaying === 'boolean')
         options.deferWhilePlaying = stored.deferWhilePlaying
+    if (VARIETIES.includes(stored.variety))
+        options.variety = stored.variety
     if (Number.isFinite(stored.contextChords))
         options.contextChords = stored.contextChords >= 2 ? 2 : 1
     if (typeof stored.phraseBias === 'boolean')
@@ -312,6 +316,7 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.scaleFiltering.policyOptions.changeChance,
         globals.scaleFiltering.policyOptions.maxNewNotes,
         globals.scaleFiltering.policyOptions.deferWhilePlaying,
+        globals.scaleFiltering.policyOptions.variety,
         globals.scaleFiltering.policyOptions.contextChords,
         globals.scaleFiltering.policyOptions.phraseBias,
         globals.scaleFiltering.policyOptions.phraseStrength,

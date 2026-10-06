@@ -45,7 +45,8 @@
       "tonic": "C",
       "type": "major",
       "source": "user"
-    }
+    },
+    "scaleStyle": "follow"
   },
   "songs": {
     "default": {"ids": [], "favourites": ["1", "2", "3"], "blacklist": []}

@@ -34,24 +34,26 @@ export const POLICY_PRESETS = {
         // Intentions, in order of boldness: Subtle stays on the three stored
         // scales with close, infrequent shifts; Varied takes one close colour
         // from a larger pool on each chord change; Wild lifts the spread band
-        // and the hold rule.
+        // and the hold rule. Variety controls how strongly the top-ranked
+        // scale is favoured: gentle is the original steep draw, lively flattens
+        // it so the alternatives are genuinely reachable.
         {
             name: 'subtle',
             label: 'Subtle',
             description: 'The default. Stays on the three stored scales, holds the same one for two chord changes, and only makes small shifts. It never jumps while you are playing.',
-            options: { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true },
+            options: { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, variety: 'gentle' },
         },
         {
             name: 'varied',
             label: 'Varied',
             description: 'Chooses from a wider pool of scales and can change on every chord, for a little more variety while staying close.',
-            options: { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true },
+            options: { poolSize: 5, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, variety: 'lively' },
         },
         {
             name: 'wild',
             label: 'Wild',
             description: 'Removes the limits: a larger pool, no hold while playing, and changes that can leap to a very different scale.',
-            options: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: false },
+            options: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 7, deferWhilePlaying: false, variety: 'lively' },
         },
     ],
     follow: [
@@ -72,6 +74,12 @@ export const POLICY_PRESETS = {
             label: 'Lyrical',
             description: 'Looks at the last two chords and also remembers the last solo note you played, so the new scale does not cut your phrase off.',
             options: { contextChords: 2, phraseBias: true, phraseStrength: 1, palette: 'primary' },
+        },
+        {
+            name: 'melodic',
+            label: 'Melodic',
+            description: 'Follows the chords and adds the closest new colour on each change, with a strong pull toward the scale that fits your last solo note.',
+            options: { contextChords: 2, phraseBias: true, phraseStrength: 2, palette: 'colour' },
         },
         {
             name: 'resolve',
@@ -466,6 +474,18 @@ export function chooseFollowCandidate(candidates, context) {
 }
 
 /**
+ * How steeply the shuffle draw favours the top-ranked candidate. 'gentle' is
+ * the original steep draw; 'lively' flattens it so the close alternatives are
+ * genuinely reachable. See doco/SCALE-POLICIES.md.
+ */
+const SHUFFLE_VARIETY_EXPONENTS = { gentle: 3, balanced: 2.5, lively: 2 }
+
+/** @param {string|undefined} variety @returns {number} */
+function shuffleRankExponent(variety) {
+    return SHUFFLE_VARIETY_EXPONENTS[variety] ?? SHUFFLE_VARIETY_EXPONENTS.gentle
+}
+
+/**
  * Pick a live scale for variety. Candidates are ranked best first; the draw is
  * limited to candidates whose pitch set is within `maxNewNotes` of the previous
  * scale, so a change is a close colour shift rather than a jump. Rank, common
@@ -484,6 +504,7 @@ export function chooseShuffleCandidate(candidates, context, rng = Math.random) {
     const previousPcs = context.previousScalePcs ?? new Set()
     const recent = context.recentScaleSets ?? []
     const maxNewNotes = Number.isFinite(context.maxNewNotes) ? context.maxNewNotes : 1
+    const rankExponent = shuffleRankExponent(context.variety)
     // With no history, the primary scale is the baseline to vary from.
     const referencePcs = previousPcs.size > 0 ? previousPcs : (candidates[0]?.pcs ?? new Set())
     // How many notes a change substitutes, roughly the symmetric difference / 2.
@@ -510,7 +531,7 @@ export function chooseShuffleCandidate(candidates, context, rng = Math.random) {
         const common = commonToneCount(candidate.pcs, referencePcs)
         const seen = recent.some((set) => setsEqual(candidate.pcs, set))
         // Steep rank preference: the idiomatically best fit is the usual choice.
-        let weight = 1 / ((i + 1) ** 3)
+        let weight = 1 / ((i + 1) ** rankExponent)
         weight *= 1 + 0.1 * common
         // Novelty only nudges the alternatives. The best fit is never punished
         // for continuing the same notes, which is the diatonic norm.
@@ -584,6 +605,46 @@ function rankedCandidatesFor(config, poolSize, key) {
     return candidates
 }
 
+/**
+ * The candidate scales a shuffle draw may choose from: the chord's own stored
+ * filters first, so the grid can highlight exactly and hand-edited scales are
+ * respected, then the engine's ranked scales to fill the pool. Matches are
+ * compared by pitch class, so one pool entry can never duplicate another.
+ * @param {ChordConfig} config
+ * @param {number} poolSize
+ * @param {{tonic?:string, type?:string, colour?:string}|undefined} key
+ * @returns {Array<{slot: ''|'scale1'|'scale2'|'scale3', name: string, type: string, notes: Array<string>, pcs: Set<number>}>}
+ */
+function shuffleCandidatesFor(config, poolSize, key) {
+    /** @type {Array<{slot: ''|'scale1'|'scale2'|'scale3', name: string, type: string, notes: Array<string>, pcs: Set<number>}>} */
+    const candidates = []
+    /** @type {Array<'scale1'|'scale2'|'scale3'>} */
+    const slots = ['scale1', 'scale2', 'scale3']
+    for (const slot of slots) {
+        const name = config[slot]
+        if (!name)
+            continue
+        const derived = config[`${slot}Notes`]
+        const notes = derived && derived.length > 0 ? derived : scaleNameToNotes(name)
+        if (!notes || notes.length === 0)
+            continue
+        const pcs = pitchClassSet(notes)
+        if (candidates.some((candidate) => setsEqual(candidate.pcs, pcs)))
+            continue
+        candidates.push({ slot, name, type: Tonal.Scale.get(name).type || name, notes, pcs })
+    }
+    if (candidates.length < poolSize) {
+        for (const candidate of rankedCandidatesFor(config, poolSize, key)) {
+            if (candidates.length >= poolSize)
+                break
+            if (candidates.some((existing) => setsEqual(existing.pcs, candidate.pcs)))
+                continue
+            candidates.push({ slot: '', name: candidate.name, type: candidate.type, notes: candidate.notes, pcs: candidate.pcs })
+        }
+    }
+    return candidates
+}
+
 /** @param {ChordShape} current */
 function buildContext(current) {
     const history = globals.chordHistory
@@ -600,6 +661,7 @@ function buildContext(current) {
         recentScaleSets: history.slice(-3).map((entry) => entry.scalePcs),
         contextChords: globals.scaleFiltering.policyOptions?.contextChords ?? 1,
         maxNewNotes: globals.scaleFiltering.policyOptions?.maxNewNotes ?? 1,
+        variety: globals.scaleFiltering.policyOptions?.variety ?? 'gentle',
         lastSoloPc: lastSolo ? lastSolo.pc : undefined,
         lastSoloName: lastSolo ? lastSolo.name : '',
         phraseBias: globals.scaleFiltering.policyOptions?.phraseBias ?? false,
@@ -647,7 +709,7 @@ export function chooseScaleForChord(chordConfig, policy = globals.scaleFiltering
     if (policy === 'shuffle') {
         const poolSize = clampPoolSize(globals.scaleFiltering.policyOptions?.poolSize)
         const key = globals.getProjectKey() ?? undefined
-        const candidates = rankedCandidatesFor(chordConfig, poolSize, key)
+        const candidates = shuffleCandidatesFor(chordConfig, poolSize, key)
         if (candidates.length === 0)
             return null
         const context = buildContext(current)
@@ -681,6 +743,12 @@ export function chooseScaleForChord(chordConfig, policy = globals.scaleFiltering
             reason = picked.reason
         }
         const chosen = candidates[index]
+        // When the drawn scale is one of the chord's stored filters, sound it
+        // through that slot so the grid, the header buttons and the current
+        // filter all follow the draw. Only engine-only scales need the live
+        // "auto" treatment.
+        if (chosen.slot)
+            return { type: 'slot', slot: chosen.slot, name: chosen.name, reason, rank: index }
         const scaleObj = Tonal.Scale.get(chosen.name)
         if (scaleObj.empty)
             return null

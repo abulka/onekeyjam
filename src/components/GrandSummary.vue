@@ -1,8 +1,9 @@
 <script setup>
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import { globals } from '../../src/lib/globals.js'
 import { setSoloMode, setScalePolicy, rerollShuffleScale, applyScalePolicy } from '../../src/lib/change-scale.js'
 import { samePitchClasses, closestScaleIndex, pitchClassSet, POLICY_PRESETS } from '../../src/lib/autoScale.js'
+import { SCALE_STYLES, CUSTOM_STYLE, matchScaleStyle, applyScaleStyle, syncProjectScaleStyle } from '../../src/lib/scaleStyles.js'
 import { applyProjectKeySettings } from '../../src/lib/projectScaleSettings.js'
 import { scaleAnnotation, PROJECT_COLOURS } from '../../src/lib/chordScaleEngine.js'
 import { Note } from '@/lib/midi/webmidi.js'
@@ -11,7 +12,7 @@ import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events.js"
 import { start, dragover, dragend } from '../../src/lib/drag-drop-table-rows.js'
 import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '../../src/lib/massOperationsOnChordConfigs'
 import { keyDetection } from '../../src/lib/keyDetection';
-import { projectKeyName, projectKeyNotes } from '../../src/lib/projectKey.js';
+import { projectKeyNotes } from '../../src/lib/projectKey.js';
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
 
@@ -36,20 +37,10 @@ const scalePolicy = computed({
   set: (value) => setScalePolicy(value),
 })
 
-// Presets for the active policy, and a selector that shows "Custom" when the
-// current options do not match any preset.
+// Presets for the active policy, shown in Options and matched to the current
+// options there; "Custom" means they have been hand-tuned.
 const presetsForMode = computed(() => POLICY_PRESETS[globals.scaleFiltering.policy] ?? [])
 
-// Opening paragraph for the "?" popover, phrased for the active mode so the
-// user knows what this whole feature is doing before reading the presets.
-const presetHelpPrelude = computed(() => {
-  const mode = globals.scaleFiltering.policy
-  if (mode === 'follow')
-    return 'You are in follow mode, configuring how the scale filter changes automatically as you play. Each chord\'s scale is chosen from the stored alternatives so it follows the chords along. These presets are starting points: pick one, then fine-tune it with Options.'
-  if (mode === 'shuffle')
-    return 'You are in shuffle mode, configuring how the scale filter changes automatically as you play. Each chord\'s scale is drawn from the ranked alternatives for variety. These presets are starting points: pick one, then fine-tune it with Options.'
-  return 'You are configuring how the scale filter changes automatically as you play. These presets are starting points: pick one, then fine-tune it with Options.'
-})
 const scalePreset = computed({
   get: () => {
     const options = globals.scaleFiltering.policyOptions
@@ -68,73 +59,41 @@ const scalePreset = computed({
   },
 })
 
-/** Return focus to the page after a policy control so note input resumes. */
+// The single beginner control above the grid: a named style that bundles
+// colour, policy and preset. It reads "Custom" after any hand edit in Options.
+const scaleStyle = computed({
+  get: () => matchScaleStyle(),
+  set: (value) => {
+    if (value !== CUSTOM_STYLE)
+      applyScaleStyle(value)
+  },
+})
+
+// One plain sentence explaining the current style under the selector.
+const scaleStyleDescription = computed(() => {
+  const style = SCALE_STYLES.find((candidate) => candidate.name === scaleStyle.value)
+  return style ? style.description : 'Hand-tuned settings; open Options to see and change them.'
+})
+
+/** Return focus to the page after a control so note input resumes. */
 function releaseControlFocus(event) {
   const el = event?.target
   if (el && typeof el.blur === 'function')
     el.blur()
 }
 
-// The "?" popover that explains each preset for the active policy. It closes
-// when the policy or preset changes, on Escape, or on a click outside it.
-const showPresetHelp = ref(false)
-const presetHelpUp = ref(false)
-const presetHelpMaxHeight = ref('')
-const presetField = ref(null)
-
-async function togglePresetHelp(event) {
+/**
+ * Options panel changes: release focus (so notes resume) and remember on the
+ * project that the style is now custom, or the style the settings match.
+ */
+function onAdvancedChange(event) {
   releaseControlFocus(event)
-  if (showPresetHelp.value) {
-    showPresetHelp.value = false
-    return
-  }
-  showPresetHelp.value = true
-  presetHelpUp.value = false
-  presetHelpMaxHeight.value = ''
-  // Open upward when the panel would not fit below the field, and cap the
-  // height to the room on that side so every preset stays on screen.
-  await nextTick()
-  const wrapper = presetField.value
-  const panel = wrapper?.querySelector('.preset-help')
-  if (wrapper && panel) {
-    const rect = wrapper.getBoundingClientRect()
-    const room = window.innerHeight - rect.bottom
-    presetHelpUp.value = room < panel.scrollHeight + 16 && rect.top > room
-    const available = (presetHelpUp.value ? rect.top : room) - 10
-    if (panel.scrollHeight > available)
-      presetHelpMaxHeight.value = `${Math.max(120, available)}px`
-  }
+  syncProjectScaleStyle()
 }
-
-function onPresetHelpKeyDown(event) {
-  if (event.key === 'Escape' && showPresetHelp.value)
-    showPresetHelp.value = false
-}
-
-function onPresetHelpClickOutside(event) {
-  if (showPresetHelp.value && presetField.value && !presetField.value.contains(event.target))
-    showPresetHelp.value = false
-}
-
-onMounted(() => {
-  window.addEventListener('keydown', onPresetHelpKeyDown)
-  window.addEventListener('pointerdown', onPresetHelpClickOutside)
-})
-onUnmounted(() => {
-  window.removeEventListener('keydown', onPresetHelpKeyDown)
-  window.removeEventListener('pointerdown', onPresetHelpClickOutside)
-})
-
-watch(() => globals.scaleFiltering.policy, () => { showPresetHelp.value = false })
-watch(scalePreset, () => { showPresetHelp.value = false })
 
 // keyModeActive is true while the project key scale is actually sounding; a
 // temporary 1-4 scale switch clears it until the next chord trigger.
 const keyModeActive = computed(() => globals.scaleFiltering.keyModeActive)
-const soloKeyName = computed(() => {
-  const key = globals.getProjectKey()
-  return key ? projectKeyName(key) : ''
-})
 
 // The last few chord-to-scale choices, newest first, for the history strip.
 const scaleHistoryEntries = computed(() => {
@@ -471,81 +430,60 @@ function generalTableClick(event) {
   <!-- <br> -->
 
   <div v-if="globals.isProjectLoaded" class="scale-settings ui small" @change="releaseControlFocus">
-    <label class="checkboxLabel"
-      title="Solo in key: while the chords change, the right hand stays on the project key scale instead of switching to each chord's scale. You cannot play a wrong note. The 1-4 shortcuts still switch temporarily; press 0 or Shift+Bb on a MIDI keyboard to toggle this. Set it before you start playing.">
-      <input type="checkbox" v-model="soloInKey" /> Solo in key
+    <label class="style-field"
+      title="Scale changes: what the right-hand scale does when the chord changes. Each choice sets the colour, mode and preset together; open Options to see or fine-tune them.">
+      <span>Scale changes:</span>
+      <select v-model="scaleStyle" :disabled="soloInKey" :class="{ 'preset-custom': scaleStyle === CUSTOM_STYLE }">
+        <option :value="CUSTOM_STYLE" disabled>Custom</option>
+        <option v-for="style in SCALE_STYLES" :key="style.name" :value="style.name">{{ style.label }}</option>
+      </select>
     </label>
-    <span v-if="keyModeActive" class="solo-active-badge" title="Every chord is currently filtered to this key scale">
-      Solo in key → {{ soloKeyName }}
-    </span>
-    <span v-else-if="soloInKey" class="solo-paused-note" title="A temporary scale switch is in force until the next chord trigger">
-      Solo in key (temporarily overridden)
-    </span>
-    <span class="ml-4" :class="{ 'paused-control': soloInKey }"
-      :title="soloInKey ? 'Paused while Solo in key is on' : null">
-      <span class="mr-1">Colour:</span>
-      <select v-model="currentColour" :disabled="soloInKey"
-        title="Colour: how much chromatic colour the scale suggestions keep. diatonic stays strictly in key; jazz (default) keeps dorian and locrian #2 colour plus the functional dominants; adventurous prefers lydian and lydian-dominant colours.">
-        <option v-for="colour in colours" :key="colour" :value="colour">{{ colour }}</option>
-      </select>
-    </span>
-    <span class="ml-4" :class="{ 'paused-control': soloInKey }"
-      :title="soloInKey ? 'Paused while Solo in key is on' : null">
-      <span class="mr-1">Scales:</span>
-      <select v-model="scalePolicy" :disabled="soloInKey"
-        title="How each chord's scale is chosen. manual uses the scale1/2/3 slots as before. follow history picks the stored alternative that continues the previous scale and chord function best. shuffle draws a live scale from the top ranked alternatives for variety.">
-        <option value="manual">manual</option>
-        <option value="follow">follow history</option>
-        <option value="shuffle">shuffle</option>
-      </select>
-    </span>
-    <div v-if="globals.scaleFiltering.policy !== 'manual'" ref="presetField"
-      class="preset-field-wrap" :class="{ 'paused-control': soloInKey }">
-      <label class="preset-field"
-        :title="soloInKey ? 'Paused while Solo in key is on' : 'Presets: one-click options for the active mode. Custom means the values have been hand-tuned; open Options to see and adjust them.'">
-        <span>Preset:</span>
-        <select v-model="scalePreset" :disabled="soloInKey" :class="{ 'preset-custom': scalePreset === 'custom' }">
-          <option value="custom" disabled>Custom</option>
-          <option v-for="preset in presetsForMode" :key="preset.name" :value="preset.name">{{ preset.label }}</option>
-        </select>
-      </label>
-      <button class="preset-help-toggle" type="button" :disabled="soloInKey"
-        :aria-expanded="showPresetHelp ? 'true' : 'false'"
-        aria-label="What each preset does" title="What each preset does"
-        @click="togglePresetHelp">?</button>
-      <div v-if="showPresetHelp" class="preset-help" :class="{ 'preset-help-up': presetHelpUp }"
-        :style="{ maxHeight: presetHelpMaxHeight }" role="note">
-        <p class="preset-help-lead">{{ presetHelpPrelude }}</p>
-        <dl class="preset-help-list">
-          <template v-for="preset in presetsForMode" :key="preset.name">
-            <dt>{{ preset.label }}</dt>
-            <dd>{{ preset.description }}</dd>
-          </template>
-        </dl>
-      </div>
-    </div>
+    <span class="style-description">{{ scaleStyleDescription }}</span>
     <button class="advanced-toggle" type="button"
-      title="Scale policy options for the follow and shuffle modes"
+      title="Colour, mode, preset and fine tuning for how the next scale is chosen"
       :class="{ 'paused-control': soloInKey }"
       :disabled="soloInKey"
       :aria-expanded="globals.showScaleAdvanced ? 'true' : 'false'"
       @click="releaseControlFocus($event); globals.showScaleAdvanced = !globals.showScaleAdvanced">
       {{ globals.showScaleAdvanced ? 'Hide options' : 'Options' }}
     </button>
+    <span v-if="globals.scaleFiltering.autoReason" class="auto-reason">{{ globals.scaleFiltering.autoReason }}</span>
     <span v-if="globals.scaleFiltering.autoScaleName" class="auto-live-chip"
       :title="globals.scaleFiltering.autoReason || 'The live scale chosen by the follow or shuffle policy'">
       auto: {{ globals.scaleFiltering.autoScaleName }}
     </span>
-    <span v-if="globals.scaleFiltering.autoReason" class="auto-reason">{{ globals.scaleFiltering.autoReason }}</span>
   </div>
 
-  <!-- scale policy options for the follow/shuffle modes -->
+  <!-- the complete scale mechanism, and fine tuning for the follow/shuffle modes -->
   <div v-if="globals.isProjectLoaded && globals.showScaleAdvanced" class="scale-advanced ui small"
-    :class="{ 'paused-control': soloInKey }" @change="releaseControlFocus">
+    :class="{ 'paused-control': soloInKey }" @change="onAdvancedChange">
+    <div class="scale-mechanism">
+      <label class="advanced-field">Colour
+        <select v-model="currentColour" :disabled="soloInKey"
+          title="Colour: how much chromatic colour the scale suggestions keep. diatonic stays strictly in key; jazz (default) keeps dorian and locrian #2 colour plus the functional dominants; adventurous prefers lydian and lydian-dominant colours.">
+          <option v-for="colour in colours" :key="colour" :value="colour">{{ colour }}</option>
+        </select>
+      </label>
+      <label class="advanced-field">Mode
+        <select v-model="scalePolicy" :disabled="soloInKey"
+          title="How each chord's scale is chosen. manual uses the scale1/2/3 slots. follow history picks the stored alternative that continues the previous scale and chord function best. shuffle draws a live scale from the top ranked alternatives for variety.">
+          <option value="manual">manual</option>
+          <option value="follow">follow history</option>
+          <option value="shuffle">shuffle</option>
+        </select>
+      </label>
+      <label class="advanced-field" v-if="globals.scaleFiltering.policy !== 'manual'">Preset
+        <select v-model="scalePreset" :disabled="soloInKey" :class="{ 'preset-custom': scalePreset === 'custom' }"
+          title="Presets: one-click options for the active mode. Custom means the values have been hand-tuned.">
+          <option value="custom" disabled>Custom</option>
+          <option v-for="preset in presetsForMode" :key="preset.name" :value="preset.name">{{ preset.label }}</option>
+        </select>
+      </label>
+    </div>
     <template v-if="globals.scaleFiltering.policy === 'shuffle'">
       <label class="advanced-field">Pool
         <select v-model.number="globals.scaleFiltering.policyOptions.poolSize" :disabled="soloInKey"
-          title="Shuffle pool: how many ranked candidates the draw is taken from. 3 uses only the stored scale1/2/3, so the grid always highlights exactly; larger pools offer more colour and more live auto scales.">
+          title="Shuffle pool: how many candidates the draw is taken from. 3 uses only the stored scale1/2/3, so the grid always highlights exactly; larger pools add the engine's colours on top, which can sound live auto scales.">
           <option v-for="n in [3, 4, 5, 6, 7, 8]" :key="n" :value="n">{{ n }}</option>
         </select>
       </label>
@@ -572,6 +510,14 @@ function generalTableClick(event) {
           <option :value="1">1 note</option>
           <option :value="2">2 notes</option>
           <option :value="7">Wild</option>
+        </select>
+      </label>
+      <label class="advanced-field">Variety
+        <select v-model="globals.scaleFiltering.policyOptions.variety" :disabled="soloInKey"
+          title="Variety: how strongly the draw favours the best-fitting scale. Gentle keeps the primary nearly always; Lively makes the stored alternatives and engine colours genuinely likely.">
+          <option value="gentle">Gentle</option>
+          <option value="balanced">Balanced</option>
+          <option value="lively">Lively</option>
         </select>
       </label>
       <label class="advanced-field checkbox-field"
@@ -889,7 +835,7 @@ table.scale-filters td {
   background: #3a5cc0;
 }
 
-/* Solo in key / colour controls that sit directly above the scale grid. */
+/* The single "Scale changes" style control that sits directly above the grid. */
 .scale-settings {
   display: flex;
   align-items: center;
@@ -898,11 +844,28 @@ table.scale-filters td {
   margin-bottom: 0.4rem;
 }
 
-.scale-settings .checkboxLabel {
-  cursor: pointer;
+.style-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: #4a3418;
 }
 
-/* Small button that reveals the follow/shuffle policy options. */
+.style-description {
+  color: #6b5a45;
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+/* A control showing "Custom" after hand-tuning in Options. */
+select.preset-custom {
+  border-color: #b0631e;
+  background: #f6e3c8;
+  color: #8a4a12;
+  font-weight: bold;
+}
+
+/* Small button that reveals the colour, mode, preset and fine tuning. */
 .advanced-toggle {
   padding: 0.05rem 0.5rem;
   border: 1px solid #b9a98e;
@@ -917,103 +880,6 @@ table.scale-filters td {
   background: #e6d7bd;
 }
 
-/* Preset selector surfaced beside the Options button, so the active
-   shuffle/follow flavour stays visible even when the options are hidden. */
-.preset-field-wrap {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.preset-field {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  color: #4a3418;
-}
-
-.preset-field select.preset-custom {
-  border-color: #b0631e;
-  background: #f6e3c8;
-  color: #8a4a12;
-  font-weight: bold;
-}
-
-/* "?" that opens a one-line description of every preset in the active mode. */
-.preset-help-toggle {
-  width: 1.15rem;
-  height: 1.15rem;
-  padding: 0;
-  border: 1px solid #b9a98e;
-  border-radius: 50%;
-  background: #efe3cf;
-  color: #6b5a45;
-  font-size: 0.72rem;
-  font-weight: bold;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.preset-help-toggle:hover {
-  background: #e6d7bd;
-}
-
-.preset-help-toggle[aria-expanded='true'] {
-  background: #e6d7bd;
-  border-color: #8a6a3a;
-}
-
-.preset-help {
-  position: absolute;
-  top: calc(100% + 0.35rem);
-  left: 0;
-  z-index: 1200;
-  width: min(38rem, 92vw);
-  max-height: 60vh;
-  overflow-y: auto;
-  padding: 0.55rem 0.7rem;
-  border: 1px solid #b9915a;
-  border-radius: 6px;
-  background: #fdf6e3;
-  color: #3a2c1a;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
-}
-
-/* Flip above the field when there is not enough room below. */
-.preset-help.preset-help-up {
-  top: auto;
-  bottom: calc(100% + 0.35rem);
-}
-
-.preset-help-lead {
-  margin: 0 0 0.4rem;
-  font-size: 0.9rem;
-  line-height: 1.35;
-  color: #6b5a45;
-}
-
-.preset-help-list {
-  margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.4;
-}
-
-.preset-help-list dt {
-  margin-top: 0.35rem;
-  font-weight: bold;
-  color: #5b4326;
-}
-
-.preset-help-list dt:first-child {
-  margin-top: 0;
-}
-
-.preset-help-list dd {
-  margin: 0.05rem 0 0 0;
-  color: #4a3418;
-}
-
 /* Scale policy options row, shown under the scale settings. */
 .scale-advanced {
   display: flex;
@@ -1025,6 +891,16 @@ table.scale-filters td {
   border: 1px dashed #b9915a;
   border-radius: 6px;
   background: #e9cf9f;
+}
+
+/* The full mechanism (colour, mode, preset) inside the Options panel. */
+.scale-mechanism {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-right: 0.75rem;
+  border-right: 1px solid #c9a86a;
 }
 
 .scale-advanced .advanced-field {
@@ -1182,27 +1058,12 @@ table.scale-filters td {
   opacity: 0.5;
 }
 
-.solo-active-badge {
-  margin-left: 0.75rem;
-  padding: 0.1rem 0.5rem;
-  border-radius: 999px;
-  background: #4a6fd4;
-  color: #fff;
-  border: 1px solid #2f4fa8;
-  font-weight: bold;
-}
-
-.solo-paused-note {
-  margin-left: 0.75rem;
-  color: #8a6d3b;
-  font-style: italic;
-}
-
-/* Short explanation of the last follow/shuffle scale choice. */
+/* Short explanation of the last follow/shuffle scale choice, shown in the
+   main row just right of the Options button. */
 .auto-reason {
   color: #2f4fa8;
   font-style: italic;
-  font-size: 1.05rem;
+  font-size: 0.85rem;
 }
 
 /* The live scale chosen by the follow or shuffle policy. */

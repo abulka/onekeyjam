@@ -18,6 +18,7 @@ import { buildProject } from './build-project.js';
 import { keyDetection } from "./keyDetection"
 import { resolveProjectKey } from './projectKey.js'
 import { applyProjectKeySettings } from './projectScaleSettings.js'
+import { applyProjectScaleStyle } from './scaleStyles.js'
 import { deletePendingChordConfigs } from './massOperationsOnChordConfigs'
 import { fetchFeaturedProject, fetchClassicProject, fetchUserProject } from './projectLibrary';
 import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listUserProjects } from './projectLibrary';
@@ -34,7 +35,9 @@ function emptyProject() {  // TODO move this into globals and integrate with glo
     return JSON.parse(JSON.stringify({
         name: "Untitled",
         chords: [],
-        options: {},
+        // New projects open on the "Follow the chords" scale style, the most
+        // magical first experience. See src/lib/scaleStyles.js.
+        options: { scaleStyle: 'follow' },
         songs: {
             default: {
                 ids: [],
@@ -329,6 +332,8 @@ function projectChores({ project, maxChordConfigs, preserveSongIds }) {
     regen(preserveSongIds);
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
     keyDetection();
+    // A project remembers how its right hand should choose scales.
+    applyProjectScaleStyle();
     linkProjectToKeyboard();
 }
 

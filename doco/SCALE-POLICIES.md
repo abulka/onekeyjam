@@ -16,8 +16,11 @@ is comes from `globals.scaleFiltering.policy`:
 | `follow history` | Picks the stored alternative that continues the previous scale and the chord function best. |
 | `shuffle` | Draws a live scale from the top ranked alternatives for variety. |
 
-The policy is chosen in the **Scales** dropdown above the chord/scale grid and
-is remembered per browser session in `uiPrefs`. The scoring lives in
+The beginner chooses a named **Scale changes** style above the chord/scale grid
+(see `src/lib/scaleStyles.js`), and the style sets the policy, colour and preset
+together. The raw mode, colour and options live in the **Options** expander. The
+policy and its options are remembered per browser session in `uiPrefs`; the
+style is remembered on the project. The scoring lives in
 `src/lib/autoScale.js`; `applyScalePolicy()` in `src/lib/change-scale.js`
 applies a decision.
 
@@ -49,9 +52,10 @@ defaults preserve the sound of the original engine.
 
 ## Phase 1: shuffle options
 
-The controls live in an inline **Options** expander beside the `Scales` select.
-The button shows and hides the row, and the row shows the controls for the
-active mode (shuffle options, follow context and phrase, history and preset). All
+The controls live in an inline **Options** expander beside the **Scale changes**
+selector. The button shows and hides the row, and the row shows the colour, mode
+and preset plus the controls for the active mode (shuffle options, follow context
+and phrase). All
 values are persisted in `uiPrefs` and default to the original behaviour.
 
 Shuffle only changes the scale when the **chord changes**. A repeated trigger
@@ -59,9 +63,10 @@ of the same chord holds the scale, so a repeated stab like `ZZZZZZ` never moves
 the notes under your fingers. This is the key difference from the first version
 of shuffle, which drew on every trigger.
 
-- **Pool** (3-8, default 3). How many engine-ranked candidates the draw is
-  taken from. A pool of 3 means only the stored `scale1/2/3`; larger pools offer
-  more colour and more live `auto:` scales.
+- **Pool** (3-8, default 3). How many candidates the draw is taken from. The
+  chord's stored `scale1/2/3` come first; a pool of 3 is exactly those, so the
+  grid always highlights exactly. Larger pools add engine-ranked scales on top,
+  which offer more colour and can sound live `auto:` scales.
 - **Dwell** (1-4, default 2). How many chord *changes* to hold the drawn rank
   before redrawing. The rank is held, not the literal scale, so each new chord
   still gets a scale of that rank that fits its own harmony.
@@ -71,16 +76,21 @@ of shuffle, which drew on every trigger.
   change may move the note set. A draw is limited to candidates whose pitch set
   is within this many substituted notes of the previous scale, so a change is a
   close colour shift rather than a jump. `Wild` lifts the limit.
+- **Variety** (Gentle / Balanced / Lively, default Gentle). How strongly the
+  draw favours the top-ranked scale. Gentle is the original steep draw (about
+  87% primary with three candidates); Lively flattens it so the alternatives and
+  engine colours are genuinely likely.
 - **Hold** (default on). While solo notes are sounding, a chord change takes
   the **closest fit** to the previous scale instead of a random draw, so the
   mapping barely moves under the player's fingers.
 - **Reroll** forces a fresh draw for the current chord and resets its dwell; it
   ignores the Spread band and the Hold rule for a deliberate jump.
-- **Preset** applies a named combination in one click. Shuffle presets are
-  **Subtle** (the default: pool 3, held two changes, close shifts that are
-  rare), **Varied** (a close colour from a larger pool on each chord change)
-  and **Wild** (no band, no hold); follow presets are **Simple**,
-  **Progression**, **Lyrical** and **Resolve**. Hand-adjusting any value moves
+- **Preset** (in the Options panel) applies a named combination in one click.
+  Shuffle presets are **Subtle** (the default: pool 3, held two changes, close
+  shifts that are rare, Gentle variety), **Varied** (a close colour from a
+  larger pool on each chord change, Lively) and **Wild** (no band, no hold,
+  Lively); follow presets are **Simple**, **Progression**, **Lyrical**,
+  **Melodic**, **Resolve** and **Colourful**. Hand-adjusting any value moves
   the selector to `Custom`.
 
 The drawn rank is cached with the ranked candidates per chord, key, colour and
@@ -99,9 +109,13 @@ tones and novelty, and only when the harmony actually changes.
 
 ### Why the primary scale is favoured
 
-The draw is not uniform. The rank weight is steep, so the engine's top-ranked,
-idiomatically correct scale is the usual choice and a colour alternative is
-occasional. Two details keep that musical:
+The draw is not uniform. The rank weight is steep by default, so the engine's
+top-ranked, idiomatically correct scale is the usual choice and a colour
+alternative is occasional. The `Variety` control tunes that steepness: Gentle is
+the original draw (with three candidates the primary wins about 87% of the
+time), Balanced is in between, and Lively flattens it (about 68% with five
+candidates) so the stored alternatives and engine colours are genuinely
+reachable. Two details keep even a lively draw musical:
 
 - **The best fit is never punished for novelty.** In a diatonic progression the
   ii chord's scale and the V chord's primary are the same pitch set (D dorian
@@ -113,9 +127,11 @@ occasional. Two details keep that musical:
   skipped; instead the top-ranked candidate is the reference, so the first
   chord behaves like every other draw.
 
-The upshot is that in a C major ii-V-I the V chord stays on its diatonic
+With Gentle variety, in a C major ii-V-I the V chord stays on its diatonic
 `G mixolydian` almost all the time and only rarely shifts to a close colour
 such as `G lydian dominant` (a valid `#11` dominant sound, but a bright one).
+Lively makes those shifts a normal and audible part of the loop, which is what
+the beginner-facing "Vary it" style wants.
 
 ## Phase 2: progression context
 
@@ -228,13 +244,15 @@ Edit and Perform views, and appears when a project is loaded.
 
 | Element | Where | What it does |
 |---|---|---|
-| `Scales` select | scale settings row | Chooses `manual`, `follow history` or `shuffle`. |
+| `Scale changes` selector | scale settings row | Names the playing style: `I choose`, `Follow the chords`, `Follow the melody`, `Vary it`, `Adventurous`. Shows `Custom` when hand-tuned. |
 | `auto: <scale>` chip | scale settings row | The live scale when a policy chose one that is not a stored slot. |
-| Reason line | scale settings row | Short explanation of the last automatic choice. |
-| `Options` button | scale settings row | Shows or hides the advanced options panel. |
-| `Preset` | scale settings row, left of `Options` | One-click policy presets for the active mode; shows `Custom` (highlighted) when the values are hand-tuned. Always visible while follow or shuffle is selected, even when the options are hidden. |
+| `Options` button | scale settings row | Shows or hides the full mechanism and fine tuning. |
+| `Colour` | Options panel | The ranking profile: `diatonic`, `jazz` (default) or `adventurous`. |
+| `Mode` | Options panel | `manual`, `follow history` or `shuffle`. |
+| `Preset` | Options panel | One-click policy presets for the active mode; shows `Custom` (highlighted) when the values are hand-tuned. |
+| Reason line | Options panel | Short explanation of the last automatic choice. |
 | `Key: <key>` | header, beside the project name | The resolved project key, in prominent text. It moves with a live transposition. |
-| `Pool`, `Dwell`, `Change`, `Spread`, `Hold` | Options panel, shuffle | Shuffle option values. `Spread` limits how far a change moves the note set; `Hold` keeps the closest fit while solo notes sound. |
+| `Pool`, `Dwell`, `Change`, `Spread`, `Variety`, `Hold` | Options panel, shuffle | Shuffle option values. Pools start from the stored scales and add engine colours; `Spread` limits how far a change moves the note set; `Variety` sets how strongly the top-ranked scale is favoured; `Hold` keeps the closest fit while solo notes sound. |
 | `Reroll` | Options panel, shuffle, far right | Draws a new scale for the current chord now. |
 | `Context` | Options panel, follow | One or two previous chords. |
 | `Palette` | Options panel, follow | Which stored scale follow prefers: `Primary` (best continuation), `Close colour` (best alternative that adds a note at each change) or `Bold` (biggest colour shift among the stored scales). |
@@ -244,21 +262,24 @@ Edit and Perform views, and appears when a project is loaded.
 | `chosen` tag | grid, current row | Marks the stored scale that is sounding; in follow the slot highlight is softened so this reads first. |
 | `closest` tag / dashed cell | grid, current row | The nearest stored scale when the live scale is not a stored slot. |
 
-The presets are defined in `POLICY_PRESETS` in `src/lib/autoScale.js`. Shuffle:
+The styles are defined in `SCALE_STYLES` in `src/lib/scaleStyles.js`; each maps to
+a colour, a policy and a preset. The presets are defined in `POLICY_PRESETS` in
+`src/lib/autoScale.js`. Shuffle:
 **Subtle** (the default: only the stored scales, held for two chord changes,
-close shifts), **Varied** (a close colour from a pool of five on each chord
-change) and **Wild** (no band, no hold). The shipped defaults match Subtle; the
+close shifts, Gentle variety), **Varied** (a close colour from a pool of five on
+each chord change, Lively) and **Wild** (no band, no hold, Lively). The shipped
+defaults match Subtle; the
 `Subtle` preset keeps `Spread` at one note, so it never uses the Wild spread.
-The `?` beside the `Preset` select opens a one-line explanation of each preset
-for the active mode.
 Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
 (two chords plus phrase bias) and **Resolve** (one chord, strong phrase bias)
-all use `Palette: Primary`; **Colourful** uses `Palette: Close colour`. Every
+use `Palette: Primary`; **Melodic** (two chords, strong phrase, `Palette: Close
+colour`) and **Colourful** (one chord, `Palette: Close colour`) add a note at
+each change. Every
 value a preset sets is visible in the Options panel.
 
 ### Phase 1 - shuffle options
 
-1. Load a demo, set `Scales` to `shuffle`, click `Options`.
+1. Load a demo, set the **Scale changes** style to `Vary it`, click `Options`.
 2. Trigger the same chord several times (`Z Z Z Z Z`): the scale must not
    change. The reason stays `holding` and the notes stay put.
 3. Trigger two different chords in turn: each chord change may draw once, and
@@ -268,9 +289,12 @@ value a preset sets is visible in the Options panel.
 5. Set `Change` to `0%`: the rank is kept across chord changes.
 6. Click `Reroll`: the reason becomes a fresh draw, not `holding`.
 7. Choose the `Subtle` preset: the values become `3 / 2 / 100% / 1 note` with
-   `Hold` on, and the preset select stops showing `Custom`. Choose `Varied` for
-   `5 / 1 / 100% / 1 note`; choose `Wild` for `6 / 1 / 100% / Wild` with `Hold`
-   off.
+   `Hold` on and `Variety: Gentle`, and the preset select stops showing
+   `Custom`. Choose `Varied` for `5 / 1 / 100% / 1 note` with
+   `Variety: Lively`; choose `Wild` for `6 / 1 / 100% / Wild` with `Hold`
+   off and `Variety: Lively`. With `Pool` 3 every draw is one of the stored
+   filters, so the grid highlight and the filter buttons move between them; a
+   draw that lands on a stored filter shows no `auto:` chip.
 8. While holding a long solo note, change chord: the reason should read
    `closest fit`, and the scale should move as little as possible.
 9. Transpose the C Major II-V-I demo up a semitone (`Alt+4`, or hold the
@@ -283,7 +307,8 @@ value a preset sets is visible in the Options panel.
 
 ### Phase 2 - progression context
 
-1. Set `Scales` to `follow history`, open `Options`, set `Context` to `2 chords`.
+1. Set the **Scale changes** style to `Follow the chords`, open `Options`, set
+   `Mode` to `follow history` and `Context` to `2 chords`.
 2. On the C Major II-V-I demo trigger `C3` (Dm7), `D3` (G7), `E3` (Cmaj7):
    the reason on the Cmaj7 should read `ii-V-I into C: major`.
 3. Set `Context` to `1 chord` and repeat: the third reason should no longer
@@ -313,7 +338,8 @@ value a preset sets is visible in the Options panel.
 
 ### Phase 4 - phrase bias in follow
 
-1. Set `Scales` to `follow history`, open `Options`, and tick `Phrase`.
+1. Set the **Scale changes** style to `Follow the melody`, or open `Options`, set
+   `Mode` to `follow history` and tick `Phrase`.
 2. Play a solo note that only a colour scale contains (for example a held `C#`
    over `G7`), then trigger that chord. The chosen stored scale should contain
    that note and the reason line should read `keeps your last note C#`; with
@@ -328,7 +354,8 @@ value a preset sets is visible in the Options panel.
 
 ### Manual override behaviour (regression test)
 
-1. Set `Scales` to `shuffle`. Press `2` (or click a scale cell in a chord row):
+1. Set the **Scale changes** style to `Vary it`. Press `2` (or click a scale cell
+   in a chord row):
    that scale sounds immediately and its cell is highlighted, with no `auto:`
    chip.
 2. Trigger that same chord (`Z`): the override is respected, so the scale stays
@@ -341,11 +368,13 @@ value a preset sets is visible in the Options panel.
 ## Files
 
 - `src/lib/autoScale.js` - context, scoring, choosers, history, ranking cache.
+- `src/lib/scaleStyles.js` - the `Scale changes` styles and how they map to a
+  colour, policy and preset.
 - `src/lib/change-scale.js` - `applyScalePolicy()`, `rerollShuffleScale()`,
   `setScalePolicy()`, `setAutoScaleFilter()`.
 - `src/lib/midi/play-chord.js` - applies the policy per chord trigger and
   records history.
-- `src/components/GrandSummary.vue` - the `Scales` select, the live `auto:`
-  chip, the closest-stored marker and the Options expander.
+- `src/components/GrandSummary.vue` - the `Scale changes` selector, the live
+  `auto:` chip, the closest-stored marker and the Options expander.
 - `src/lib/globals.js` - `scaleFiltering.policy`, `policyOptions`, dwell state.
 - `src/lib/uiPrefs.js` - session persistence of the policy and its options.

@@ -95,12 +95,15 @@
  * `key` is the declared musical key. `soloMode` chooses whether the right hand
  * follows the per-chord scales ('chord', the default) or stays on the key scale
  * ('key'). `colour` chooses how much chromatic colour the key-aware engine
- * prefers: 'diatonic', 'jazz' (the default) or 'adventurous'.
+ * prefers: 'diatonic', 'jazz' (the default) or 'adventurous'. `scaleStyle` is
+ * the named right-hand scale style (see src/lib/scaleStyles.js), or 'custom'
+ * when the engine settings have been hand-tuned.
  * @typedef {object} ProjectOptions
  * @property {Partial<KeyboardConfig>} [keyboard]
  * @property {ProjectKey} [key]
  * @property {'chord'|'key'} [soloMode]
  * @property {'diatonic'|'jazz'|'adventurous'} [colour]
+ * @property {string} [scaleStyle]
  */
 
 /**

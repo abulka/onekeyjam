@@ -29,7 +29,8 @@ export function buildProject(chords) {
     project.name = 'Untitled Project'
     emergencyRepairProject(project);  // TODO fix the internals of this function
     project.chords = _buildCandidateChordConfigs(chords)
-    project.options = {}
+    // New projects open on the "Follow the chords" scale style.
+    project.options = { scaleStyle: 'follow' }
     project.songs = createDefaultSongs()
     return project
 }

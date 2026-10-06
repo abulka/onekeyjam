@@ -54,7 +54,7 @@ describe('autoScale policies', () => {
     })
 
     describe('policy presets', () => {
-        const KNOWN_OPTIONS = new Set(['poolSize', 'dwell', 'changeChance', 'maxNewNotes', 'deferWhilePlaying', 'contextChords', 'phraseBias', 'phraseStrength', 'palette'])
+        const KNOWN_OPTIONS = new Set(['poolSize', 'dwell', 'changeChance', 'maxNewNotes', 'deferWhilePlaying', 'variety', 'contextChords', 'phraseBias', 'phraseStrength', 'palette'])
 
         it('only set known option keys with real values', () => {
             for (const [mode, presets] of Object.entries(POLICY_PRESETS)) {
@@ -75,7 +75,7 @@ describe('autoScale policies', () => {
 
         it('has a subtle shuffle preset that matches the defaults', () => {
             const subtle = POLICY_PRESETS.shuffle.find((preset) => preset.name === 'subtle')
-            assert.deepEqual(subtle.options, { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true })
+            assert.deepEqual(subtle.options, { poolSize: 3, dwell: 2, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, variety: 'gentle' })
             for (const [key, value] of Object.entries(subtle.options))
                 assert.equal(globals.scaleFiltering.policyOptions[key], value, `default ${key}`)
         })
@@ -517,16 +517,39 @@ describe('autoScale policies', () => {
             resetChordHistory()
         })
 
-        it('returns a live scale for shuffle', () => {
+        it('returns a live scale for a shuffle draw beyond the stored filters', () => {
             globals.chordHistory = []
+            globals.scaleFiltering.policyOptions.poolSize = 6
             const g7 = configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])
-            const decision = chooseScaleForChord(g7, 'shuffle')
+            // Ranks 0-2 are the stored filters; rank 5 can only be an engine scale.
+            const decision = chooseScaleForChord(g7, 'shuffle', { heldRank: 5 })
             assert.equal(decision.type, 'auto')
             assert.equal(typeof decision.tonic, 'string')
             assert.equal(typeof decision.scaleType, 'string')
             assert.ok(decision.notes.length > 0)
             assert.ok(decision.scaleTypes.length > 0)
             assert.match(decision.reason, /shuffle/)
+        })
+
+        it('draws from the stored filters when the pool is three', () => {
+            globals.chordHistory = []
+            globals.scaleFiltering.policyOptions.poolSize = 3
+            const g7 = configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])
+            const decision = chooseScaleForChord(g7, 'shuffle', { rng: () => 0.999 })
+            assert.equal(decision.type, 'slot')
+            assert.equal(decision.slot, 'scale3')
+            assert.equal(decision.name, 'G mixolydian b6')
+        })
+
+        it('uses hand-edited stored filters even when the engine ranks others higher', () => {
+            globals.chordHistory = []
+            globals.scaleFiltering.policyOptions.poolSize = 3
+            const cMaj = configFor('Cmaj7', ['C3', 'E3', 'G3', 'B3'], ['C major pentatonic', 'C major blues', 'C lydian'])
+            const decision = chooseScaleForChord(cMaj, 'shuffle', { rng: () => 0.999 })
+            assert.equal(decision.type, 'slot')
+            assert.equal(decision.slot, 'scale3')
+            assert.equal(decision.name, 'C lydian')
+            globals.scaleFiltering.policyOptions.poolSize = 6
         })
 
         it('holds a supplied shuffle rank', () => {
@@ -550,7 +573,7 @@ describe('autoScale policies', () => {
             globals.scaleFiltering.policyOptions.poolSize = 3
             const g7 = configFor('G7', ['G3', 'B3', 'D4', 'F4'], ['G mixolydian', 'G lydian dominant', 'G mixolydian b6'])
             const decision = chooseScaleForChord(g7, 'shuffle', { rng: () => 0.999 })
-            assert.equal(decision.scaleTypes.length, 3)
+            assert.equal(decision.type, 'slot')
             assert.ok(decision.rank >= 0 && decision.rank < 3)
             globals.scaleFiltering.policyOptions.poolSize = 6
         })
