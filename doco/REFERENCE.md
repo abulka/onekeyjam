@@ -144,7 +144,7 @@ Why this helps:
   line does not get cut off by the next chord. It only changes the pick when
   that note distinguishes the stored scales; in a diatonic tune it correctly
   stays quiet. Shuffle ignores the last note; held notes are repaired instead
-  (see `Settings` > `Held note repair`).
+  (see `Settings` > `Preferences`).
 - **Nothing is a trap.** You can always override with the filters (`1`-`4`, or
   the right-hand black keys) or a grid click, and the app goes back to the policy
   on the next chord you play.

@@ -86,7 +86,7 @@ onUnmounted(() => stopAccordion())
               is held in memory only.
             </p>
           </div>
-          <div class="mt-2" v-if="globals.recording.background.enabled">
+          <div class="mt-2 settings-suboption" v-if="globals.recording.background.enabled">
             <label title="How far back the hidden buffer keeps notes.">
               Capture window:
               <select v-model.number="globals.recording.background.windowSec">
@@ -96,38 +96,31 @@ onUnmounted(() => stopAccordion())
               </select>
             </label>
           </div>
-        </div>
-
-        <div class="title">
-          <i class="dropdown icon"></i>
-          Held note repair
-        </div>
-        <div class="content">
-          <p class="settings-explainer">
-            When a chord trigger changes the scale just after you have played a
-            right-hand solo note, the note would otherwise keep the old scale and
-            sound out of place. Repair moves that still-sounding note onto the
-            new scale, so it does not matter whether the solo note or the chord
-            arrived first. Notes you are holding deliberately are left alone,
-            and nothing is moved while recording.
-          </p>
-          <div>
+          <div class="mt-2">
             <label class="checkboxLabel" title="Move a still-sounding solo note onto the new scale after a chord trigger changes it.">
               <input type="checkbox" v-model="globals.heldNoteRepair.enabled" />
               Repair held solo notes when the scale changes
             </label>
-          </div>
-          <div class="mt-2" v-if="globals.heldNoteRepair.enabled">
-            <label title="How recently the held note must have started to be repaired. A short window re-attacks so quickly it is barely audible; a long window also moves notes you are holding deliberately.">
-              Window:
-              <select v-model.number="globals.heldNoteRepair.windowMs">
-                <option :value="25">25 ms</option>
-                <option :value="40">40 ms</option>
-                <option :value="60">60 ms</option>
-                <option :value="100">100 ms</option>
-                <option :value="100000">any</option>
-              </select>
-            </label>
+            <p class="settings-hint">
+              When a chord trigger changes the scale just after you have played a
+              right-hand solo note, the note would otherwise keep the old scale
+              and sound out of place. Repair moves that still-sounding note onto
+              the new scale, so it does not matter whether the solo note or the
+              chord arrived first. Notes you are holding deliberately are left
+              alone, and nothing is moved while recording.
+            </p>
+            <div class="mt-2 settings-suboption" v-if="globals.heldNoteRepair.enabled">
+              <label title="How recently the held note must have started to be repaired. A short window re-attacks so quickly it is barely audible; a long window also moves notes you are holding deliberately.">
+                Window:
+                <select v-model.number="globals.heldNoteRepair.windowMs">
+                  <option :value="25">25 ms</option>
+                  <option :value="40">40 ms</option>
+                  <option :value="60">60 ms</option>
+                  <option :value="100">100 ms</option>
+                  <option :value="100000">any</option>
+                </select>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -154,15 +147,14 @@ onUnmounted(() => stopAccordion())
 </template>
 
 <style scoped>
-.settings-explainer {
-  max-width: 60ch;
-  color: #5a3d1a;
-}
-
 .settings-hint {
   max-width: 60ch;
   margin: 0.25rem 0 0 1.5rem;
   color: #6b5a45;
   font-size: 0.9rem;
+}
+
+.settings-suboption {
+  margin-left: 1.5rem;
 }
 </style>
