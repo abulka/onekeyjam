@@ -4,6 +4,7 @@ import { globals } from '@/lib/globals.js'
 import { startRecording, stopRecording, clearTake, captureTakeFromBackground } from '@/lib/midi/recorder.js'
 import { startPlayback, stopPlayback, seekPlayback, previewVisuals, takeDurationSec } from '@/lib/midi/playback.js'
 import { downloadRecording } from '@/lib/midi/export-recording.js'
+import RecordingPianoRoll from './RecordingPianoRoll.vue'
 
 const rec = globals.recording
 
@@ -281,6 +282,10 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
           </div>
         </div>
       </div>
+
+      <div class="ui divider take-editor-divider"></div>
+      <h4 class="take-editor-heading">Edit the take</h4>
+      <RecordingPianoRoll />
     </div>
   </div>
 </template>
@@ -299,6 +304,15 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
 
 .record-controls .ui.positive.message {
   background-color: rgba(232, 245, 224, 0.9);
+}
+
+.take-editor-divider {
+  margin: 0.75rem 0 0.5rem;
+}
+
+.take-editor-heading {
+  margin: 0 0 0.25rem;
+  color: #4a3d2a;
 }
 
 /* Record and Capture share one row so they stay aligned with each other. */

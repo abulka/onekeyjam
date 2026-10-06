@@ -322,14 +322,13 @@ watch(() => globals.helpPage, async () => {
         chord and the active scale as you go, together with a live piano keyboard,
         the scale-filtering toggles and the scale policy Options panel. The
         <strong>File</strong> menu is the same as on the Edit view, while the
-        <strong>Actions</strong> menu offers <strong>Play Chord
+        <strong>Actions</strong> menu offers <strong>Play Pattern
         Sequencer</strong>, <strong>Record</strong> and <strong>Export
         MIDI</strong>. Expand the accordions underneath to reach:
       </p>
       <ul class="ui list">
-        <li><strong>Record</strong> - capture a take: press Record, play both hands, then press Stop. The left-hand chords (with their bass) and the scale-filtered right-hand solo notes are captured on two separate tracks. The panel also has the play/pause scrubber, the playback key-highlight choice, Export MIDI and Clear.</li>
-        <li><strong>Recording Sequencer</strong> - shows the captured take in a piano roll. Use the Chords, Solo and Both buttons to view the tracks; Chords and Solo are editable, and changes are written straight back to the take. Click the piano strip on the left to hear a note.</li>
-        <li><strong>Chord Sequencer</strong> - draw a chord-sequence loop; audition it from the piano strip or by clicking a note (a chord trigger plays its chord), fit the loop to the notes, and clear it. Tick <strong>Include in recording</strong> to loop it while you record a solo, and it is merged into the take on Stop.</li>
+        <li><strong>Take</strong> - capture and edit a take. Press Record, play both hands, then press Stop: the left-hand chords (with their bass) and the scale-filtered right-hand solo notes are captured on two separate tracks. Below the transport is the take's piano roll; use the Chords, Solo and Both buttons to view the tracks, and Chords and Solo are editable, with changes written straight back to the take. Click the piano strip on the left to hear a note. The transport also has the play/pause scrubber, the playback key-highlight choice, Export MIDI and Clear.</li>
+        <li><strong>Pattern Sequencer</strong> - draw a chord-sequence loop; audition it from the piano strip or by clicking a note (a chord trigger plays its chord), fit the loop to the notes, and clear it. Tick <strong>Include in recording</strong> to loop it while you record a solo, and it is merged into the take on Stop.</li>
         <li><strong>Chord / Scale Table</strong> - the chords and their scale filters at a glance; click a row to trigger the chord.</li>
         <li><strong>Active Chord</strong> - the chord that is currently sounding, with its notes and bass.</li>
         <li><strong>Active Scale</strong> - the scale the right hand is currently filtered into. If the project is in <strong>Solo in key</strong> mode it shows the project key scale instead of a per-chord scale.</li>

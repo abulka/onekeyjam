@@ -196,7 +196,7 @@ and the validation commands.
   solo part first and the chords second. The latest take is saved to
   `localStorage` (key `onekeyjam.latestTake`) and restored at boot, so a refresh
   does not lose it. The Perform view's Actions menu offers Record/Stop and
-  Export MIDI, driven through the exposed methods on `RecordControls.vue`.
+  Export MIDI, driven through the exposed methods on `TakePanel.vue`.
 - Beside the live take there is a hidden, always-on **background capture** so a
   doodle the user forgot to record is not lost (like Logic's "Capture as
   Recording" or Ableton's "Capture MIDI"). `src/lib/midi/background-recorder.js`
@@ -211,23 +211,27 @@ and the validation commands.
   `captureTakeFromBackground()` turns the window into the current take: it
   clips notes that started before the window, closes still-held notes, trims
   leading silence and gives every note the same one-tick minimum as the live
-  recorder. The Record section and the Edit and Perform Actions menus expose a
+  recorder. The Take section and the Edit and Perform Actions menus expose a
   "Flashback Capture" action, which replaces any existing take straight away
   with no confirmation, and the enable flag and window length live in Settings
   Preferences and `uiPrefs`. The capture window defaults to two minutes.
-- The Perform view's accordions are, in order: Record (`RecordControls.vue`),
-  Recording Sequencer (`RecordingPianoRoll.vue`), Chord Sequencer
-  (`Sequencer.vue`), Chord / Scale Table (`GrandSummary.vue`), Active Chord and
-  Active Scale. The Recording Sequencer is the take's piano roll, built on the
-  reusable `PianoRollPanel.vue`, which wraps the g200kg `webaudio-pianoroll`
-  widget. It shows the current take, lets the Chords or Solo track be edited
-  (changes are written straight back to the take and saved), follows the playback
-  position with a playhead, and auditions notes when the piano strip is clicked.
-  Clicking and dragging along that strip plays a run of notes, and its keys light
-  up for notes played on the main keyboard (and vice versa) through the same
-  `live-note` event. `src/lib/sequencer-notes.js` holds the pure conversions
-  between take notes and widget notes.
-- The Chord Sequencer is a chord-sequence loop. It can be auditioned (a chord
+- The Perform view's accordions are, in order: Take (`TakePanel.vue`), Pattern
+  Sequencer (`Sequencer.vue`), Chord / Scale Table (`GrandSummary.vue`), Active
+  Chord and Active Scale. The Take panel combines the transport and the take's
+  piano roll. The transport part (`TakePanel.vue`, formerly `RecordControls.vue`)
+  holds Record/Stop, Flashback Capture, the live counters, Export MIDI, Clear,
+  and the playback bar (play/pause, rewind, scrubber and the playback highlight
+  mode). The roll is `RecordingPianoRoll.vue`, embedded beneath the transport and
+  built on the reusable `PianoRollPanel.vue`, which wraps the g200kg
+  `webaudio-pianoroll` widget. It shows the current take, lets the Chords or Solo
+  track be edited (changes are written straight back to the take and saved),
+  follows the playback position with a playhead, and auditions notes when the
+  piano strip is clicked. Clicking and dragging along that strip plays a run of
+  notes, and its keys light up for notes played on the main keyboard (and vice
+  versa) through the same `live-note` event. `src/lib/sequencer-notes.js` holds
+  the pure conversions between take notes and widget notes.
+- The Pattern Sequencer (labelled "Chord Sequencer" in older docs) is a
+  chord-sequence loop. It can be auditioned (a chord
   trigger plays its chord, anything else a single note) from the piano strip or
   by clicking a note, and its loop markers can be fitted to the notes. The
   pattern lives in the current project (`globals.project.chordSequences.default`):

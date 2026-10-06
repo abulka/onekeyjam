@@ -10,8 +10,7 @@ import ScaleFilteringToggles from './ScaleFilteringToggles.vue'
 import ActiveScale from './ActiveScale.vue'
 import ActiveChord from './ActiveChord.vue'
 import LivePianoKeyboard from './LivePianoKeyboard.vue'
-import RecordControls from './RecordControls.vue'
-import RecordingPianoRoll from './RecordingPianoRoll.vue'
+import TakePanel from './TakePanel.vue'
 import Sequencer from './Sequencer.vue'
 
 const recorder = ref(null)
@@ -33,7 +32,7 @@ function exportTake() {
 }
 
 function captureTake() {
-  // The capture prompt and result live in the Record section, so make sure it
+  // The capture prompt and result live in the Take section, so make sure it
   // is open even when the action is triggered from this menu.
   $('#big-accordion-perform').accordion('open', 0)
   recorder.value?.captureTake()
@@ -66,7 +65,7 @@ onUnmounted(() => {
   <PageMenubar>
     <template #actions>
       <a class="item" :class="{ disabled: !sequencer?.hasNotes }" @click="playChordSequencer()">
-        {{ sequencer?.isPlaying ? 'Stop Chord Sequencer' : 'Play Chord Sequencer' }}
+        {{ sequencer?.isPlaying ? 'Stop Pattern Sequencer' : 'Play Pattern Sequencer' }}
       </a>
       <a class="item" @click="toggleRecord()">{{ globals.recording.isRecording ? 'Stop Recording' : 'Record' }}</a>
       <a class="item" :class="{ disabled: globals.recording.isRecording || !globals.recording.background.enabled || !globals.recording.background.available }" @click="captureTake()">Flashback Capture</a>
@@ -92,23 +91,15 @@ onUnmounted(() => {
 
       <div class="title">
         <i class="dropdown icon"></i>
-        Record
+        Take
       </div>
       <div class="content">
-        <RecordControls ref="recorder" />
+        <TakePanel ref="recorder" />
       </div>
 
       <div class="title">
         <i class="dropdown icon"></i>
-        Recording Sequencer
-      </div>
-      <div class="content">
-        <RecordingPianoRoll />
-      </div>
-
-      <div class="title">
-        <i class="dropdown icon"></i>
-        Chord Sequencer
+        Pattern Sequencer
       </div>
       <div class="content">
         <Sequencer ref="sequencer" />

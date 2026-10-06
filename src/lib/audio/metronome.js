@@ -6,7 +6,7 @@ import { getPlaybackClock } from '../midi/playback.js'
 /**
  * @module lib/audio/metronome
  * @desc A click track that follows the recorded take's playback rather than
- * running free. When the Recording Sequencer plays, the clicks line up with the
+ * running free. When the take plays, the clicks line up with the
  * take's beat grid (accenting the first beat of each 4/4 bar) at the app-wide
  * BPM. While the take is not playing, the metronome is silent.
  */

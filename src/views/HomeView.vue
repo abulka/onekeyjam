@@ -8,7 +8,7 @@ import Jammer from '@/components/JammerView.vue'
 import PageMenubar from '@/components/PageMenubar.vue'
 
 // Logic-style flashback capture, available from the Edit page too. The take it
-// recovers appears in the Perform view's Recording Sequencer.
+// recovers appears in the Perform view's Take panel.
 function flashbackCapture() {
   const result = captureTakeFromBackground()
   if (result.ok) {
