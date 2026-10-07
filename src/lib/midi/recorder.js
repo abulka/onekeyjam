@@ -279,6 +279,10 @@ export function clearTake() {
 /**
  * Recover the last few minutes of playing from the hidden background buffer and
  * make it the current take. Returns a small result for the UI.
+ *
+ * Pattern chords are in the buffer too: the pattern loop writes each chord it
+ * sounds straight into the background, so only what was actually heard comes
+ * back alongside the solo.
  * @param {number} [windowSec] override the configured capture window
  * @param {number} [now] clock override, mainly for tests
  * @returns {{ ok: boolean, reason?: string, noteCount?: number, durationSec?: number }}

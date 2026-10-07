@@ -2,6 +2,7 @@
 import { globals } from './globals.js'
 import { audioContext } from './audio/general-midi.js'
 import { patternOnNote, clearPatternTimers, resetLiveCounts } from './pattern-playback.js'
+import { noteSequencerStarted, noteSequencerStopped } from './pattern-snapshot.js'
 
 /**
  * @module lib/pattern-player
@@ -76,6 +77,7 @@ export function playerPlay() {
   resetLiveCounts()
   el.play(audioContext, patternOnNote, 0)
   playing = true
+  noteSequencerStarted()
 }
 
 export function playerStop() {
@@ -84,4 +86,5 @@ export function playerStop() {
   playing = false
   clearPatternTimers()
   resetLiveCounts()
+  noteSequencerStopped()
 }

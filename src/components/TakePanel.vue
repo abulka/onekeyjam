@@ -167,7 +167,7 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
                 class="ui teal button capture-button"
                 :class="{ disabled: !canCapture }"
                 :disabled="!canCapture"
-                :title="`Flashback Capture: recover the last ${backgroundWindowLabel} of playing${background.available ? ` (${readyLabel})` : ''}, even though Record was not pressed`"
+                :title="`Flashback Capture: recover the last ${backgroundWindowLabel} of playing${background.available ? ` (${readyLabel})` : ''}, including the pattern chords, even though Record was not pressed`"
                 @click="requestCapture"
               >
                 <i class="undo icon"></i> Flashback Capture

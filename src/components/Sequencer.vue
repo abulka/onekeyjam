@@ -7,9 +7,10 @@ import { resolveTriggerNote } from "@/lib/resolveTriggerNote.js"
 import { audioContext } from '@/lib/audio/general-midi.js'
 import { auditionMidiNote, auditionChord } from '@/lib/midi/audition-note.js'
 import { commitTakeEdit } from '@/lib/midi/recorder.js'
-import { patternToTakeNotes } from '@/lib/sequencer-notes.js'
+import { patternToTakeNotes, rowToTakeNotes } from '@/lib/sequencer-notes.js'
 import { triggerRowCountFor } from '@/lib/demo-pattern.js'
-import { patternOnNote, clearPatternTimers, resetLiveCounts, rowToTakeNotes } from '@/lib/pattern-playback.js'
+import { patternOnNote, clearPatternTimers, resetLiveCounts } from '@/lib/pattern-playback.js'
+import { noteSequencerStarted, noteSequencerStopped } from '@/lib/pattern-snapshot.js'
 import { sequencerControl, registerSequencer, unregisterSequencer, sequenceOptions, resolveSequenceName } from '@/lib/sequencer-control.js'
 import { applyProjectTempo } from '@/lib/boot-project.js'
 import PianoRollPanel from './PianoRollPanel.vue'
@@ -152,6 +153,7 @@ function sequencerPlay(e, from = 'beginning') {
   const starttick = (from == 'beginning') ? 0 : undefined
   startPatternPlayback(starttick)
   isPlaying.value = true
+  noteSequencerStarted()
 }
 
 function sequencerResume(e) {
@@ -165,6 +167,7 @@ function sequencerStop() {
   bpmRestartTimer = null
   clearPatternTimers()
   resetLiveCounts()
+  noteSequencerStopped()
   saveProjectPatternNow()
 }
 
@@ -179,6 +182,7 @@ function scheduleBpmRestart() {
     panel.value.stop()
     clearPatternTimers()
     startPatternPlayback(undefined)  // undefined resumes from the widget's cursor
+    noteSequencerStarted()
   }, 150)
 }
 
@@ -428,6 +432,7 @@ function stopPatternForRecording() {
   bpmRestartTimer = null
   clearPatternTimers()
   resetLiveCounts()
+  noteSequencerStopped()
 }
 
 function mergePatternIntoTake() {
@@ -499,6 +504,7 @@ onBeforeUnmount(() => {
 
 onUnmounted(() => {
   unregisterSequencer()
+  noteSequencerStopped()
   clearTimeout(bpmRestartTimer)
   bpmRestartTimer = null
   clearPatternTimers()

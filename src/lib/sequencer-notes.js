@@ -1,4 +1,7 @@
 // @ts-check
+import { Note as TonalNote } from '@tonaljs/tonal'
+import { globals } from './globals.js'
+import { indexToNote } from './note-tools.js'
 
 /**
  * @module lib/sequencer-notes
@@ -171,6 +174,39 @@ export function renderLoopToTicks(notes, loopStart, loopEnd, totalTicks) {
                 continue
             out.push({ ...note, t })
         }
+    }
+    return out
+}
+
+/**
+ * Expand a pattern row into the notes it should sound in the take: a chord
+ * trigger becomes its chord notes (and bass), anything else a single raw note.
+ * `playedMidi` is the trigger key, matching live chord recording.
+ * @param {number} row widget row (a MIDI note number in the trigger octave)
+ * @returns {Array<{ midi: number, playedMidi?: number }>}
+ */
+export function rowToTakeNotes(row) {
+    const triggerNote = indexToNote(row - 60, globals.keyboard.lhTriggerOctave)
+    const triggerMidi = TonalNote.midi(triggerNote)
+    const config = globals.chordTriggerMap[triggerNote]
+    if (!config)
+        return typeof triggerMidi === 'number' ? [{ midi: triggerMidi, playedMidi: triggerMidi }] : []
+
+    const out = []
+    const playedMidi = typeof triggerMidi === 'number' ? triggerMidi : undefined
+    if (!globals.playBassOnly) {
+        for (const name of config.chordNotes || []) {
+            if (!globals.playChordBass && name === config.bassNote)
+                continue
+            const midi = TonalNote.midi(name)
+            if (typeof midi === 'number')
+                out.push({ midi, playedMidi: playedMidi ?? midi })
+        }
+    }
+    if (!globals.playChordOnly && config.bassNote) {
+        const midi = TonalNote.midi(config.bassNote)
+        if (typeof midi === 'number')
+            out.push({ midi, playedMidi: playedMidi ?? midi })
     }
     return out
 }

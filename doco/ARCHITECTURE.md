@@ -192,8 +192,8 @@ and the validation commands.
   bar and persisted through `src/lib/uiPrefs.js`; the recorder, playback, export
   and the Chord Sequencer all read it. A metronome toggle sits beside it
   (`src/lib/audio/metronome.js`); it does not run free, but follows the recorded
-  take's playback, clicking each beat with the downbeat accented and staying
-  silent otherwise. It is persisted too. The Record section's counters show the
+  take's playback and the chord pattern loop, clicking each beat with the
+  downbeat accented and staying silent otherwise. It is persisted too. The Record section's counters show the
   number of chords (one per chord onset, not per chord tone) and solo notes,
   including anything the Chord Sequencer is sounding right now via
   `globals.recording.live`; they settle back to the take's counts when it stops. `src/lib/midi/playback.js` plays the take back through the
@@ -216,9 +216,12 @@ and the validation commands.
   `src/lib/midi/recorder.js`), so it captures whether or not Record was pressed.
   It uses a monotonic `performance.now()` clock (not the audio context, which
   can be suspended), respects `globals.recording.suppressCapture` so auditions
-  and sequencer-pattern notes stay out, and publishes only a small summary to
+  stay out, and publishes only a small summary to
   `globals.recording.background` (`enabled`, `windowSec`, `noteCount`,
   `available`) rather than the raw events, to keep Vue's reactivity cheap.
+  The pattern loop writes each chord it sounds straight into the buffer (with
+  the audio offset mapped onto the wall clock), so Flashback Capture recovers
+  exactly the chords that were heard alongside the solo.
   `captureTakeFromBackground()` turns the window into the current take: it
   clips notes that started before the window, closes still-held notes, trims
   leading silence and gives every note the same one-tick minimum as the live

@@ -7,6 +7,12 @@ import { audioContext } from './audio/general-midi.js'
 import { onNoteOnSequenced } from './midi/wire-events.js'
 import { clearPendingChordState } from './midi/play-chord.js'
 import { broadcastLiveNote } from './midi/audition-note.js'
+import { recordBackgroundNoteOn, recordBackgroundNoteOff } from './midi/background-recorder.js'
+import { rowToTakeNotes } from './sequencer-notes.js'
+
+// Kept here so existing importers keep working; the implementation lives in
+// sequencer-notes.js so the recorder can use it without an import cycle.
+export { rowToTakeNotes }
 
 /**
  * @module lib/pattern-playback
@@ -37,7 +43,9 @@ export function scheduleLiveNote(midi, startSec, endSec) {
     visualTimers.push(setTimeout(() => broadcastLiveNote(midi, false, 'pattern'), offDelay))
 }
 
-/** Run a note-on without letting the recorder capture the pattern. */
+/** Run a note-on without letting the live take capture the pattern. The
+ * hidden background buffer is fed separately (see capturePatternRowToBackground),
+ * so Flashback Capture still recovers what was heard. */
 function runSuppressed(fn) {
     const wasSuppressed = globals.recording.suppressCapture
     globals.recording.suppressCapture = true
@@ -60,33 +68,44 @@ export function clearPatternTimers() {
     clearPendingChordState()
 }
 
-// Expand a pattern row into the notes it should sound in the take: a chord
-// trigger becomes its chord notes (and bass), anything else a single raw note.
-// `playedMidi` is the trigger key, matching live chord recording.
-export function rowToTakeNotes(row) {
-    const triggerNote = indexToNote(row - 60, globals.keyboard.lhTriggerOctave)
-    const triggerMidi = TonalNote.midi(triggerNote)
-    const config = globals.chordTriggerMap[triggerNote]
-    if (!config)
-        return typeof triggerMidi === 'number' ? [{ midi: triggerMidi, playedMidi: triggerMidi }] : []
-
-    const out = []
-    const playedMidi = typeof triggerMidi === 'number' ? triggerMidi : undefined
-    if (!globals.playBassOnly) {
-        for (const name of config.chordNotes || []) {
-            if (!globals.playChordBass && name === config.bassNote)
-                continue
-            const midi = TonalNote.midi(name)
-            if (typeof midi === 'number')
-                out.push({ midi, playedMidi: playedMidi ?? midi })
-        }
+/**
+ * Write a sounded pattern row into the hidden background buffer, so Flashback
+ * Capture recovers exactly the chords that were heard and nothing more. The
+ * widget calls us ahead of time, so the events are stamped with when the notes
+ * actually sound: the audio offset is mapped onto the background's wall clock.
+ * This deliberately bypasses the live-take suppression above; during recording
+ * the live take still merges the loop on stop as before.
+ * @param {number} row widget row that sounded
+ * @param {number} startSec audio time the note sounds
+ * @param {number} endSec audio time the note ends
+ */
+function capturePatternRowToBackground(row, startSec, endSec) {
+    const expansions = rowToTakeNotes(row)
+    if (expansions.length === 0)
+        return
+    // Without an audio clock (only in tests) the note times are already wall
+    // clock times, so they are used as they are.
+    const hasAudioClock = audioContext && typeof audioContext.currentTime === 'number'
+    const wallNow = typeof performance !== 'undefined' && typeof performance.now === 'function'
+        ? performance.now() / 1000
+        : Date.now() / 1000
+    const rawEnd = typeof endSec === 'number' ? endSec : startSec
+    const onAt = hasAudioClock ? wallNow + Math.max(0, startSec - audioContext.currentTime) : startSec
+    const offAt = hasAudioClock
+        ? wallNow + Math.max(0, rawEnd - audioContext.currentTime)
+        : Math.max(rawEnd, startSec)
+    for (const expansion of expansions) {
+        if (!expansion || typeof expansion.midi !== 'number')
+            continue
+        const name = TonalNote.fromMidi(expansion.midi)
+        if (!name)
+            continue
+        const playedName = typeof expansion.playedMidi === 'number'
+            ? TonalNote.fromMidi(expansion.playedMidi)
+            : undefined
+        recordBackgroundNoteOn('chords', name, 0.5, playedName ?? undefined, onAt)
+        recordBackgroundNoteOff('chords', name, Math.max(offAt, onAt))
     }
-    if (!globals.playChordOnly && config.bassNote) {
-        const midi = TonalNote.midi(config.bassNote)
-        if (typeof midi === 'number')
-            out.push({ midi, playedMidi: playedMidi ?? midi })
-    }
-    return out
 }
 
 // One note from the widget's play loop. The widget calls this ahead of time
@@ -113,11 +132,13 @@ export function patternOnNote(options) {
         // playChord schedules the chord audio for `when` now and defers the
         // scale/chord state to `when` too (see deferStateToWhen).
         runSuppressed(() => onNoteOnSequenced(simulatedEvent))
+        capturePatternRowToBackground(options.n, options.t, options.g)
         return
     }
 
     // A single note (an unassigned trigger row): play it at its real time.
     globals.recording.live.jam += 1
+    capturePatternRowToBackground(options.n, options.t, options.g)
     const delayMs = Math.max(0, (options.t - audioContext.currentTime) * 1000)
     const play = () => runSuppressed(() => onNoteOnSequenced(simulatedEvent))
     if (delayMs > 8)

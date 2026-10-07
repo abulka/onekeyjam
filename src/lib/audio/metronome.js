@@ -2,13 +2,15 @@
 import { globals } from '../globals.js'
 import { audioContext } from './general-midi.js'
 import { getPlaybackClock } from '../midi/playback.js'
+import { getSequencerClock } from '../pattern-snapshot.js'
 
 /**
  * @module lib/audio/metronome
- * @desc A click track that follows the recorded take's playback rather than
- * running free. When the take plays, the clicks line up with the
- * take's beat grid (accenting the first beat of each 4/4 bar) at the app-wide
- * BPM. While the take is not playing, the metronome is silent.
+ * @desc A click track that follows the recorded take's playback and the chord
+ * pattern loop rather than running free. When the take plays, the clicks line
+ * up with the take's beat grid; when the pattern loop plays on its own, they
+ * click at the app-wide BPM from the start of the loop. Both accent the first
+ * beat of each 4/4 bar. While neither is playing, the metronome is silent.
  */
 
 const LOOKAHEAD_SEC = 0.1
@@ -62,9 +64,9 @@ function schedule() {
   const ctx = audioContext
   if (!ctx || !globals.metronomeEnabled)
     return
-  const clock = getPlaybackClock()
-  if (!clock.isPlaying) {
-    // Re-sync the next time playback starts.
+  const clock = activeClock()
+  if (!clock || clock.baseTime === null || clock.baseTime === undefined) {
+    // Re-sync the next time the take or the pattern starts.
     syncBaseTime = null
     return
   }
@@ -79,6 +81,22 @@ function schedule() {
     nextBeatIndex += 1
     nextBeatTime += beatSec
   }
+}
+
+/**
+ * The clock the metronome should follow right now: the take's playback when
+ * it is playing, otherwise the pattern loop when it is playing, otherwise
+ * nothing. Exported for tests.
+ * @returns {{ isPlaying: boolean, baseTime: number|null, offsetSec: number }|null}
+ */
+export function activeClock() {
+  const take = getPlaybackClock()
+  if (take.isPlaying)
+    return take
+  const sequencer = getSequencerClock()
+  if (sequencer.isPlaying)
+    return sequencer
+  return null
 }
 
 export function startMetronome() {
