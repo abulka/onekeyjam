@@ -1,7 +1,7 @@
 # Adapted from vue2 https://github.com/MicuEmerson/vue-piano/blob/main/src/components/PianoKeyboard.vue
 
 <script setup>
-import { ref, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { watch } from 'vue'
 import { noteObjectToMidiValue } from '../../src/lib/note-tools.js'
 import { getBlackKeyHelp } from '../../src/lib/keyboard-help.js'
@@ -87,7 +87,7 @@ watch(() => props.selectedNotes, () => regenerate(), { deep: true });
 watch(() => props.whiteNoteMappings, () => regenerate(), { deep: true });
 
 
-window.addEventListener("keydown", e => {
+function onKeyDown(e) {
     const key = e.key;
     const index = notesIndexesByKey.value[key];
 
@@ -95,9 +95,9 @@ window.addEventListener("keydown", e => {
         const noteObject = notes.value[index].key === key ? notes.value[index] : notes.value[index].blackNote;
         playNote(noteObject);
     }
-});
+}
 
-window.addEventListener("keyup", e => {
+function onKeyUp(e) {
     const key = e.key;
     const index = notesIndexesByKey.value[key];
 
@@ -105,16 +105,22 @@ window.addEventListener("keyup", e => {
         const noteObject = notes.value[index].key === key ? notes.value[index] : notes.value[index].blackNote;
         removePressedKey(noteObject);
     }
-});
+}
 
-window.onmouseup = () => {
+function onMouseUp() {
     isMousePressed.value = false;
 }
 
+onMounted(() => {
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("mouseup", onMouseUp);
+})
+
 onUnmounted(() => {
-    window.removeEventListener('keydown', () => { });
-    window.removeEventListener('keyup', () => { });
-    window.removeEventListener('onmouseup', () => { });
+    window.removeEventListener('keydown', onKeyDown);
+    window.removeEventListener('keyup', onKeyUp);
+    window.removeEventListener('mouseup', onMouseUp);
 })
 
 // COMPUTED

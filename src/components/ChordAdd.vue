@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { globals } from '@/lib/globals.js'
 import { chordAddToProjectExact } from "../../src/lib/chordAddToProject.js";
 import { replaceCurrentChordExact } from "../../src/lib/replaceCurrentChord";
@@ -119,6 +119,11 @@ watch(
 
 onMounted(() => {
   rebuildRadioSymbols(globals.currentChordBeingJammed, props.chordPickerChordName)
+  document.addEventListener('chord-add', onChordAdd)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('chord-add', onChordAdd)
 })
 
 function rebuildRadioSymbols(currentChordBeingJammed, chordPickerChordName) {
@@ -132,9 +137,9 @@ function rebuildRadioSymbols(currentChordBeingJammed, chordPickerChordName) {
 
 }
 
-document.addEventListener('chord-add', () => {
+function onChordAdd() {
   chordAction('add', radioPicked.value)
-})
+}
 
 function replaceCurrentChordDisabled() {
   // return globals.currentChordName() == radioPicked.value
