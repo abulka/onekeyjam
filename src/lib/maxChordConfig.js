@@ -3,7 +3,7 @@ import { maxChordConfigs as maxChordConfigsDefault } from './globals-config.js'
 
 // WOW the slider in the UI is direct control of globals.maxChordConfigs
 
-export function setMaxDisplayed(project, maxChordConfigs = maxChordConfigsDefault) {
+export function setMaxDisplayed(project = globals.project, maxChordConfigs = maxChordConfigsDefault) {
     // v1.
     // deprecated - reset the max number of chord configs to the number of candidate chord configs in the project
     // globals.maxChordConfigs = project.chords.length;

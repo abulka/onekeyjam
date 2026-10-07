@@ -2,9 +2,13 @@
 
 /*
  * Demo chord playback patterns for the generated static libraries (classic,
- * rock, progressions). Each song gets a looping pattern that follows its real
- * harmony rhythm, so opening a project gives something to practise with
- * straight away.
+ * rock, progressions). Each song gets one or more named looping patterns that
+ * follow its real harmony rhythm, so opening a project gives something to
+ * practise with straight away.
+ *
+ * A song can store several sequences: the short excerpt it has always had, a
+ * middle section, and the full form. Repeats share a grid row, so a long form
+ * only grows the grid by the distinct chords it introduces, never by bar count.
  *
  * Trigger positions are white-note order, not musical intervals: trigger 1 is
  * the first unique chord in the definition, trigger 2 the second, and so on
@@ -15,8 +19,8 @@
  *
  * MML rows are widget rows relative to C4 (60) with the sequencer's
  * `octadj = -1`, so `o4c` is row 60 (the first trigger), `o4b` is row 71 (the
- * seventh) and `o5c` is row 72 (the eighth). The tempo prefix is neutral: the
- * panel always plays with the app global BPM.
+ * seventh) and `o5c` is row 72 (the eighth). The tempo prefix is applied to the
+ * global BPM when the project loads, but playback always follows that BPM.
  */
 
 /** Ticks per whole note in the pattern panel; one 4/4 bar is one whole note. */
@@ -43,6 +47,29 @@ const WHITE_MML_NOTES = ['c', 'd', 'e', 'f', 'g', 'a', 'b']
  * @property {string} chord chord symbol, matching an entry of the definition's chord list
  * @property {number} bars length in bars
  */
+
+/**
+ * A generated library entry. `chords` lists the grid rows; repeats are folded,
+ * so Blue Moon's eight bars use four rows. Optional `sequence` (single) or
+ * `sequences` (named) describe the demo loops as chord symbols with bar
+ * lengths; without either, every chord gets one bar in definition order with
+ * back to back repeats merged into holds.
+ * @typedef {object} DemoDefinition
+ * @property {string[]} [chords] chord symbols for the grid, in row order
+ * @property {DemoSequenceStep[]} [sequence] legacy single demo loop (becomes `default`)
+ * @property {Object.<string, DemoSequenceStep[]>} [sequences] named demo loops
+ * @property {Object.<string, string>} [sequenceLabels] display labels per sequence name
+ * @property {number} [tempo] stored tempo, applied to the global BPM on load
+ */
+
+/** Human labels for the conventional sequence names. */
+const SEQUENCE_LABELS = {
+    default: 'Excerpt',
+    short: 'Excerpt',
+    excerpt: 'Excerpt',
+    medium: 'Middle section',
+    full: 'Full form',
+}
 
 /**
  * Unique chord symbols in first-appearance order. Grid rows follow this
@@ -82,25 +109,58 @@ export function mergeConsecutiveHolds(entries) {
 }
 
 /**
- * Plan the demo loop for a song definition: the unique grid rows and the
- * trigger steps that play them. Without a hand-authored sequence every chord
- * gets one bar in definition order, repeats reuse their first row, and back
- * to back repeats merge into holds.
- * @param {{ chords: string[], sequence?: DemoSequenceStep[] }} definition
- * @returns {{ uniqueSymbols: string[], triggers: DemoTrigger[], missing: string[] }}
+ * The named sequences a definition provides. `sequence` is treated as the
+ * legacy spelling of `sequences.default`.
+ * @param {DemoDefinition} definition
+ * @returns {Object.<string, DemoSequenceStep[]>} authored sequences, possibly empty
  */
-export function planDemoPattern(definition) {
-    const symbols = Array.isArray(definition.chords) ? definition.chords : []
-    const authored = Array.isArray(definition.sequence) ? definition.sequence : null
-    const sequenceSymbols = authored ? authored.map((step) => step.chord) : []
+export function normalizeSequences(definition) {
+    /** @type {Object.<string, DemoSequenceStep[]>} */
+    const authored = {}
+    if (definition && definition.sequences && typeof definition.sequences === 'object') {
+        for (const [name, steps] of Object.entries(definition.sequences)) {
+            if (Array.isArray(steps))
+                authored[name] = steps
+        }
+    }
+    if (definition && Array.isArray(definition.sequence) && !authored.default)
+        authored.default = definition.sequence
+    return authored
+}
+
+/**
+ * Plan the demo loops for a song definition: the unique grid rows and, for
+ * each named sequence, the trigger steps that play them. The chord-order
+ * excerpt is always offered as `default` unless one is authored, so a
+ * definition can add a `medium` or `full` form without repeating the excerpt.
+ * The grid is the union of the definition's chords and every sequence's
+ * chords, so a full form only adds its distinct chords.
+ * @param {DemoDefinition} definition
+ * @returns {{ uniqueSymbols: string[], sequences: Object.<string, DemoTrigger[]>, missing: string[] }}
+ */
+export function planDemoSequences(definition) {
+    const symbols = definition && Array.isArray(definition.chords) ? definition.chords : []
+    const authored = normalizeSequences(definition)
+    const names = Object.keys(authored)
+    const sequenceSymbols = names.flatMap((name) => authored[name].map((step) => step.chord))
     const uniqueSymbols = dedupeSymbols([...symbols, ...sequenceSymbols])
     /** @type {string[]} */
     const missing = []
-    /** @type {DemoTrigger[]} */
-    let triggers
-    if (authored) {
-        triggers = []
-        for (const step of authored) {
+    /** @type {Object.<string, DemoTrigger[]>} */
+    const sequences = {}
+
+    // The excerpt is derived from the chord order unless the definition
+    // authors its own `default`.
+    if (!authored.default && symbols.length > 0) {
+        sequences.default = mergeConsecutiveHolds(
+            symbols.map((symbol) => ({ index: uniqueSymbols.indexOf(symbol), bars: 1 })),
+        )
+    }
+
+    for (const name of names) {
+        /** @type {DemoTrigger[]} */
+        const triggers = []
+        for (const step of authored[name]) {
             const index = uniqueSymbols.indexOf(step.chord)
             if (index < 0) {
                 if (!missing.includes(step.chord))
@@ -109,12 +169,22 @@ export function planDemoPattern(definition) {
             }
             triggers.push({ index, bars: step.bars })
         }
+        sequences[name] = triggers
     }
-    else {
-        triggers = mergeConsecutiveHolds(
-            symbols.map((symbol) => ({ index: uniqueSymbols.indexOf(symbol), bars: 1 })),
-        )
-    }
+
+    return { uniqueSymbols, sequences, missing }
+}
+
+/**
+ * Plan the single primary demo loop for a definition. Kept for callers that
+ * only care about the default sequence; `planDemoSequences` is preferred.
+ * @param {DemoDefinition} definition
+ * @returns {{ uniqueSymbols: string[], triggers: DemoTrigger[], missing: string[] }}
+ */
+export function planDemoPattern(definition) {
+    const { uniqueSymbols, sequences, missing } = planDemoSequences(definition)
+    const names = Object.keys(sequences)
+    const triggers = sequences.default ?? (names.length > 0 ? sequences[names[0]] : [])
     return { uniqueSymbols, triggers, missing }
 }
 
@@ -178,16 +248,18 @@ export function demoSequenceMml(entries, tempo = DEMO_PATTERN_TEMPO) {
 }
 
 /**
- * Build the stored `chordSequences.default` entry for a trigger sequence.
+ * Build the stored `chordSequences.<name>` entry for a trigger sequence.
  * @param {DemoTrigger[]} entries trigger steps in loop order
  * @param {number} [tempo] stored tempo, applied to the global BPM on load
- * @returns {{ mml: string, markstart: number, markend: number, tempo: number, enabled: boolean, loopManual: boolean }}
+ * @param {string} [label] display label for the sequence picker
+ * @returns {{ mml: string, markstart: number, markend: number, tempo: number, enabled: boolean, loopManual: boolean, label?: string }}
  */
-export function demoEntryForTriggers(entries, tempo = DEMO_PATTERN_TEMPO) {
+export function demoEntryForTriggers(entries, tempo = DEMO_PATTERN_TEMPO, label) {
     const list = Array.isArray(entries) ? entries : []
     const storedTempo = Number.isFinite(tempo) ? Math.round(tempo) : DEMO_PATTERN_TEMPO
     const totalTicks = list.reduce((sum, entry) => sum + Math.max(1, Math.round(entry.bars * DEMO_PATTERN_TIMEBASE)), 0)
-    return {
+    /** @type {{ mml: string, markstart: number, markend: number, tempo: number, enabled: boolean, loopManual: boolean, label?: string }} */
+    const entry = {
         mml: demoSequenceMml(list, storedTempo),
         markstart: 0,
         markend: totalTicks,
@@ -195,6 +267,21 @@ export function demoEntryForTriggers(entries, tempo = DEMO_PATTERN_TEMPO) {
         enabled: false,
         loopManual: false,
     }
+    if (label)
+        entry.label = label
+    return entry
+}
+
+/**
+ * Default display label for a named sequence, including its length in bars.
+ * @param {string} name sequence key, e.g. `default`, `medium`, `full`
+ * @param {number} ticks loop length in panel ticks
+ * @returns {string} e.g. `Full form (32 bars)`
+ */
+export function defaultSequenceLabel(name, ticks) {
+    const base = SEQUENCE_LABELS[name] || name
+    const bars = Math.round(Math.max(0, ticks) / DEMO_PATTERN_TIMEBASE)
+    return bars > 0 ? `${base} (${bars} bars)` : base
 }
 
 /**

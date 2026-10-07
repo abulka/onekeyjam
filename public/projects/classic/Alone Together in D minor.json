@@ -18,6 +18,24 @@
       "scale1": "G dorian",
       "scale2": "G aeolian",
       "scale3": "G minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Am7b5",
+      "chord": "Am7b5",
+      "bass": "A2",
+      "scale1": "A locrian #2",
+      "scale2": "A locrian",
+      "scale3": "A minor blues"
+    },
+    {
+      "id": 4,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6"
     }
   ],
   "options": {
@@ -37,11 +55,15 @@
     "default": {
       "ids": [
         1,
-        2
+        2,
+        3,
+        4
       ],
       "favourites": [
         1,
-        2
+        2,
+        3,
+        4
       ],
       "blacklist": []
     }
@@ -53,7 +75,26 @@
       "markend": 128,
       "tempo": 128,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t128o4c1c1c1c1d1d1c1c1c1c1c1c1d1d1c1c1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 128,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t128o4c1c1c1c1d1d1c1c1c1c1c1c1d1d1c1c1e1f1d1d1e1f1d1d1c1c1c1c1d1d1c1c1",
+      "markstart": 0,
+      "markend": 512,
+      "tempo": 128,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (32 bars)"
     }
   }
 }

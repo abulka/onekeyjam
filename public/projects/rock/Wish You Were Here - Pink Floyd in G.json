@@ -97,7 +97,26 @@
       "markend": 128,
       "tempo": 60,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t60o4c1d1c1d1c1e1c1e1f1g1a1d1f1g1a1d1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 60,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t60o4c1d1c1d1c1e1c1e1f1g1a1d1f1g1a1d1c1d1c1d1c1e1c1e1",
+      "markstart": 0,
+      "markend": 384,
+      "tempo": 60,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (24 bars)"
     }
   }
 }

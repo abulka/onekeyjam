@@ -75,6 +75,8 @@
 /**
  * A sequencer pattern stored with a project. Each note sits on a white
  * trigger row (one bar per chord in generated songs) and sounds that trigger.
+ * A project may hold several named sequences (for example an excerpt and the
+ * full form); `label` is the display name shown in the sequence picker.
  * @typedef {object} ChordSequence
  * @property {string} mml Music Macro Language string
  * @property {number} tempo the song's tempo, applied to the global BPM on load
@@ -82,6 +84,7 @@
  * @property {number} [markend] loop end in panel ticks
  * @property {boolean} [enabled] loop the pattern while recording a solo
  * @property {boolean} [loopManual] true once the loop markers were dragged by hand
+ * @property {string} [label] display label for the sequence picker
  */
 
 /**

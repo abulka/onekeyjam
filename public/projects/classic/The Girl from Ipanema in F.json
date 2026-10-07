@@ -45,6 +45,33 @@
       "scale1": "F dorian",
       "scale2": "F aeolian",
       "scale3": "F minor pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "Gbmaj7",
+      "chord": "Gbmaj7",
+      "bass": "Gb2",
+      "scale1": "Gb major",
+      "scale2": "Gb lydian",
+      "scale3": "Gb harmonic major"
+    },
+    {
+      "id": 7,
+      "name": "Bmaj7",
+      "chord": "Bmaj7",
+      "bass": "B2",
+      "scale1": "B major",
+      "scale2": "B lydian",
+      "scale3": "B harmonic major"
+    },
+    {
+      "id": 8,
+      "name": "F#maj7",
+      "chord": "F#maj7",
+      "bass": "F#2",
+      "scale1": "F# major",
+      "scale2": "F# lydian",
+      "scale3": "F# harmonic major"
     }
   ],
   "options": {
@@ -67,14 +94,20 @@
         2,
         3,
         4,
-        5
+        5,
+        6,
+        7,
+        8
       ],
       "favourites": [
         1,
         2,
         3,
         4,
-        5
+        5,
+        6,
+        7,
+        8
       ],
       "blacklist": []
     }
@@ -86,7 +119,26 @@
       "markend": 128,
       "tempo": 130,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t130o4c1d1e1f1c1f1c1g1c1d1e1f1c1f1c1g1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 130,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t130o4c1d1e1f1c1f1c1g1c1d1e1f1c1f1c1g1a1a1b1b1o5c1c1o4b1b1c1d1e1f1c1f1c1g1",
+      "markstart": 0,
+      "markend": 512,
+      "tempo": 130,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (32 bars)"
     }
   }
 }

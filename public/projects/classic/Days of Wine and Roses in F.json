@@ -54,6 +54,51 @@
       "scale1": "A mixolydian",
       "scale2": "A lydian dominant",
       "scale3": "A mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "Gm7",
+      "chord": "Gm7",
+      "bass": "G2",
+      "scale1": "G dorian",
+      "scale2": "G aeolian",
+      "scale3": "G minor pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "C7",
+      "chord": "C7",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C lydian dominant",
+      "scale3": "C mixolydian b6"
+    },
+    {
+      "id": 9,
+      "name": "Bbmaj7",
+      "chord": "Bbmaj7",
+      "bass": "Bb2",
+      "scale1": "Bb lydian",
+      "scale2": "Bb major",
+      "scale3": "Bb harmonic major"
+    },
+    {
+      "id": 10,
+      "name": "Am7",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A dorian",
+      "scale2": "A aeolian",
+      "scale3": "A minor pentatonic"
+    },
+    {
+      "id": 11,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6"
     }
   ],
   "options": {
@@ -77,7 +122,12 @@
         3,
         4,
         5,
-        6
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
       ],
       "favourites": [
         1,
@@ -85,7 +135,12 @@
         3,
         4,
         5,
-        6
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
       ],
       "blacklist": []
     }
@@ -97,7 +152,26 @@
       "markend": 128,
       "tempo": 128,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t128o4c1d1e1f1g1a1e1f1c1d1e1f1g1a1e1f1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 128,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t128o4c1d1e1f1g1a1e1f1c1d1e1f1g1a1e1f1b1o5c1o4c1o5d1e1f1o4b1o5c1o4c1d1e1f1g1a1e1f1",
+      "markstart": 0,
+      "markend": 512,
+      "tempo": 128,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (32 bars)"
     }
   }
 }

@@ -36,6 +36,33 @@
       "scale1": "G phrygian dominant",
       "scale2": "G lydian dominant",
       "scale3": "G mixolydian"
+    },
+    {
+      "id": 5,
+      "name": "Abmaj7",
+      "chord": "Abmaj7",
+      "bass": "Ab2",
+      "scale1": "Ab lydian",
+      "scale2": "Ab major",
+      "scale3": "Ab harmonic major"
+    },
+    {
+      "id": 6,
+      "name": "Abm7",
+      "chord": "Abm7",
+      "bass": "Ab2",
+      "scale1": "Ab dorian",
+      "scale2": "Ab aeolian",
+      "scale3": "Ab minor pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "Gm7",
+      "chord": "Gm7",
+      "bass": "G2",
+      "scale1": "G dorian",
+      "scale2": "G aeolian",
+      "scale3": "G minor pentatonic"
     }
   ],
   "options": {
@@ -57,13 +84,19 @@
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6,
+        7
       ],
       "favourites": [
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6,
+        7
       ],
       "blacklist": []
     }
@@ -75,7 +108,26 @@
       "markend": 128,
       "tempo": 112,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t112o4c1c1d1d1c1c1e1f1c1c1d1d1c1c1e1f1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 112,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t112o4c1c1d1d1c1c1e1f1c1c1d1d1c1c1e1f1g1g1a1a1b1b1e1f1c1c1d1d1c1c1e1f1",
+      "markstart": 0,
+      "markend": 512,
+      "tempo": 112,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (32 bars)"
     }
   }
 }

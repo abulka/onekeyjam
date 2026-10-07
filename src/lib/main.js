@@ -29,8 +29,6 @@ export default async function () {
         // Apply the restored project's scale style before the keyboard is
         // linked, so the first chord already sounds with it.
         applyProjectScaleStyle()
-        // A restored song brings its own tempo, like a freshly loaded one.
-        applyProjectTempo()
         initChordPlayEvents() // one time only, no need to wire again
 
         linkProjectToKeyboard() // done every time a new project is loaded
@@ -38,6 +36,10 @@ export default async function () {
         // Bring back the last recorded take, if there is one, so a refresh
         // does not lose it.
         restoreTake()
+
+        // A restored song brings its own tempo, like a freshly loaded one. This
+        // runs after restoreTake so the song's tempo wins over the take's.
+        applyProjectTempo()
 
         // Start autosaving the working project now that the boot restore has
         // finished, so a refresh does not lose unsaved edits either.

@@ -36,6 +36,24 @@
       "scale1": "G mixolydian",
       "scale2": "G lydian dominant",
       "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6"
+    },
+    {
+      "id": 6,
+      "name": "Gmaj7",
+      "chord": "Gmaj7",
+      "bass": "G2",
+      "scale1": "G major",
+      "scale2": "G lydian",
+      "scale3": "G harmonic major"
     }
   ],
   "options": {
@@ -57,13 +75,17 @@
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6
       ],
       "favourites": [
         1,
         2,
         3,
-        4
+        4,
+        5,
+        6
       ],
       "blacklist": []
     }
@@ -75,7 +97,26 @@
       "markend": 128,
       "tempo": 96,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t96o4c1d1e1f1c1d1e1f1c1d1e1f1c1d1e1f1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 96,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t96o4c1d1e1f1c1d1e1f1c1d1e1f1c1d1e1f1d1g1a1a1d1g1a1f1c1d1e1f1c1d1e1f1",
+      "markstart": 0,
+      "markend": 512,
+      "tempo": 96,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (32 bars)"
     }
   }
 }

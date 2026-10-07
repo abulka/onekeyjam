@@ -72,6 +72,42 @@
       "scale1": "Ab lydian dominant",
       "scale2": "Ab mixolydian",
       "scale3": "Ab mixolydian b6"
+    },
+    {
+      "id": 9,
+      "name": "Bbmaj7",
+      "chord": "Bbmaj7",
+      "bass": "Bb2",
+      "scale1": "Bb major",
+      "scale2": "Bb lydian",
+      "scale3": "Bb harmonic major"
+    },
+    {
+      "id": 10,
+      "name": "Gm7",
+      "chord": "Gm7",
+      "bass": "G2",
+      "scale1": "G dorian",
+      "scale2": "G aeolian",
+      "scale3": "G minor pentatonic"
+    },
+    {
+      "id": 11,
+      "name": "Gm7b5",
+      "chord": "Gm7b5",
+      "bass": "G2",
+      "scale1": "G locrian #2",
+      "scale2": "G locrian",
+      "scale3": "G minor blues"
+    },
+    {
+      "id": 12,
+      "name": "C7b9",
+      "chord": "C7b9",
+      "bass": "C2",
+      "scale1": "C phrygian dominant",
+      "scale2": "C half-whole diminished",
+      "scale3": "C mixolydian"
     }
   ],
   "options": {
@@ -97,7 +133,11 @@
         5,
         6,
         7,
-        8
+        8,
+        9,
+        10,
+        11,
+        12
       ],
       "favourites": [
         1,
@@ -107,7 +147,11 @@
         5,
         6,
         7,
-        8
+        8,
+        9,
+        10,
+        11,
+        12
       ],
       "blacklist": []
     }
@@ -119,7 +163,17 @@
       "markend": 64,
       "tempo": 84,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (4 bars)"
+    },
+    "full": {
+      "mml": "t84o4c2d2e2f2g2a2b2o5c2d2e2o4e2f2o5d2e2o4e2f2g2a2b1g2a2b1o5f2g2o4g2a2b1b1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 84,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (16 bars)"
     }
   }
 }

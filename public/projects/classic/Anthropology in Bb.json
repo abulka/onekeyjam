@@ -54,6 +54,42 @@
       "scale1": "C mixolydian",
       "scale2": "C lydian dominant",
       "scale3": "C mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "Bb7",
+      "chord": "Bb7",
+      "bass": "Bb2",
+      "scale1": "Bb mixolydian",
+      "scale2": "Bb lydian dominant",
+      "scale3": "Bb mixolydian b6"
+    },
+    {
+      "id": 8,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 9,
+      "name": "Ab7",
+      "chord": "Ab7",
+      "bass": "Ab2",
+      "scale1": "Ab lydian dominant",
+      "scale2": "Ab mixolydian",
+      "scale3": "Ab mixolydian b6"
+    },
+    {
+      "id": 10,
+      "name": "Db7",
+      "chord": "Db7",
+      "bass": "Db2",
+      "scale1": "Db mixolydian",
+      "scale2": "Db lydian dominant",
+      "scale3": "Db mixolydian b6"
     }
   ],
   "options": {
@@ -77,7 +113,11 @@
         3,
         4,
         5,
-        6
+        6,
+        7,
+        8,
+        9,
+        10
       ],
       "favourites": [
         1,
@@ -85,7 +125,11 @@
         3,
         4,
         5,
-        6
+        6,
+        7,
+        8,
+        9,
+        10
       ],
       "blacklist": []
     }
@@ -97,7 +141,26 @@
       "markend": 128,
       "tempo": 184,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t184o4c1d1e1f1c1g1d1a1c1d1e1f1c1g1d1a1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 184,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t184o4c1d1e1f1c1g1d1a1c1d1e1f1c1g1d1a1g1d1a1f1b1o5c1d1e1o4c1d1e1f1c1g1d1a1",
+      "markstart": 0,
+      "markend": 512,
+      "tempo": 184,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (32 bars)"
     }
   }
 }

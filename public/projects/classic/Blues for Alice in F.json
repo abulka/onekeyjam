@@ -72,6 +72,78 @@
       "scale1": "Bb lydian",
       "scale2": "Bb major",
       "scale3": "Bb harmonic major"
+    },
+    {
+      "id": 9,
+      "name": "Bbm7",
+      "chord": "Bbm7",
+      "bass": "Bb2",
+      "scale1": "Bb dorian",
+      "scale2": "Bb aeolian",
+      "scale3": "Bb minor pentatonic"
+    },
+    {
+      "id": 10,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb lydian dominant",
+      "scale2": "Eb mixolydian",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 11,
+      "name": "Am7",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A dorian",
+      "scale2": "A aeolian",
+      "scale3": "A minor pentatonic"
+    },
+    {
+      "id": 12,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6"
+    },
+    {
+      "id": 13,
+      "name": "Abm7",
+      "chord": "Abm7",
+      "bass": "Ab2",
+      "scale1": "Ab dorian",
+      "scale2": "Ab aeolian",
+      "scale3": "Ab minor pentatonic"
+    },
+    {
+      "id": 14,
+      "name": "Db7",
+      "chord": "Db7",
+      "bass": "Db2",
+      "scale1": "Db mixolydian",
+      "scale2": "Db lydian dominant",
+      "scale3": "Db mixolydian b6"
+    },
+    {
+      "id": 15,
+      "name": "Gm7",
+      "chord": "Gm7",
+      "bass": "G2",
+      "scale1": "G dorian",
+      "scale2": "G aeolian",
+      "scale3": "G minor pentatonic"
+    },
+    {
+      "id": 16,
+      "name": "C7",
+      "chord": "C7",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C lydian dominant",
+      "scale3": "C mixolydian b6"
     }
   ],
   "options": {
@@ -97,7 +169,15 @@
         5,
         6,
         7,
-        8
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
       ],
       "favourites": [
         1,
@@ -107,7 +187,15 @@
         5,
         6,
         7,
-        8
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
       ],
       "blacklist": []
     }
@@ -119,7 +207,17 @@
       "markend": 80,
       "tempo": 152,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (5 bars)"
+    },
+    "full": {
+      "mml": "t152o4c1d2e2f2g2a2b2o5c1d2e2f2g2a2b2o6c1d1o4c2o5g2o6c2d2",
+      "markstart": 0,
+      "markend": 192,
+      "tempo": 152,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (12 bars)"
     }
   }
 }

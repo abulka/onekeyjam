@@ -5,35 +5,52 @@ import { fileURLToPath } from 'node:url'
 import * as Tonal from '@tonaljs/tonal'
 import { chordScaleNamesFor } from '../src/lib/chordScaleEngine.js'
 import { sanitizeFilename } from '../src/lib/filename.js'
-import { DEMO_PATTERN_TEMPO, demoEntryForTriggers, planDemoPattern } from '../src/lib/demo-pattern.js'
+import {
+    DEMO_PATTERN_TEMPO,
+    defaultSequenceLabel,
+    demoEntryForTriggers,
+    normalizeSequences,
+    planDemoSequences,
+} from '../src/lib/demo-pattern.js'
 
 /*
  * Shared helper for the generated static project libraries (classic,
  * progressions, rock). Each progression becomes a project with standard
  * voicings (via the chord symbol, which the app expands on load), an explicit
- * project key and colour, key-aware engine-chosen scale1/2/3, and a demo chord
- * playback pattern following the song's harmony rhythm. Repeats share a grid
- * row, so the pattern points back at earlier triggers.
+ * project key and colour, key-aware engine-chosen scale1/2/3, and one or more
+ * demo chord playback patterns following the song's harmony rhythm. Repeats
+ * share a grid row, so a pattern points back at earlier triggers and a long
+ * form only adds the distinct chords it introduces.
  */
 
 /**
  * A generated library entry. `chords` lists the grid rows; repeats are
- * folded, so Blue Moon's eight bars use four rows. An optional `sequence`
- * describes the demo loop as chord symbols with bar lengths; without one,
+ * folded, so Blue Moon's eight bars use four rows. Optional `sequence` (a
+ * single loop, treated as `sequences.default`) or `sequences` (named loops)
+ * describe the demo loops as chord symbols with bar lengths; without either,
  * every chord gets one bar in definition order with back to back repeats
- * merged into holds.
+ * merged into holds. `sequenceLabels` overrides the picker labels and
+ * `sequenceTempos` overrides the stored tempo per sequence.
  * @typedef {object} StaticLibraryDefinition
  * @property {string} name display name
  * @property {string[]} chords chord symbols for the grid, in row order
- * @property {Array<{chord: string, bars: number}>} [sequence] demo loop steps;
- *   a step may name a symbol missing from `chords`, which appends it as a new
- *   grid row after the listed ones
- * @property {number} [tempo] demo loop tempo, applied to the global BPM on load
+ * @property {Array<{chord: string, bars: number}>} [sequence] legacy single demo loop
+ * @property {Object.<string, Array<{chord: string, bars: number}>>} [sequences] named demo loops
+ * @property {Object.<string, string>} [sequenceLabels] display labels per sequence name
+ * @property {Object.<string, number>} [sequenceTempos] tempo per sequence name
+ * @property {number} [tempo] default demo loop tempo, applied to the global BPM on load
  * @property {{tonic:string, type:string, source:string}} [key] declared key
  * @property {string} [colour] scale colour for the engine
  */
 
 export const root = fileURLToPath(new URL('..', import.meta.url))
+
+/** @param {number|undefined} tempo @param {number} fallback */
+function clampTempo(tempo, fallback) {
+    if (!Number.isFinite(tempo))
+        return fallback
+    return Math.min(240, Math.max(40, Math.round(tempo)))
+}
 
 /**
  * Generate a static library folder from definitions. Stale JSON files that no
@@ -54,22 +71,22 @@ export function generateStaticLibrary(definitions, outDirName, label) {
     for (const definition of definitions) {
         const colour = definition.colour ?? 'jazz'
         let ok = true
-        // Repeats share a grid row, so the rows are the unique symbols in
-        // first-appearance order and the demo loop points back at earlier
-        // triggers. Sequence symbols join the rows when they add new ones.
-        const { uniqueSymbols, triggers, missing } = planDemoPattern(definition)
-        if (definition.sequence) {
-            for (const step of definition.sequence) {
+        // Repeats share a grid row, so the rows are the union of the definition
+        // chords and every named sequence's chords, in first-appearance order.
+        const { uniqueSymbols, sequences, missing } = planDemoSequences(definition)
+        const authored = normalizeSequences(definition)
+        for (const [name, steps] of Object.entries(authored)) {
+            for (const step of steps) {
                 if (typeof step.bars !== 'number' || !(step.bars > 0)) {
-                    problems.push(`${definition.name}: sequence step for "${step.chord}" needs a positive bars value`)
+                    problems.push(`${definition.name}: sequence "${name}" step for "${step.chord}" needs a positive bars value`)
                     ok = false
                 }
             }
-            for (const symbol of missing)
-                problems.push(`${definition.name}: sequence chord "${symbol}" is not a Tonal chord symbol`)
-            if (missing.length > 0)
-                ok = false
         }
+        for (const symbol of missing)
+            problems.push(`${definition.name}: sequence chord "${symbol}" is not a Tonal chord symbol`)
+        if (missing.length > 0)
+            ok = false
         const chords = []
         for (let i = 0; i < uniqueSymbols.length; i++) {
             const symbol = uniqueSymbols[i]
@@ -92,19 +109,30 @@ export function generateStaticLibrary(definitions, outDirName, label) {
         }
         // Every trigger must land on an assigned row; definitions without a
         // hand-authored sequence always satisfy this by construction.
-        for (const trigger of triggers) {
-            if (!(trigger.index >= 0 && trigger.index < chords.length)) {
-                problems.push(`${definition.name}: demo loop points at missing trigger ${trigger.index + 1}`)
-                ok = false
+        for (const [name, triggers] of Object.entries(sequences)) {
+            for (const trigger of triggers) {
+                if (!(trigger.index >= 0 && trigger.index < chords.length)) {
+                    problems.push(`${definition.name}: sequence "${name}" points at missing trigger ${trigger.index + 1}`)
+                    ok = false
+                }
             }
         }
-        if (!ok || triggers.length === 0)
+        const sequenceNames = Object.keys(sequences).filter((name) => sequences[name].length > 0)
+        if (!ok || sequenceNames.length === 0)
             continue
+
         // Stored tempos stay inside the app's 40-240 BPM range; without one
         // the neutral default applies and the global BPM is left alone.
-        const tempo = Number.isFinite(definition.tempo)
-            ? Math.min(240, Math.max(40, Math.round(definition.tempo)))
-            : DEMO_PATTERN_TEMPO
+        const defaultTempo = clampTempo(definition.tempo, DEMO_PATTERN_TEMPO)
+        /** @type {Object.<string, object>} */
+        const chordSequences = {}
+        for (const name of sequenceNames) {
+            const tempo = clampTempo(definition.sequenceTempos ? definition.sequenceTempos[name] : undefined, defaultTempo)
+            const entry = demoEntryForTriggers(sequences[name], tempo)
+            const custom = definition.sequenceLabels ? definition.sequenceLabels[name] : undefined
+            entry.label = custom || defaultSequenceLabel(name, entry.markend)
+            chordSequences[name] = entry
+        }
 
         const ids = chords.map((chord) => chord.id)
         const project = {
@@ -119,9 +147,7 @@ export function generateStaticLibrary(definitions, outDirName, label) {
             songs: {
                 default: { ids, favourites: ids, blacklist: [] },
             },
-            chordSequences: {
-                default: demoEntryForTriggers(triggers, tempo),
-            },
+            chordSequences,
         }
         // The project keeps its pretty display name; only the filename is
         // sanitised so Netlify can deploy it.

@@ -40,6 +40,9 @@ export const globals = reactive({
 
     currentChordTriggerNote: undefined,  // incl. octave e.g. e.g. "D2"
     currentScaleFilter: 'scale1',  // e.g. 'scale1', 'scale2', 'scale3', 'notesOfChord'
+    // Which named chord sequence (excerpt, full form, ...) the sequencer is
+    // showing. Kept across a refresh by the current-project snapshot.
+    currentChordSequenceName: 'default',
     // Recent chord triggers and the scale each sounded, newest last. Bounded by
     // autoScale.js. Used by the follow and shuffle scale policies.
     chordHistory: [],

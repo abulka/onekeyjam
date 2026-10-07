@@ -72,6 +72,60 @@
       "scale1": "B mixolydian",
       "scale2": "B lydian dominant",
       "scale3": "B mixolydian b6"
+    },
+    {
+      "id": 9,
+      "name": "Em7",
+      "chord": "Em7",
+      "bass": "E2",
+      "scale1": "E dorian",
+      "scale2": "E aeolian",
+      "scale3": "E minor pentatonic"
+    },
+    {
+      "id": 10,
+      "name": "A7",
+      "chord": "A7",
+      "bass": "A2",
+      "scale1": "A mixolydian",
+      "scale2": "A lydian dominant",
+      "scale3": "A mixolydian b6"
+    },
+    {
+      "id": 11,
+      "name": "Bbmaj7",
+      "chord": "Bbmaj7",
+      "bass": "Bb2",
+      "scale1": "Bb lydian",
+      "scale2": "Bb major",
+      "scale3": "Bb harmonic major"
+    },
+    {
+      "id": 12,
+      "name": "Bbm7",
+      "chord": "Bbm7",
+      "bass": "Bb2",
+      "scale1": "Bb dorian",
+      "scale2": "Bb aeolian",
+      "scale3": "Bb minor pentatonic"
+    },
+    {
+      "id": 13,
+      "name": "Fmaj7",
+      "chord": "Fmaj7",
+      "bass": "F2",
+      "scale1": "F lydian",
+      "scale2": "F major",
+      "scale3": "F harmonic major"
+    },
+    {
+      "id": 14,
+      "name": "Fm7",
+      "chord": "Fm7",
+      "bass": "F2",
+      "scale1": "F dorian",
+      "scale2": "F aeolian",
+      "scale3": "F minor pentatonic"
     }
   ],
   "options": {
@@ -97,7 +151,13 @@
         5,
         6,
         7,
-        8
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
       ],
       "favourites": [
         1,
@@ -107,7 +167,13 @@
         5,
         6,
         7,
-        8
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
       ],
       "blacklist": []
     }
@@ -119,7 +185,26 @@
       "markend": 128,
       "tempo": 140,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t140o4c1d1e1f1g1a1b1o5c1d1e1o4c1c1o5d1e1o4c1c1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 140,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t140o4c1d1e1f1g1a1b1o5c1d1e1o4c1c1o5d1e1o4c1c1o5f1g1a1b1f1g1a1e1o4c1d1e1f1g1a1b1o5c1",
+      "markstart": 0,
+      "markend": 512,
+      "tempo": 140,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (32 bars)"
     }
   }
 }

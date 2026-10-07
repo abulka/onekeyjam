@@ -99,9 +99,13 @@ logic.
   `options` and `chordSequences`. `options.key` declares the musical key
   (`{ tonic, type, source }`, where `type` may be a mode), `options.soloMode`
   is `'chord'` or `'key'`, and `options.colour` is `'diatonic'`, `'jazz'` or
-  `'adventurous'`; see `doco/MUSIC-THEORY.md`. `chordSequences.default` holds
-  the Chord Sequencer's pattern (MML, loop markers and the include-in-recording
-  flag), so it is saved and restored with the project.
+  `'adventurous'`; see `doco/MUSIC-THEORY.md`. `chordSequences` holds the Chord
+  Sequencer's patterns keyed by name (MML, loop markers and the
+  include-in-recording flag), so they are saved and restored with the project.
+  A project may offer several named sequences (an excerpt, a middle section and
+  a full form); each has an optional `label`, and `globals.currentChordSequenceName`
+  remembers which one is selected. Loading a project applies the selected
+  sequence's `tempo` to the global BPM.
 - A chord config has a chord symbol, its `chordNotes`, an optional `bass`, up
   to three scale names (`scale1`, `scale2`, `scale3`) and the notes of the
   chord as a scale (`scaleNotesOfChord`). Scale names can be rewritten by the
@@ -241,29 +245,38 @@ and the validation commands.
   chord-sequence loop. It can be auditioned (a chord
   trigger plays its chord, anything else a single note) from the piano strip or
   by clicking a note, and its loop markers can be fitted to the notes. The
-  pattern lives in the current project (`globals.project.chordSequences.default`):
-  it loads whenever a project loads (`project-loaded`) and is written back on
-  every edit, so it is kept by the current-project autosave and travels with the
-  project when it is saved. Notes may only be entered on the white trigger rows,
+  patterns live in the current project (`globals.project.chordSequences`), keyed
+  by name: a project may offer several (an excerpt, a middle section and a full
+  form). The selected name is `globals.currentChordSequenceName`; a "Song
+  sequence" picker in the panel and in the global toolbar switches between them,
+  saving the current one first. The patterns load whenever a project loads
+  (`project-loaded`) and are written back on every edit, so they are kept by the
+  current-project autosave and travel with the project when it is saved. Notes
+  may only be entered on the white trigger rows,
   starting with the seven white keys of the chord-trigger octave (C–B) and
   continuing into higher octaves when more chords are assigned; every trigger
   row is marked over the piano key
   with its chord name (green) or "no chord" (grey, to prompt assigning one), and
   a click adds a one-bar note. Notes loaded on any other row are removed, and a
   note dragged off a trigger row snaps back to the nearest one. Generated
-  classic, rock and progression songs each ship a demo pattern following the
-  song's harmony rhythm: repeats point back at the earlier grid row (Blue Moon
-  plays triggers 1-2-3-4-1-2-3-4 on four rows), half bars split a bar between
-  two chords, and back to back bars on one chord merge into a held note, so the
-  blues runs twelve bars and modal vamps hold for whole sections. Songs with a
-  hand-authored rhythm keep it in their library definition (`sequence` in
-  `bin/*-project-definitions.mjs`); the rest derive it from their chord order.
-  A sequence step may also name a chord missing from the row list, which
-  appends it as a new row after the listed ones. Each note targets the matching
-  grid row. Each song stores its own tempo in the pattern, and loading a project
-  applies it to the global BPM (`applyProjectTempo()` in `src/lib/boot-project.js`,
-  also run at boot after the autosave restore), so tunes play at their own speed.
-  A "Trigger
+  classic, rock and progression songs each ship one or more demo patterns
+  following the song's harmony rhythm: repeats point back at the earlier grid
+  row (Blue Moon plays triggers 1-2-3-4-1-2-3-4 on four rows), half bars split a
+  bar between two chords, and back to back bars on one chord merge into a held
+  note, so the blues runs twelve bars and modal vamps hold for whole sections.
+  Standards and blues also carry a `medium` middle section and a `full` form,
+  built from the tune's sections (see `songSequences` in
+  `bin/classic-project-definitions.mjs`); the grid is the union of every
+  sequence's chords, so a full form only adds the distinct chords it introduces.
+  Songs with a hand-authored rhythm keep it in their library definition
+  (`sequence` or `sequences` in `bin/*-project-definitions.mjs`); the rest
+  derive the excerpt from their chord order. A sequence step may also name a
+  chord missing from the row list, which appends it as a new row after the
+  listed ones. Each note targets the matching grid row. Each sequence stores its
+  own tempo in the pattern, and loading a project (or switching sequence)
+  applies it to the global BPM (`applyProjectTempo()` in
+  `src/lib/boot-project.js`, also run at boot after the autosave restore), so
+  tunes play at their own speed. A "Trigger
   pattern" dropdown fills the sequencer with ready-made patterns expressed as
   trigger numbers (ascending 1-7, descending 7-1, ii–V–I as 1-2-3 with the I
   held for two bars, I–V–vi–IV as 1-5-6-4, up-and-down), since progressions in
@@ -288,6 +301,17 @@ and the validation commands.
   is rendered to fill the take and merged into the Chords track
   (`patternToTakeNotes`), expanding each chord trigger into its chord notes.
   The recorder broadcasts `recording-started`/`recording-stopped` for this.
+  The second-level menu bar (`PageMenubar.vue`) carries a Play/Stop button and
+  a sequence picker to the left of "Random project", so the pattern can be
+  driven from the Edit, Perform and Settings pages. Because the Sequencer
+  component only lives on the Perform page, the transport goes through a small
+  shared reactive controller (`src/lib/sequencer-control.js`): the Sequencer
+  registers its actions on mount, and on other pages the controller falls back
+  to a headless player (`src/lib/pattern-player.js`) that owns an off-screen
+  `webaudio-pianoroll` and reuses the same per-note callback
+  (`src/lib/pattern-playback.js`). The selected sequence name is remembered
+  across song loads and refreshes (`globals.currentChordSequenceName`), falling
+  back to the excerpt when a song has no such sequence.
 - Both sequencer panels (`PianoRollPanel.vue`) can be panned and zoomed with a
   mouse or trackpad: two-finger/wheel scrolling pans (Shift+wheel pans the time
   axis), while Ctrl/Cmd+wheel or a trackpad pinch zooms and holds the point

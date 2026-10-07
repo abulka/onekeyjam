@@ -7,7 +7,7 @@ import { reAllocateChords } from '../../src/lib/boot-project'
 <template>
     <div class="ui row">
       <button @click="reAllocateChords" class="ui button">Reallocate Chords 🎲</button>
-      <input type="range" id="max-chord-configs" min="7" max="235" step="7" v-model.number="globals.maxChordConfigs"> {{
+      <input type="range" id="max-chord-configs" min="7" max="235" step="1" v-model.number="globals.maxChordConfigs"> {{
           globals.maxChordConfigs
       }} of {{ globals.project.chords.length }}
       &nbsp;&nbsp;&nbsp;&nbsp;

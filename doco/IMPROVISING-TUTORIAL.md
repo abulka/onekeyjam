@@ -11,7 +11,10 @@ sample solos. Every control, setting and scale-policy detail lives on the
 1. Click **DEMO** in the menu bar, or load a project from the **File** menu, or
    click **Random project**. Classic, rock and progression songs each include a
    demo loop in the pattern sequencer, so you can press play there to hear the
-   song before you solo over it.
+   song before you solo over it. The Play/Stop button in the menu bar starts
+   the loop from any page without opening the panel, and the **Song sequence**
+   picker there switches between a song's short excerpt, middle section and
+   full form.
 2. On a MIDI keyboard, play the white keys in the left-hand trigger octave
    (C D E F G A B, C3 to B3 by default). Each one triggers a whole chord. On the
    computer keyboard those keys are `z x c v b n m`; click the on-screen keyboard

@@ -390,11 +390,17 @@ function projectChores({ project, maxChordConfigs, preserveSongIds }) {
 }
 
 /**
- * Apply the current project's stored pattern tempo to the global BPM.
- * Projects without a stored tempo leave the global BPM alone.
+ * Apply a stored pattern tempo to the global BPM. Defaults to the currently
+ * selected chord sequence, falling back to `default`; projects without a
+ * stored tempo leave the global BPM alone.
+ * @param {string} [name] sequence name, e.g. `full`
  */
-export function applyProjectTempo() {
-    const stored = globals.project?.chordSequences?.default?.tempo
+export function applyProjectTempo(name) {
+    const sequences = globals.project?.chordSequences
+    if (!sequences)
+        return
+    const key = name || globals.currentChordSequenceName || 'default'
+    const stored = sequences[key]?.tempo ?? sequences.default?.tempo
     const bpm = clampBpm(stored)
     if (bpm !== undefined)
         globals.recording.bpm = bpm

@@ -64,7 +64,8 @@
       "markend": 48,
       "tempo": 116,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (3 bars)"
     }
   }
 }

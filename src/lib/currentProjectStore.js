@@ -23,6 +23,7 @@ const SCALE_FILTERS = ['scale1', 'scale2', 'scale3', 'notesOfChord']
  * @property {'user'|'featured'|'classic'|'progressions'|'rock'} category which library it came from
  * @property {string} [currentChordTriggerNote] highlighted chord trigger note
  * @property {string} currentScaleFilter highlighted scale filter slot
+ * @property {string} [currentChordSequenceName] which named chord sequence is shown
  * @property {number} [maxChordConfigs] how many chord rows the grid was showing
  * @property {object} project the slim persisted project (see projectSerialize.js)
  */
@@ -65,6 +66,9 @@ export function readCurrentProject(storage = defaultStorage()) {
                 ? data.currentChordTriggerNote
                 : undefined,
             currentScaleFilter: SCALE_FILTERS.includes(data.currentScaleFilter) ? data.currentScaleFilter : 'scale1',
+            currentChordSequenceName: typeof data.currentChordSequenceName === 'string' && data.currentChordSequenceName
+                ? data.currentChordSequenceName
+                : undefined,
             maxChordConfigs: Number.isFinite(data.maxChordConfigs) ? data.maxChordConfigs : undefined,
             project: data.project,
         }
@@ -118,6 +122,7 @@ export function captureCurrentProject() {
             : 'user',
         currentChordTriggerNote: globals.currentChordTriggerNote,
         currentScaleFilter: globals.currentScaleFilter,
+        currentChordSequenceName: globals.currentChordSequenceName,
         maxChordConfigs: globals.maxChordConfigs,
         project: JSON.parse(getProjectForPersistence(globals.project, true, true)),
     }
@@ -146,6 +151,8 @@ export function restoreCurrentProject(storage = defaultStorage()) {
     globals.projectLibrary.projectIsUserOrFeatured = record.category
     globals.currentChordTriggerNote = record.currentChordTriggerNote
     globals.currentScaleFilter = record.currentScaleFilter
+    if (record.currentChordSequenceName)
+        globals.currentChordSequenceName = record.currentChordSequenceName
     if (Number.isFinite(record.maxChordConfigs))
         globals.maxChordConfigs = record.maxChordConfigs
 
@@ -190,6 +197,7 @@ export function initCurrentProjectAutosave(storage = defaultStorage()) {
         globals.project,
         globals.currentChordTriggerNote,
         globals.currentScaleFilter,
+        globals.currentChordSequenceName,
         globals.maxChordConfigs,
         globals.projectLibrary.projectName,
         globals.projectLibrary.projectIsUserOrFeatured,

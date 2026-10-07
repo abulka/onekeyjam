@@ -326,16 +326,24 @@ MIDI keyboard config can raise the soloing start note to make more room.
 Loading a generated song whose favourites cover every chord expands the grid
 so each keeps its key; other projects keep the requested grid size.
 
-Every classic, rock and progression song ships a demo loop in the pattern
-sequencer that follows the song's harmony rhythm. Pressing play recreates the
-song, and each pattern note targets the matching grid row. Repeated chords
+Every classic, rock and progression song ships one or more demo loops in the
+pattern sequencer that follow the song's harmony rhythm. Pressing play recreates
+the song, and each pattern note targets the matching grid row. Repeated chords
 share a grid row, so Blue Moon loops triggers 1-2-3-4-1-2-3-4 on four rows;
 half bars split a bar between two chords, and chords held across bars sound as
 one sustained note. The blues entries run the full twelve bar quick change.
 
-Loading a song also sets the global tempo to the song's tempo, so each tune
-plays at its own speed. Turning the tempo knob afterwards still works and is
-remembered until the next song loads.
+Most standards and blues offer more than one version. A "Song sequence" picker,
+in the Pattern Sequencer panel and in the second-level menu bar, switches
+between the short excerpt, a middle section and the full form. The chosen
+version is remembered when you load another song. The full form only adds the
+distinct chords it introduces, so the grid grows just enough to cover them. The
+menu bar also has a Play/Stop button, so the pattern can be started from the
+Edit, Perform or Settings page without opening the panel.
+
+Loading a song also sets the global tempo to the selected sequence's tempo, so
+each tune plays at its own speed. Turning the tempo knob afterwards still works
+and is remembered until the next song loads.
 
 Projects with more chords than the chord-count slider allows only put some chords
 on keys, and which non-favourite chords are allocated can change between loads,

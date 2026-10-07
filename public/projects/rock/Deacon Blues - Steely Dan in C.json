@@ -108,7 +108,17 @@
       "markend": 128,
       "tempo": 80,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "full": {
+      "mml": "t80o4c1d1e1f1g1a1b1a1c1d1e1f1g1a1b1a1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 80,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (16 bars)"
     }
   }
 }

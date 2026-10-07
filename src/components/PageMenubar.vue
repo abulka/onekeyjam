@@ -4,6 +4,7 @@ import { globals } from '@/lib/globals.js'
 import { newProject, loadUserProject, loadFeaturedProject, loadClassicProject, loadProgressionProject, loadRockProject } from '@/lib/boot-project'
 import { saveProject, saveProjectAs, downloadProject, downloadMidiChords, downloadMidiChordsForChordMemoryTrigger, uploadProject } from '@/lib/projectSave.js'
 import { loadDemoProject } from '@/lib/demo-project.js'
+import { sequencerControl, sequenceOptions } from '@/lib/sequencer-control.js'
 import ComboProjectLibrary from '@/components/ComboProjectLibrary.vue'
 import FileImportMidiDialog from '@/components/FileImportMidiDialog.vue'
 
@@ -13,6 +14,20 @@ import FileImportMidiDialog from '@/components/FileImportMidiDialog.vue'
 
 const slots = useSlots()
 const hasActions = computed(() => !!slots.actions)
+
+// The pattern sequencer's named sequences (excerpt, full form, ...), so the
+// transport can switch them and drive playback from any page.
+const sequenceOptionsList = computed(() => sequenceOptions())
+
+function onSequenceChange(event) {
+  sequencerControl.selectSequence(event.target.value)
+}
+
+const sequencerButtonTitle = computed(() => {
+  if (!sequencerControl.hasNotes)
+    return 'This song has no pattern notes to play'
+  return sequencerControl.isPlaying ? 'Stop the pattern sequencer' : 'Play the pattern sequencer'
+})
 
 const menuEl = ref(null)
 const tour = ref(null)
@@ -252,6 +267,16 @@ onUnmounted(() => {
       </div>
 
       <div class="right menu">
+        <div v-if="sequenceOptionsList.length > 0" class="item sequencer-transport">
+          <select v-if="sequenceOptionsList.length > 1" class="sequencer-sequence-select"
+            :value="globals.currentChordSequenceName" title="Song sequence" @change="onSequenceChange">
+            <option v-for="option in sequenceOptionsList" :key="option.name" :value="option.name">{{ option.label }}</option>
+          </select>
+          <button type="button" class="sequencer-play-toggle" :disabled="!sequencerControl.hasNotes"
+            :class="{ playing: sequencerControl.isPlaying }" :title="sequencerButtonTitle" @click="sequencerControl.toggle()">
+            <i :class="sequencerControl.isPlaying ? 'stop icon' : 'play icon'"></i>
+          </button>
+        </div>
         <a class="item" title="Load a random song from the classic and rock collections"
           @click="loadRandomClassicProject()">🎲 Random project</a>
         <a class="item" title="Load a random progression from the progressions collection"
@@ -274,3 +299,55 @@ onUnmounted(() => {
   <!-- vue tour -->
   <VTour ref="tour" :steps="steps" />
 </template>
+
+<style scoped>
+/* Pattern-sequencer transport: a sequence picker and a play/stop button. */
+.sequencer-transport {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+.sequencer-sequence-select {
+  padding: 2px 4px;
+  font-size: 0.85rem;
+  color: #5a3d1a;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #b99b6b;
+  border-radius: 4px;
+}
+
+.sequencer-play-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 2px 8px;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: #7a6547;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #b99b6b;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.sequencer-play-toggle:hover:not(:disabled) {
+  background: #fff;
+}
+
+.sequencer-play-toggle.playing {
+  color: #8a2f2f;
+  background: #f3d8d8;
+  border-color: #b04040;
+}
+
+.sequencer-play-toggle:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sequencer-play-toggle .icon {
+  margin: 0;
+}
+</style>

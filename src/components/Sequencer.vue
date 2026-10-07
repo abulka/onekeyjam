@@ -1,17 +1,17 @@
 <script setup>
 import { computed, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { globals } from "@/lib/globals.js"
-import { Note } from '@/lib/midi/webmidi.js'
 import { Note as TonalNote } from '@tonaljs/tonal'
 import { indexToNote, indexToWhiteNote } from "@/lib/note-tools.js"
 import { resolveTriggerNote } from "@/lib/resolveTriggerNote.js"
 import { audioContext } from '@/lib/audio/general-midi.js'
-import { onNoteOnSequenced } from "@/lib/midi/wire-events.js"
-import { clearPendingChordState } from "@/lib/midi/play-chord.js"
-import { auditionMidiNote, auditionChord, broadcastLiveNote } from '@/lib/midi/audition-note.js'
+import { auditionMidiNote, auditionChord } from '@/lib/midi/audition-note.js'
 import { commitTakeEdit } from '@/lib/midi/recorder.js'
 import { patternToTakeNotes } from '@/lib/sequencer-notes.js'
 import { triggerRowCountFor } from '@/lib/demo-pattern.js'
+import { patternOnNote, clearPatternTimers, resetLiveCounts, rowToTakeNotes } from '@/lib/pattern-playback.js'
+import { sequencerControl, registerSequencer, unregisterSequencer, sequenceOptions, resolveSequenceName } from '@/lib/sequencer-control.js'
+import { applyProjectTempo } from '@/lib/boot-project.js'
 import PianoRollPanel from './PianoRollPanel.vue'
 
 // The pattern sequencer. Renders on the shared PianoRollPanel. The pattern is
@@ -33,7 +33,6 @@ const hasNotes = computed(() => noteCount.value > 0)
 
 let patternPlaying = false
 let saveTimer = null
-let visualTimers = []
 // Debounces the loop restart when the global BPM changes mid-play.
 let bpmRestartTimer = null
 // Set while a project's pattern is being loaded, so the edits that the load
@@ -64,24 +63,6 @@ function onLoopChange() {
   loopManuallySet.value = true
   if (!suppressProjectSave)
     saveProjectPatternNow()
-}
-
-function clearVisualTimers() {
-  for (const id of visualTimers)
-    clearTimeout(id)
-  visualTimers = []
-}
-
-// Light a note on the main keyboard and the strips when it is due, rather than
-// when the widget's preload calls us ahead of time.
-function scheduleLiveNote(midi, startSec, endSec) {
-  if (typeof midi !== 'number' || !audioContext)
-    return
-  const now = audioContext.currentTime
-  const onDelay = Math.max(0, (startSec - now) * 1000)
-  const offDelay = Math.max(onDelay + 20, (endSec - now) * 1000)
-  visualTimers.push(setTimeout(() => broadcastLiveNote(midi, true, 'pattern'), onDelay))
-  visualTimers.push(setTimeout(() => broadcastLiveNote(midi, false, 'pattern'), offDelay))
 }
 
 // The widget's rows are relative to C4 (60), so a sounding MIDI note lights the
@@ -134,35 +115,6 @@ function rowToSoundingMidi(row) {
   return typeof midi === 'number' ? midi : undefined
 }
 
-// Expand a pattern row into the notes it should sound in the take: a chord
-// trigger becomes its chord notes (and bass), anything else a single raw note.
-// `playedMidi` is the trigger key, matching live chord recording.
-function rowToTakeNotes(row) {
-  const triggerNote = indexToNote(row - 60, globals.keyboard.lhTriggerOctave)
-  const triggerMidi = TonalNote.midi(triggerNote)
-  const config = globals.chordTriggerMap[triggerNote]
-  if (!config)
-    return typeof triggerMidi === 'number' ? [{ midi: triggerMidi, playedMidi: triggerMidi }] : []
-
-  const out = []
-  const playedMidi = typeof triggerMidi === 'number' ? triggerMidi : undefined
-  if (!globals.playBassOnly) {
-    for (const name of config.chordNotes || []) {
-      if (!globals.playChordBass && name === config.bassNote)
-        continue
-      const midi = TonalNote.midi(name)
-      if (typeof midi === 'number')
-        out.push({ midi, playedMidi: playedMidi ?? midi })
-    }
-  }
-  if (!globals.playChordOnly && config.bassNote) {
-    const midi = TonalNote.midi(config.bassNote)
-    if (typeof midi === 'number')
-      out.push({ midi, playedMidi: playedMidi ?? midi })
-  }
-  return out
-}
-
 // ── Audition ───────────────────────────────────────────────────────────────
 
 function onAudition({ midi: row }) {
@@ -186,68 +138,8 @@ function onAudition({ midi: row }) {
 
 // ── Playback ───────────────────────────────────────────────────────────────
 
-/** Run a note-on without letting the recorder capture the pattern. */
-function runSuppressed(fn) {
-  const wasSuppressed = globals.recording.suppressCapture
-  globals.recording.suppressCapture = true
-  try {
-    fn()
-  }
-  finally {
-    globals.recording.suppressCapture = wasSuppressed
-  }
-}
-
-// One note from the widget's play loop. The widget calls this ahead of time
-// (its ~1s preload) with the note's real time in `options.t`, so anything that
-// must line up with the sound is scheduled for `options.t` rather than run now.
-function onPatternNote(options) {
-  // options: {t: note on time, g: note off time, n: note number}
-  const allowedNote = indexToNote(options.n - 60, globals.keyboard.lhTriggerOctave)
-  const simulatedEvent = {
-    note: new Note(allowedNote, { attack: 0.5 }),
-    duration: options.g - options.t,
-    when: options.t,
-  }
-
-  // Light the played key on the main keyboard and the strips, in time.
-  scheduleLiveNote(TonalNote.midi(allowedNote), options.t, options.g)
-
-  const isTrigger = globals.enableLhChordTriggers && (allowedNote in globals.chordTriggerMap)
-  if (isTrigger) {
-    // Count this chord for the Record section's live "Chords" readout (it is
-    // merged into the take on stop).
-    if (rowToTakeNotes(options.n).length > 0)
-      globals.recording.live.chords += 1
-    // playChord schedules the chord audio for `when` now and defers the
-    // scale/chord state to `when` too (see deferStateToWhen).
-    runSuppressed(() => onNoteOnSequenced(simulatedEvent))
-    return
-  }
-
-  // A single note (an unassigned trigger row): play it at its real time.
-  globals.recording.live.jam += 1
-  const delayMs = Math.max(0, (options.t - audioContext.currentTime) * 1000)
-  const play = () => runSuppressed(() => onNoteOnSequenced(simulatedEvent))
-  if (delayMs > 8)
-    visualTimers.push(setTimeout(play, delayMs))
-  else
-    play()
-}
-
-function resetLiveCounts() {
-  globals.recording.live.chords = 0
-  globals.recording.live.jam = 0
-}
-
-// Cancel the pattern's pending visual and deferred-state timers.
-function clearPatternTimers() {
-  clearVisualTimers()
-  clearPendingChordState()
-}
-
 function startPatternPlayback(starttick) {
-  panel.value.play(audioContext, onPatternNote, starttick)
+  panel.value.play(audioContext, patternOnNote, starttick)
 }
 
 function sequencerPlay(e, from = 'beginning') {
@@ -318,24 +210,25 @@ function panelState() {
   }
 }
 
-function getDefaultEntry() {
-  let entry
-  if (globals.project.chordSequences != undefined && globals.project.chordSequences.default != undefined) {
-    entry = globals.project.chordSequences.default
-  }
-  else {
+// The named sequences the current project offers (excerpt, full form, ...).
+const sequenceOptionsList = computed(() => sequenceOptions())
+
+function getSequenceEntry(name) {
+  if (!globals.project.chordSequences)
     globals.project.chordSequences = {}
+  let entry = globals.project.chordSequences[name]
+  if (!entry) {
     entry = { mml: '', tempo: globals.recording.bpm }
-    globals.project.chordSequences.default = entry
+    globals.project.chordSequences[name] = entry
   }
   return entry
 }
 
-/** Copy the sequencer's current state into the project's chord sequence. */
+/** Copy the sequencer's current state into the active chord sequence. */
 function writeProjectPattern() {
   clearTimeout(saveTimer)
   const state = panelState()
-  const entry = getDefaultEntry()
+  const entry = getSequenceEntry(globals.currentChordSequenceName || 'default')
   entry.mml = state.mml
   entry.markstart = state.markstart
   entry.markend = state.markend
@@ -383,22 +276,38 @@ function migrateDevicePattern(entry) {
   }
 }
 
-/** Load the current project's pattern into the sequencer. */
+/** Load the current project's active chord sequence into the sequencer. */
 async function loadPatternFromProject() {
   clearTimeout(saveTimer)
   suppressProjectSave = true
   try {
-    const entry = getDefaultEntry()
+    const name = resolveSequenceName(globals.currentChordSequenceName)
+    globals.currentChordSequenceName = name
+    const entry = getSequenceEntry(name)
     migrateDevicePattern(entry)
     await panel.value.setMML(entry.mml || '')
     applyLoadedLoop(entry.markstart, entry.markend, entry.loopManual)
     includeInRecording.value = !!entry.enabled
     scheduleCountRefresh()
     await panel.value.fitToNotes()
+    applyProjectTempo(name)
   }
   finally {
     suppressProjectSave = false
   }
+}
+
+/** Switch to another named sequence, saving the current one first. */
+async function selectSequence(name) {
+  if (!name || name === globals.currentChordSequenceName)
+    return
+  saveProjectPatternNow()
+  globals.currentChordSequenceName = name
+  await loadPatternFromProject()
+}
+
+function onSequenceChange(event) {
+  selectSequence(event.target.value)
 }
 
 async function onProjectLoaded() {
@@ -555,7 +464,19 @@ function onRecordingStopped() {
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
 
+// Keep the shared transport (the global toolbar) in step with this component.
+watch([isPlaying, hasNotes], () => {
+  sequencerControl.isPlaying = isPlaying.value
+  sequencerControl.hasNotes = hasNotes.value
+}, { immediate: true })
+
 onMounted(async () => {
+  registerSequencer({
+    toggle: () => { isPlaying.value ? sequencerStop() : playIfHasNotes() },
+    play: () => playIfHasNotes(),
+    stop: () => sequencerStop(),
+    selectSequence,
+  })
   await loadPatternFromProject()
   document.addEventListener('project-loaded', onProjectLoaded)
   document.addEventListener('recording-started', onRecordingStarted)
@@ -570,6 +491,7 @@ onBeforeUnmount(() => {
 })
 
 onUnmounted(() => {
+  unregisterSequencer()
   clearTimeout(bpmRestartTimer)
   bpmRestartTimer = null
   clearPatternTimers()
@@ -614,6 +536,13 @@ defineExpose({ playIfHasNotes, stop: sequencerStop, resume: sequencerResume, isP
     <button @click="clearPatternAndLoop()" class="ui button">Clear pattern</button>
 
     <br><br>
+    <label v-if="sequenceOptionsList.length > 1" class="sequence-picker">
+      Song sequence
+      <select class="sequence-select" :value="globals.currentChordSequenceName" @change="onSequenceChange">
+        <option v-for="option in sequenceOptionsList" :key="option.name" :value="option.name">{{ option.label }}</option>
+      </select>
+    </label>
+
     <label class="include-toggle">
       <input type="checkbox" v-model="includeInRecording" @change="saveProjectPatternNow">
       Include in recording (loop the pattern while you record a solo)
@@ -646,6 +575,24 @@ defineExpose({ playIfHasNotes, stop: sequencerStop, resume: sequencerResume, isP
 }
 
 .trigger-pattern-select {
+  padding: 2px 4px;
+  font-size: 0.85rem;
+  color: #333;
+  background: #fff;
+  border: 1px solid #999;
+  border-radius: 4px;
+}
+
+.sequence-picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-right: 0.75rem;
+  font-size: 0.85rem;
+  color: #333;
+}
+
+.sequence-select {
   padding: 2px 4px;
   font-size: 0.85rem;
   color: #333;

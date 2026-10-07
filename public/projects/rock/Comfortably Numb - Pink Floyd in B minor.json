@@ -36,6 +36,15 @@
       "scale1": "E dorian",
       "scale2": "E minor pentatonic",
       "scale3": "E aeolian"
+    },
+    {
+      "id": 5,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D major",
+      "scale2": "D lydian",
+      "scale3": "D major pentatonic"
     }
   ],
   "options": {
@@ -57,13 +66,15 @@
         1,
         2,
         3,
-        4
+        4,
+        5
       ],
       "favourites": [
         1,
         2,
         3,
-        4
+        4,
+        5
       ],
       "blacklist": []
     }
@@ -75,7 +86,26 @@
       "markend": 128,
       "tempo": 64,
       "enabled": false,
-      "loopManual": false
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t64o4c1d1e1f1c1d1e1f1g1d1g1d1g1d1g1d1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 64,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t64o4c1d1e1f1c1d1e1f1g1d1g1d1g1d1g1d1c1d1e1f1c1d1e1f1",
+      "markstart": 0,
+      "markend": 384,
+      "tempo": 64,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (24 bars)"
     }
   }
 }
