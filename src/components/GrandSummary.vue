@@ -15,8 +15,101 @@ import { keyDetection } from '../../src/lib/keyDetection';
 import { projectKeyNotes } from '../../src/lib/projectKey.js';
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
+import { resizeGridRowCount } from '@/lib/boot-project.js'
+import { clampGridRowCount } from '@/lib/maxChordConfig.js'
 
 let showFavourites = ref(true)  // deprecated
+
+// Bottom-edge drag handle for grid height. Dragging changes how many chord
+// rows are allocated, which also frees computer keyboard keys for soloing.
+const gridResizeHandle = ref(null)
+const gridResizePreview = ref(null)
+const gridIsResizing = ref(false)
+let gridDragStartY = 0
+let gridDragStartCount = 7
+
+const totalGridRows = computed(() =>
+  Array.isArray(globals.project?.chords) ? globals.project.chords.length : 0)
+const displayedGridRows = computed(() =>
+  gridResizePreview.value ?? globals.maxChordConfigs)
+const gridFitsComputerKeys = computed(() => displayedGridRows.value === 7)
+
+function gridRowHeight() {
+  const row = document.querySelector('#grand-summary tbody tr')
+  const height = row ? row.getBoundingClientRect().height : 0
+  return height && height > 8 && height < 200 ? height : 41
+}
+
+function clampGridPreview(count) {
+  return clampGridRowCount(count, totalGridRows.value)
+}
+
+function commitGridSize(count) {
+  const next = clampGridPreview(count)
+  gridResizePreview.value = null
+  gridIsResizing.value = false
+  if (next !== globals.maxChordConfigs)
+    resizeGridRowCount(next)
+  return next
+}
+
+function onGridResizePointerDown(event) {
+  if (!globals.isProjectLoaded || totalGridRows.value <= 1)
+    return
+  gridIsResizing.value = true
+  gridDragStartY = event.clientY
+  gridDragStartCount = globals.maxChordConfigs
+  gridResizePreview.value = gridDragStartCount
+  try {
+    event.currentTarget.setPointerCapture(event.pointerId)
+  } catch (e) { /* capture is best effort */ }
+  event.preventDefault()
+}
+
+function onGridResizePointerMove(event) {
+  if (!gridIsResizing.value)
+    return
+  const deltaRows = Math.round((event.clientY - gridDragStartY) / gridRowHeight())
+  gridResizePreview.value = clampGridPreview(gridDragStartCount + deltaRows)
+  event.preventDefault()
+}
+
+function onGridResizePointerUp(event) {
+  if (!gridIsResizing.value)
+    return
+  const preview = gridResizePreview.value ?? gridDragStartCount
+  commitGridSize(preview)
+  // Return focus to the page so computer keyboard notes resume immediately.
+  const el = event.currentTarget
+  if (el && typeof el.blur === 'function')
+    el.blur()
+  else if (gridResizeHandle.value && typeof gridResizeHandle.value.blur === 'function')
+    gridResizeHandle.value.blur()
+}
+
+function onGridResizeKeyDown(event) {
+  if (!globals.isProjectLoaded || totalGridRows.value <= 1)
+    return
+  const current = displayedGridRows.value
+  let next = null
+  if (event.key === 'ArrowUp' || event.key === 'ArrowRight')
+    next = current + 1
+  else if (event.key === 'ArrowDown' || event.key === 'ArrowLeft')
+    next = current - 1
+  else if (event.key === 'PageUp')
+    next = current + 7
+  else if (event.key === 'PageDown')
+    next = current - 7
+  else if (event.key === 'Home')
+    next = 1
+  else if (event.key === 'End')
+    next = totalGridRows.value
+  else
+    return
+  event.preventDefault()
+  commitGridSize(next)
+  releaseControlFocus(event)
+}
 
 const soloInKey = computed({
   get: () => globals.soloMode === 'key',
@@ -715,6 +808,31 @@ function generalTableClick(event) {
       </tr>
     </tbody>
   </table>
+  <div v-if="globals.isProjectLoaded && totalGridRows > 1" class="grid-resize-footer">
+    <div
+      ref="gridResizeHandle"
+      class="grid-resize-handle"
+      :class="{ 'is-resizing': gridIsResizing, 'fits-keys': gridFitsComputerKeys }"
+      role="slider"
+      tabindex="0"
+      :aria-valuemin="1"
+      :aria-valuemax="totalGridRows"
+      :aria-valuenow="displayedGridRows"
+      aria-label="Number of chord rows to show"
+      title="Drag up or down to show fewer or more chord rows. Fewer rows frees computer keyboard keys for soloing. Use arrow keys to adjust."
+      @pointerdown="onGridResizePointerDown"
+      @pointermove="onGridResizePointerMove"
+      @pointerup="onGridResizePointerUp"
+      @pointercancel="onGridResizePointerUp"
+      @keydown="onGridResizeKeyDown"
+    >
+      <span class="grip" aria-hidden="true">═</span>
+      <span class="resize-label">{{ displayedGridRows }} of {{ totalGridRows }} chords · drag to resize</span>
+      <span v-if="gridFitsComputerKeys" class="fits-keys-tag">7 fits z x c v b n m</span>
+      <span v-else-if="displayedGridRows < 7" class="resize-hint">short grid, more keys free for solo</span>
+      <span v-else class="resize-hint">tall grid, fewer keys free for solo</span>
+    </div>
+  </div>
   <div v-else class="warn">
     <p>No Chords or Scales in Project yet.
       <button type="button" class="demo-button" @click="loadDemoProject()">Load demo project</button>
@@ -1028,6 +1146,67 @@ select.preset-custom {
   border: 1px solid #b9c9ee;
   font-size: 1rem;
   font-weight: bold;
+}
+
+/* Bottom-edge drag handle for grid height. Full width so it is easy to grab
+   with mouse or touch in both Edit and Perform views. */
+.grid-resize-footer {
+  margin-top: -1px;
+}
+
+.grid-resize-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid #b9915a;
+  border-top: 2px solid #b9915a;
+  border-radius: 0 0 6px 6px;
+  background: #efe3cf;
+  color: #4a3418;
+  font-size: 0.8rem;
+  cursor: ns-resize;
+  touch-action: none;
+  user-select: none;
+}
+
+.grid-resize-handle:hover {
+  background: #e6d7bd;
+}
+
+.grid-resize-handle:focus-visible {
+  outline: 2px solid #2f4fa8;
+  outline-offset: 1px;
+}
+
+.grid-resize-handle.is-resizing {
+  background: #e6d7bd;
+}
+
+.grid-resize-handle .grip {
+  font-weight: bold;
+  letter-spacing: 0.2rem;
+  color: #8a6d3b;
+}
+
+.grid-resize-handle .resize-label {
+  white-space: nowrap;
+}
+
+.grid-resize-handle .fits-keys-tag {
+  padding: 0 0.4rem;
+  border-radius: 999px;
+  background: #d8f0d8;
+  color: #256b25;
+  border: 1px solid #a8d8a8;
+  font-weight: bold;
+}
+
+.grid-resize-handle .resize-hint {
+  color: #6b5a45;
+  font-style: italic;
 }
 
 </style>

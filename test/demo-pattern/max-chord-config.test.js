@@ -32,6 +32,11 @@ describe('setMaxDisplayed with favourited songs', () => {
         assert.equal(globals.maxChordConfigs, 14)
     })
 
+    it('keeps an explicitly smaller grid choice so a tall song can be shrunk for soloing', () => {
+        setMaxDisplayed(projectWithFavourites(19), 7)
+        assert.equal(globals.maxChordConfigs, 7)
+    })
+
     it('leaves small songs on the seven row default', () => {
         setMaxDisplayed(projectWithFavourites(3))
         assert.equal(globals.maxChordConfigs, 7)

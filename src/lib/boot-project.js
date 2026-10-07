@@ -10,7 +10,7 @@ import { wireScaleFilterShortcuts } from "./midi/scaleFilterShortcuts.js"
 import { emergencyRepairProject } from './emergencyRepairProject.js';
 import { verifyTriggerMap, candidatesToTriggerMapSmart, existingToTriggerMapSmart } from './triggerMaps';
 import { openJsonUrl } from "./util.js";
-import { setMaxDisplayed } from './maxChordConfig'
+import { setMaxDisplayed, applyUserGridRowCount } from './maxChordConfig'
 import { findMatchingScalesForProject } from "./findMatchingScales"
 import { resetChordHistory } from "./autoScale.js"
 import { detectChords } from './parse-midi.js';
@@ -210,6 +210,22 @@ export function reAllocateChordsPreserveCurrentChordConfig(ids) {
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
     keyDetection();
     linkProjectToKeyboard();
+}
+
+export function resizeGridRowCount(requestedCount) {
+    // User-driven grid height change from the drag handle or the row-count
+    // slider. Unlike projectChores() this never re-expands to the full
+    // favourite count, so a grid deliberately shrunk to fewer rows stays
+    // shrunk. Allocation keeps the first N favourites in song order, so
+    // shrinking then expanding restores the next chords in order.
+    if (!globals.project || !Array.isArray(globals.project.chords) || globals.project.chords.length === 0)
+        return globals.maxChordConfigs
+    const next = applyUserGridRowCount(requestedCount, globals.project)
+    regen(true)
+    globals.projectKey = resolveProjectKey(globals.project) ?? null;
+    keyDetection();
+    linkProjectToKeyboard();
+    return next
 }
 
 export function reAllocateScales(simple = true) {

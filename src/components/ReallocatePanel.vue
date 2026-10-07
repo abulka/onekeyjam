@@ -1,15 +1,23 @@
 <script setup>
 import { globals } from '@/lib/globals.js'
-import { reAllocateChords } from '../../src/lib/boot-project'
+import { reAllocateChords, resizeGridRowCount } from '../../src/lib/boot-project'
+
+function onSliderChange(event) {
+  resizeGridRowCount(globals.maxChordConfigs)
+  const el = event?.target
+  if (el && typeof el.blur === 'function')
+    el.blur()
+}
 
 </script>
 
 <template>
     <div class="ui row">
       <button @click="reAllocateChords" class="ui button">Reallocate Chords 🎲</button>
-      <input type="range" id="max-chord-configs" min="7" max="235" step="1" v-model.number="globals.maxChordConfigs"> {{
+      <input type="range" id="max-chord-configs" min="1" max="235" step="1" v-model.number="globals.maxChordConfigs" @change="onSliderChange"> {{
           globals.maxChordConfigs
       }} of {{ globals.project.chords.length }}
+      <span v-if="globals.maxChordConfigs === 7" title="Seven rows fit the computer keys z x c v b n m">fits z x c v b n m</span>
       &nbsp;&nbsp;&nbsp;&nbsp;
 
       <!-- &nbsp;&nbsp;&nbsp;&nbsp;
