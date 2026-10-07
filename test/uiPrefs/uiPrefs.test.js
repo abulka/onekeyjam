@@ -164,7 +164,7 @@ describe('uiPrefs', () => {
             scaleAdvanced: false,
             scaleHistory: false,
             showScaleCellFill: true,
-            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, variety: 'gentle', contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' },
+            policyOptions: { poolSize: 6, dwell: 1, changeChance: 1, maxNewNotes: 1, deferWhilePlaying: true, variety: 'gentle', contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary', preferPrimary: 0 },
             heldNoteRepair: { enabled: true, windowMs: 40 },
             backgroundCaptureEnabled: true,
             backgroundCaptureWindowSec: 120,
@@ -266,7 +266,7 @@ describe('uiPrefs', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scaleAdvanced: true, policyOptions: { poolSize: 4, dwell: 2, changeChance: 0.25 } }) })
         loadUiPrefs(storage)
         assert.equal(globals.showScaleAdvanced, true)
-        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, variety: 'gentle', contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' })
+        assert.deepEqual({ ...globals.scaleFiltering.policyOptions }, { poolSize: 4, dwell: 2, changeChance: 0.25, maxNewNotes: 1, deferWhilePlaying: true, variety: 'gentle', contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary', preferPrimary: 0 })
         globals.showScaleAdvanced = false
         globals.scaleFiltering.policyOptions.poolSize = 6
         globals.scaleFiltering.policyOptions.dwell = 1

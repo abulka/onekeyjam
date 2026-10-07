@@ -31,6 +31,14 @@ export const CUSTOM_STYLE = 'custom'
  */
 export const SCALE_STYLES = [
     {
+        name: 'manual-safe',
+        label: 'I choose (safe)',
+        description: 'You pick the scale with the black keys, and the choices stay in the plain key.',
+        colour: 'diatonic',
+        policy: 'manual',
+        preset: null,
+    },
+    {
         name: 'manual',
         label: 'I choose',
         description: 'You pick the scale with the black keys (C#, D#, F#, G#); it stays until you change it.',
@@ -47,12 +55,28 @@ export const SCALE_STYLES = [
         preset: 'simple',
     },
     {
+        name: 'follow-safe',
+        label: 'Follow the chords (safe)',
+        description: 'Each chord sounds its plain-key scale, so the mode holds through modal vamps and the changes stay gentle.',
+        colour: 'diatonic',
+        policy: 'follow',
+        preset: 'steady',
+    },
+    {
         name: 'follow-melody',
         label: 'Follow the melody',
-        description: 'Follows the chords and adds a colour note at each change that fits your phrase.',
+        description: 'Follows the chords and keeps the last note you played in scale, so phrases resolve instead of being cut off.',
         colour: 'jazz',
         policy: 'follow',
-        preset: 'melodic',
+        preset: 'resolve',
+    },
+    {
+        name: 'tension',
+        label: 'Add jazz tension',
+        description: 'Natural scales on every chord, with an added tension note on dominant chords (the V).',
+        colour: 'jazz',
+        policy: 'follow',
+        preset: 'tension',
     },
     {
         name: 'vary',

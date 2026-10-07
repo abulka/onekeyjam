@@ -431,7 +431,7 @@ function generalTableClick(event) {
 
   <div v-if="globals.isProjectLoaded" class="scale-settings ui small" @change="releaseControlFocus">
     <label class="style-field"
-      title="Scale changes: what the right-hand scale does when the chord changes. Each choice sets the colour, mode and preset together; open Options to see or fine-tune them.">
+      title="Scale changes: what the right-hand scale does when the chord changes. Each choice sets the mode, colour and preset together; open Options to see them.">
       <span>Scale changes:</span>
       <select v-model="scaleStyle" :disabled="soloInKey" :class="{ 'preset-custom': scaleStyle === CUSTOM_STYLE }">
         <option :value="CUSTOM_STYLE" disabled>Custom</option>
@@ -440,7 +440,7 @@ function generalTableClick(event) {
     </label>
     <span class="style-description">{{ scaleStyleDescription }}</span>
     <button class="advanced-toggle" type="button"
-      title="Colour, mode, preset and fine tuning for how the next scale is chosen"
+      title="Colour, mode, preset and the shuffle feel for how the next scale is chosen"
       :class="{ 'paused-control': soloInKey }"
       :disabled="soloInKey"
       :aria-expanded="globals.showScaleAdvanced ? 'true' : 'false'"
@@ -460,7 +460,7 @@ function generalTableClick(event) {
     <div class="scale-mechanism">
       <label class="advanced-field">Colour
         <select v-model="currentColour" :disabled="soloInKey"
-          title="Colour: how much chromatic colour the scale suggestions keep. diatonic stays strictly in key; jazz (default) keeps dorian and locrian #2 colour plus the functional dominants; adventurous prefers lydian and lydian-dominant colours.">
+          title="How adventurous the scale suggestions are. diatonic stays strictly in key; jazz (default) adds idiomatic chromatic notes plus the functional dominants; adventurous prefers lydian and lydian-dominant sounds.">
           <option v-for="colour in colours" :key="colour" :value="colour">{{ colour }}</option>
         </select>
       </label>
@@ -483,7 +483,7 @@ function generalTableClick(event) {
     <template v-if="globals.scaleFiltering.policy === 'shuffle'">
       <label class="advanced-field">Pool
         <select v-model.number="globals.scaleFiltering.policyOptions.poolSize" :disabled="soloInKey"
-          title="Shuffle pool: how many candidates the draw is taken from. 3 uses only the stored scale1/2/3, so the grid always highlights exactly; larger pools add the engine's colours on top, which can sound live auto scales.">
+          title="Shuffle pool: how many candidates the draw is taken from. 3 uses only the stored scale1/2/3, so the grid always highlights exactly; larger pools add the engine's scales on top, which can sound live auto scales.">
           <option v-for="n in [3, 4, 5, 6, 7, 8]" :key="n" :value="n">{{ n }}</option>
         </select>
       </label>
@@ -493,31 +493,13 @@ function generalTableClick(event) {
           <option v-for="n in [1, 2, 3, 4]" :key="n" :value="n">{{ n }}</option>
         </select>
       </label>
-      <label class="advanced-field">Change
-        <select v-model.number="globals.scaleFiltering.policyOptions.changeChance" :disabled="soloInKey"
-          title="Change chance: the probability of drawing a new rank at a dwell boundary. Lower values keep the current colour for longer.">
-          <option :value="1">100%</option>
-          <option :value="0.75">75%</option>
-          <option :value="0.5">50%</option>
-          <option :value="0.25">25%</option>
-          <option :value="0">0%</option>
-        </select>
-      </label>
       <label class="advanced-field">Spread
         <select v-model.number="globals.scaleFiltering.policyOptions.maxNewNotes" :disabled="soloInKey"
-          title="Spread: how far a shuffle change may move the note set. Close keeps the same notes, 1-2 notes are close colour shifts, Wild allows anything.">
+          title="Spread: how far a shuffle change may move the note set. Close keeps the same notes, 1-2 notes are small shifts, Wild allows anything.">
           <option :value="0">same notes</option>
           <option :value="1">1 note</option>
           <option :value="2">2 notes</option>
           <option :value="7">Wild</option>
-        </select>
-      </label>
-      <label class="advanced-field">Variety
-        <select v-model="globals.scaleFiltering.policyOptions.variety" :disabled="soloInKey"
-          title="Variety: how strongly the draw favours the best-fitting scale. Gentle keeps the primary nearly always; Lively makes the stored alternatives and engine colours genuinely likely.">
-          <option value="gentle">Gentle</option>
-          <option value="balanced">Balanced</option>
-          <option value="lively">Lively</option>
         </select>
       </label>
       <label class="advanced-field checkbox-field"
@@ -525,36 +507,7 @@ function generalTableClick(event) {
         <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.deferWhilePlaying" :disabled="soloInKey" /> Hold
       </label>
     </template>
-    <template v-else-if="globals.scaleFiltering.policy === 'follow'">
-      <label class="advanced-field">Context
-        <select v-model.number="globals.scaleFiltering.policyOptions.contextChords" :disabled="soloInKey"
-          title="Progression context: how many previous chords to consider. Two chords recognises a full ii-V-I and other chains; one chord uses only the chord just played.">
-          <option :value="1">1 chord</option>
-          <option :value="2">2 chords</option>
-        </select>
-      </label>
-      <label class="advanced-field">Palette
-        <select v-model="globals.scaleFiltering.policyOptions.palette" :disabled="soloInKey"
-          title="Palette: which stored scale follow prefers. Primary is the best continuation (the usual choice); Close colour takes the best alternative that adds a note at each change; Bold takes the biggest colour shift among the stored scales. All choices fit the chord.">
-          <option value="primary">Primary</option>
-          <option value="colour">Close colour</option>
-          <option value="bold">Bold</option>
-        </select>
-      </label>
-      <label class="advanced-field checkbox-field"
-        title="Phrase: bias the next chord's scale by the last solo note you played, so the phrase resolves instead of being cut off. It only changes the pick when that note distinguishes the stored scales.">
-        <input type="checkbox" v-model="globals.scaleFiltering.policyOptions.phraseBias" :disabled="soloInKey" /> Phrase
-      </label>
-      <label class="advanced-field" v-if="globals.scaleFiltering.policyOptions.phraseBias">Strength
-        <select v-model.number="globals.scaleFiltering.policyOptions.phraseStrength" :disabled="soloInKey"
-          title="How strongly the last solo note influences the choice. Low is a gentle nudge, high insists on the resolution.">
-          <option :value="0.5">low</option>
-          <option :value="1">medium</option>
-          <option :value="2">high</option>
-        </select>
-      </label>
-    </template>
-    <span v-else class="advanced-hint">Select follow or shuffle to tune the scale policy.</span>
+    <span v-else class="advanced-hint">Switch to shuffle to fine-tune the draw.</span>
     <button v-if="globals.scaleFiltering.policy === 'shuffle'" class="advanced-button" type="button"
       title="Draw a new scale for the current chord now"
       :class="{ 'paused-control': soloInKey }"

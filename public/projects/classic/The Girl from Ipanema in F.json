@@ -1,0 +1,115 @@
+{
+  "name": "The Girl from Ipanema in F",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Fmaj7",
+      "chord": "Fmaj7",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Gm7",
+      "chord": "Gm7",
+      "bass": "G2",
+      "scale1": "G dorian",
+      "scale2": "G aeolian",
+      "scale3": "G minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "Gb7",
+      "chord": "Gb7",
+      "bass": "Gb2",
+      "scale1": "Gb lydian dominant",
+      "scale2": "Gb mixolydian",
+      "scale3": "Gb mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "Fmaj7",
+      "chord": "Fmaj7",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F harmonic major"
+    },
+    {
+      "id": 6,
+      "name": "Gb7",
+      "chord": "Gb7",
+      "bass": "Gb2",
+      "scale1": "Gb lydian dominant",
+      "scale2": "Gb mixolydian",
+      "scale3": "Gb mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "Fmaj7",
+      "chord": "Fmaj7",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F harmonic major"
+    },
+    {
+      "id": 8,
+      "name": "Fm7",
+      "chord": "Fm7",
+      "bass": "F2",
+      "scale1": "F dorian",
+      "scale2": "F aeolian",
+      "scale3": "F minor pentatonic"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "F",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

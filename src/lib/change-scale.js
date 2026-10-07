@@ -372,6 +372,12 @@ export function applyScalePolicy(options = {}) {
     const rng = options.rng ?? Math.random
     const currentChordId = globals.currentChordConfig().id
 
+    // Follow holds its choice when the same chord config is re-triggered, so a
+    // palette style does not alternate while the player stabs one chord. This
+    // mirrors the shuffle hold below and matches the documented promise.
+    if (policy === 'follow' && !options.force && currentChordId != null && currentChordId === state.followChordId)
+        return true
+
     // Shuffle only changes on a real chord change; a repeated trigger of the
     // same chord holds the scale. A change made while solo notes are held takes
     // the closest fit instead of a random jump.
@@ -409,6 +415,10 @@ export function applyScalePolicy(options = {}) {
     else {
         setAutoScaleFilter(decision.tonic ?? '', decision.scaleType ?? '', decision.notes ?? [], decision.scaleTypes ?? [], decision.reason)
     }
+    // Follow remembers which chord its choice belongs to, so a re-trigger of
+    // that chord holds the scale instead of re-choosing.
+    if (policy === 'follow')
+        state.followChordId = currentChordId
     // Shuffle tracks its drawn rank and dwell whatever kind of decision it
     // made, because a stored-slot draw still counts as the drawn rank.
     if (policy === 'shuffle') {
@@ -456,6 +466,7 @@ export function setScalePolicy(policy, options = {}) {
     globals.scaleFiltering.shuffleDwellRemaining = 0
     globals.scaleFiltering.shuffleChordId = null
     globals.scaleFiltering.shuffleDeferred = false
+    globals.scaleFiltering.followChordId = null
     if (!globals.isProjectLoaded)
         return
     if (policy === 'manual') {

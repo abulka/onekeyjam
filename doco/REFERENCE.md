@@ -128,9 +128,12 @@ sets the colour, mode and preset for you:
 
 | Style | What happens | Engine settings |
 |---|---|---|
+| **I choose (safe)** | You stay in charge of the scale slots with the filters, and the choices keep to the plain key. | `manual` mode, diatonic colour |
 | **I choose** | You stay in charge of the scale1/2/3 slots with the filters. | `manual` mode, jazz colour |
 | **Follow the chords** | Each chord picks its most natural stored scale. | `follow`, Simple preset |
-| **Follow the melody** | Follows the chords and adds a colour note at each change that fits your phrase. | `follow`, Melodic preset |
+| **Follow the chords (safe)** | Each chord takes its plain-key scale, holding the mode through modal vamps. | `follow`, Steady preset, diatonic colour |
+| **Follow the melody** | Follows the chords and keeps your last solo note in scale, so the line resolves instead of being cut off. | `follow`, Resolve preset |
+| **Add jazz tension** | Keeps the natural scale, adding a tension note only on dominant chords. | `follow`, Tension preset |
 | **Vary it** | The scale shifts on most chord changes, staying close to each chord. | `shuffle`, Varied preset |
 | **Adventurous** | Bolder scales and bigger shifts. | `shuffle`, Wild preset, adventurous colour |
 
@@ -150,10 +153,10 @@ Why the automatic styles help:
 - **Phrases resolve (follow).** The phrase bias follows your last solo note, so a
   line does not get cut off by the next chord. On its own it only changes the
   pick when that note distinguishes the stored scales; in a diatonic tune it
-  correctly stays quiet. **Follow the melody** pairs the phrase with the
-  close-colour palette, so each change adds a note and your phrase picks which
-  one. Shuffle ignores the last note; held notes are repaired instead
-  (see `Settings` > `Preferences`).
+  correctly stays quiet. **Follow the melody** uses that bias on its own
+  (Resolve settings), so the scale follows your note without forcing a change
+  on every chord. Shuffle ignores the last note; held notes are repaired
+  instead (see `Settings` > `Preferences`).
 - **Nothing is a trap.** You can always override with the filters (`1`-`4`, or
   the right-hand black keys) or a grid click, and the app goes back to the style
   on the next chord you play.
@@ -168,16 +171,16 @@ the fine-tuning controls. They only appear when a project is loaded.
 | `Colour` | all | How chromatic the scale suggestions are: `jazz` (default), `diatonic` or `adventurous`. | jazz |
 | `Mode` | all | `manual`, `follow history` or `shuffle`. | manual |
 | `Preset` | both | One-click options for the active mode. Shows a highlighted `Custom` when the values are hand-tuned. | Subtle / Simple |
-| `Pool` (3-8) | shuffle | How many candidates the draw uses. The stored scale1/2/3 always come first; 3 uses only those, larger pools add the engine's colours. | 3 |
+| `Pool` (3-8) | shuffle | How many candidates the draw uses. The stored scale1/2/3 always come first; 3 uses only those, larger pools add the engine's scales. | 3 |
 | `Dwell` (1-4) | shuffle | How many chord changes to hold one draw before changing. Longer is steadier. | 2 |
-| `Change` (0-100%) | shuffle | The chance of a new draw at each boundary. Lower keeps a colour longer. | 100% |
 | `Spread` | shuffle | How far a change may move the notes: `same notes`, `1 note`, `2 notes` or `Wild`. | 1 note |
-| `Variety` | shuffle | How strongly the draw favours the top-ranked scale: `Gentle` keeps the primary nearly always, `Lively` makes the alternatives genuinely likely. | Gentle |
 | `Hold` | shuffle | Do not jump the scale while solo notes are sounding; take the closest fit instead. | on |
 | `Reroll` | shuffle | Draw a new scale for the current chord right now. | - |
-| `Context` (1-2) | follow | Whether to look one chord back or two, so a full ii-V-I is recognised. | 1 chord |
-| `Palette` | follow | Which stored scale follow prefers: `Primary` (best continuation), `Close colour` (best alternative that adds a note at each change) or `Bold` (biggest colour shift among the stored scales). | Primary |
-| `Phrase` + `Strength` | follow | Bias the next stored scale by your last solo note so the line resolves. Shuffle ignores the last note. | off |
+
+The follow styles have no fine-tuning controls, and the shuffle draw's change
+chance and variety are fixed by the preset (`Subtle` is gentle with a 100%
+draw at a boundary, `Varied` and `Wild` are lively). The visible controls are
+the colour, mode and preset plus the shuffle feel.
 
 The recent chord-to-scale **History** strip, and the optional pale fill on the
 current scale-filter cell, are global display preferences, so they live in
@@ -194,13 +197,13 @@ For **shuffle** the presets are **Subtle** (the
 default: only the stored scales, held longer, with rare close shifts, Gentle
 variety), **Varied**
 (a close
-colour from a pool of five on each chord change, Lively) and **Wild** (no
+scale from a pool of five on each chord change, Lively) and **Wild** (no
 limits, for
 experimenting, Lively). For **follow** they are **Simple** (one chord),
-**Progression**
-(two chords), **Lyrical** (two chords plus phrase), **Melodic** (two chords,
-strong phrase and close colour, so each change adds a note), **Resolve** (strong
-phrase bias) and **Colourful** (`Palette: Close colour`). The preset selector
+**Steady** (the plain-key scale preferred, for modal vamps and gentle
+accompaniment), **Resolve** (strong
+phrase bias) and **Tension** (the natural scale on every chord except
+dominants, where it adds the closest tension note). The preset selector
 lives in Options; it shows a highlighted `Custom` once you change any value by
 hand, so you always know when you have moved away from a preset.
 
@@ -323,13 +326,13 @@ so always read the trigger key from the chord table rather than assuming.
 
 Use the demo projects so you always hear a known progression.
 
-**Follow and the progression context.** Load **C Major II-V-I**, set the
-**Scale changes** style to `Follow the chords`, open `Options`, set `Mode` to
-`follow history` and `Context` to `2 chords`. Play the trigger
-keys for Dm7, G7 and Cmaj7. The reason in the Options panel on the Cmaj7 should read
-`ii-V-I into C: major`. Set `Context` back to `1 chord` and repeat: the Cmaj7
-reason changes to a plain resolution. Now play the Db7 trigger (the tritone
-substitute) then Cmaj7, and listen for the lydian-dominant resolution.
+**Follow and the chord function.** Load **C Major II-V-I**, set the
+**Scale changes** style to `Follow the chords` and play the trigger
+keys for Dm7, G7 and Cmaj7. The reason line on the G7 should read
+`ii-V into G: diatonic dominant`, and on the Cmaj7
+`dominant resolution into C: major`, so the scales land on the functional
+spots. Now play the Db7 trigger (the tritone substitute) then Cmaj7, and listen
+for the lydian-dominant resolution.
 
 **Shuffle is stable on repeated chords.** Set the **Scale changes** style to
 `Vary it`. Play the
@@ -344,40 +347,33 @@ keep the same
 note set (only the label moves). Set it to `Wild`: changes may jump. Play a long
 solo note, then change chord while it rings: the reason reads `closest fit` and
 the notes move as little as possible. Press `Reroll` to force a new draw on the
-current chord. Set `Change` to `0%` to keep the same colour across changes. Set
-`Variety` to `Gentle` and the draw stays on the primary scale most of the time;
-set it to `Lively` and the stored alternatives become genuinely likely.
+current chord. The draw's change chance and variety come with the preset
+(`Subtle` is gentle, `Varied` and `Wild` are lively) and have no separate
+controls.
 
 **Presets.** In `Options`, compare `Subtle`, `Varied` and `Wild` from
 the `Preset` dropdown with `Mode` set to `shuffle` and listen to how much each
-one changes. With `Mode` set to `follow history`, compare `Simple`, `Progression`,
-`Lyrical` and `Melodic`, and listen for
-the ii-V-I and the phrase resolution. After you move any value by hand the
+one changes. With `Mode` set to `follow history`, compare `Simple`, `Steady`,
+`Resolve` and `Tension`, and listen for the modal hold, the phrase resolution
+and the dominant tension. After you move any value by hand the
 style selector above the grid shows `Custom`, and picking a preset again
 restores a known combination.
 
-**Follow palette.** Follow normally sounds the best continuation, which in a
-diatonic tune is always `scale1`, so it can look static. Set `Palette` to
-`Close colour` (or pick the `Colourful` preset) and play the progression again:
-the reason line occasionally reads `palette: close colour (G lydian dominant
-adds C#)` and the grid bolds a colour scale with a green `chosen` tag. `Bold`
-takes the biggest colour shift the stored scales allow. All choices fit the
-chord; `Primary` keeps the original sound. This is separate from the
-project-wide `Colour` setting in `Options`, which decides how the stored scales
-are ranked.
+**Tension on dominants.** Set the style to `Add jazz tension` and play the
+C Major II-V-I: the Dm7 and Cmaj7 keep their natural scales, while the G7
+takes G lydian dominant, so the added note lands on the V. This is the
+follow palette behaviour without a user control; every style fixes its own
+palette now.
 
-**Phrase bias (follow).** Set the style to `Follow the melody`, or in `Options`
-set `Mode` to `follow history`, `Palette` to `Primary` and tick `Phrase`, then
-play a long
+**Phrase bias (follow).** Set the style to `Follow the melody`, play a long
 solo note that only one stored scale contains, for example a held `C#` over
 `G7`, then trigger that chord. The chosen scale contains your note and the
-reason line reads `keeps your last note C#`; turn `Phrase` off and the pick
-follows continuity instead. In a diatonic tune every stored scale already
+reason line reads `keeps your last note C#`. In a diatonic tune every stored
+scale already
 contains the notes you are playing, so the phrase on its own correctly changes
-nothing; that is why the `Follow the melody` style pairs it with
-`Palette: Close colour`, which adds a note at each change for the phrase to
-choose. Set `Strength` to `high` for a stronger pull. Shuffle ignores the last
-note.
+nothing; it only acts when your note distinguishes the candidates. Shuffle
+ignores the last
+note. The phrase strength is part of the melody style, not a user control.
 
 **Scale-cell fill.** In `Settings` > `Preferences`, `Fill the current scale
 filter cell` paints a pale background behind the sounding scale filter's cell in

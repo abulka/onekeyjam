@@ -1,0 +1,115 @@
+{
+  "name": "Wave in D",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Dmaj7",
+      "chord": "Dmaj7",
+      "bass": "D2",
+      "scale1": "D major",
+      "scale2": "D lydian",
+      "scale3": "D harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "Bb7",
+      "chord": "Bb7",
+      "bass": "Bb2",
+      "scale1": "Bb mixolydian",
+      "scale2": "Bb lydian dominant",
+      "scale3": "Bb mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Am7",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A dorian",
+      "scale2": "A aeolian",
+      "scale3": "A minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "Gmaj7",
+      "chord": "Gmaj7",
+      "bass": "G2",
+      "scale1": "G lydian",
+      "scale2": "G major",
+      "scale3": "G harmonic major"
+    },
+    {
+      "id": 6,
+      "name": "Gm6",
+      "chord": "Gm6",
+      "bass": "G2",
+      "scale1": "G melodic minor",
+      "scale2": "G dorian",
+      "scale3": "G major blues"
+    },
+    {
+      "id": 7,
+      "name": "F#m7",
+      "chord": "F#m7",
+      "bass": "F#2",
+      "scale1": "F# dorian",
+      "scale2": "F# aeolian",
+      "scale3": "F# minor pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "B7",
+      "chord": "B7",
+      "bass": "B2",
+      "scale1": "B mixolydian",
+      "scale2": "B lydian dominant",
+      "scale3": "B mixolydian b6"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "D",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

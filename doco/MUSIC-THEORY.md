@@ -424,23 +424,28 @@ continuation. The score combines:
   dominant resolving down a fifth (V-I or a secondary dominant), down a
   semitone (tritone substitute) or up a whole tone (backdoor) into a major
   chord prefers the major home scale, and into a minor chord it prefers dorian
-  then aeolian. With the `Context` control set to two chords, a full ii-V-I
-  adds a chain bonus. This resolves the major ii-V versus the minor ii-V, and
+  then aeolian. When a project stores `contextChords: 2`, a full ii-V-I
+  adds a chain bonus; shipped presets use one chord because the measured runs
+  showed the chain rule never changed a pick on the classic library. This
+  resolves the major ii-V versus the minor ii-V, and
   the colour of a resolution, that a single chord cannot distinguish.
-- **Phrase resolution**, optional. When `Phrase` is ticked, the last sounding
+- **Phrase resolution**, on for the melody style. The last sounding
   solo note is preferred: a stored scale that contains it scores, larger when
   it is a guide tone of the new chord; one that omits a guide or chord tone is
   penalised. It is deliberately conservative, because in a diatonic tune every
   stored candidate contains the notes you are playing, so it changes nothing.
   It only decides when the note distinguishes the candidates; the reason line
   then says `keeps your last note <name>`.
-- **Palette**, optional. `Primary` sounds the highest-scoring continuation.
-  `Close colour` sounds the highest-scoring stored scale whose pitch set
+- **Palette**, fixed by the style. The primary palette sounds the highest
+  scoring continuation. The steady term (`preferPrimary`) adds a small bonus
+  to the stored first scale so a modal vamp returns to the home mode instead
+  of smoothing into a neighbour. The close-scale rule sounds the highest
+  scoring stored scale whose pitch set
   differs from the previous one, so each chord change adds the nearest new
-  colour (for example `G lydian dominant` adds C# after `D dorian`). `Bold`
-  sounds the stored scale with the fewest common tones, the biggest shift the
-  chord's stored options allow. The first chord always uses Primary, and every
-  choice is a stored scale that already fits the chord.
+  note (for example `G lydian dominant` adds C# after `D dorian`); the tension
+  style applies it only on dominant chords. The legacy closed and bold values
+  remain for stored projects. The first chord always uses the primary rule,
+  and every choice is a stored scale that already fits the chord.
 - **A small novelty point** for a candidate that does not repeat the previous
   pitch set, so an available colour alternative is not ignored forever.
 

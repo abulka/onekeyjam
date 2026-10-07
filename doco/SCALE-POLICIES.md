@@ -71,7 +71,9 @@ of shuffle, which drew on every trigger.
   before redrawing. The rank is held, not the literal scale, so each new chord
   still gets a scale of that rank that fits its own harmony.
 - **Change** (0-100%, default 100%). The chance of drawing a new rank at a
-  dwell boundary. Lower values keep the current colour for longer.
+  dwell boundary. Lower values keep the current colour for longer. Preset-only:
+  it has no visible control because it moved only 0.8% of picks in the
+  measurements.
 - **Spread** (same notes / 1 note / 2 notes / Wild, default 1 note). How far a
   change may move the note set. A draw is limited to candidates whose pitch set
   is within this many substituted notes of the previous scale, so a change is a
@@ -79,7 +81,7 @@ of shuffle, which drew on every trigger.
 - **Variety** (Gentle / Balanced / Lively, default Gentle). How strongly the
   draw favours the top-ranked scale. Gentle is the original steep draw (about
   87% primary with three candidates); Lively flattens it so the alternatives and
-  engine colours are genuinely likely.
+  engine colours are genuinely likely. Preset-only, like Change.
 - **Hold** (default on). While solo notes are sounding, a chord change takes
   the **closest fit** to the previous scale instead of a random draw, so the
   mapping barely moves under the player's fingers.
@@ -89,9 +91,9 @@ of shuffle, which drew on every trigger.
   Shuffle presets are **Subtle** (the default: pool 3, held two changes, close
   shifts that are rare, Gentle variety), **Varied** (a close colour from a
   larger pool on each chord change, Lively) and **Wild** (no band, no hold,
-  Lively); follow presets are **Simple**, **Progression**, **Lyrical**,
-  **Melodic**, **Resolve** and **Colourful**. Hand-adjusting any value moves
-  the selector to `Custom`.
+  Lively); follow presets are **Simple**, **Steady**, **Resolve** and
+  **Tension**. The visible shuffle controls are `Pool`, `Dwell`, `Spread` and
+  `Hold`; hand-adjusting one moves the selector to `Custom`.
 
 The drawn rank is cached with the ranked candidates per chord, key, colour and
 pool size, so shuffle does not re-rank the scale dictionary on every trigger.
@@ -111,7 +113,7 @@ tones and novelty, and only when the harmony actually changes.
 
 The draw is not uniform. The rank weight is steep by default, so the engine's
 top-ranked, idiomatically correct scale is the usual choice and a colour
-alternative is occasional. The `Variety` control tunes that steepness: Gentle is
+alternative is occasional. The hidden `variety` value tunes that steepness: Gentle is
 the original draw (with three candidates the primary wins about 87% of the
 time), Balanced is in between, and Lively flattens it (about 68% with five
 candidates) so the stored alternatives and engine colours are genuinely
@@ -135,8 +137,8 @@ the beginner-facing "Vary it" style wants.
 
 ## Phase 2: progression context
 
-Follow now reads the previous chord's function and, optionally, the chord
-before it. `progressionBonus()` in `src/lib/autoScale.js` applies:
+Follow reads the previous chord's function. `progressionBonus()` in
+`src/lib/autoScale.js` applies:
 
 - **ii-V**. A dominant a fourth above the previous chord: mixolydian after a
   minor seventh chord, and the altered family after a half-diminished chord.
@@ -148,33 +150,40 @@ before it. `progressionBonus()` in `src/lib/autoScale.js` applies:
   ii-V (a minor seventh or half-diminished chord a fifth above the dominant)
   gets an extra bonus and the reason `ii-V-I into <root>: major`.
 
-The **Context** control sits in the Options expander when `follow` is selected
-and chooses `1 chord` (default) or `2 chords`. One chord keeps the original
-behaviour; two chords adds the chain rule. The rules are candidate-specific:
-they decide between the stored alternatives that already fit the chord, so
-they can never force a scale that clashes.
+The two-chord context is still implemented and honours `contextChords` from
+stored projects, but the visible **Context** control was removed after the
+synthesis measurements showed it never changed a pick on the classic library
+(0 of 500 triggers). Every shipped follow preset uses one chord. The rules are
+candidate-specific: they decide between the stored alternatives that already
+fit the chord, so they can never force a scale that clashes.
 
-### Follow palette
+### Follow palettes and the steady term
 
-By itself follow is deterministic: it sounds the stored scale with the best
+Follow is deterministic: it sounds the stored scale with the best
 continuity with what you just played. In an all-diatonic tune every chord's
 `scale1` shares the same seven notes, so follow stays on `scale1` throughout
-and can appear to do nothing. The **Palette** control in the follow Options
-makes the choice explicit:
+and can appear to do nothing. The palette is no longer a user control; each
+shipped style fixes it:
 
-- **Primary** (default): the best continuation, the original behaviour.
-- **Close colour**: the best continuation among the stored scales whose notes
-  differ from the previous scale, so each chord change adds the closest new
-  colour. The reason names the scale and the note it adds, for example
-  `palette: close colour (G lydian dominant adds C#)`.
-- **Bold**: the stored scale with the fewest notes in common with the previous
-  one, the biggest colour shift the chord's stored options allow.
+- **Simple** uses the primary palette, the best continuation.
+- **Steady** adds a hidden `preferPrimary: 1` bonus to the stored first scale,
+  so a modal vamp returns to the home mode (the D dorian return in So What)
+  instead of smoothing into a neighbour. An empty A7 in Secondary dominants
+  becomes A mixolydian instead of A mixolydian flat-6.
+- **Resolve** keeps the primary palette and turns phrase bias on.
+- **Tension** uses the close-scale rule only when the current chord is a
+  dominant, and the primary rule everywhere else, so the added note lands on
+  the V rather than on every chord. The reason names the scale and the note it
+  adds, for example `palette: close colour (G lydian dominant adds C#)`.
+- The legacy `colour` and `bold` palette values remain in the engine for stored
+  projects but back no shipped style.
 
-The first chord of a session always uses Primary, and all choices are stored
+The first chord of a session always uses the primary rule, and all choices are
+stored
 scales that already fit the chord, so a palette pick can never clash. The
 project-wide `Colour:` selector at the top of the page is a different setting:
 it decides how the stored scales themselves are ranked (diatonic, jazz,
-adventurous). Palette only chooses among whatever is stored.
+adventurous). Palettes only choose among whatever is stored.
 
 ## Phase 3: history strip
 
@@ -199,10 +208,10 @@ last sounding solo note (recorded in a small ring buffer in
   clash) subtracts more; on a dominant it is an available tension, so it is not
   penalised.
 
-The bonus is scaled by the strength. A `Phrase` checkbox and a
-low/medium/high `Strength` select sit in the Options expander when `follow` is
-selected, and both are off by default. Phrase bias only nudges the choice
-between stored scales that already fit the chord.
+The bonus is scaled by the strength. Both values are hidden preset options
+now: the `Follow the melody` style turns phrase bias on at strength 2, and no
+other shipped style uses it. Phrase bias only nudges the choice between stored
+scales that already fit the chord.
 
 It is deliberately conservative. In an all-diatonic tune every stored
 candidate contains the notes you are playing, so phrase changes nothing and
@@ -244,19 +253,16 @@ Edit and Perform views, and appears when a project is loaded.
 
 | Element | Where | What it does |
 |---|---|---|
-| `Scale changes` selector | scale settings row | Names the playing style: `I choose`, `Follow the chords`, `Follow the melody`, `Vary it`, `Adventurous`. Shows `Custom` when hand-tuned. |
+| `Scale changes` selector | scale settings row | Names the playing style: `I choose (safe)`, `I choose`, `Follow the chords`, `Follow the chords (safe)`, `Follow the melody`, `Add jazz tension`, `Vary it`, `Adventurous`. Shows `Custom` when hand-tuned. |
 | `auto: <scale>` chip | scale settings row | The live scale when a policy chose one that is not a stored slot. |
-| `Options` button | scale settings row | Shows or hides the full mechanism and fine tuning. |
+| `Options` button | scale settings row | Shows or hides the mechanism and the shuffle feel. |
 | `Colour` | Options panel | The ranking profile: `diatonic`, `jazz` (default) or `adventurous`. |
 | `Mode` | Options panel | `manual`, `follow history` or `shuffle`. |
-| `Preset` | Options panel | One-click policy presets for the active mode; shows `Custom` (highlighted) when the values are hand-tuned. |
+| `Preset` | Options panel | One-click policy presets for the active mode; shows `Custom` (highlighted) when the values are hand-tuned. The follow styles fix their own preset, so follow has no fine-tuning controls. |
 | Reason line | Options panel | Short explanation of the last automatic choice. |
 | `Key: <key>` | header, beside the project name | The resolved project key, in prominent text. It moves with a live transposition. |
-| `Pool`, `Dwell`, `Change`, `Spread`, `Variety`, `Hold` | Options panel, shuffle | Shuffle option values. Pools start from the stored scales and add engine colours; `Spread` limits how far a change moves the note set; `Variety` sets how strongly the top-ranked scale is favoured; `Hold` keeps the closest fit while solo notes sound. |
+| `Pool`, `Dwell`, `Spread`, `Hold` | Options panel, shuffle | Shuffle option values. Pools start from the stored scales and add engine scales; `Spread` limits how far a change moves the note set; `Hold` keeps the closest fit while solo notes sound. The draw's change chance and variety come with the preset. |
 | `Reroll` | Options panel, shuffle, far right | Draws a new scale for the current chord now. |
-| `Context` | Options panel, follow | One or two previous chords. |
-| `Palette` | Options panel, follow | Which stored scale follow prefers: `Primary` (best continuation), `Close colour` (best alternative that adds a note at each change) or `Bold` (biggest colour shift among the stored scales). |
-| `Phrase`, `Strength` | Options panel, follow | Phrase-aware bias for follow; shuffle ignores the last note. |
 | `History` | Settings > Preferences | Shows the recent chord-to-scale strip. |
 | `Recent:` strip | above the grid | Last four chord-to-scale choices with a policy badge. |
 | `chosen` tag | grid, current row | Marks the stored scale that is sounding; in follow the slot highlight is softened so this reads first. |
@@ -266,16 +272,16 @@ The styles are defined in `SCALE_STYLES` in `src/lib/scaleStyles.js`; each maps 
 a colour, a policy and a preset. The presets are defined in `POLICY_PRESETS` in
 `src/lib/autoScale.js`. Shuffle:
 **Subtle** (the default: only the stored scales, held for two chord changes,
-close shifts, Gentle variety), **Varied** (a close colour from a pool of five on
+close shifts, Gentle variety), **Varied** (a close scale from a pool of five on
 each chord change, Lively) and **Wild** (no band, no hold, Lively). The shipped
 defaults match Subtle; the
 `Subtle` preset keeps `Spread` at one note, so it never uses the Wild spread.
-Follow: **Simple** (one chord), **Progression** (two chords), **Lyrical**
-(two chords plus phrase bias) and **Resolve** (one chord, strong phrase bias)
-use `Palette: Primary`; **Melodic** (two chords, strong phrase, `Palette: Close
-colour`) and **Colourful** (one chord, `Palette: Close colour`) add a note at
-each change. Every
-value a preset sets is visible in the Options panel.
+Follow: **Simple** (one chord, primary), **Steady** (the stored first scale
+preferred, for modal vamps), **Resolve** (strong
+phrase bias) and **Tension** (the natural scale except on dominants, where the
+close-scale rule applies). Every
+value a preset sets stays in the engine; the follow ones are fixed by the style,
+and the shuffle ones are visible in the Options panel.
 
 ### Phase 1 - shuffle options
 
@@ -286,18 +292,18 @@ value a preset sets is visible in the Options panel.
    the reason names the shift (for example `shuffle: 1 note change`).
 4. Set `Spread` to `same notes`: changes keep the same note set. Set it to
    `Wild`: changes may jump.
-5. Set `Change` to `0%`: the rank is kept across chord changes.
-6. Click `Reroll`: the reason becomes a fresh draw, not `holding`.
-7. Choose the `Subtle` preset: the values become `3 / 2 / 100% / 1 note` with
-   `Hold` on and `Variety: Gentle`, and the preset select stops showing
-   `Custom`. Choose `Varied` for `5 / 1 / 100% / 1 note` with
-   `Variety: Lively`; choose `Wild` for `6 / 1 / 100% / Wild` with `Hold`
-   off and `Variety: Lively`. With `Pool` 3 every draw is one of the stored
+5. Click `Reroll`: the reason becomes a fresh draw, not `holding`.
+6. Choose the `Subtle` preset: the values become `3 / 2` with `Hold` on, and
+   the preset select stops showing `Custom`. The preset also fixes the change
+   chance at 100% and the variety at Gentle, which have no visible controls.
+   Choose `Varied` for `5 / 1` with Lively variety; choose `Wild` for `6 / 1`
+   with `Spread: Wild` and `Hold`
+   off. With `Pool` 3 every draw is one of the stored
    filters, so the grid highlight and the filter buttons move between them; a
    draw that lands on a stored filter shows no `auto:` chip.
-8. While holding a long solo note, change chord: the reason should read
+7. While holding a long solo note, change chord: the reason should read
    `closest fit`, and the scale should move as little as possible.
-9. Transpose the C Major II-V-I demo up a semitone (`Alt+4`, or hold the
+8. Transpose the C Major II-V-I demo up a semitone (`Alt+4`, or hold the
    left-hand `C#` and press `A#`), then trigger the second chord: the `Key:`
    chip should read `Db major`, the chord row should show `Ab7/Eb`, and
    shuffle should offer Ab scales (Ab mixolydian, Ab lydian dominant, Ab
@@ -305,27 +311,25 @@ value a preset sets is visible in the Options panel.
    Transpositions button) to reset: the key returns to C major and the chord to
    `G7/D`.
 
-### Phase 2 - progression context
+### Phase 2 - follow styles
 
-1. Set the **Scale changes** style to `Follow the chords`, open `Options`, set
-   `Mode` to `follow history` and `Context` to `2 chords`.
+1. Set the **Scale changes** style to `Follow the chords`.
 2. On the C Major II-V-I demo trigger `C3` (Dm7), `D3` (G7), `E3` (Cmaj7):
-   the reason on the Cmaj7 should read `ii-V-I into C: major`.
-3. Set `Context` to `1 chord` and repeat: the third reason should no longer
-   mention `ii-V-I`.
-4. Trigger `F3` (the Db7 tritone substitute) and then `E3` (Cmaj7): the reason
+   the reason on the G7 should mention `ii-V into G`, and on the Cmaj7 a
+   dominant resolution.
+3. Trigger `F3` (the Db7 tritone substitute) and then `E3` (Cmaj7): the reason
    on the Cmaj7 should mention a dominant or tritone-sub resolution.
-5. Set `Palette` to `Primary` and trigger `C3`, `D3`, `E3`: the scales stay
-   `D dorian`, `G mixolydian`, `C major`, and the reason names the chosen scale
-   (`G mixolydian: ii-V into G: diatonic dominant`).
-6. Choose the `Colourful` preset (or set `Palette` to `Close colour`): the `G7`
-   reason becomes `palette: close colour (G lydian dominant adds C#)` and the
-   grid bolds `G lydian dominant` with a green `chosen` tag. The cadence still
-   resolves to `C major`.
-7. Set `Palette` to `Bold`: the pick takes the biggest colour shift among the
-   stored scales, with a reason beginning `palette: bold`.
-8. Re-trigger the same chord: the palette choice is held, so the notes do not
-   move under your fingers.
+4. Set the style to `Follow the chords (safe)` and open the So What demo:
+   the return from Ebm7 to Dm7 should pick `D dorian` (the stored first scale),
+   not `D aeolian`.
+5. Set the style to `Add jazz tension` and replay the II-V-I: Dm7 and Cmaj7
+   keep their natural scales, the G7 takes `G lydian dominant`, and the reason
+   begins `palette: close colour`.
+6. Set the style to `Follow the melody` and hold a note that distinguishes the
+   G7 candidates (for example `C#`), then trigger the G7: the reason reads
+   `keeps your last note`.
+7. Re-trigger the same chord under any follow style: the choice is held, so
+   the notes do not move under your fingers.
 
 ### Phase 3 - history strip
 

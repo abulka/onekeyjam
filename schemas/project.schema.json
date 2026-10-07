@@ -43,7 +43,7 @@
         },
         "scaleStyle": {
           "description": "The named right-hand scale style (see src/lib/scaleStyles.js). 'custom' means the colour, policy and options have been hand-tuned.",
-          "enum": ["manual", "follow", "follow-melody", "vary", "adventurous", "custom"]
+          "enum": ["manual-safe", "manual", "follow", "follow-safe", "follow-melody", "tension", "vary", "adventurous", "custom"]
         },
         "keyboard": { "type": "object" }
       }

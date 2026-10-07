@@ -61,37 +61,25 @@ export const POLICY_PRESETS = {
             name: 'simple',
             label: 'Simple',
             description: 'Follows the single chord just played and picks its most natural stored scale. The safest choice when you are reading the changes closely.',
-            options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' },
+            options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary', preferPrimary: 0 },
         },
         {
-            name: 'progression',
-            label: 'Progression',
-            description: 'Looks at the last two chords, so it can recognise a ii-V-I or similar chain and lean toward the scale that leads into the next chord.',
-            options: { contextChords: 2, phraseBias: false, phraseStrength: 1, palette: 'primary' },
-        },
-        {
-            name: 'lyrical',
-            label: 'Lyrical',
-            description: 'Looks at the last two chords and also remembers the last solo note you played, so the new scale does not cut your phrase off.',
-            options: { contextChords: 2, phraseBias: true, phraseStrength: 1, palette: 'primary' },
-        },
-        {
-            name: 'melodic',
-            label: 'Melodic',
-            description: 'Follows the chords and adds the closest new colour on each change, with a strong pull toward the scale that fits your last solo note.',
-            options: { contextChords: 2, phraseBias: true, phraseStrength: 2, palette: 'colour' },
+            name: 'steady',
+            label: 'Steady',
+            description: 'Keeps each chord on its plain-key scale. The safe follow that holds the mode through modal vamps and avoids darkening secondary dominants.',
+            options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary', preferPrimary: 1 },
         },
         {
             name: 'resolve',
             label: 'Resolve',
             description: 'Uses only the current chord but strongly favours the scale that resolves the last solo note you played. Best when you want clear endings.',
-            options: { contextChords: 1, phraseBias: true, phraseStrength: 2, palette: 'primary' },
+            options: { contextChords: 1, phraseBias: true, phraseStrength: 2, palette: 'primary', preferPrimary: 0 },
         },
         {
-            name: 'colourful',
-            label: 'Colourful',
-            description: 'Keeps the follow logic but prefers stored scales that add colour, so each change introduces a new note that still fits the chord.',
-            options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'colour' },
+            name: 'tension',
+            label: 'Tension',
+            description: 'Keeps the natural scale on every chord except dominants, where it adds the closest tension note. Colour lands on the V chords, not everywhere.',
+            options: { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'tension', preferPrimary: 0 },
         },
     ],
 }
@@ -362,7 +350,7 @@ export function phraseBonus(candidate, context) {
 
 /**
  * How well a candidate scale continues the previous sounding scale.
- * @param {{name: string, pcs: Set<number>}} candidate
+ * @param {{name: string, slot?: string, pcs: Set<number>}} candidate
  * @param {*} context from buildContext()
  */
 export function continuityScore(candidate, context) {
@@ -383,6 +371,12 @@ export function continuityScore(candidate, context) {
     const { bonus, reason: progressionReason } = progressionBonus(candidate.name, context.current, context.previous, context.previous2, context.contextChords ?? 1)
     score += bonus
     score += phraseBonus(candidate, context)
+    // Steady style: a small preference for the chord's stored first scale, so
+    // a modal vamp returns to the home mode instead of smoothing into a
+    // neighbouring one. Zero unless a preset sets it.
+    const preferPrimary = context.preferPrimary ?? 0
+    if (preferPrimary > 0 && candidate.slot === 'scale1')
+        score += preferPrimary
     const common = commonToneCount(candidate.pcs, previousPcs)
     if (previousPcs.size > 0 && !setsEqual(candidate.pcs, previousPcs))
         score += 0.5
@@ -428,6 +422,11 @@ export function chooseFollowCandidate(candidates, context) {
     const previousPcs = context.previousScalePcs ?? new Set()
     const hasHistory = previousPcs.size > 0
     const palette = context.palette ?? 'primary'
+    // The tension palette is the close-colour rule gated to dominant chords;
+    // everywhere else it behaves like the primary palette.
+    const effectivePalette = palette === 'tension'
+        ? (context.current?.isDominant ? 'colour' : 'primary')
+        : palette
 
     let best = scored[0]
     let bestWithoutPhraseIndex = 0
@@ -444,16 +443,16 @@ export function chooseFollowCandidate(candidates, context) {
     const bestIndex = best.index
 
     let chosen = best
-    if (hasHistory && palette === 'colour') {
+    if (hasHistory && effectivePalette === 'colour') {
         const differing = scored.filter((entry) => !setsEqual(entry.candidate.pcs, previousPcs))
         const pool = differing.length > 0 ? differing : scored
         chosen = pool.reduce((a, b) => b.score > a.score ? b : a, pool[0])
     }
-    else if (hasHistory && palette === 'bold') {
+    else if (hasHistory && effectivePalette === 'bold') {
         chosen = scored.reduce((a, b) => b.common < a.common ? b : a, scored[0])
     }
 
-    const phraseDecided = palette === 'primary'
+    const phraseDecided = effectivePalette === 'primary'
         && context.phraseBias
         && context.lastSoloPc !== undefined
         && bestIndex !== bestWithoutPhraseIndex
@@ -466,7 +465,7 @@ export function chooseFollowCandidate(candidates, context) {
     else if (chosen.index !== bestIndex) {
         const added = addedNoteNames(chosen.candidate.pcs, previousPcs)
         const detail = added.length > 0 ? ` adds ${added.join(' ')}` : ''
-        reason = palette === 'bold'
+        reason = effectivePalette === 'bold'
             ? `palette: bold (${chosen.candidate.name}${detail})`
             : `palette: close colour (${chosen.candidate.name}${detail})`
     }
@@ -667,6 +666,7 @@ function buildContext(current) {
         phraseBias: globals.scaleFiltering.policyOptions?.phraseBias ?? false,
         phraseStrength: globals.scaleFiltering.policyOptions?.phraseStrength ?? 1,
         palette: globals.scaleFiltering.policyOptions?.palette ?? 'primary',
+        preferPrimary: globals.scaleFiltering.policyOptions?.preferPrimary ?? 0,
     }
 }
 
@@ -791,6 +791,7 @@ export function resetChordHistory() {
     globals.scaleFiltering.shuffleDwellRemaining = 0
     globals.scaleFiltering.shuffleChordId = null
     globals.scaleFiltering.shuffleDeferred = false
+    globals.scaleFiltering.followChordId = null
     globals.scaleFiltering.manualScaleFilter = ''
     globals.scaleFiltering.manualScaleNote = ''
     clearScaleRankingCache()

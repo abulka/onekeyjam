@@ -50,6 +50,11 @@
     "file": "All the Things You Are in Ab.json"
   },
   {
+    "text": "Alone Together in D minor",
+    "value": "/projects/classic/Alone%20Together%20in%20D%20minor.json",
+    "file": "Alone Together in D minor.json"
+  },
+  {
     "text": "Andalusian cadence in A minor",
     "value": "/projects/classic/Andalusian%20cadence%20in%20A%20minor.json",
     "file": "Andalusian cadence in A minor.json"
@@ -60,9 +65,29 @@
     "file": "Andalusian cadence in D minor.json"
   },
   {
+    "text": "Anthropology in Bb",
+    "value": "/projects/classic/Anthropology%20in%20Bb.json",
+    "file": "Anthropology in Bb.json"
+  },
+  {
+    "text": "Au Privave in F",
+    "value": "/projects/classic/Au%20Privave%20in%20F.json",
+    "file": "Au Privave in F.json"
+  },
+  {
     "text": "Autumn Leaves in G minor",
     "value": "/projects/classic/Autumn%20Leaves%20in%20G%20minor.json",
     "file": "Autumn Leaves in G minor.json"
+  },
+  {
+    "text": "Beautiful Love in D minor",
+    "value": "/projects/classic/Beautiful%20Love%20in%20D%20minor.json",
+    "file": "Beautiful Love in D minor.json"
+  },
+  {
+    "text": "Billie's Bounce in F",
+    "value": "/projects/classic/Billie's%20Bounce%20in%20F.json",
+    "file": "Billie's Bounce in F.json"
   },
   {
     "text": "Blue Bossa in C minor",
@@ -80,9 +105,19 @@
     "file": "Blues for Alice in F.json"
   },
   {
+    "text": "Body and Soul in Db",
+    "value": "/projects/classic/Body%20and%20Soul%20in%20Db.json",
+    "file": "Body and Soul in Db.json"
+  },
+  {
     "text": "Circle of fifths in C",
     "value": "/projects/classic/Circle%20of%20fifths%20in%20C.json",
     "file": "Circle of fifths in C.json"
+  },
+  {
+    "text": "Corcovado in C",
+    "value": "/projects/classic/Corcovado%20in%20C.json",
+    "file": "Corcovado in C.json"
   },
   {
     "text": "Days of Wine and Roses in F",
@@ -90,9 +125,19 @@
     "file": "Days of Wine and Roses in F.json"
   },
   {
+    "text": "Desafinado in F",
+    "value": "/projects/classic/Desafinado%20in%20F.json",
+    "file": "Desafinado in F.json"
+  },
+  {
     "text": "Fly Me to the Moon in C",
     "value": "/projects/classic/Fly%20Me%20to%20the%20Moon%20in%20C.json",
     "file": "Fly Me to the Moon in C.json"
+  },
+  {
+    "text": "Footprints in C minor",
+    "value": "/projects/classic/Footprints%20in%20C%20minor.json",
+    "file": "Footprints in C minor.json"
   },
   {
     "text": "Have You Met Miss Jones in F",
@@ -250,14 +295,59 @@
     "file": "ii-V-i in Gsharp minor.json"
   },
   {
+    "text": "Impressions in D minor",
+    "value": "/projects/classic/Impressions%20in%20D%20minor.json",
+    "file": "Impressions in D minor.json"
+  },
+  {
+    "text": "In a Sentimental Mood in Db",
+    "value": "/projects/classic/In%20a%20Sentimental%20Mood%20in%20Db.json",
+    "file": "In a Sentimental Mood in Db.json"
+  },
+  {
+    "text": "Just Friends in F",
+    "value": "/projects/classic/Just%20Friends%20in%20F.json",
+    "file": "Just Friends in F.json"
+  },
+  {
+    "text": "Maiden Voyage in C",
+    "value": "/projects/classic/Maiden%20Voyage%20in%20C.json",
+    "file": "Maiden Voyage in C.json"
+  },
+  {
     "text": "Minor ii-V-i with tritone sub in C minor",
     "value": "/projects/classic/Minor%20ii-V-i%20with%20tritone%20sub%20in%20C%20minor.json",
     "file": "Minor ii-V-i with tritone sub in C minor.json"
   },
   {
+    "text": "Misty in Eb",
+    "value": "/projects/classic/Misty%20in%20Eb.json",
+    "file": "Misty in Eb.json"
+  },
+  {
     "text": "Modal So What in D minor",
     "value": "/projects/classic/Modal%20So%20What%20in%20D%20minor.json",
     "file": "Modal So What in D minor.json"
+  },
+  {
+    "text": "Night and Day in Eb",
+    "value": "/projects/classic/Night%20and%20Day%20in%20Eb.json",
+    "file": "Night and Day in Eb.json"
+  },
+  {
+    "text": "Now's the Time in F",
+    "value": "/projects/classic/Now's%20the%20Time%20in%20F.json",
+    "file": "Now's the Time in F.json"
+  },
+  {
+    "text": "Oleo bridge in Bb",
+    "value": "/projects/classic/Oleo%20bridge%20in%20Bb.json",
+    "file": "Oleo bridge in Bb.json"
+  },
+  {
+    "text": "Out of Nowhere in G",
+    "value": "/projects/classic/Out%20of%20Nowhere%20in%20G.json",
+    "file": "Out of Nowhere in G.json"
   },
   {
     "text": "Pachelbel canon in C",
@@ -280,9 +370,19 @@
     "file": "Secondary dominants in C.json"
   },
   {
+    "text": "Softly as in a Morning Sunrise in C minor",
+    "value": "/projects/classic/Softly%20as%20in%20a%20Morning%20Sunrise%20in%20C%20minor.json",
+    "file": "Softly as in a Morning Sunrise in C minor.json"
+  },
+  {
     "text": "Stella by Starlight in Bb",
     "value": "/projects/classic/Stella%20by%20Starlight%20in%20Bb.json",
     "file": "Stella by Starlight in Bb.json"
+  },
+  {
+    "text": "Straight No Chaser in Bb",
+    "value": "/projects/classic/Straight%20No%20Chaser%20in%20Bb.json",
+    "file": "Straight No Chaser in Bb.json"
   },
   {
     "text": "Summertime in A minor",
@@ -295,8 +395,28 @@
     "file": "Take the A Train in C.json"
   },
   {
+    "text": "Tenor Madness in Bb",
+    "value": "/projects/classic/Tenor%20Madness%20in%20Bb.json",
+    "file": "Tenor Madness in Bb.json"
+  },
+  {
+    "text": "The Girl from Ipanema in F",
+    "value": "/projects/classic/The%20Girl%20from%20Ipanema%20in%20F.json",
+    "file": "The Girl from Ipanema in F.json"
+  },
+  {
     "text": "There Will Never Be Another You in Eb",
     "value": "/projects/classic/There%20Will%20Never%20Be%20Another%20You%20in%20Eb.json",
     "file": "There Will Never Be Another You in Eb.json"
+  },
+  {
+    "text": "Wave in D",
+    "value": "/projects/classic/Wave%20in%20D.json",
+    "file": "Wave in D.json"
+  },
+  {
+    "text": "Yesterdays in D minor",
+    "value": "/projects/classic/Yesterdays%20in%20D%20minor.json",
+    "file": "Yesterdays in D minor.json"
   }
 ]

@@ -177,12 +177,14 @@ export const globals = reactive({
             contextChords: 1,       // follow: how many previous chords to consider (1-2)
             phraseBias: false,      // follow/shuffle: bias by the last solo note
             phraseStrength: 1,      // phrase bias strength (0.5 low, 1 medium, 2 high)
-            palette: 'primary',     // follow: primary / colour / bold stored-scale palette
+            palette: 'primary',     // follow: primary / colour / bold / tension stored-scale palette
+            preferPrimary: 0,       // follow: steady bias toward the stored first scale
         },
         shuffleRank: null,          // shuffle: rank index currently held (0-based)
         shuffleDwellRemaining: 0,   // shuffle: chord changes left before a redraw
         shuffleChordId: null,       // chord id the current shuffle draw belongs to
         shuffleDeferred: false,     // a draw was postponed while solo notes sounded
+        followChordId: null,        // chord id the current follow choice belongs to
         // A manual scale pick (grid click, 1-4 shortcut or MIDI black key)
         // overrides the policy. manualScaleFilter is the chosen slot
         // ('scale1'/'scale2'/'scale3'/'notesOfChord'), manualScaleNote is the

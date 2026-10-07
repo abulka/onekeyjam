@@ -45,6 +45,7 @@ function resetGlobals() {
         phraseBias: false,
         phraseStrength: 1,
         palette: 'primary',
+        preferPrimary: 0,
     })
 }
 
@@ -120,15 +121,31 @@ describe('scale styles', () => {
         assert.equal(scaleStyleByName('nonsense'), undefined)
     })
 
-    it('applies Follow the melody as the melodic preset', () => {
+    it('applies Follow the melody as the resolve preset', () => {
         assert.equal(applyScaleStyle('follow-melody'), true)
         assert.equal(globals.scaleFiltering.policy, 'follow')
-        const melodic = POLICY_PRESETS.follow.find((preset) => preset.name === 'melodic')
-        for (const [key, value] of Object.entries(melodic.options))
-            assert.equal(globals.scaleFiltering.policyOptions[key], value, `melodic ${key}`)
-        assert.equal(globals.scaleFiltering.policyOptions.palette, 'colour')
+        const resolve = POLICY_PRESETS.follow.find((preset) => preset.name === 'resolve')
+        for (const [key, value] of Object.entries(resolve.options))
+            assert.equal(globals.scaleFiltering.policyOptions[key], value, `resolve ${key}`)
+        assert.equal(globals.scaleFiltering.policyOptions.palette, 'primary')
         assert.equal(globals.scaleFiltering.policyOptions.phraseStrength, 2)
         assert.equal(matchScaleStyle(), 'follow-melody')
+    })
+
+    it('applies the safe pair and the tension style', () => {
+        assert.equal(applyScaleStyle('manual-safe'), true)
+        assert.equal(globals.getProjectColour(), 'diatonic')
+        assert.equal(globals.scaleFiltering.policy, 'manual')
+
+        assert.equal(applyScaleStyle('follow-safe'), true)
+        const steady = POLICY_PRESETS.follow.find((preset) => preset.name === 'steady')
+        for (const [key, value] of Object.entries(steady.options))
+            assert.equal(globals.scaleFiltering.policyOptions[key], value, `steady ${key}`)
+        assert.equal(matchScaleStyle(), 'follow-safe')
+
+        assert.equal(applyScaleStyle('tension'), true)
+        assert.equal(globals.scaleFiltering.policyOptions.palette, 'tension')
+        assert.equal(matchScaleStyle(), 'tension')
     })
 
     it('records custom after a hand edit and a style again when it matches', () => {

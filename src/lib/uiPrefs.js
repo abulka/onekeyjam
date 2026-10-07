@@ -75,10 +75,10 @@ export function clampBpm(value) {
  * @property {number} [contextChords]
  * @property {boolean} [phraseBias]
  * @property {number} [phraseStrength]
- * @property {string} [palette]  'primary' | 'colour' | 'bold'
+ * @property {string} [palette]  'primary' | 'colour' | 'bold' | 'tension'
+ * @property {number} [preferPrimary] steady bias toward the stored first scale
  */
-
-const PALETTES = ['primary', 'colour', 'bold']
+const PALETTES = ['primary', 'colour', 'bold', 'tension']
 const VARIETIES = ['gentle', 'balanced', 'lively']
 
 /**
@@ -117,6 +117,8 @@ function readPolicyOptions(stored) {
         options.phraseStrength = Math.min(2, Math.max(0.5, stored.phraseStrength))
     if (PALETTES.includes(stored.palette))
         options.palette = stored.palette
+    if (Number.isFinite(stored.preferPrimary))
+        options.preferPrimary = Math.min(2, Math.max(0, stored.preferPrimary))
     return options
 }
 
@@ -321,6 +323,7 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.scaleFiltering.policyOptions.phraseBias,
         globals.scaleFiltering.policyOptions.phraseStrength,
         globals.scaleFiltering.policyOptions.palette,
+        globals.scaleFiltering.policyOptions.preferPrimary,
         globals.heldNoteRepair.enabled,
         globals.heldNoteRepair.windowMs,
         globals.recording.background.enabled,

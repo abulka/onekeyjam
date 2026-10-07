@@ -54,7 +54,7 @@ describe('autoScale policies', () => {
     })
 
     describe('policy presets', () => {
-        const KNOWN_OPTIONS = new Set(['poolSize', 'dwell', 'changeChance', 'maxNewNotes', 'deferWhilePlaying', 'variety', 'contextChords', 'phraseBias', 'phraseStrength', 'palette'])
+        const KNOWN_OPTIONS = new Set(['poolSize', 'dwell', 'changeChance', 'maxNewNotes', 'deferWhilePlaying', 'variety', 'contextChords', 'phraseBias', 'phraseStrength', 'palette', 'preferPrimary'])
 
         it('only set known option keys with real values', () => {
             for (const [mode, presets] of Object.entries(POLICY_PRESETS)) {
@@ -91,13 +91,13 @@ describe('autoScale policies', () => {
             assert.ok(varied.options.poolSize <= wild.options.poolSize)
         })
 
-        it('gives every follow preset a visible palette', () => {
+        it('gives every follow preset a valid palette', () => {
             const byName = Object.fromEntries(POLICY_PRESETS.follow.map((preset) => [preset.name, preset.options]))
-            assert.deepEqual(byName.simple, { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary' })
-            assert.deepEqual(byName.progression, { contextChords: 2, phraseBias: false, phraseStrength: 1, palette: 'primary' })
-            assert.deepEqual(byName.lyrical, { contextChords: 2, phraseBias: true, phraseStrength: 1, palette: 'primary' })
-            assert.deepEqual(byName.resolve, { contextChords: 1, phraseBias: true, phraseStrength: 2, palette: 'primary' })
-            assert.deepEqual(byName.colourful, { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'colour' })
+            assert.deepEqual(byName.simple, { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary', preferPrimary: 0 })
+            assert.deepEqual(byName.steady, { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'primary', preferPrimary: 1 })
+            assert.deepEqual(byName.resolve, { contextChords: 1, phraseBias: true, phraseStrength: 2, palette: 'primary', preferPrimary: 0 })
+            assert.deepEqual(byName.tension, { contextChords: 1, phraseBias: false, phraseStrength: 1, palette: 'tension', preferPrimary: 0 })
+            assert.equal(POLICY_PRESETS.follow.length, 4)
         })
     })
 

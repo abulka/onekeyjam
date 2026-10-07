@@ -1,0 +1,590 @@
+{
+  "meta": {
+    "section": "all",
+    "seeds": 20,
+    "date": "2026-10-07",
+    "steps": 308
+  },
+  "corpus": {
+    "projects": 84,
+    "exercises": 46,
+    "repertoire": 38,
+    "repertoireChangeRate": {
+      "simple": 0.6017699115044248,
+      "follow-safe": 0.5973451327433629,
+      "steady-100": 0.6061946902654868,
+      "resolve": 0.6017699115044248,
+      "melodic": 1,
+      "leap": 1,
+      "tension": 0.8761061946902655
+    }
+  },
+  "follow": {
+    "simple": {
+      "colour": "jazz",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.5537190082644629,
+      "changesOnSameWithHold": 0,
+      "useful": 5,
+      "cosmetic": 194,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.7960199004975124,
+      "diffVsSimple": 0
+    },
+    "progression": {
+      "colour": "jazz",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.5537190082644629,
+      "changesOnSameWithHold": 0,
+      "useful": 5,
+      "cosmetic": 194,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.7960199004975124,
+      "diffVsSimple": 0
+    },
+    "lyrical": {
+      "colour": "jazz",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.5537190082644629,
+      "changesOnSameWithHold": 0,
+      "useful": 5,
+      "cosmetic": 194,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.7960199004975124,
+      "diffVsSimple": 0
+    },
+    "melodic": {
+      "colour": "jazz",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 1,
+      "changesOnSameWithHold": 53,
+      "useful": 5,
+      "cosmetic": 356,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.3052884615384615,
+      "diffVsSimple": 0.298
+    },
+    "resolve": {
+      "colour": "jazz",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.5537190082644629,
+      "changesOnSameWithHold": 0,
+      "useful": 5,
+      "cosmetic": 194,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.7960199004975124,
+      "diffVsSimple": 0
+    },
+    "colourful": {
+      "colour": "jazz",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 1,
+      "changesOnSameWithHold": 53,
+      "useful": 5,
+      "cosmetic": 356,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.3052884615384615,
+      "diffVsSimple": 0.298
+    },
+    "leap": {
+      "colour": "jazz",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 1,
+      "changesOnSameWithHold": 53,
+      "useful": 5,
+      "cosmetic": 356,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 2.5288461538461537,
+      "diffVsSimple": 0.762
+    },
+    "follow-safe": {
+      "colour": "diatonic",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.5454545454545454,
+      "changesOnSameWithHold": 0,
+      "useful": 5,
+      "cosmetic": 191,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.5757575757575757,
+      "diffVsSimple": 0.142
+    },
+    "safe-melodic": {
+      "colour": "diatonic",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 1,
+      "changesOnSameWithHold": 53,
+      "useful": 5,
+      "cosmetic": 356,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.1947115384615385,
+      "diffVsSimple": 0.392
+    },
+    "steady-25": {
+      "colour": "diatonic",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.5454545454545454,
+      "changesOnSameWithHold": 0,
+      "useful": 5,
+      "cosmetic": 191,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.5757575757575757,
+      "diffVsSimple": 0.142
+    },
+    "steady-50": {
+      "colour": "diatonic",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.5454545454545454,
+      "changesOnSameWithHold": 1,
+      "useful": 5,
+      "cosmetic": 191,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.4371859296482412,
+      "diffVsSimple": 0.178
+    },
+    "steady-100": {
+      "colour": "diatonic",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.5537190082644629,
+      "changesOnSameWithHold": 0,
+      "useful": 5,
+      "cosmetic": 194,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.5771144278606966,
+      "diffVsSimple": 0.196
+    },
+    "steady-200": {
+      "colour": "diatonic",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.5537190082644629,
+      "changesOnSameWithHold": 0,
+      "useful": 5,
+      "cosmetic": 194,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.63681592039801,
+      "diffVsSimple": 0.198
+    },
+    "steady-jazz-50": {
+      "colour": "jazz",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.6446280991735537,
+      "changesOnSameWithHold": 4,
+      "useful": 5,
+      "cosmetic": 227,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.5588235294117647,
+      "diffVsSimple": 0.08
+    },
+    "tension": {
+      "colour": "jazz",
+      "mode": "engine",
+      "triggers": 500,
+      "changeRate": 0.8402203856749312,
+      "changesOnSameWithHold": 20,
+      "useful": 5,
+      "cosmetic": 298,
+      "harmful": 2,
+      "clashes": 0,
+      "avgNew": 1.4861538461538462,
+      "diffVsSimple": 0.182
+    }
+  },
+  "shuffle": {
+    "subtle": {
+      "triggers": 10000,
+      "changeRate": 0.7307162534435262,
+      "changesOnSame": 59,
+      "useful": 100,
+      "cosmetic": 5165,
+      "harmful": 40,
+      "clashes": 0,
+      "autoShare": 0,
+      "avgNew": 1.7604399701715139
+    },
+    "varied": {
+      "triggers": 10000,
+      "changeRate": 0.8121212121212121,
+      "changesOnSame": 503,
+      "useful": 99,
+      "cosmetic": 5757,
+      "harmful": 40,
+      "clashes": 0,
+      "autoShare": 0.0791,
+      "avgNew": 1.2650414127207377
+    },
+    "wild": {
+      "triggers": 10000,
+      "changeRate": 0.8475206611570248,
+      "changesOnSame": 577,
+      "useful": 100,
+      "cosmetic": 6015,
+      "harmful": 38,
+      "clashes": 1,
+      "autoShare": 0.1003,
+      "avgNew": 1.925705794947994
+    }
+  },
+  "safe": {
+    "projects": 84,
+    "uniqueChords": 362,
+    "manualSafeVsJazz": 64,
+    "manualProjects": 51,
+    "byQuality": {
+      "m7": 55,
+      "m7b5": 5,
+      "maj7": 4
+    },
+    "clashes": {
+      "diatonic": 0,
+      "jazz": 0,
+      "adventurous": 0
+    },
+    "unlicensedOutOfKey": {
+      "diatonic": 69,
+      "jazz": 112,
+      "adventurous": 216
+    },
+    "followSafeVsJazzDiff": 0.142,
+    "safeMelodicVsMelodicDiff": 0.218,
+    "followSafeClashes": 0,
+    "sampleDiffs": [
+      "50s doo-wop in C.json: Am7 safe=A aeolian jazz=A dorian",
+      "50s doo-wop in D.json: Bm7 safe=B aeolian jazz=B dorian",
+      "50s doo-wop in F.json: Dm7 safe=D aeolian jazz=D dorian",
+      "50s doo-wop in G.json: Em7 safe=E aeolian jazz=E dorian",
+      "All the Things You Are in Ab.json: Fm7 safe=F aeolian jazz=F dorian",
+      "All the Things You Are in Ab.json: Dm7 safe=D aeolian jazz=D dorian",
+      "Alone Together in D minor.json: Dm7 safe=D aeolian jazz=D dorian",
+      "Autumn Leaves in G minor.json: Gm7 safe=G aeolian jazz=G dorian",
+      "Beautiful Love in D minor.json: Dm7 safe=D aeolian jazz=D dorian",
+      "Blue Bossa in C minor.json: Cm7 safe=C aeolian jazz=C dorian",
+      "Blue Moon in C.json: Am7 safe=A aeolian jazz=A dorian",
+      "Blues for Alice in F.json: Em7b5 safe=E locrian jazz=E locrian #2",
+      "Blues for Alice in F.json: Dm7 safe=D aeolian jazz=D dorian",
+      "Body and Soul in Db.json: Fm7 safe=F aeolian jazz=F dorian",
+      "Circle of fifths in C.json: Am7 safe=A aeolian jazz=A dorian",
+      "Circle of fifths in C.json: Em7 safe=E aeolian jazz=E dorian",
+      "Corcovado in C.json: Dbmaj7 safe=Db lydian jazz=Db major",
+      "Days of Wine and Roses in F.json: Ebmaj7 safe=Eb lydian jazz=Eb major",
+      "Days of Wine and Roses in F.json: Dm7 safe=D aeolian jazz=D dorian",
+      "Days of Wine and Roses in F.json: Em7b5 safe=E locrian jazz=E locrian #2"
+    ]
+  },
+  "steady": {
+    "simple": {
+      "colour": "jazz",
+      "diffVsFollowSafe": 0.142,
+      "changeRate": 0.5537190082644629,
+      "clashes": 0,
+      "diatonicPopRate": 0.1206896551724138,
+      "soWhatReturn": "D aeolian",
+      "dooWopAm7": "A aeolian",
+      "secondaryA7": "A mixolydian b6"
+    },
+    "follow-safe": {
+      "colour": "diatonic",
+      "diffVsFollowSafe": 0,
+      "changeRate": 0.5454545454545454,
+      "clashes": 0,
+      "diatonicPopRate": 0.10344827586206896,
+      "soWhatReturn": "D aeolian",
+      "dooWopAm7": "A aeolian",
+      "secondaryA7": "A mixolydian b6"
+    },
+    "steady-25": {
+      "colour": "diatonic",
+      "diffVsFollowSafe": 0,
+      "changeRate": 0.5454545454545454,
+      "clashes": 0,
+      "diatonicPopRate": 0.10344827586206896,
+      "soWhatReturn": "D aeolian",
+      "dooWopAm7": "A aeolian",
+      "secondaryA7": "A mixolydian b6"
+    },
+    "steady-50": {
+      "colour": "diatonic",
+      "diffVsFollowSafe": 0.036,
+      "changeRate": 0.5454545454545454,
+      "clashes": 0,
+      "diatonicPopRate": 0.10344827586206896,
+      "soWhatReturn": "D aeolian",
+      "dooWopAm7": "A aeolian",
+      "secondaryA7": "A mixolydian b6"
+    },
+    "steady-100": {
+      "colour": "diatonic",
+      "diffVsFollowSafe": 0.07,
+      "changeRate": 0.5537190082644629,
+      "clashes": 0,
+      "diatonicPopRate": 0.10344827586206896,
+      "soWhatReturn": "D dorian",
+      "dooWopAm7": "A aeolian",
+      "secondaryA7": "A mixolydian"
+    },
+    "steady-200": {
+      "colour": "diatonic",
+      "diffVsFollowSafe": 0.088,
+      "changeRate": 0.5537190082644629,
+      "clashes": 0,
+      "diatonicPopRate": 0.10344827586206896,
+      "soWhatReturn": "D dorian",
+      "dooWopAm7": "A aeolian",
+      "secondaryA7": "A mixolydian"
+    },
+    "steady-jazz-50": {
+      "colour": "jazz",
+      "diffVsFollowSafe": 0.222,
+      "changeRate": 0.6446280991735537,
+      "clashes": 0,
+      "diatonicPopRate": 0.5689655172413793,
+      "soWhatReturn": "D aeolian",
+      "dooWopAm7": "A dorian",
+      "secondaryA7": "A mixolydian b6"
+    }
+  },
+  "tension": {
+    "tension": {
+      "diffVsSimple": 0.182,
+      "changesOnDominantShare": 0.5737704918032787,
+      "songRowFlips": 20,
+      "stabChurnRaw": 3,
+      "stabChurnHeld": 0,
+      "clashes": 0,
+      "avgNew": 1.4861538461538462
+    },
+    "leap": {
+      "diffVsSimple": 0.762,
+      "changesOnDominantShare": 0.4820936639118457,
+      "songRowFlips": 53,
+      "stabChurnRaw": 3,
+      "stabChurnHeld": 0,
+      "clashes": 0,
+      "avgNew": 2.5288461538461537
+    },
+    "melodic": {
+      "diffVsSimple": 0.298,
+      "changesOnDominantShare": 0.4820936639118457,
+      "songRowFlips": 53,
+      "stabChurnRaw": 3,
+      "stabChurnHeld": 0,
+      "clashes": 0,
+      "avgNew": 1.3052884615384615
+    }
+  },
+  "phrase": {
+    "rows": [
+      {
+        "preset": "simple",
+        "scenario": "none",
+        "diffs": 0,
+        "total": 500,
+        "changeRate": 0.5537190082644629,
+        "heldKept": null
+      },
+      {
+        "preset": "simple",
+        "scenario": "third",
+        "diffs": 4,
+        "total": 500,
+        "changeRate": 0.5537190082644629,
+        "heldKept": 0.8052884615384616
+      },
+      {
+        "preset": "simple",
+        "scenario": "root",
+        "diffs": 3,
+        "total": 500,
+        "changeRate": 0.5509641873278237,
+        "heldKept": 0.9350961538461539
+      },
+      {
+        "preset": "simple",
+        "scenario": "colour",
+        "diffs": 261,
+        "total": 500,
+        "changeRate": 0.8236914600550964,
+        "heldKept": 0.612
+      },
+      {
+        "preset": "simple",
+        "scenario": "outer",
+        "diffs": 220,
+        "total": 500,
+        "changeRate": 0.7851239669421488,
+        "heldKept": 0.5
+      },
+      {
+        "preset": "lyrical",
+        "scenario": "none",
+        "diffs": 0,
+        "total": 500,
+        "changeRate": 0.5537190082644629,
+        "heldKept": null
+      },
+      {
+        "preset": "lyrical",
+        "scenario": "third",
+        "diffs": 4,
+        "total": 500,
+        "changeRate": 0.5537190082644629,
+        "heldKept": 0.8052884615384616
+      },
+      {
+        "preset": "lyrical",
+        "scenario": "root",
+        "diffs": 3,
+        "total": 500,
+        "changeRate": 0.5509641873278237,
+        "heldKept": 0.9350961538461539
+      },
+      {
+        "preset": "lyrical",
+        "scenario": "colour",
+        "diffs": 261,
+        "total": 500,
+        "changeRate": 0.8236914600550964,
+        "heldKept": 0.612
+      },
+      {
+        "preset": "lyrical",
+        "scenario": "outer",
+        "diffs": 220,
+        "total": 500,
+        "changeRate": 0.7851239669421488,
+        "heldKept": 0.5
+      },
+      {
+        "preset": "resolve",
+        "scenario": "none",
+        "diffs": 0,
+        "total": 500,
+        "changeRate": 0.5537190082644629,
+        "heldKept": null
+      },
+      {
+        "preset": "resolve",
+        "scenario": "third",
+        "diffs": 4,
+        "total": 500,
+        "changeRate": 0.5537190082644629,
+        "heldKept": 0.8052884615384616
+      },
+      {
+        "preset": "resolve",
+        "scenario": "root",
+        "diffs": 4,
+        "total": 500,
+        "changeRate": 0.5509641873278237,
+        "heldKept": 0.9375
+      },
+      {
+        "preset": "resolve",
+        "scenario": "colour",
+        "diffs": 322,
+        "total": 500,
+        "changeRate": 0.8842975206611571,
+        "heldKept": 0.79
+      },
+      {
+        "preset": "resolve",
+        "scenario": "outer",
+        "diffs": 213,
+        "total": 500,
+        "changeRate": 0.8071625344352618,
+        "heldKept": 0.542
+      }
+    ],
+    "resolveColour": {
+      "kept": 0.79,
+      "scenarioChangeRate": 0.8842975206611571,
+      "normalChangeRate": 0.5537190082644629
+    },
+    "melodicColour": {
+      "kept": 0.744,
+      "changeRate": 1
+    }
+  },
+  "gates": {
+    "G1": {
+      "pass": true,
+      "best": "steady-100",
+      "details": {
+        "soWhatReturn": "D dorian",
+        "diff": 0.07,
+        "clashes": 0,
+        "diatonicPop": 0.10344827586206896,
+        "diatonicPopSafe": 0.10344827586206896,
+        "dooWop": "A aeolian",
+        "secondary": "A mixolydian"
+      }
+    },
+    "G2": {
+      "pass": true,
+      "kept": 0.79,
+      "melodicKept": 0.744,
+      "normalRate": 0.5537190082644629
+    },
+    "G3": {
+      "pass": true,
+      "winner": "tension",
+      "leap": {
+        "diff": 0.762,
+        "concentration": 0.4820936639118457,
+        "clashes": 0,
+        "stabChurnHeld": 0,
+        "songRowFlips": 53
+      },
+      "tension": {
+        "diff": 0.182,
+        "concentration": 0.5737704918032787,
+        "clashes": 0,
+        "stabChurnHeld": 0,
+        "songRowFlips": 20
+      }
+    },
+    "G4": {
+      "keep": true,
+      "heldChordToneMaxDiff": 0.008,
+      "heldChordToneScenario": "simple/third",
+      "distinguishingMaxDiff": 0.644,
+      "distinguishingScenario": "resolve/colour"
+    },
+    "G5": {
+      "pass": true,
+      "manualSafeVsJazz": 64,
+      "uniqueChords": 362,
+      "clashes": {
+        "diatonic": 0,
+        "jazz": 0,
+        "adventurous": 0
+      }
+    }
+  }
+}

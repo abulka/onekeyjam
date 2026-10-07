@@ -1,0 +1,115 @@
+{
+  "name": "Misty in Eb",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Ebmaj7",
+      "chord": "Ebmaj7",
+      "bass": "Eb2",
+      "scale1": "Eb major",
+      "scale2": "Eb lydian",
+      "scale3": "Eb harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "Bbm7",
+      "chord": "Bbm7",
+      "bass": "Bb2",
+      "scale1": "Bb dorian",
+      "scale2": "Bb aeolian",
+      "scale3": "Bb minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 4,
+      "name": "Abmaj7",
+      "chord": "Abmaj7",
+      "bass": "Ab2",
+      "scale1": "Ab lydian",
+      "scale2": "Ab major",
+      "scale3": "Ab harmonic major"
+    },
+    {
+      "id": 5,
+      "name": "Abm7",
+      "chord": "Abm7",
+      "bass": "Ab2",
+      "scale1": "Ab dorian",
+      "scale2": "Ab aeolian",
+      "scale3": "Ab minor pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "Db7",
+      "chord": "Db7",
+      "bass": "Db2",
+      "scale1": "Db lydian dominant",
+      "scale2": "Db mixolydian",
+      "scale3": "Db mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "Ebmaj7",
+      "chord": "Ebmaj7",
+      "bass": "Eb2",
+      "scale1": "Eb major",
+      "scale2": "Eb lydian",
+      "scale3": "Eb harmonic major"
+    },
+    {
+      "id": 8,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "Eb",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

@@ -390,17 +390,23 @@ vamp or when you want to develop one idea.
 
 Above the chord/scale grid, the **Scale changes** selector is the easy way in:
 
-- **I choose** keeps you in charge of the filters.
+- **I choose (safe)** and **I choose** keep you in charge of the filters; the
+  safe version keeps the choices in the plain key.
 - **Follow the chords** picks the stored alternative that continues the scale you
   just played and fits where the progression is going.
-- **Follow the melody** follows the chords and adds a colour note at each
-  change that fits your last solo note, so the line keeps moving.
+- **Follow the chords (safe)** does the same in the plain key, holding the mode
+  through modal vamps.
+- **Follow the melody** keeps your last solo note in scale, so phrases resolve
+  instead of being cut off.
+- **Add jazz tension** keeps the natural scale and adds a tension note only on
+  dominant chords.
 - **Vary it** shifts the stored filters on most chord changes, staying close to
   each chord.
 - **Adventurous** allows bolder scales and bigger shifts.
 
 The **Options** panel beside it shows the engine underneath (colour, mode and
-preset) and lets you fine-tune; the selector then reads `Custom`.
+preset) and the shuffle feel; the follow styles fix their own preset, so
+changing a shuffle value makes the selector read `Custom`.
 
 Follow is the thoughtful mode: it recognises a ii-V-I, a tritone substitute or a
 backdoor dominant and picks the idiomatic scale, so the harmony steers the
