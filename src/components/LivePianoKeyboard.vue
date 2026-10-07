@@ -371,7 +371,9 @@ onUnmounted(() => {
 <style scoped>
 .piano-keyboard-wrap {
   position: relative;
-  display: inline-block;
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
   line-height: 0;
   outline: 2px solid rgba(0, 0, 0, 0.12);
   outline-offset: 2px;

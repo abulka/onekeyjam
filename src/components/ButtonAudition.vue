@@ -34,6 +34,7 @@ function auditionMouseDown(notes, bass, state) {
         @mouseleave="auditionMouseDown(notes, bass, false)"
         @mouseup="auditionMouseDown(notes, bass, false)"
         @touchend.prevent="auditionMouseDown(notes, bass, false)"
+        @touchcancel="auditionMouseDown(notes, bass, false)"
         >
         <i class="volume up icon"></i>
     </button>

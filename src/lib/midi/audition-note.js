@@ -1,6 +1,6 @@
 // @ts-check
 import { Note } from '@tonaljs/tonal'
-import { audioContext, playGmNote, stopGmNote } from '../audio/general-midi.js'
+import { audioContext, ensureAudioReady, playGmNote, stopGmNote } from '../audio/general-midi.js'
 import { playChordNote } from './play-chord.js'
 import { globals } from '../globals.js'
 import { Note as WebMidiNote } from './webmidi.js'
@@ -54,8 +54,7 @@ export function auditionMidiNote(midi, duration = 0.4) {
     flashLiveNote(midi)
     if (!audioContext)
         return
-    if (audioContext.state === 'suspended' && typeof audioContext.resume === 'function')
-        audioContext.resume()
+    ensureAudioReady()
     try {
         playGmNote(Note.fromMidi(midi), {}, {
             velocity: 0.8,
@@ -79,8 +78,14 @@ function stopAuditionChord() {
     const chordInfos = globals.pendingChordNoteOffs[AUDITION_TRIGGER]
     if (chordInfos) {
         for (const info of chordInfos) {
-            if (globals.GM)
-                stopGmNote(info)
+            if (globals.GM) {
+                try {
+                    stopGmNote(info)
+                }
+                catch (error) {
+                    // A failed start leaves nothing to stop.
+                }
+            }
             else if (globals.channel2)
                 globals.channel2.stopNote(info.allowedNote)
         }
@@ -89,8 +94,14 @@ function stopAuditionChord() {
 
     const bassInfo = globals.pendingChordBassNoteOffs[AUDITION_TRIGGER]
     if (bassInfo) {
-        if (globals.GM)
-            stopGmNote(bassInfo)
+        if (globals.GM) {
+            try {
+                stopGmNote(bassInfo)
+            }
+            catch (error) {
+                // A failed start leaves nothing to stop.
+            }
+        }
         else if (globals.channel3)
             globals.channel3.stopNote(bassInfo.allowedNote)
     }
@@ -112,8 +123,7 @@ export function auditionChord(notes, bass, highlightMidi, durationMs = 800) {
         return
     if (!audioContext)
         return
-    if (audioContext.state === 'suspended' && typeof audioContext.resume === 'function')
-        audioContext.resume()
+    ensureAudioReady()
 
     stopAuditionChord()
 

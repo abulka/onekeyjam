@@ -4,6 +4,28 @@ let sfBass
 let sfChord
 let sfJam
 
+// Ready flags so callers can tell whether the background sample fetch has
+// finished. A tap before this is silent rather than a crash (notably on iPad
+// over a slow connection), and the next tap sounds once loading completes.
+let sfBassReady = false
+let sfChordReady = false
+let sfJamReady = false
+
+export function isSoundfontReady(toneType) {
+    switch (toneType) {
+        case 'chord':
+            return sfChordReady
+        case 'bass':
+            return sfBassReady
+        default:
+            return sfJamReady
+    }
+}
+
+export function soundfontStatus() {
+    return { jam: sfJamReady, chord: sfChordReady, bass: sfBassReady }
+}
+
 // jam, chord, bass
 const set9 = ['electric_piano_1', 'acoustic_grand_piano', 'acoustic_bass']  // EXCELLENT combo
 const sounds = set9
@@ -12,18 +34,28 @@ export function bootGeneralMidi(audioContext) {
     // Soundfont init
     Soundfont.instrument(audioContext, sounds[0]).then(function (instrument) {
         sfJam = instrument
-    })
+        sfJamReady = true
+    }).catch(() => { sfJamReady = false })
     // Soundfont.instrument(audioContext, 'marimba').then(function (instrument) {
     Soundfont.instrument(audioContext, sounds[1]).then(function (instrument) {
         sfChord = instrument
-    })
+        sfChordReady = true
+    }).catch(() => { sfChordReady = false })
     Soundfont.instrument(audioContext, sounds[2]).then(function (instrument) {
         sfBass = instrument
-    })
+        sfBassReady = true
+    }).catch(() => { sfBassReady = false })
 }
 
 export function stopGmNote(audioContext, noteOffInfo) {
-    noteOffInfo.envelope.stop(audioContext.currentTime);
+    if (!noteOffInfo || !noteOffInfo.envelope)
+        return
+    try {
+        noteOffInfo.envelope.stop(audioContext.currentTime);
+    }
+    catch (error) {
+        // The envelope may already have stopped; nothing to do.
+    }
 }
 
 export function playGmNote(audioContext, toneType, when, octave, note, pitch, velocity, duration = 123456789) {
@@ -66,23 +98,40 @@ export function playGmNote(audioContext, toneType, when, octave, note, pitch, ve
         loopEnd: 0
       }
     */
-    let envelope = tone.play(
-        note,
-        when,
-        {
-            gain: velocity,
-            duration: duration,
-            loop: false,
-            sustain: 3.5,
-            // adsr: [0, 0.5, 3.8, 3.3],
-        })
+    let envelope
+    if (!tone)
+        return null
+    try {
+        envelope = tone.play(
+            note,
+            when,
+            {
+                gain: velocity,
+                duration: duration,
+                loop: false,
+                sustain: 3.5,
+                // adsr: [0, 0.5, 3.8, 3.3],
+            })
+    }
+    catch (error) {
+        // The instrument may still be loading; stay silent rather than
+        // throwing into the note pipeline and breaking later taps.
+        return null
+    }
 
     return envelope
 }
 
 
 export function ping() {
-    sfBass.play('C2', 0, { duration: 0.1 })
+    if (!sfBass)
+        return
+    try {
+        sfBass.play('C2', 0, { duration: 0.1 })
+    }
+    catch (error) {
+        // Samples not loaded yet; nothing to do.
+    }
 }
 
 export function stopAllNotes() {
