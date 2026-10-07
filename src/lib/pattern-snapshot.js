@@ -26,11 +26,18 @@ let offsetSec = 0
 /**
  * Mark the sequencer loop as started. Captures the audio time so the
  * metronome can line its clicks up with the start of the loop.
+ *
+ * `baseTimeOverride` is the widget's real loop-origin audio time (its `time0`,
+ * which accounts for the widget's scheduled start lead) and `offsetSecOverride`
+ * is how far into the loop playback began, in seconds. Passing both keeps the
+ * metronome's beat grid anchored to tick 0, including when the loop is resumed
+ * or restarted from the middle.
  * @param {number} [baseTimeOverride] explicit clock value, mainly for tests
+ * @param {number} [offsetSecOverride] loop-relative start position in seconds
  */
-export function noteSequencerStarted(baseTimeOverride) {
+export function noteSequencerStarted(baseTimeOverride, offsetSecOverride) {
     playing = true
-    offsetSec = 0
+    offsetSec = typeof offsetSecOverride === 'number' ? offsetSecOverride : 0
     if (typeof baseTimeOverride === 'number') {
         baseTime = baseTimeOverride
         return

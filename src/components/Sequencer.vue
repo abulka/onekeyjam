@@ -140,7 +140,14 @@ function onAudition({ midi: row }) {
 // ── Playback ───────────────────────────────────────────────────────────────
 
 function startPatternPlayback(starttick) {
-  panel.value.play(audioContext, patternOnNote, starttick)
+  return panel.value.play(audioContext, patternOnNote, starttick)
+}
+
+function markSequencerClock(info) {
+  if (!info)
+    noteSequencerStarted()
+  else
+    noteSequencerStarted(info.startTime, info.startTick * info.tick2time)
 }
 
 function sequencerPlay(e, from = 'beginning') {
@@ -151,9 +158,9 @@ function sequencerPlay(e, from = 'beginning') {
   clearPatternTimers()
   resetLiveCounts()
   const starttick = (from == 'beginning') ? 0 : undefined
-  startPatternPlayback(starttick)
+  const info = startPatternPlayback(starttick)
   isPlaying.value = true
-  noteSequencerStarted()
+  markSequencerClock(info)
 }
 
 function sequencerResume(e) {
@@ -181,8 +188,8 @@ function scheduleBpmRestart() {
       return
     panel.value.stop()
     clearPatternTimers()
-    startPatternPlayback(undefined)  // undefined resumes from the widget's cursor
-    noteSequencerStarted()
+    const info = startPatternPlayback(undefined)  // undefined resumes from the widget's cursor
+    markSequencerClock(info)
   }, 150)
 }
 

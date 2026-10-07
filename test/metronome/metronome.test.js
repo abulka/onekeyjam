@@ -20,6 +20,19 @@ describe('pattern snapshot hub', () => {
         noteSequencerStopped()
         assert.deepEqual(getSequencerClock(), { isPlaying: false, baseTime: null, offsetSec: 0 })
     })
+
+    it('records the loop-relative start offset', () => {
+        noteSequencerStarted(100, 0.75)
+        assert.deepEqual(getSequencerClock(), { isPlaying: true, baseTime: 100, offsetSec: 0.75 })
+        noteSequencerStopped()
+        assert.deepEqual(getSequencerClock(), { isPlaying: false, baseTime: null, offsetSec: 0 })
+    })
+
+    it('resets the offset when restarted without one', () => {
+        noteSequencerStarted(100, 0.75)
+        noteSequencerStarted(200)
+        assert.deepEqual(getSequencerClock(), { isPlaying: true, baseTime: 200, offsetSec: 0 })
+    })
 })
 
 describe('metronome clock choice', () => {

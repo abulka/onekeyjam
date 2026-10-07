@@ -77,7 +77,7 @@ export function playerPlay() {
   resetLiveCounts()
   el.play(audioContext, patternOnNote, 0)
   playing = true
-  noteSequencerStarted()
+  noteSequencerStarted(el.time0, el.cursor * el.tick2time)
 }
 
 export function playerStop() {

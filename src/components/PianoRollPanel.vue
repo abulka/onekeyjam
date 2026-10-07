@@ -384,10 +384,19 @@ async function clear() {
   }
 }
 
-/** Start the widget's looping playback. `callback` receives {t, g, n}. */
+/**
+ * Start the widget's looping playback. `callback` receives {t, g, n}.
+ * Returns the widget's real start info — `startTime` is the audio-context time
+ * of the loop origin (tick 0), `startTick` the loop-relative start position, and
+ * `tick2time` the seconds-per-tick at the current tempo — so callers can align
+ * the metronome exactly instead of guessing the widget's start lead.
+ */
 function play(audioContext, callback, fromTick) {
-  if (pianoroll.value)
-    pianoroll.value.play(audioContext, callback, fromTick)
+  const el = pianoroll.value
+  if (!el)
+    return null
+  el.play(audioContext, callback, fromTick)
+  return { startTime: el.time0, startTick: el.cursor, tick2time: el.tick2time }
 }
 
 function stop() {
