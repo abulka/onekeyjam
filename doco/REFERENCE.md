@@ -259,8 +259,8 @@ the jam notes. The on-screen keyboard labels show the computer keys.
 
 | Control | MIDI keyboard | Computer keyboard | What it does |
 |---|---|---|---|
-| Chord trigger | white keys from the trigger octave upwards: C D E F G A B, then the next octave for chords 8-14, and so on | `z x c v b n m`, then `, . /` and `q w e r …` continue into higher triggers | plays the chord mapped to that white key |
-| Solo note | white keys from the jam octave upwards | `q w e r t y u` | plays a filtered note in the current scale |
+| Chord trigger | white keys from the trigger octave upwards: C D E F G A B, then the next octave for chords 8-14, and so on | `z x c v b n m`, then `, . /` and `q w e r …` continue into higher triggers | plays the chord mapped to that white key; once a higher trigger is assigned, that key stops being a solo key |
+| Solo note | white keys from the jam octave upwards (the jam octave moves up past the triggers, so with more than seven chords soloing starts higher, e.g. on `i o p …`) | `q w e r t y u` for seven chord songs | plays a filtered note in the current scale |
 | Scale filter 1 | `C#` in the jam octave and above | `1` | the primary scale for the current chord |
 | Scale filter 2 | `D#` in the jam octave and above | `2` | the first colour alternative |
 | Scale filter 3 | `F#` in the jam octave and above | `3` | the second colour alternative |
@@ -319,10 +319,12 @@ lists them too. Solo notes are the white keys to the right of the chord triggers
 Seven chords fit comfortably in one octave, which suits computer keyboard
 playing. More chords are allowed: extra triggers continue into higher octaves
 (chords 8-14 in the next octave, and so on), the jam octave moves up to make
-room, and the solo keys shift up with it, leaving fewer keys for soloing. An
-external MIDI keyboard config can raise the soloing start note to make more
-room. Loading a song with more favourited chords than the grid currently shows
-expands the grid so every favourite keeps its key.
+room, and the solo keys shift up with it, leaving fewer keys for soloing. On
+the computer keyboard this means the lower `q` row keys become chord triggers
+once assigned, and soloing moves up to the `i o p` row and beyond. An external
+MIDI keyboard config can raise the soloing start note to make more room.
+Loading a generated song whose favourites cover every chord expands the grid
+so each keeps its key; other projects keep the requested grid size.
 
 Every classic, rock and progression song ships a demo loop in the pattern
 sequencer that follows the song's harmony rhythm. Pressing play recreates the
@@ -330,6 +332,10 @@ song, and each pattern note targets the matching grid row. Repeated chords
 share a grid row, so Blue Moon loops triggers 1-2-3-4-1-2-3-4 on four rows;
 half bars split a bar between two chords, and chords held across bars sound as
 one sustained note. The blues entries run the full twelve bar quick change.
+
+Loading a song also sets the global tempo to the song's tempo, so each tune
+plays at its own speed. Turning the tempo knob afterwards still works and is
+remembered until the next song loads.
 
 Projects with more chords than the chord-count slider allows only put some chords
 on keys, and which non-favourite chords are allocated can change between loads,

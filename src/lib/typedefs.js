@@ -77,7 +77,7 @@
  * trigger row (one bar per chord in generated songs) and sounds that trigger.
  * @typedef {object} ChordSequence
  * @property {string} mml Music Macro Language string
- * @property {number} tempo stored tempo; playback follows the global BPM
+ * @property {number} tempo the song's tempo, applied to the global BPM on load
  * @property {number} [markstart] loop start in panel ticks
  * @property {number} [markend] loop end in panel ticks
  * @property {boolean} [enabled] loop the pattern while recording a solo

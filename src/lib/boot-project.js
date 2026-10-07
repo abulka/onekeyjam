@@ -23,6 +23,7 @@ import { deletePendingChordConfigs } from './massOperationsOnChordConfigs'
 import { fetchFeaturedProject, fetchClassicProject, fetchProgressionProject, fetchRockProject, fetchUserProject } from './projectLibrary';
 import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listProgressionProjects, listRockProjects, listUserProjects } from './projectLibrary';
 import { restoreCurrentProject } from './currentProjectStore.js';
+import { clampBpm } from './uiPrefs.js';
 
 /** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
 /** @typedef {import("./typedefs").KeyboardConfig} KeyboardConfig */
@@ -382,7 +383,21 @@ function projectChores({ project, maxChordConfigs, preserveSongIds }) {
     keyDetection();
     // A project remembers how its right hand should choose scales.
     applyProjectScaleStyle();
+    // A stored demo tempo becomes the global BPM, so each song plays at its
+    // own speed. Knob edits afterwards still persist until the next load.
+    applyProjectTempo();
     linkProjectToKeyboard();
+}
+
+/**
+ * Apply the current project's stored pattern tempo to the global BPM.
+ * Projects without a stored tempo leave the global BPM alone.
+ */
+export function applyProjectTempo() {
+    const stored = globals.project?.chordSequences?.default?.tempo
+    const bpm = clampBpm(stored)
+    if (bpm !== undefined)
+        globals.recording.bpm = bpm
 }
 
 // ┬─┐┌─┐┌─┐┌─┐┌┐┌

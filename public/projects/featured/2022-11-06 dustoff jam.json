@@ -51,7 +51,7 @@
     "default": {"ids": [1, 2, 3, 4], "favourites": [], "blacklist": []}
   },
   "chordSequences": {
-    "default": {"mml": "t100o4l8c1d1c1d1e1f1g1g1", "tempo": 99}
+    "default": {"mml": "t100o4l8c1d1c1d1e1f1g1g1", "tempo": 100}
   },
   "meta": {
     "type": "onekeyjam",

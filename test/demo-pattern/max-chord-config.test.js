@@ -36,4 +36,15 @@ describe('setMaxDisplayed with favourited songs', () => {
         setMaxDisplayed(projectWithFavourites(3))
         assert.equal(globals.maxChordConfigs, 7)
     })
+
+    it('leaves a hand-built project with partial favourites at the requested size', () => {
+        const ids = Array.from({ length: 12 }, (_, i) => i + 1)
+        const project = {
+            name: 'test',
+            chords: ids.map((id) => ({ id })),
+            songs: { default: { ids, favourites: [1, 2, 3], blacklist: [] } },
+        }
+        setMaxDisplayed(project)
+        assert.equal(globals.maxChordConfigs, 7)
+    })
 })

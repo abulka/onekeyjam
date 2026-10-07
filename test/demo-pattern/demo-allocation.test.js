@@ -1,7 +1,7 @@
 import assert from 'assert'
 import { globals } from '@/lib/globals.js'
 import { candidatesToTriggerMapSmart } from '@/lib/triggerMaps.js'
-import { demoPatternMml } from '@/lib/demo-pattern.js'
+import { demoSequenceMml } from '@/lib/demo-pattern.js'
 
 function generatedLikeProject(chordCount) {
     const chords = Array.from({ length: chordCount }, (_, i) => ({
@@ -60,6 +60,7 @@ describe('generated songs allocate triggers in definition order', () => {
     it('builds a demo pattern with one note per allocated trigger', () => {
         // Eight bars over eight trigger positions: the pattern order matches
         // the allocation order above, so bar N triggers chord N.
-        assert.equal(demoPatternMml(8), 't120o4c1d1e1f1g1a1b1o5c1')
+        const triggers = Array.from({ length: 8 }, (_, index) => ({ index, bars: 1 }))
+        assert.equal(demoSequenceMml(triggers), 't120o4c1d1e1f1g1a1b1o5c1')
     })
 })

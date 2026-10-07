@@ -258,8 +258,12 @@ and the validation commands.
   blues runs twelve bars and modal vamps hold for whole sections. Songs with a
   hand-authored rhythm keep it in their library definition (`sequence` in
   `bin/*-project-definitions.mjs`); the rest derive it from their chord order.
-  Each note targets the matching grid row, and the pattern plays with the
-  global tempo. A "Trigger
+  A sequence step may also name a chord missing from the row list, which
+  appends it as a new row after the listed ones. Each note targets the matching
+  grid row. Each song stores its own tempo in the pattern, and loading a project
+  applies it to the global BPM (`applyProjectTempo()` in `src/lib/boot-project.js`,
+  also run at boot after the autosave restore), so tunes play at their own speed.
+  A "Trigger
   pattern" dropdown fills the sequencer with ready-made patterns expressed as
   trigger numbers (ascending 1-7, descending 7-1, ii–V–I as 1-2-3 with the I
   held for two bars, I–V–vi–IV as 1-5-6-4, up-and-down), since progressions in

@@ -40,7 +40,8 @@ describe('generated demo loops', () => {
             blueMoon.chords.map((chord) => chord.chord),
             ['Cmaj7', 'Am7', 'Dm7', 'G7'],
         )
-        assert.equal(blueMoon.chordSequences.default.mml, 't120o4c1d1e1f1c1d1e1f1')
+        assert.equal(blueMoon.chordSequences.default.mml, 't96o4c1d1e1f1c1d1e1f1')
+        assert.equal(blueMoon.chordSequences.default.tempo, 96)
     })
 
     it('the blues runs the full twelve bar quick change', () => {
@@ -50,12 +51,14 @@ describe('generated demo loops', () => {
             ['C7', 'F7', 'G7'],
         )
         assert.equal(blues.chordSequences.default.markend, 12 * 16)
+        assert.equal(blues.chordSequences.default.tempo, 96)
     })
 
     it('Stella splits the opening bars in half', () => {
         const stella = loadProject(join(root, 'public', 'projects', 'classic', 'Stella by Starlight in Bb.json'))
-        assert.equal(stella.chordSequences.default.mml, 't120o4c2d2e2f2g2a2b2o5c2')
+        assert.equal(stella.chordSequences.default.mml, 't84o4c2d2e2f2g2a2b2o5c2')
         assert.equal(stella.chordSequences.default.markend, 4 * 16)
+        assert.equal(stella.chordSequences.default.tempo, 84)
     })
 
     it('modal vamps hold for whole sections', () => {
@@ -64,6 +67,17 @@ describe('generated demo loops', () => {
             impressions.chords.map((chord) => chord.chord),
             ['Dm7', 'Ebm7'],
         )
-        assert.equal(impressions.chordSequences.default.mml, 't120o4c1&c1&c1&c1d1&d1&d1&d1')
+        assert.equal(impressions.chordSequences.default.mml, 't150o4c1&c1&c1&c1d1&d1&d1&d1')
+        assert.equal(impressions.chordSequences.default.tempo, 150)
+    })
+
+    it('every generated tempo sits inside the supported BPM range', () => {
+        for (const library of libraries) {
+            for (const path of libraryFiles(library)) {
+                const project = loadProject(path)
+                const tempo = project.chordSequences.default.tempo
+                assert.ok(Number.isFinite(tempo) && tempo >= 40 && tempo <= 240, `${path} tempo ${tempo}`)
+            }
+        }
     })
 })

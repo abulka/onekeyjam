@@ -10,12 +10,20 @@ export function setMaxDisplayed(project, maxChordConfigs = maxChordConfigsDefaul
     // const nearestMultipleOfSeven = Math.round(globals.maxChordConfigs / 7 + 0.5) * 7;
 
     // v2.
-    // Keep every favourited chord visible: generated songs mark all their
-    // chords as favourites in song order, so the grid must be at least that
-    // tall or the last chord (and its demo pattern note) would be dropped.
-    // An explicit larger choice (for example a restored working size) is kept.
-    const favouritesCount = project?.songs?.default?.favourites?.length ?? 0
-    globals.maxChordConfigs = Math.max(maxChordConfigs, favouritesCount);
+    // Generated songs mark every chord as a favourite in song order, so the
+    // grid must be at least that tall or the last chord (and its demo pattern
+    // note) would be dropped. This expansion only applies when the favourites
+    // cover every chord; hand-built projects with a partial favourite list
+    // keep the requested size, so a grid deliberately shrunk to fewer rows
+    // stays shrunk. An explicit larger choice (for example a restored working
+    // size) is always kept.
+    const chordCount = Array.isArray(project?.chords) ? project.chords.length : 0
+    const favourites = project?.songs?.default?.favourites
+    const favouritesCount = Array.isArray(favourites) ? favourites.length : 0
+    const coversAll = chordCount > 0 && favouritesCount >= chordCount
+    globals.maxChordConfigs = coversAll
+        ? Math.max(maxChordConfigs, favouritesCount)
+        : maxChordConfigs;
     // console.log('setMaxDisplayed', globals.maxChordConfigs);  // TODO maxChordConfigs debugging 2
     const tempMax = project ? project.chords.length : maxChordConfigsDefault;
     const nearestMultipleOfSeven = Math.round(tempMax / 7 + 0.5) * 7;

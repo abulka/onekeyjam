@@ -38,21 +38,21 @@ function key(tonic, type) {
     return { tonic, type, source: 'user' }
 }
 
-/** @type {Array<{name: string, chords: string[], sequence?: Array<{chord: string, bars: number}>, key?: {tonic:string, type:string, source:string}, colour?: string}>} */
+/** @type {Array<{name: string, chords: string[], sequence?: Array<{chord: string, bars: number}>, tempo?: number, key?: {tonic:string, type:string, source:string}, colour?: string}>} */
 export const DEFINITIONS = [
     // ii-V-I in every major key
-    ...MAJOR_KEYS.map(k => ({ name: `ii-V-I in ${k} major`, chords: majorTwoFiveOne(k), key: key(k, 'major') })),
+    ...MAJOR_KEYS.map(k => ({ name: `ii-V-I in ${k} major`, chords: majorTwoFiveOne(k), key: key(k, 'major'), tempo: 116 })),
     // ii-V-i in every minor key
-    ...MINOR_KEYS.map(k => ({ name: `ii-V-i in ${k} minor`, chords: minorTwoFiveOne(k), key: key(k, 'minor') })),
+    ...MINOR_KEYS.map(k => ({ name: `ii-V-i in ${k} minor`, chords: minorTwoFiveOne(k), key: key(k, 'minor'), tempo: 116 })),
     // I-vi-ii-V turnarounds
     ...['C', 'F', 'Bb', 'Eb', 'G', 'D'].map(k => {
         const s = majorNotes(k)
-        return { name: `I-vi-ii-V turnaround in ${k}`, chords: [`${s[0]}maj7`, `${s[5]}m7`, `${s[1]}m7`, `${s[4]}7`], key: key(k, 'major') }
+        return { name: `I-vi-ii-V turnaround in ${k}`, chords: [`${s[0]}maj7`, `${s[5]}m7`, `${s[1]}m7`, `${s[4]}7`], key: key(k, 'major'), tempo: 120 }
     }),
     // 50s doo-wop I-vi-IV-V
     ...['C', 'G', 'F', 'D'].map(k => {
         const s = majorNotes(k)
-        return { name: `50s doo-wop in ${k}`, chords: [`${s[0]}maj7`, `${s[5]}m7`, `${s[3]}maj7`, `${s[4]}7`], key: key(k, 'major') }
+        return { name: `50s doo-wop in ${k}`, chords: [`${s[0]}maj7`, `${s[5]}m7`, `${s[3]}maj7`, `${s[4]}7`], key: key(k, 'major'), tempo: 132 }
     }),
     // Full 12-bar blues quick change: I IV I I / IV IV I I / V IV I V.
     // Each bar re-strikes its chord, keeping the barlines clear.
@@ -69,16 +69,17 @@ export const DEFINITIONS = [
                 at(five), at(four), at(one), at(five),
             ],
             key: key(k, 'major'),
+            tempo: 96,
         }
     }),
     // Classic tutorials
-    { name: 'Andalusian cadence in A minor', chords: ['Am', 'G', 'F', 'E7'], key: key('A', 'minor') },
-    { name: 'Andalusian cadence in D minor', chords: ['Dm', 'C', 'Bb', 'A7'], key: key('D', 'minor') },
-    { name: 'Pachelbel canon in D', chords: ['Dmaj7', 'A7', 'Bm7', 'F#m7', 'Gmaj7', 'Dmaj7', 'Gmaj7', 'A7'], key: key('D', 'major') },
-    { name: 'Pachelbel canon in C', chords: ['Cmaj7', 'G7', 'Am7', 'Em7', 'Fmaj7', 'Cmaj7', 'Fmaj7', 'G7'], key: key('C', 'major') },
-    { name: 'Circle of fifths in C', chords: ['Cmaj7', 'Am7', 'Dm7', 'G7', 'Em7', 'Am7', 'Dm7', 'G7'], key: key('C', 'major') },
-    { name: 'Secondary dominants in C', chords: ['Cmaj7', 'A7', 'Dm7', 'B7', 'Em7', 'E7', 'Am7', 'G7'], key: key('C', 'major') },
-    { name: 'Minor ii-V-i with tritone sub in C minor', chords: ['Dm7b5', 'Db7', 'Cm7', 'Dm7b5', 'G7b9', 'Cm7'], key: key('C', 'minor') },
+    { name: 'Andalusian cadence in A minor', chords: ['Am', 'G', 'F', 'E7'], key: key('A', 'minor'), tempo: 100 },
+    { name: 'Andalusian cadence in D minor', chords: ['Dm', 'C', 'Bb', 'A7'], key: key('D', 'minor'), tempo: 100 },
+    { name: 'Pachelbel canon in D', chords: ['Dmaj7', 'A7', 'Bm7', 'F#m7', 'Gmaj7', 'Dmaj7', 'Gmaj7', 'A7'], key: key('D', 'major'), tempo: 72 },
+    { name: 'Pachelbel canon in C', chords: ['Cmaj7', 'G7', 'Am7', 'Em7', 'Fmaj7', 'Cmaj7', 'Fmaj7', 'G7'], key: key('C', 'major'), tempo: 72 },
+    { name: 'Circle of fifths in C', chords: ['Cmaj7', 'Am7', 'Dm7', 'G7', 'Em7', 'Am7', 'Dm7', 'G7'], key: key('C', 'major'), tempo: 120 },
+    { name: 'Secondary dominants in C', chords: ['Cmaj7', 'A7', 'Dm7', 'B7', 'Em7', 'E7', 'Am7', 'G7'], key: key('C', 'major'), tempo: 120 },
+    { name: 'Minor ii-V-i with tritone sub in C minor', chords: ['Dm7b5', 'Db7', 'Cm7', 'Dm7b5', 'G7b9', 'Cm7'], key: key('C', 'minor'), tempo: 120 },
     // So What is a D dorian modal tune, so the key is dorian, not minor.
-    { name: 'Modal So What in D minor', chords: ['Dm7', 'Dm7', 'Ebm7', 'Ebm7', 'Dm7', 'Dm7'], key: key('D', 'dorian') },
+    { name: 'Modal So What in D minor', chords: ['Dm7', 'Dm7', 'Ebm7', 'Ebm7', 'Dm7', 'Dm7'], key: key('D', 'dorian'), tempo: 140 },
 ]

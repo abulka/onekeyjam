@@ -1,5 +1,5 @@
 import { globals } from './globals.js'
-import { bootProject, bootKeyboard, linkProjectToKeyboard, regen, wireProjectEvents } from './boot-project.js';
+import { applyProjectTempo, bootProject, bootKeyboard, linkProjectToKeyboard, regen, wireProjectEvents } from './boot-project.js';
 import { bootWebMidi } from "./midi/boot-webmidi.js"
 import { bootGeneralMidi } from "./audio/general-midi.js"
 import { restoreTake } from "./midi/recorder.js"
@@ -29,6 +29,8 @@ export default async function () {
         // Apply the restored project's scale style before the keyboard is
         // linked, so the first chord already sounds with it.
         applyProjectScaleStyle()
+        // A restored song brings its own tempo, like a freshly loaded one.
+        applyProjectTempo()
         initChordPlayEvents() // one time only, no need to wire again
 
         linkProjectToKeyboard() // done every time a new project is loaded

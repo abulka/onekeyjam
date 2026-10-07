@@ -70,10 +70,10 @@
   },
   "chordSequences": {
     "default": {
-      "mml": "t120o4c1d1e1f1c1d1e1f1",
+      "mml": "t96o4c1d1e1f1c1d1e1f1",
       "markstart": 0,
       "markend": 128,
-      "tempo": 120,
+      "tempo": 96,
       "enabled": false,
       "loopManual": false
     }

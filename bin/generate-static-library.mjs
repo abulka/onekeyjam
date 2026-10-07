@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import * as Tonal from '@tonaljs/tonal'
 import { chordScaleNamesFor } from '../src/lib/chordScaleEngine.js'
 import { sanitizeFilename } from '../src/lib/filename.js'
-import { demoEntryForTriggers, planDemoPattern } from '../src/lib/demo-pattern.js'
+import { DEMO_PATTERN_TEMPO, demoEntryForTriggers, planDemoPattern } from '../src/lib/demo-pattern.js'
 
 /*
  * Shared helper for the generated static project libraries (classic,
@@ -25,7 +25,10 @@ import { demoEntryForTriggers, planDemoPattern } from '../src/lib/demo-pattern.j
  * @typedef {object} StaticLibraryDefinition
  * @property {string} name display name
  * @property {string[]} chords chord symbols for the grid, in row order
- * @property {Array<{chord: string, bars: number}>} [sequence] demo loop steps
+ * @property {Array<{chord: string, bars: number}>} [sequence] demo loop steps;
+ *   a step may name a symbol missing from `chords`, which appends it as a new
+ *   grid row after the listed ones
+ * @property {number} [tempo] demo loop tempo, applied to the global BPM on load
  * @property {{tonic:string, type:string, source:string}} [key] declared key
  * @property {string} [colour] scale colour for the engine
  */
@@ -97,6 +100,11 @@ export function generateStaticLibrary(definitions, outDirName, label) {
         }
         if (!ok || triggers.length === 0)
             continue
+        // Stored tempos stay inside the app's 40-240 BPM range; without one
+        // the neutral default applies and the global BPM is left alone.
+        const tempo = Number.isFinite(definition.tempo)
+            ? Math.min(240, Math.max(40, Math.round(definition.tempo)))
+            : DEMO_PATTERN_TEMPO
 
         const ids = chords.map((chord) => chord.id)
         const project = {
@@ -112,7 +120,7 @@ export function generateStaticLibrary(definitions, outDirName, label) {
                 default: { ids, favourites: ids, blacklist: [] },
             },
             chordSequences: {
-                default: demoEntryForTriggers(triggers),
+                default: demoEntryForTriggers(triggers, tempo),
             },
         }
         // The project keeps its pretty display name; only the filename is

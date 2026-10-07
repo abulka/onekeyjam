@@ -31,45 +31,6 @@ export const DEMO_PATTERN_MIN_ROWS = 7
 const WHITE_MML_NOTES = ['c', 'd', 'e', 'f', 'g', 'a', 'b']
 
 /**
- * Build the MML for a demo loop with one bar per trigger position.
- * @param {number} chordCount how many chords (bars) the loop holds
- * @returns {string} MML string, e.g. `t120o4c1d1e1` for three chords
- */
-export function demoPatternMml(chordCount) {
-    const count = Math.max(0, Math.floor(chordCount))
-    if (count <= 0)
-        return ''
-    let mml = `t${DEMO_PATTERN_TEMPO}o4`
-    let currentOctave = 4
-    for (let i = 0; i < count; i++) {
-        const octave = 4 + Math.floor(i / WHITE_MML_NOTES.length)
-        if (octave !== currentOctave) {
-            mml += `o${octave}`
-            currentOctave = octave
-        }
-        mml += `${WHITE_MML_NOTES[i % WHITE_MML_NOTES.length]}1`
-    }
-    return mml
-}
-
-/**
- * Build the stored `chordSequences.default` entry for a generated song.
- * @param {number} chordCount how many chords (bars) the loop holds
- * @returns {{ mml: string, markstart: number, markend: number, tempo: number, enabled: boolean, loopManual: boolean }}
- */
-export function demoPatternForChordCount(chordCount) {
-    const count = Math.max(0, Math.floor(chordCount))
-    return {
-        mml: demoPatternMml(count),
-        markstart: 0,
-        markend: count * DEMO_PATTERN_TIMEBASE,
-        tempo: DEMO_PATTERN_TEMPO,
-        enabled: false,
-        loopManual: false,
-    }
-}
-
-/**
  * One step of a demo loop: which trigger to play and for how long.
  * @typedef {object} DemoTrigger
  * @property {number} index 0-based white-note trigger position
@@ -191,12 +152,14 @@ function ticksToLengthSuffixes(ticks) {
  * holds are tied (`c1&c1`), half bars use half notes (`d2`), and triggers
  * past seven continue in higher octaves (`o5c`).
  * @param {DemoTrigger[]} entries trigger steps in loop order
+ * @param {number} [tempo] MML tempo prefix; playback always follows the global BPM
  * @returns {string} MML string
  */
-export function demoSequenceMml(entries) {
+export function demoSequenceMml(entries, tempo = DEMO_PATTERN_TEMPO) {
     if (!entries || entries.length === 0)
         return ''
-    let mml = `t${DEMO_PATTERN_TEMPO}o4`
+    const prefix = Number.isFinite(tempo) ? Math.round(tempo) : DEMO_PATTERN_TEMPO
+    let mml = `t${prefix}o4`
     let currentOctave = 4
     for (const entry of entries) {
         const index = Math.max(0, Math.floor(entry.index))
@@ -217,16 +180,18 @@ export function demoSequenceMml(entries) {
 /**
  * Build the stored `chordSequences.default` entry for a trigger sequence.
  * @param {DemoTrigger[]} entries trigger steps in loop order
+ * @param {number} [tempo] stored tempo, applied to the global BPM on load
  * @returns {{ mml: string, markstart: number, markend: number, tempo: number, enabled: boolean, loopManual: boolean }}
  */
-export function demoEntryForTriggers(entries) {
+export function demoEntryForTriggers(entries, tempo = DEMO_PATTERN_TEMPO) {
     const list = Array.isArray(entries) ? entries : []
+    const storedTempo = Number.isFinite(tempo) ? Math.round(tempo) : DEMO_PATTERN_TEMPO
     const totalTicks = list.reduce((sum, entry) => sum + Math.max(1, Math.round(entry.bars * DEMO_PATTERN_TIMEBASE)), 0)
     return {
-        mml: demoSequenceMml(list),
+        mml: demoSequenceMml(list, storedTempo),
         markstart: 0,
         markend: totalTicks,
-        tempo: DEMO_PATTERN_TEMPO,
+        tempo: storedTempo,
         enabled: false,
         loopManual: false,
     }
