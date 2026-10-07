@@ -244,11 +244,22 @@ and the validation commands.
   pattern lives in the current project (`globals.project.chordSequences.default`):
   it loads whenever a project loads (`project-loaded`) and is written back on
   every edit, so it is kept by the current-project autosave and travels with the
-  project when it is saved. Notes may only be entered on the seven white trigger keys of the
-  chord-trigger octave (C–B); every trigger row is marked over the piano key
+  project when it is saved. Notes may only be entered on the white trigger rows,
+  starting with the seven white keys of the chord-trigger octave (C–B) and
+  continuing into higher octaves when more chords are assigned; every trigger
+  row is marked over the piano key
   with its chord name (green) or "no chord" (grey, to prompt assigning one), and
   a click adds a one-bar note. Notes loaded on any other row are removed, and a
-  note dragged off a trigger row snaps back to the nearest one. A "Trigger
+  note dragged off a trigger row snaps back to the nearest one. Generated
+  classic, rock and progression songs each ship a demo pattern following the
+  song's harmony rhythm: repeats point back at the earlier grid row (Blue Moon
+  plays triggers 1-2-3-4-1-2-3-4 on four rows), half bars split a bar between
+  two chords, and back to back bars on one chord merge into a held note, so the
+  blues runs twelve bars and modal vamps hold for whole sections. Songs with a
+  hand-authored rhythm keep it in their library definition (`sequence` in
+  `bin/*-project-definitions.mjs`); the rest derive it from their chord order.
+  Each note targets the matching grid row, and the pattern plays with the
+  global tempo. A "Trigger
   pattern" dropdown fills the sequencer with ready-made patterns expressed as
   trigger numbers (ascending 1-7, descending 7-1, ii–V–I as 1-2-3 with the I
   held for two bars, I–V–vi–IV as 1-5-6-4, up-and-down), since progressions in

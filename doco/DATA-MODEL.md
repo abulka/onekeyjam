@@ -34,7 +34,7 @@ There are two closely related project shapes:
 | `chords` | `ChordConfig[]` | yes | the chord configs |
 | `options` | `ProjectOptions` | no | per-project overrides: `keyboard`, `key`, `soloMode` |
 | `songs` | `Songs` | no | chord configs grouped by song |
-| `chordSequences` | `{ [name]: ChordSequence }` | no | sequencer patterns |
+| `chordSequences` | `{ [name]: ChordSequence }` | no | sequencer patterns; generated songs store a demo loop in `default` following the song rhythm (repeats reuse rows, with half bars and holds), plus `markstart`, `markend`, `tempo`, `enabled` and `loopManual` |
 
 Minimal example:
 

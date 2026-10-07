@@ -39,33 +39,6 @@
     },
     {
       "id": 5,
-      "name": "Fmaj7",
-      "chord": "Fmaj7",
-      "bass": "F2",
-      "scale1": "F major",
-      "scale2": "F lydian",
-      "scale3": "F harmonic major"
-    },
-    {
-      "id": 6,
-      "name": "Gb7",
-      "chord": "Gb7",
-      "bass": "Gb2",
-      "scale1": "Gb lydian dominant",
-      "scale2": "Gb mixolydian",
-      "scale3": "Gb mixolydian b6"
-    },
-    {
-      "id": 7,
-      "name": "Fmaj7",
-      "chord": "Fmaj7",
-      "bass": "F2",
-      "scale1": "F major",
-      "scale2": "F lydian",
-      "scale3": "F harmonic major"
-    },
-    {
-      "id": 8,
       "name": "Fm7",
       "chord": "Fm7",
       "bass": "F2",
@@ -94,22 +67,26 @@
         2,
         3,
         4,
-        5,
-        6,
-        7,
-        8
+        5
       ],
       "favourites": [
         1,
         2,
         3,
         4,
-        5,
-        6,
-        7,
-        8
+        5
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1e1f1c1f1c1g1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

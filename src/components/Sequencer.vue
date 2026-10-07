@@ -11,6 +11,7 @@ import { clearPendingChordState } from "@/lib/midi/play-chord.js"
 import { auditionMidiNote, auditionChord, broadcastLiveNote } from '@/lib/midi/audition-note.js'
 import { commitTakeEdit } from '@/lib/midi/recorder.js'
 import { patternToTakeNotes } from '@/lib/sequencer-notes.js'
+import { triggerRowCountFor } from '@/lib/demo-pattern.js'
 import PianoRollPanel from './PianoRollPanel.vue'
 
 // The pattern sequencer. Renders on the shared PianoRollPanel. The pattern is
@@ -87,13 +88,19 @@ function scheduleLiveNote(midi, startSec, endSec) {
 // row the sequencer maps it to: row = midi - rowOffset.
 const rowOffset = computed(() => 12 * globals.keyboard.lhTriggerOctave + 12 - 60)
 
-// The seven white trigger keys of the chord-trigger octave (C..B). Notes may
-// only be entered on these rows, whether or not a chord is assigned yet.
-const TRIGGER_POSITIONS = 7
+// The white trigger keys starting in the chord-trigger octave (C..B) and
+// continuing into higher octaves when more chords are assigned. Notes may only
+// be entered on these rows, whether or not a chord is assigned yet. Small
+// songs keep seven rows so there is room to grow; larger songs extend rather
+// than dropping chords.
+const triggerRowCount = computed(() => {
+  const allocated = globals.chordTriggerMap ? Object.keys(globals.chordTriggerMap).length : 0
+  return triggerRowCountFor(allocated)
+})
 const triggerRowsInfo = computed(() => {
   const info = []
   const off = rowOffset.value
-  for (let i = 0; i < TRIGGER_POSITIONS; i++) {
+  for (let i = 0; i < triggerRowCount.value; i++) {
     const note = resolveTriggerNote(indexToWhiteNote(i))
     const midi = TonalNote.midi(note)
     if (typeof midi !== 'number')

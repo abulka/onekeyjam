@@ -21,57 +21,12 @@
     },
     {
       "id": 3,
-      "name": "F7",
-      "chord": "F7",
-      "bass": "F2",
-      "scale1": "F mixolydian",
-      "scale2": "F lydian dominant",
-      "scale3": "F mixolydian b6"
-    },
-    {
-      "id": 4,
-      "name": "F7",
-      "chord": "F7",
-      "bass": "F2",
-      "scale1": "F mixolydian",
-      "scale2": "F lydian dominant",
-      "scale3": "F mixolydian b6"
-    },
-    {
-      "id": 5,
-      "name": "Bb7",
-      "chord": "Bb7",
-      "bass": "Bb2",
-      "scale1": "Bb mixolydian",
-      "scale2": "Bb lydian dominant",
-      "scale3": "Bb mixolydian b6"
-    },
-    {
-      "id": 6,
-      "name": "Bb7",
-      "chord": "Bb7",
-      "bass": "Bb2",
-      "scale1": "Bb mixolydian",
-      "scale2": "Bb lydian dominant",
-      "scale3": "Bb mixolydian b6"
-    },
-    {
-      "id": 7,
-      "name": "F7",
-      "chord": "F7",
-      "bass": "F2",
-      "scale1": "F mixolydian",
-      "scale2": "F lydian dominant",
-      "scale3": "F mixolydian b6"
-    },
-    {
-      "id": 8,
-      "name": "F7",
-      "chord": "F7",
-      "bass": "F2",
-      "scale1": "F mixolydian",
-      "scale2": "F lydian dominant",
-      "scale3": "F mixolydian b6"
+      "name": "C7",
+      "chord": "C7",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C lydian dominant",
+      "scale3": "C mixolydian b6"
     }
   ],
   "options": {
@@ -92,24 +47,24 @@
       "ids": [
         1,
         2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
+        3
       ],
       "favourites": [
         1,
         2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
+        3
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1c1c1d1d1c1c1e1d1c1e1",
+      "markstart": 0,
+      "markend": 192,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

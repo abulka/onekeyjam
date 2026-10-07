@@ -36,42 +36,6 @@
       "scale1": "D major",
       "scale2": "D mixolydian",
       "scale3": "D lydian"
-    },
-    {
-      "id": 5,
-      "name": "Gm",
-      "chord": "Gm",
-      "bass": "G2",
-      "scale1": "G aeolian",
-      "scale2": "G minor pentatonic",
-      "scale3": "G dorian"
-    },
-    {
-      "id": 6,
-      "name": "F",
-      "chord": "F",
-      "bass": "F2",
-      "scale1": "F mixolydian",
-      "scale2": "F major",
-      "scale3": "F major pentatonic"
-    },
-    {
-      "id": 7,
-      "name": "Eb",
-      "chord": "Eb",
-      "bass": "Eb2",
-      "scale1": "Eb lydian",
-      "scale2": "Eb major",
-      "scale3": "Eb major pentatonic"
-    },
-    {
-      "id": 8,
-      "name": "D",
-      "chord": "D",
-      "bass": "D2",
-      "scale1": "D major",
-      "scale2": "D mixolydian",
-      "scale3": "D lydian"
     }
   ],
   "options": {
@@ -93,23 +57,25 @@
         1,
         2,
         3,
-        4,
-        5,
-        6,
-        7,
-        8
+        4
       ],
       "favourites": [
         1,
         2,
         3,
-        4,
-        5,
-        6,
-        7,
-        8
+        4
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1e1f1c1d1e1f1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

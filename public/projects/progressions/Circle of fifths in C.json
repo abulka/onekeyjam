@@ -45,33 +45,6 @@
       "scale1": "E dorian",
       "scale2": "E aeolian",
       "scale3": "E minor pentatonic"
-    },
-    {
-      "id": 6,
-      "name": "Am7",
-      "chord": "Am7",
-      "bass": "A2",
-      "scale1": "A dorian",
-      "scale2": "A aeolian",
-      "scale3": "A minor pentatonic"
-    },
-    {
-      "id": 7,
-      "name": "Dm7",
-      "chord": "Dm7",
-      "bass": "D2",
-      "scale1": "D dorian",
-      "scale2": "D aeolian",
-      "scale3": "D minor pentatonic"
-    },
-    {
-      "id": 8,
-      "name": "G7",
-      "chord": "G7",
-      "bass": "G2",
-      "scale1": "G mixolydian",
-      "scale2": "G lydian dominant",
-      "scale3": "G mixolydian b6"
     }
   ],
   "options": {
@@ -94,22 +67,26 @@
         2,
         3,
         4,
-        5,
-        6,
-        7,
-        8
+        5
       ],
       "favourites": [
         1,
         2,
         3,
         4,
-        5,
-        6,
-        7,
-        8
+        5
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1e1f1g1d1e1f1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

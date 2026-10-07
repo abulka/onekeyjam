@@ -21,57 +21,12 @@
     },
     {
       "id": 3,
-      "name": "G7",
-      "chord": "G7",
-      "bass": "G2",
-      "scale1": "G mixolydian",
-      "scale2": "G lydian dominant",
-      "scale3": "G mixolydian b6"
-    },
-    {
-      "id": 4,
-      "name": "G7",
-      "chord": "G7",
-      "bass": "G2",
-      "scale1": "G mixolydian",
-      "scale2": "G lydian dominant",
-      "scale3": "G mixolydian b6"
-    },
-    {
-      "id": 5,
-      "name": "C7",
-      "chord": "C7",
-      "bass": "C2",
-      "scale1": "C mixolydian",
-      "scale2": "C lydian dominant",
-      "scale3": "C mixolydian b6"
-    },
-    {
-      "id": 6,
-      "name": "C7",
-      "chord": "C7",
-      "bass": "C2",
-      "scale1": "C mixolydian",
-      "scale2": "C lydian dominant",
-      "scale3": "C mixolydian b6"
-    },
-    {
-      "id": 7,
-      "name": "G7",
-      "chord": "G7",
-      "bass": "G2",
-      "scale1": "G mixolydian",
-      "scale2": "G lydian dominant",
-      "scale3": "G mixolydian b6"
-    },
-    {
-      "id": 8,
-      "name": "G7",
-      "chord": "G7",
-      "bass": "G2",
-      "scale1": "G mixolydian",
-      "scale2": "G lydian dominant",
-      "scale3": "G mixolydian b6"
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6"
     }
   ],
   "options": {
@@ -92,24 +47,24 @@
       "ids": [
         1,
         2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
+        3
       ],
       "favourites": [
         1,
         2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
+        3
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1c1c1d1d1c1c1e1d1c1e1",
+      "markstart": 0,
+      "markend": 192,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

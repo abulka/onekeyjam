@@ -30,30 +30,12 @@
     },
     {
       "id": 4,
-      "name": "Dm7b5",
-      "chord": "Dm7b5",
-      "bass": "D2",
-      "scale1": "D locrian #2",
-      "scale2": "D locrian",
-      "scale3": "D minor blues"
-    },
-    {
-      "id": 5,
       "name": "G7b9",
       "chord": "G7b9",
       "bass": "G2",
       "scale1": "G phrygian dominant",
       "scale2": "G half-whole diminished",
       "scale3": "G altered"
-    },
-    {
-      "id": 6,
-      "name": "Cm7",
-      "chord": "Cm7",
-      "bass": "C2",
-      "scale1": "C dorian",
-      "scale2": "C aeolian",
-      "scale3": "C minor pentatonic"
     }
   ],
   "options": {
@@ -75,19 +57,25 @@
         1,
         2,
         3,
-        4,
-        5,
-        6
+        4
       ],
       "favourites": [
         1,
         2,
         3,
-        4,
-        5,
-        6
+        4
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1e1c1f1e1",
+      "markstart": 0,
+      "markend": 96,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

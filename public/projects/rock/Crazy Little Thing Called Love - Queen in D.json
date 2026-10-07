@@ -30,15 +30,6 @@
     },
     {
       "id": 4,
-      "name": "G",
-      "chord": "G",
-      "bass": "G2",
-      "scale1": "G lydian",
-      "scale2": "G major",
-      "scale3": "G major pentatonic"
-    },
-    {
-      "id": 5,
       "name": "Bb",
       "chord": "Bb",
       "bass": "Bb2",
@@ -47,25 +38,7 @@
       "scale3": "Bb major pentatonic"
     },
     {
-      "id": 6,
-      "name": "C",
-      "chord": "C",
-      "bass": "C2",
-      "scale1": "C lydian",
-      "scale2": "C major",
-      "scale3": "C major pentatonic"
-    },
-    {
-      "id": 7,
-      "name": "D",
-      "chord": "D",
-      "bass": "D2",
-      "scale1": "D major",
-      "scale2": "D lydian",
-      "scale3": "D major pentatonic"
-    },
-    {
-      "id": 8,
+      "id": 5,
       "name": "A7",
       "chord": "A7",
       "bass": "A2",
@@ -94,22 +67,26 @@
         2,
         3,
         4,
-        5,
-        6,
-        7,
-        8
+        5
       ],
       "favourites": [
         1,
         2,
         3,
         4,
-        5,
-        6,
-        7,
-        8
+        5
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1e1d1f1e1c1g1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

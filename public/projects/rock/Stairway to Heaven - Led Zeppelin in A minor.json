@@ -48,24 +48,6 @@
     },
     {
       "id": 6,
-      "name": "G",
-      "chord": "G",
-      "bass": "G2",
-      "scale1": "G mixolydian",
-      "scale2": "G major",
-      "scale3": "G major pentatonic"
-    },
-    {
-      "id": 7,
-      "name": "Am",
-      "chord": "Am",
-      "bass": "A2",
-      "scale1": "A aeolian",
-      "scale2": "A minor pentatonic",
-      "scale3": "A dorian"
-    },
-    {
-      "id": 8,
       "name": "E7",
       "chord": "E7",
       "bass": "E2",
@@ -95,9 +77,7 @@
         3,
         4,
         5,
-        6,
-        7,
-        8
+        6
       ],
       "favourites": [
         1,
@@ -105,11 +85,19 @@
         3,
         4,
         5,
-        6,
-        7,
-        8
+        6
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1e1f1g1d1c1a1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

@@ -30,15 +30,6 @@
     },
     {
       "id": 4,
-      "name": "Dm7",
-      "chord": "Dm7",
-      "bass": "D2",
-      "scale1": "D dorian",
-      "scale2": "D aeolian",
-      "scale3": "D minor pentatonic"
-    },
-    {
-      "id": 5,
       "name": "Gm7",
       "chord": "Gm7",
       "bass": "G2",
@@ -47,7 +38,7 @@
       "scale3": "G minor pentatonic"
     },
     {
-      "id": 6,
+      "id": 5,
       "name": "C7",
       "chord": "C7",
       "bass": "C2",
@@ -56,7 +47,7 @@
       "scale3": "C mixolydian b6"
     },
     {
-      "id": 7,
+      "id": 6,
       "name": "Fmaj7",
       "chord": "Fmaj7",
       "bass": "F2",
@@ -65,7 +56,7 @@
       "scale3": "F harmonic major"
     },
     {
-      "id": 8,
+      "id": 7,
       "name": "Bbmaj7",
       "chord": "Bbmaj7",
       "bass": "Bb2",
@@ -96,8 +87,7 @@
         4,
         5,
         6,
-        7,
-        8
+        7
       ],
       "favourites": [
         1,
@@ -106,10 +96,19 @@
         4,
         5,
         6,
-        7,
-        8
+        7
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1e1&e1f1g1a1b1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

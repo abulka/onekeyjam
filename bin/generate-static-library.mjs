@@ -5,12 +5,29 @@ import { fileURLToPath } from 'node:url'
 import * as Tonal from '@tonaljs/tonal'
 import { chordScaleNamesFor } from '../src/lib/chordScaleEngine.js'
 import { sanitizeFilename } from '../src/lib/filename.js'
+import { demoEntryForTriggers, planDemoPattern } from '../src/lib/demo-pattern.js'
 
 /*
  * Shared helper for the generated static project libraries (classic,
  * progressions, rock). Each progression becomes a project with standard
  * voicings (via the chord symbol, which the app expands on load), an explicit
- * project key and colour, and key-aware engine-chosen scale1/2/3.
+ * project key and colour, key-aware engine-chosen scale1/2/3, and a demo chord
+ * playback pattern following the song's harmony rhythm. Repeats share a grid
+ * row, so the pattern points back at earlier triggers.
+ */
+
+/**
+ * A generated library entry. `chords` lists the grid rows; repeats are
+ * folded, so Blue Moon's eight bars use four rows. An optional `sequence`
+ * describes the demo loop as chord symbols with bar lengths; without one,
+ * every chord gets one bar in definition order with back to back repeats
+ * merged into holds.
+ * @typedef {object} StaticLibraryDefinition
+ * @property {string} name display name
+ * @property {string[]} chords chord symbols for the grid, in row order
+ * @property {Array<{chord: string, bars: number}>} [sequence] demo loop steps
+ * @property {{tonic:string, type:string, source:string}} [key] declared key
+ * @property {string} [colour] scale colour for the engine
  */
 
 export const root = fileURLToPath(new URL('..', import.meta.url))
@@ -19,7 +36,7 @@ export const root = fileURLToPath(new URL('..', import.meta.url))
  * Generate a static library folder from definitions. Stale JSON files that no
  * longer match a definition are removed, so moving entries between libraries
  * shrinks the old folder. Manifest files are left alone.
- * @param {Array<{name: string, chords: string[], key?: {tonic:string, type:string, source:string}, colour?: string}>} definitions
+ * @param {StaticLibraryDefinition[]} definitions
  * @param {string} outDirName folder under public/projects, e.g. 'classic'
  * @param {string} label human label for logging, e.g. 'classic'
  */
@@ -32,11 +49,27 @@ export function generateStaticLibrary(definitions, outDirName, label) {
     const expectedFiles = new Set()
 
     for (const definition of definitions) {
-        const chords = []
         const colour = definition.colour ?? 'jazz'
         let ok = true
-        for (let i = 0; i < definition.chords.length; i++) {
-            const symbol = definition.chords[i]
+        // Repeats share a grid row, so the rows are the unique symbols in
+        // first-appearance order and the demo loop points back at earlier
+        // triggers. Sequence symbols join the rows when they add new ones.
+        const { uniqueSymbols, triggers, missing } = planDemoPattern(definition)
+        if (definition.sequence) {
+            for (const step of definition.sequence) {
+                if (typeof step.bars !== 'number' || !(step.bars > 0)) {
+                    problems.push(`${definition.name}: sequence step for "${step.chord}" needs a positive bars value`)
+                    ok = false
+                }
+            }
+            for (const symbol of missing)
+                problems.push(`${definition.name}: sequence chord "${symbol}" is not a Tonal chord symbol`)
+            if (missing.length > 0)
+                ok = false
+        }
+        const chords = []
+        for (let i = 0; i < uniqueSymbols.length; i++) {
+            const symbol = uniqueSymbols[i]
             const chord = Tonal.Chord.get(symbol)
             if (chord.empty) {
                 problems.push(`${definition.name}: "${symbol}" is not a Tonal chord symbol`)
@@ -54,7 +87,15 @@ export function generateStaticLibrary(definitions, outDirName, label) {
                 scale3: scaleNames[2] ?? '',
             })
         }
-        if (!ok)
+        // Every trigger must land on an assigned row; definitions without a
+        // hand-authored sequence always satisfy this by construction.
+        for (const trigger of triggers) {
+            if (!(trigger.index >= 0 && trigger.index < chords.length)) {
+                problems.push(`${definition.name}: demo loop points at missing trigger ${trigger.index + 1}`)
+                ok = false
+            }
+        }
+        if (!ok || triggers.length === 0)
             continue
 
         const ids = chords.map((chord) => chord.id)
@@ -69,6 +110,9 @@ export function generateStaticLibrary(definitions, outDirName, label) {
             },
             songs: {
                 default: { ids, favourites: ids, blacklist: [] },
+            },
+            chordSequences: {
+                default: demoEntryForTriggers(triggers),
             },
         }
         // The project keeps its pretty display name; only the filename is

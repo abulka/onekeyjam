@@ -111,5 +111,15 @@
       ],
       "blacklist": []
     }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c2d2e2f2g2a2b2o5c2",
+      "markstart": 0,
+      "markend": 64,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
+    }
   }
 }

@@ -57,15 +57,6 @@
     },
     {
       "id": 7,
-      "name": "Ebmaj7",
-      "chord": "Ebmaj7",
-      "bass": "Eb2",
-      "scale1": "Eb major",
-      "scale2": "Eb lydian",
-      "scale3": "Eb harmonic major"
-    },
-    {
-      "id": 8,
       "name": "Cm7",
       "chord": "Cm7",
       "bass": "C2",
@@ -96,8 +87,7 @@
         4,
         5,
         6,
-        7,
-        8
+        7
       ],
       "favourites": [
         1,
@@ -106,10 +96,19 @@
         4,
         5,
         6,
-        7,
-        8
+        7
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1e1f1g1a1c1b1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

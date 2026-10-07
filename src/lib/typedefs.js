@@ -73,10 +73,15 @@
 /** @typedef {Object.<string, Song>} Songs */
 
 /**
- * A sequencer pattern stored with a project.
+ * A sequencer pattern stored with a project. Each note sits on a white
+ * trigger row (one bar per chord in generated songs) and sounds that trigger.
  * @typedef {object} ChordSequence
  * @property {string} mml Music Macro Language string
- * @property {number} tempo
+ * @property {number} tempo stored tempo; playback follows the global BPM
+ * @property {number} [markstart] loop start in panel ticks
+ * @property {number} [markend] loop end in panel ticks
+ * @property {boolean} [enabled] loop the pattern while recording a solo
+ * @property {boolean} [loopManual] true once the loop markers were dragged by hand
  */
 
 /**

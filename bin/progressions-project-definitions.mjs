@@ -38,7 +38,7 @@ function key(tonic, type) {
     return { tonic, type, source: 'user' }
 }
 
-/** @type {Array<{name: string, chords: string[], key?: {tonic:string, type:string, source:string}, colour?: string}>} */
+/** @type {Array<{name: string, chords: string[], sequence?: Array<{chord: string, bars: number}>, key?: {tonic:string, type:string, source:string}, colour?: string}>} */
 export const DEFINITIONS = [
     // ii-V-I in every major key
     ...MAJOR_KEYS.map(k => ({ name: `ii-V-I in ${k} major`, chords: majorTwoFiveOne(k), key: key(k, 'major') })),
@@ -54,10 +54,22 @@ export const DEFINITIONS = [
         const s = majorNotes(k)
         return { name: `50s doo-wop in ${k}`, chords: [`${s[0]}maj7`, `${s[5]}m7`, `${s[3]}maj7`, `${s[4]}7`], key: key(k, 'major') }
     }),
-    // 12-bar blues quick change (first eight bars)
+    // Full 12-bar blues quick change: I IV I I / IV IV I I / V IV I V.
+    // Each bar re-strikes its chord, keeping the barlines clear.
     ...['C', 'F', 'Bb', 'Eb', 'G'].map(k => {
-        const four = majorNotes(k)[3]
-        return { name: `12-bar blues in ${k}`, chords: [`${k}7`, `${four}7`, `${k}7`, `${k}7`, `${four}7`, `${four}7`, `${k}7`, `${k}7`], key: key(k, 'major') }
+        const degrees = majorNotes(k)
+        const one = `${k}7`, four = `${degrees[3]}7`, five = `${degrees[4]}7`
+        const at = (chord, bars = 1) => ({ chord, bars })
+        return {
+            name: `12-bar blues in ${k}`,
+            chords: [one, four, five],
+            sequence: [
+                at(one), at(four), at(one), at(one),
+                at(four), at(four), at(one), at(one),
+                at(five), at(four), at(one), at(five),
+            ],
+            key: key(k, 'major'),
+        }
     }),
     // Classic tutorials
     { name: 'Andalusian cadence in A minor', chords: ['Am', 'G', 'F', 'E7'], key: key('A', 'minor') },

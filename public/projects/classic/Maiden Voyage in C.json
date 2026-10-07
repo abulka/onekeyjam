@@ -12,60 +12,6 @@
     },
     {
       "id": 2,
-      "name": "Cmaj7",
-      "chord": "Cmaj7",
-      "bass": "C2",
-      "scale1": "C major",
-      "scale2": "C lydian",
-      "scale3": "C harmonic major"
-    },
-    {
-      "id": 3,
-      "name": "Cmaj7",
-      "chord": "Cmaj7",
-      "bass": "C2",
-      "scale1": "C major",
-      "scale2": "C lydian",
-      "scale3": "C harmonic major"
-    },
-    {
-      "id": 4,
-      "name": "Cmaj7",
-      "chord": "Cmaj7",
-      "bass": "C2",
-      "scale1": "C major",
-      "scale2": "C lydian",
-      "scale3": "C harmonic major"
-    },
-    {
-      "id": 5,
-      "name": "Dbmaj7",
-      "chord": "Dbmaj7",
-      "bass": "Db2",
-      "scale1": "Db major",
-      "scale2": "Db lydian",
-      "scale3": "Db harmonic major"
-    },
-    {
-      "id": 6,
-      "name": "Dbmaj7",
-      "chord": "Dbmaj7",
-      "bass": "Db2",
-      "scale1": "Db major",
-      "scale2": "Db lydian",
-      "scale3": "Db harmonic major"
-    },
-    {
-      "id": 7,
-      "name": "Dbmaj7",
-      "chord": "Dbmaj7",
-      "bass": "Db2",
-      "scale1": "Db major",
-      "scale2": "Db lydian",
-      "scale3": "Db harmonic major"
-    },
-    {
-      "id": 8,
       "name": "Dbmaj7",
       "chord": "Dbmaj7",
       "bass": "Db2",
@@ -91,25 +37,23 @@
     "default": {
       "ids": [
         1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
+        2
       ],
       "favourites": [
         1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
+        2
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1&c1&c1&c1d1&d1&d1&d1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

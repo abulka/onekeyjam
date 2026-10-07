@@ -39,24 +39,6 @@
     },
     {
       "id": 5,
-      "name": "Cm",
-      "chord": "Cm",
-      "bass": "C2",
-      "scale1": "C aeolian",
-      "scale2": "C minor pentatonic",
-      "scale3": "C dorian"
-    },
-    {
-      "id": 6,
-      "name": "Ab",
-      "chord": "Ab",
-      "bass": "Ab2",
-      "scale1": "Ab lydian",
-      "scale2": "Ab major",
-      "scale3": "Ab major pentatonic"
-    },
-    {
-      "id": 7,
       "name": "Fm",
       "chord": "Fm",
       "bass": "F2",
@@ -65,7 +47,7 @@
       "scale3": "F aeolian"
     },
     {
-      "id": 8,
+      "id": 6,
       "name": "G7",
       "chord": "G7",
       "bass": "G2",
@@ -95,9 +77,7 @@
         3,
         4,
         5,
-        6,
-        7,
-        8
+        6
       ],
       "favourites": [
         1,
@@ -105,11 +85,19 @@
         3,
         4,
         5,
-        6,
-        7,
-        8
+        6
       ],
       "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t120o4c1d1e1f1c1d1g1a1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 120,
+      "enabled": false,
+      "loopManual": false
     }
   }
 }

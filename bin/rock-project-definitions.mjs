@@ -15,7 +15,7 @@ function key(tonic, type) {
     return { tonic, type, source: 'user' }
 }
 
-/** @type {Array<{name: string, chords: string[], key?: {tonic:string, type:string, source:string}, colour?: string}>} */
+/** @type {Array<{name: string, chords: string[], sequence?: Array<{chord: string, bars: number}>, key?: {tonic:string, type:string, source:string}, colour?: string}>} */
 export const DEFINITIONS = [
     // Progressive rock and Pink Floyd
     { name: 'Wish You Were Here - Pink Floyd in G', chords: ['Em7', 'G', 'A7sus4', 'G', 'C', 'D', 'Am', 'G'], key: key('G', 'major'), colour: 'diatonic' },

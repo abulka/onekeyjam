@@ -9,11 +9,14 @@ sample solos. Every control, setting and scale-policy detail lives on the
 ## Quick start
 
 1. Click **DEMO** in the menu bar, or load a project from the **File** menu, or
-   click **Random project**.
+   click **Random project**. Classic, rock and progression songs each include a
+   demo loop in the pattern sequencer, so you can press play there to hear the
+   song before you solo over it.
 2. On a MIDI keyboard, play the white keys in the left-hand trigger octave
    (C D E F G A B, C3 to B3 by default). Each one triggers a whole chord. On the
    computer keyboard those keys are `z x c v b n m`; click the on-screen keyboard
-   once first so it has focus.
+   once first so it has focus. Songs with more than seven chords continue into
+   the next octave.
 3. Play the white keys to the right for the solo (from C4 upwards by default, or
    `q w e r t y u` on the computer keyboard). They are filtered into a scale that
    fits the current chord, so you cannot play a wrong note. An external MIDI
@@ -42,7 +45,7 @@ matching computer keys.
 
 | Control | MIDI keyboard | Computer keyboard |
 |---|---|---|
-| Trigger a chord | white keys in the trigger octave, C D E F G A B (C3-B3 by default) | `z x c v b n m` |
+| Trigger a chord | white keys from the trigger octave upwards, C D E F G A B then the next octave for chords 8-14 (C3-B3 by default) | `z x c v b n m`, then `, . /` and `q w e r …` for higher triggers |
 | Solo note | white keys from the jam octave upwards (C4 by default) | `q w e r t y u` |
 | Scale filter 1 | `C#` in the jam octave and above | `1` |
 | Scale filter 2 | `D#` in the jam octave and above | `2` |
