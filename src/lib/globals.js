@@ -43,6 +43,10 @@ export const globals = reactive({
     // Which named chord sequence (excerpt, full form, ...) the sequencer is
     // showing. Kept across a refresh by the current-project snapshot.
     currentChordSequenceName: 'default',
+    // The user's last explicit sequence choice. Remembered across songs, so a
+    // later song that has that mode opens on it again even after songs that do
+    // not offer it (which fall back to `default` without losing the preference).
+    preferredChordSequenceName: 'default',
     // Recent chord triggers and the scale each sounded, newest last. Bounded by
     // autoScale.js. Used by the follow and shuffle scale policies.
     chordHistory: [],

@@ -69,7 +69,11 @@ export const sequencerControl = reactive({
             call('selectSequence', name)
             return
         }
-        if (!name || name === globals.currentChordSequenceName)
+        if (!name)
+            return
+        // Remember the choice even when the current song falls back to another.
+        globals.preferredChordSequenceName = name
+        if (name === globals.currentChordSequenceName)
             return
         const wasPlaying = playerIsPlaying()
         playerStop()
@@ -100,12 +104,15 @@ export function unregisterSequencer() {
 }
 
 // Keep the fallback transport's state in step with the project when no
-// Sequencer component is mounted.
+// Sequencer component is mounted, resolving the shown sequence from the
+// remembered preference.
 watch(
-    () => [globals.project.chordSequences, globals.currentChordSequenceName],
+    () => [globals.project.chordSequences, globals.preferredChordSequenceName],
     () => {
-        if (!current)
+        if (!current) {
+            globals.currentChordSequenceName = resolveSequenceName(globals.preferredChordSequenceName)
             syncFromPlayer()
+        }
     },
     { deep: true },
 )
@@ -114,10 +121,12 @@ watch(
 // keep sounding while the new one loads.
 if (typeof document !== 'undefined') {
     document.addEventListener('project-loaded', () => {
-        if (!current && playerIsPlaying())
-            playerStop()
-        if (!current)
+        if (!current) {
+            globals.currentChordSequenceName = resolveSequenceName(globals.preferredChordSequenceName)
+            if (playerIsPlaying())
+                playerStop()
             syncFromPlayer()
+        }
     })
 }
 

@@ -281,7 +281,9 @@ async function loadPatternFromProject() {
   clearTimeout(saveTimer)
   suppressProjectSave = true
   try {
-    const name = resolveSequenceName(globals.currentChordSequenceName)
+    // Resolve from the remembered preference, so a song without that mode falls
+    // back without losing the preference for the next song that has it.
+    const name = resolveSequenceName(globals.preferredChordSequenceName)
     globals.currentChordSequenceName = name
     const entry = getSequenceEntry(name)
     migrateDevicePattern(entry)
@@ -299,7 +301,12 @@ async function loadPatternFromProject() {
 
 /** Switch to another named sequence, saving the current one first. */
 async function selectSequence(name) {
-  if (!name || name === globals.currentChordSequenceName)
+  if (!name)
+    return
+  // An explicit choice becomes the remembered preference, so it is restored on
+  // the next song that offers it.
+  globals.preferredChordSequenceName = name
+  if (name === globals.currentChordSequenceName)
     return
   saveProjectPatternNow()
   globals.currentChordSequenceName = name

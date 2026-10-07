@@ -336,10 +336,12 @@ one sustained note. The blues entries run the full twelve bar quick change.
 Most standards and blues offer more than one version. A "Song sequence" picker,
 in the Pattern Sequencer panel and in the second-level menu bar, switches
 between the short excerpt, a middle section and the full form. The chosen
-version is remembered when you load another song. The full form only adds the
-distinct chords it introduces, so the grid grows just enough to cover them. The
-menu bar also has a Play/Stop button, so the pattern can be started from the
-Edit, Perform or Settings page without opening the panel.
+version is remembered as your preference: loading a song that lacks it falls
+back to the excerpt without losing the choice, and the next song that offers it
+opens on it again. The full form only adds the distinct chords it introduces,
+so the grid grows just enough to cover them. The menu bar also has a Play/Stop
+button, so the pattern can be started from the Edit, Perform or Settings page
+without opening the panel.
 
 Loading a song also sets the global tempo to the selected sequence's tempo, so
 each tune plays at its own speed. Turning the tempo knob afterwards still works

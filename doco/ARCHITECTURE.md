@@ -309,9 +309,11 @@ and the validation commands.
   registers its actions on mount, and on other pages the controller falls back
   to a headless player (`src/lib/pattern-player.js`) that owns an off-screen
   `webaudio-pianoroll` and reuses the same per-note callback
-  (`src/lib/pattern-playback.js`). The selected sequence name is remembered
-  across song loads and refreshes (`globals.currentChordSequenceName`), falling
-  back to the excerpt when a song has no such sequence.
+  (`src/lib/pattern-playback.js`). The selected sequence name is remembered as a
+  preference (`globals.preferredChordSequenceName`): a song that lacks that mode
+  shows its `default` (`globals.currentChordSequenceName`) without losing the
+  preference, so the next song that offers it opens on it again. Both are kept
+  across a refresh by the current-project snapshot.
 - Both sequencer panels (`PianoRollPanel.vue`) can be panned and zoomed with a
   mouse or trackpad: two-finger/wheel scrolling pans (Shift+wheel pans the time
   axis), while Ctrl/Cmd+wheel or a trackpad pinch zooms and holds the point

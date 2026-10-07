@@ -40,6 +40,7 @@ describe('current project store', () => {
             currentChordTriggerNote: 'C3',
             currentScaleFilter: 'scale2',
             currentChordSequenceName: 'full',
+            preferredChordSequenceName: 'full',
             maxChordConfigs: 14,
             project: emptyProject('My Jam'),
         }
@@ -51,6 +52,7 @@ describe('current project store', () => {
         assert.equal(loaded.currentChordTriggerNote, 'C3')
         assert.equal(loaded.currentScaleFilter, 'scale2')
         assert.equal(loaded.currentChordSequenceName, 'full')
+        assert.equal(loaded.preferredChordSequenceName, 'full')
         assert.equal(loaded.maxChordConfigs, 14)
         assert.deepEqual(loaded.project, record.project)
     })
@@ -107,6 +109,7 @@ describe('current project store', () => {
         globals.currentChordTriggerNote = 'E3'
         globals.currentScaleFilter = 'scale3'
         globals.currentChordSequenceName = 'medium'
+        globals.preferredChordSequenceName = 'medium'
         globals.maxChordConfigs = 21
 
         saveCurrentProject(storage)
@@ -118,6 +121,7 @@ describe('current project store', () => {
         globals.currentChordTriggerNote = undefined
         globals.currentScaleFilter = 'scale1'
         globals.currentChordSequenceName = 'default'
+        globals.preferredChordSequenceName = 'default'
         globals.maxChordConfigs = 7
 
         assert.equal(restoreCurrentProject(storage), true)
@@ -128,6 +132,7 @@ describe('current project store', () => {
         assert.equal(globals.currentChordTriggerNote, 'E3')
         assert.equal(globals.currentScaleFilter, 'scale3')
         assert.equal(globals.currentChordSequenceName, 'medium')
+        assert.equal(globals.preferredChordSequenceName, 'medium')
         assert.equal(globals.maxChordConfigs, 21)
     })
 

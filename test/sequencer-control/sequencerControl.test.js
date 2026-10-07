@@ -1,4 +1,5 @@
 import assert from 'assert'
+import { nextTick } from 'vue'
 import { globals } from '@/lib/globals.js'
 import {
     sequencerControl,
@@ -113,16 +114,45 @@ describe('sequencerControl registration', () => {
     it('selects a sequence directly when no component is mounted', () => {
         const restore = withSequences({ default: { mml: 't120o4c1', tempo: 120 }, full: { mml: 't120o4c1d1', tempo: 96 } })
         const previousName = globals.currentChordSequenceName
+        const previousPreferred = globals.preferredChordSequenceName
         try {
             unregisterSequencer()
             globals.currentChordSequenceName = 'default'
+            globals.preferredChordSequenceName = 'default'
             sequencerControl.selectSequence('full')
             assert.equal(globals.currentChordSequenceName, 'full')
+            assert.equal(globals.preferredChordSequenceName, 'full')
             assert.equal(sequencerControl.hasNotes, true)
         }
         finally {
             globals.currentChordSequenceName = previousName
+            globals.preferredChordSequenceName = previousPreferred
             restore()
+        }
+    })
+
+    it('keeps the preferred sequence through a song without that mode', async () => {
+        const previousName = globals.currentChordSequenceName
+        const previousPreferred = globals.preferredChordSequenceName
+        const restoreFull = withSequences({ default: { mml: 'x' }, full: { mml: 'y' } })
+        try {
+            unregisterSequencer()
+            globals.currentChordSequenceName = 'default'
+            globals.preferredChordSequenceName = 'default'
+            sequencerControl.selectSequence('full')
+            assert.equal(globals.preferredChordSequenceName, 'full')
+
+            // A song with no full form resolves to default but keeps the preference.
+            restoreFull()
+            const restoreDefault = withSequences({ default: { mml: 'x' } })
+            await nextTick()
+            assert.equal(globals.currentChordSequenceName, 'default')
+            assert.equal(globals.preferredChordSequenceName, 'full')
+            restoreDefault()
+        }
+        finally {
+            globals.currentChordSequenceName = previousName
+            globals.preferredChordSequenceName = previousPreferred
         }
     })
 })
