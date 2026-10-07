@@ -308,7 +308,7 @@ function enforceAllowedRows(emitChange = true) {
   el.redraw()
   refreshContentBars()
   if (emitChange)
-    emit('change', { notes: getNotes() })
+    emit('change', { notes: getNotes(), origin: 'strip' })
   return true
 }
 
@@ -665,7 +665,7 @@ function onPointerUp() {
   changeTimer = setTimeout(() => {
     // MML is deliberately not computed here: it is only needed on demand and is
     // expensive (and used to loop on very short notes).
-    emit('change', { notes: getNotes() })
+    emit('change', { notes: getNotes(), origin: 'edit' })
   }, 0)
 }
 

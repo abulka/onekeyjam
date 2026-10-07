@@ -325,15 +325,15 @@ onUnmounted(() => {
   padding: 2px 8px;
   font-size: 0.9rem;
   line-height: 1;
-  color: #7a6547;
+  color: #2e8b57;
   background: rgba(255, 255, 255, 0.6);
-  border: 1px solid #b99b6b;
+  border: 1px solid #2e8b57;
   border-radius: 4px;
   cursor: pointer;
 }
 
 .sequencer-play-toggle:hover:not(:disabled) {
-  background: #fff;
+  background: #d8efdc;
 }
 
 .sequencer-play-toggle.playing {

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, onUnmounted, ref, watch } from 'vue'
 import { globals } from "@/lib/globals.js"
 import { Note as TonalNote } from '@tonaljs/tonal'
 import { indexToNote, indexToWhiteNote } from "@/lib/note-tools.js"
@@ -12,6 +12,7 @@ import { triggerRowCountFor } from '@/lib/demo-pattern.js'
 import { patternOnNote, clearPatternTimers, resetLiveCounts } from '@/lib/pattern-playback.js'
 import { noteSequencerStarted, noteSequencerStopped } from '@/lib/pattern-snapshot.js'
 import { sequencerControl, registerSequencer, unregisterSequencer, sequenceOptions, resolveSequenceName } from '@/lib/sequencer-control.js'
+import { storedMmlHasNotes, shouldPreserveStoredPattern, createSerialQueue } from '@/lib/pattern-write-guard.js'
 import { applyProjectTempo } from '@/lib/boot-project.js'
 import PianoRollPanel from './PianoRollPanel.vue'
 
@@ -39,6 +40,17 @@ let bpmRestartTimer = null
 // Set while a project's pattern is being loaded, so the edits that the load
 // itself produces (allowed-row stripping, loop fitting) are not written back.
 let suppressProjectSave = false
+// Set only by the Clear pattern button, the one deliberate route to saving an
+// empty panel over a stored sequence. See writeProjectPattern().
+let explicitClear = false
+// Note count of the last change the user made by hand (null until the first
+// load or edit). Deleting every note by hand reports zero, which is deliberate
+// and must still save; any other route to an empty panel is an accident and
+// the stored sequence is kept instead.
+let lastUserEditCount = null
+// Loads and their saves run strictly one at a time, so a save can never catch
+// a mid-load empty panel (which once wiped a stored sequence for good).
+const enqueueSequencerLoad = createSerialQueue()
 
 function refreshNoteCount() {
   noteCount.value = panel.value ? panel.value.getNotes().length : 0
@@ -49,10 +61,17 @@ function scheduleCountRefresh() {
   setTimeout(refreshNoteCount, 0)
 }
 
-function onPanelChange() {
+function onPanelChange(payload) {
   refreshNoteCount()
   if (suppressProjectSave)
     return
+  const { notes = [], origin = 'edit' } = payload || {}
+  if (origin === 'strip') {
+    // Programmatic row enforcement, not a user edit: update the counts but
+    // never write back, so a stale row set cannot prune the stored sequence.
+    return
+  }
+  lastUserEditCount = Array.isArray(notes) ? notes.length : 0
   // Keep the loop covering the notes unless the user has moved a marker.
   if (!loopManuallySet.value)
     fitLoopToNotes(false)
@@ -239,13 +258,43 @@ function getSequenceEntry(name) {
 function writeProjectPattern() {
   clearTimeout(saveTimer)
   const state = panelState()
-  const entry = getSequenceEntry(globals.currentChordSequenceName || 'default')
+  const name = globals.currentChordSequenceName || 'default'
+  const entry = getSequenceEntry(name)
+  const wasExplicitClear = explicitClear
+  explicitClear = false
+  const panelNoteCount = panel.value ? panel.value.getNotes().length : 0
+  if (shouldPreserveStoredPattern({
+    panelNoteCount,
+    storedMml: entry.mml,
+    explicitClear: wasExplicitClear,
+    lastUserEditCount,
+  })) {
+    // The panel is empty but the stored sequence is not, and the user did not
+    // empty it by hand: a save raced ahead of a load. Keep the stored notes.
+    console.warn(`Sequencer: refusing to overwrite the "${name}" pattern with an empty panel; the stored notes are kept.`)
+    if (typeof $ === 'function') {
+      $('body').toast({
+        message: `Kept the stored "${sequenceLabel(name)}" pattern instead of saving an empty panel.`,
+        displayTime: 4000,
+        class: 'brown',
+      })
+    }
+    return
+  }
   entry.mml = state.mml
   entry.markstart = state.markstart
   entry.markend = state.markend
   entry.tempo = state.tempo
   entry.enabled = state.enabled
   entry.loopManual = state.loopManual
+}
+
+/** Display label for a stored sequence, falling back to its key. */
+function sequenceLabel(name) {
+  const entry = globals.project && globals.project.chordSequences
+    ? globals.project.chordSequences[name]
+    : null
+  return (entry && entry.label) || name
 }
 
 function scheduleProjectPatternSave() {
@@ -290,6 +339,8 @@ function migrateDevicePattern(entry) {
 /** Load the current project's active chord sequence into the sequencer. */
 async function loadPatternFromProject() {
   clearTimeout(saveTimer)
+  if (!panel.value)
+    return
   suppressProjectSave = true
   try {
     // Resolve from the remembered preference, so a song without that mode falls
@@ -301,9 +352,27 @@ async function loadPatternFromProject() {
     await panel.value.setMML(entry.mml || '')
     applyLoadedLoop(entry.markstart, entry.markend, entry.loopManual)
     includeInRecording.value = !!entry.enabled
+    // The row whitelist can settle a tick after the project loads; a first
+    // pass with stale rows would show an empty panel, so retry once rather
+    // than presenting (and later saving) nothing.
+    let noteCount = panel.value.getNotes().length
+    if (storedMmlHasNotes(entry.mml) && noteCount === 0) {
+      await nextTick()
+      if (!panel.value)
+        return
+      await panel.value.setMML(entry.mml || '')
+      applyLoadedLoop(entry.markstart, entry.markend, entry.loopManual)
+      noteCount = panel.value.getNotes().length
+    }
+    if (storedMmlHasNotes(entry.mml) && noteCount === 0)
+      console.error(`Sequencer: the "${name}" pattern has stored notes but the panel stayed empty after a retry.`)
+    lastUserEditCount = noteCount
     scheduleCountRefresh()
     await panel.value.fitToNotes()
     applyProjectTempo(name)
+  }
+  catch (error) {
+    console.error('Sequencer: could not load the pattern from the project:', error)
   }
   finally {
     suppressProjectSave = false
@@ -311,25 +380,29 @@ async function loadPatternFromProject() {
 }
 
 /** Switch to another named sequence, saving the current one first. */
-async function selectSequence(name) {
+function selectSequence(name) {
   if (!name)
-    return
+    return Promise.resolve()
   // An explicit choice becomes the remembered preference, so it is restored on
   // the next song that offers it.
   globals.preferredChordSequenceName = name
-  if (name === globals.currentChordSequenceName)
-    return
-  saveProjectPatternNow()
-  globals.currentChordSequenceName = name
-  await loadPatternFromProject()
+  // Serialized with every other load, so the save below can never catch a
+  // mid-load empty panel. The current-sequence check runs again inside, after
+  // earlier queued work has finished.
+  return enqueueSequencerLoad(async () => {
+    if (name === globals.currentChordSequenceName)
+      return
+    saveProjectPatternNow()
+    await loadPatternFromProject()
+  })
 }
 
 function onSequenceChange(event) {
   selectSequence(event.target.value)
 }
 
-async function onProjectLoaded() {
-  await loadPatternFromProject()
+function onProjectLoaded() {
+  enqueueSequencerLoad(loadPatternFromProject)
 }
 
 // Ready-made trigger patterns. Each note is one bar long and sits on a white
@@ -413,7 +486,11 @@ async function clearPatternAndLoop() {
   await panel.value.setMML('')
   panel.value.setLoop(0, PANEL_TIMEBASE * DEFAULT_BARS)
   loopManuallySet.value = false
+  // Deliberately emptying the panel: let this one empty save through the
+  // write-back guard below.
+  explicitClear = true
   writeProjectPattern()
+  lastUserEditCount = 0
   scheduleCountRefresh()
 }
 
@@ -496,7 +573,7 @@ onMounted(async () => {
     stop: () => sequencerStop(),
     selectSequence,
   })
-  await loadPatternFromProject()
+  await enqueueSequencerLoad(loadPatternFromProject)
   document.addEventListener('project-loaded', onProjectLoaded)
   document.addEventListener('recording-started', onRecordingStarted)
   document.addEventListener('recording-stopped', onRecordingStopped)

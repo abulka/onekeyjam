@@ -252,9 +252,13 @@ and the validation commands.
   by name: a project may offer several (an excerpt, a middle section and a full
   form). The selected name is `globals.currentChordSequenceName`; a "Song
   sequence" picker in the panel and in the global toolbar switches between them,
-  saving the current one first. The patterns load whenever a project loads
+  saving the current one first, with switches serialized so a save can never
+  catch a mid-load empty panel. The patterns load whenever a project loads
   (`project-loaded`) and are written back on every edit, so they are kept by the
-  current-project autosave and travel with the project when it is saved. Notes
+  current-project autosave and travel with the project when it is saved. A
+  write-back that would replace stored notes with an empty panel is refused
+  (except via Clear pattern), so a load that has not populated yet cannot wipe
+  a sequence. Notes
   may only be entered on the white trigger rows,
   starting with the seven white keys of the chord-trigger octave (C–B) and
   continuing into higher octaves when more chords are assigned; every trigger
