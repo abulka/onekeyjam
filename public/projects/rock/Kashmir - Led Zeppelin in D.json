@@ -1,0 +1,115 @@
+{
+  "name": "Kashmir - Led Zeppelin in D",
+  "chords": [
+    {
+      "id": 1,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D major",
+      "scale2": "D lydian",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "G",
+      "chord": "G",
+      "bass": "G2",
+      "scale1": "G lydian",
+      "scale2": "G major",
+      "scale3": "G major pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D major",
+      "scale2": "D lydian",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 5,
+      "name": "Bb",
+      "chord": "Bb",
+      "bass": "Bb2",
+      "scale1": "Bb lydian",
+      "scale2": "Bb major",
+      "scale3": "Bb major pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C lydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D major",
+      "scale2": "D lydian",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D major",
+      "scale2": "D lydian",
+      "scale3": "D major pentatonic"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "D",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "diatonic"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "name": "Kid Charlemagne - Steely Dan in C minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "F7",
+      "chord": "F7",
+      "bass": "F2",
+      "scale1": "F mixolydian",
+      "scale2": "F lydian dominant",
+      "scale3": "F mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Bbm7",
+      "chord": "Bbm7",
+      "bass": "Bb2",
+      "scale1": "Bb dorian",
+      "scale2": "Bb aeolian",
+      "scale3": "Bb minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "Abmaj7",
+      "chord": "Abmaj7",
+      "bass": "Ab2",
+      "scale1": "Ab lydian",
+      "scale2": "Ab major",
+      "scale3": "Ab harmonic major"
+    },
+    {
+      "id": 6,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G phrygian dominant",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian"
+    },
+    {
+      "id": 7,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G phrygian dominant",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, useSlots } from 'vue'
 import { globals } from '@/lib/globals.js'
-import { newProject, loadUserProject, loadFeaturedProject, loadClassicProject } from '@/lib/boot-project'
+import { newProject, loadUserProject, loadFeaturedProject, loadClassicProject, loadProgressionProject, loadRockProject } from '@/lib/boot-project'
 import { saveProject, saveProjectAs, downloadProject, downloadMidiChords, downloadMidiChordsForChordMemoryTrigger, uploadProject } from '@/lib/projectSave.js'
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ComboProjectLibrary from '@/components/ComboProjectLibrary.vue'
@@ -18,6 +18,8 @@ const menuEl = ref(null)
 const tour = ref(null)
 const fileOpenComponent = ref()
 const fileOpenComponentClassic = ref()
+const fileOpenComponentProgressions = ref()
+const fileOpenComponentRock = ref()
 const fileOpenComponentUser = ref()
 const fileImportMidiDialog = ref()
 
@@ -76,6 +78,10 @@ function reloadCurrentProject() {
     loadUserProject()
   else if (category == 'classic')
     loadClassicProject()
+  else if (category == 'progressions')
+    loadProgressionProject()
+  else if (category == 'rock')
+    loadRockProject()
   else
     loadFeaturedProject()
 }
@@ -88,25 +94,63 @@ function fileOpenClassic() {
   fileOpenComponentClassic.value.fileOpen()
 }
 
+function fileOpenProgressions() {
+  fileOpenComponentProgressions.value.fileOpen()
+}
+
+function fileOpenRock() {
+  fileOpenComponentRock.value.fileOpen()
+}
+
 function fileOpenUser() {
   fileOpenComponentUser.value.fileOpen()
 }
 
 /**
- * Load a random project from the classic collection. Excludes the current
+ * Load a random project from a static collection. Excludes the current
  * project when there is more than one choice, so the dice always moves you.
  */
-function loadRandomClassicProject() {
-  const all = globals.projectLibrary.classicProjectNames
-  if (!all || all.length === 0) {
+function loadRandomFrom(names, label, load) {
+  if (!names || names.length === 0) {
     if (typeof $ === 'function')
-      $('body').toast({ message: 'Classic projects are still loading', displayTime: 1500, class: 'brown' })
+      $('body').toast({ message: `${label} are still loading`, displayTime: 1500, class: 'brown' })
+    return
+  }
+  const current = globals.projectLibrary.projectName
+  const candidates = names.length > 1 ? names.filter(name => name !== current) : names
+  const name = candidates[Math.floor(Math.random() * candidates.length)]
+  load(name)
+}
+
+/**
+ * Load a random song from the classic and rock collections. Excludes the
+ * current project when there is more than one choice, so the dice always
+ * moves you.
+ */
+function loadRandomClassicProject() {
+  const classic = globals.projectLibrary.classicProjectNames ?? []
+  const rock = globals.projectLibrary.rockProjectNames ?? []
+  const all = [...classic, ...rock]
+  if (all.length === 0) {
+    if (typeof $ === 'function')
+      $('body').toast({ message: 'Classic and rock projects are still loading', displayTime: 1500, class: 'brown' })
     return
   }
   const current = globals.projectLibrary.projectName
   const candidates = all.length > 1 ? all.filter(name => name !== current) : all
   const name = candidates[Math.floor(Math.random() * candidates.length)]
-  loadClassicProject(name)
+  if (rock.includes(name))
+    loadRockProject(name)
+  else
+    loadClassicProject(name)
+}
+
+/**
+ * Load a random progression from the progressions collection. Excludes the
+ * current project when there is more than one choice.
+ */
+function loadRandomProgressionProject() {
+  loadRandomFrom(globals.projectLibrary.progressionProjectNames, 'Progressions', loadProgressionProject)
 }
 
 function keyDownListener(e) {
@@ -126,6 +170,12 @@ function keyDownListener(e) {
   }
   if (e.code === 'KeyC' && e.altKey && !e.metaKey && !e.repeat) {
     fileOpenClassic()
+  }
+  if (e.code === 'KeyP' && e.altKey && !e.metaKey && !e.repeat) {
+    fileOpenProgressions()
+  }
+  if (e.code === 'KeyR' && e.altKey && !e.metaKey && !e.repeat) {
+    fileOpenRock()
   }
 }
 
@@ -164,6 +214,12 @@ onUnmounted(() => {
           <a class="item" @click="fileOpenClassic()"><i class="file icon"></i>
             <span class="description">alt + c</span>
             Open Classic...</a>
+          <a class="item" @click="fileOpenProgressions()"><i class="file icon"></i>
+            <span class="description">alt + p</span>
+            Open Progressions...</a>
+          <a class="item" @click="fileOpenRock()"><i class="file icon"></i>
+            <span class="description">alt + r</span>
+            Open Rock...</a>
           <a class="item" :class="{ disabled: !fileSaveAllowed }" @click="saveProject()">
             <span class="description">alt + s</span>
             <i class="save icon"></i>Save</a>
@@ -196,12 +252,16 @@ onUnmounted(() => {
       </div>
 
       <div class="right menu">
-        <a class="item" title="Load a random project from the classic collection"
+        <a class="item" title="Load a random song from the classic and rock collections"
           @click="loadRandomClassicProject()">🎲 Random project</a>
+        <a class="item" title="Load a random progression from the progressions collection"
+          @click="loadRandomProgressionProject()">🎲 Random progression</a>
         <a class="item" title="Load a demo project and get started" @click="loadDemoProject()">DEMO</a>
         <a class="item" @click="tutorial()">Start Tour 🧭</a>
         <ComboProjectLibrary ref="fileOpenComponent" userOrFeatured="featured" />
         <ComboProjectLibrary ref="fileOpenComponentClassic" userOrFeatured="classic" />
+        <ComboProjectLibrary ref="fileOpenComponentProgressions" userOrFeatured="progressions" />
+        <ComboProjectLibrary ref="fileOpenComponentRock" userOrFeatured="rock" />
         <ComboProjectLibrary ref="fileOpenComponentUser" userOrFeatured="user" />
       </div>
 

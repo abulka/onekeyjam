@@ -26,7 +26,10 @@
     "validate:data": "node bin/validate-data.mjs",
     "validate:scales": "node bin/check-project-scales.mjs",
     "regenerate:scales": "node bin/regenerate-project-scales.mjs",
-    "generate:classic": "node bin/generate-classic-projects.mjs"
+    "generate:classic": "node bin/generate-classic-projects.mjs",
+    "generate:progressions": "node bin/generate-progressions-projects.mjs",
+    "generate:rock": "node bin/generate-rock-projects.mjs",
+    "generate:libraries": "node bin/generate-classic-projects.mjs && node bin/generate-progressions-projects.mjs && node bin/generate-rock-projects.mjs"
   },
   "dependencies": {
     "@globalhive/vuejs-tour": "^3.0.1",

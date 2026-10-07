@@ -1,0 +1,115 @@
+{
+  "name": "Highway to Hell - ACDC in A",
+  "chords": [
+    {
+      "id": 1,
+      "name": "A",
+      "chord": "A",
+      "bass": "A2",
+      "scale1": "A major",
+      "scale2": "A lydian",
+      "scale3": "A major pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D lydian",
+      "scale2": "D major",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "G",
+      "chord": "G",
+      "bass": "G2",
+      "scale1": "G lydian",
+      "scale2": "G major",
+      "scale3": "G major pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D lydian",
+      "scale2": "D major",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 5,
+      "name": "A",
+      "chord": "A",
+      "bass": "A2",
+      "scale1": "A major",
+      "scale2": "A lydian",
+      "scale3": "A major pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D lydian",
+      "scale2": "D major",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "G",
+      "chord": "G",
+      "bass": "G2",
+      "scale1": "G lydian",
+      "scale2": "G major",
+      "scale3": "G major pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "E",
+      "chord": "E",
+      "bass": "E2",
+      "scale1": "E mixolydian",
+      "scale2": "E major",
+      "scale3": "E major pentatonic"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "A",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "diatonic"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

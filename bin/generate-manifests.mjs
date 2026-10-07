@@ -50,7 +50,7 @@ catch it here with a clear message instead.
 */
 function assertSafeFilenames() {
     const bad = []
-    for (const dir of ['projects/featured', 'projects/classic', 'keyboards']) {
+    for (const dir of ['projects/featured', 'projects/classic', 'projects/progressions', 'projects/rock', 'keyboards']) {
         const fullDir = path.join(root, 'public', dir)
         if (!fs.existsSync(fullDir))
             continue
@@ -75,6 +75,8 @@ assertSafeFilenames()
 
 const featured = makeManifest('projects/featured', '/projects/featured', { manifestFile: 'featured-manifest.json' })
 const classic = makeManifest('projects/classic', '/projects/classic', { manifestFile: 'classic-manifest.json', useJsonName: true })
+const progressions = makeManifest('projects/progressions', '/projects/progressions', { manifestFile: 'progressions-manifest.json', useJsonName: true })
+const rock = makeManifest('projects/rock', '/projects/rock', { manifestFile: 'rock-manifest.json', useJsonName: true })
 const keyboards = makeManifest('keyboards', '/keyboards', { useJsonName: true })
 
 fs.writeFileSync(
@@ -86,8 +88,16 @@ fs.writeFileSync(
     JSON.stringify(classic, null, 2)
 )
 fs.writeFileSync(
+    path.join(root, 'public', 'projects', 'progressions', 'progressions-manifest.json'),
+    JSON.stringify(progressions, null, 2)
+)
+fs.writeFileSync(
+    path.join(root, 'public', 'projects', 'rock', 'rock-manifest.json'),
+    JSON.stringify(rock, null, 2)
+)
+fs.writeFileSync(
     path.join(root, 'public', 'keyboards', 'keyboards-manifest.json'),
     JSON.stringify(keyboards, null, 2)
 )
 
-console.log(`Generated manifests: ${featured.length} featured projects, ${classic.length} classic projects, ${keyboards.length} keyboards`)
+console.log(`Generated manifests: ${featured.length} featured projects, ${classic.length} classic projects, ${progressions.length} progressions, ${rock.length} rock projects, ${keyboards.length} keyboards`)

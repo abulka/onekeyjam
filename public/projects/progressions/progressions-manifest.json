@@ -1,0 +1,237 @@
+[
+  {
+    "text": "12-bar blues in Bb",
+    "value": "/projects/progressions/12-bar%20blues%20in%20Bb.json",
+    "file": "12-bar blues in Bb.json"
+  },
+  {
+    "text": "12-bar blues in C",
+    "value": "/projects/progressions/12-bar%20blues%20in%20C.json",
+    "file": "12-bar blues in C.json"
+  },
+  {
+    "text": "12-bar blues in Eb",
+    "value": "/projects/progressions/12-bar%20blues%20in%20Eb.json",
+    "file": "12-bar blues in Eb.json"
+  },
+  {
+    "text": "12-bar blues in F",
+    "value": "/projects/progressions/12-bar%20blues%20in%20F.json",
+    "file": "12-bar blues in F.json"
+  },
+  {
+    "text": "12-bar blues in G",
+    "value": "/projects/progressions/12-bar%20blues%20in%20G.json",
+    "file": "12-bar blues in G.json"
+  },
+  {
+    "text": "50s doo-wop in C",
+    "value": "/projects/progressions/50s%20doo-wop%20in%20C.json",
+    "file": "50s doo-wop in C.json"
+  },
+  {
+    "text": "50s doo-wop in D",
+    "value": "/projects/progressions/50s%20doo-wop%20in%20D.json",
+    "file": "50s doo-wop in D.json"
+  },
+  {
+    "text": "50s doo-wop in F",
+    "value": "/projects/progressions/50s%20doo-wop%20in%20F.json",
+    "file": "50s doo-wop in F.json"
+  },
+  {
+    "text": "50s doo-wop in G",
+    "value": "/projects/progressions/50s%20doo-wop%20in%20G.json",
+    "file": "50s doo-wop in G.json"
+  },
+  {
+    "text": "Andalusian cadence in A minor",
+    "value": "/projects/progressions/Andalusian%20cadence%20in%20A%20minor.json",
+    "file": "Andalusian cadence in A minor.json"
+  },
+  {
+    "text": "Andalusian cadence in D minor",
+    "value": "/projects/progressions/Andalusian%20cadence%20in%20D%20minor.json",
+    "file": "Andalusian cadence in D minor.json"
+  },
+  {
+    "text": "Circle of fifths in C",
+    "value": "/projects/progressions/Circle%20of%20fifths%20in%20C.json",
+    "file": "Circle of fifths in C.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in Bb",
+    "value": "/projects/progressions/I-vi-ii-V%20turnaround%20in%20Bb.json",
+    "file": "I-vi-ii-V turnaround in Bb.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in C",
+    "value": "/projects/progressions/I-vi-ii-V%20turnaround%20in%20C.json",
+    "file": "I-vi-ii-V turnaround in C.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in D",
+    "value": "/projects/progressions/I-vi-ii-V%20turnaround%20in%20D.json",
+    "file": "I-vi-ii-V turnaround in D.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in Eb",
+    "value": "/projects/progressions/I-vi-ii-V%20turnaround%20in%20Eb.json",
+    "file": "I-vi-ii-V turnaround in Eb.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in F",
+    "value": "/projects/progressions/I-vi-ii-V%20turnaround%20in%20F.json",
+    "file": "I-vi-ii-V turnaround in F.json"
+  },
+  {
+    "text": "I-vi-ii-V turnaround in G",
+    "value": "/projects/progressions/I-vi-ii-V%20turnaround%20in%20G.json",
+    "file": "I-vi-ii-V turnaround in G.json"
+  },
+  {
+    "text": "ii-V-I in A major",
+    "value": "/projects/progressions/ii-V-I%20in%20A%20major.json",
+    "file": "ii-V-I in A major.json"
+  },
+  {
+    "text": "ii-V-i in A minor",
+    "value": "/projects/progressions/ii-V-i%20in%20A%20minor.json",
+    "file": "ii-V-i in A minor.json"
+  },
+  {
+    "text": "ii-V-I in Ab major",
+    "value": "/projects/progressions/ii-V-I%20in%20Ab%20major.json",
+    "file": "ii-V-I in Ab major.json"
+  },
+  {
+    "text": "ii-V-I in B major",
+    "value": "/projects/progressions/ii-V-I%20in%20B%20major.json",
+    "file": "ii-V-I in B major.json"
+  },
+  {
+    "text": "ii-V-i in B minor",
+    "value": "/projects/progressions/ii-V-i%20in%20B%20minor.json",
+    "file": "ii-V-i in B minor.json"
+  },
+  {
+    "text": "ii-V-I in Bb major",
+    "value": "/projects/progressions/ii-V-I%20in%20Bb%20major.json",
+    "file": "ii-V-I in Bb major.json"
+  },
+  {
+    "text": "ii-V-i in Bb minor",
+    "value": "/projects/progressions/ii-V-i%20in%20Bb%20minor.json",
+    "file": "ii-V-i in Bb minor.json"
+  },
+  {
+    "text": "ii-V-I in C major",
+    "value": "/projects/progressions/ii-V-I%20in%20C%20major.json",
+    "file": "ii-V-I in C major.json"
+  },
+  {
+    "text": "ii-V-i in C minor",
+    "value": "/projects/progressions/ii-V-i%20in%20C%20minor.json",
+    "file": "ii-V-i in C minor.json"
+  },
+  {
+    "text": "ii-V-i in C# minor",
+    "value": "/projects/progressions/ii-V-i%20in%20Csharp%20minor.json",
+    "file": "ii-V-i in Csharp minor.json"
+  },
+  {
+    "text": "ii-V-I in D major",
+    "value": "/projects/progressions/ii-V-I%20in%20D%20major.json",
+    "file": "ii-V-I in D major.json"
+  },
+  {
+    "text": "ii-V-i in D minor",
+    "value": "/projects/progressions/ii-V-i%20in%20D%20minor.json",
+    "file": "ii-V-i in D minor.json"
+  },
+  {
+    "text": "ii-V-I in Db major",
+    "value": "/projects/progressions/ii-V-I%20in%20Db%20major.json",
+    "file": "ii-V-I in Db major.json"
+  },
+  {
+    "text": "ii-V-I in E major",
+    "value": "/projects/progressions/ii-V-I%20in%20E%20major.json",
+    "file": "ii-V-I in E major.json"
+  },
+  {
+    "text": "ii-V-i in E minor",
+    "value": "/projects/progressions/ii-V-i%20in%20E%20minor.json",
+    "file": "ii-V-i in E minor.json"
+  },
+  {
+    "text": "ii-V-I in Eb major",
+    "value": "/projects/progressions/ii-V-I%20in%20Eb%20major.json",
+    "file": "ii-V-I in Eb major.json"
+  },
+  {
+    "text": "ii-V-i in Eb minor",
+    "value": "/projects/progressions/ii-V-i%20in%20Eb%20minor.json",
+    "file": "ii-V-i in Eb minor.json"
+  },
+  {
+    "text": "ii-V-I in F major",
+    "value": "/projects/progressions/ii-V-I%20in%20F%20major.json",
+    "file": "ii-V-I in F major.json"
+  },
+  {
+    "text": "ii-V-i in F minor",
+    "value": "/projects/progressions/ii-V-i%20in%20F%20minor.json",
+    "file": "ii-V-i in F minor.json"
+  },
+  {
+    "text": "ii-V-I in F# major",
+    "value": "/projects/progressions/ii-V-I%20in%20Fsharp%20major.json",
+    "file": "ii-V-I in Fsharp major.json"
+  },
+  {
+    "text": "ii-V-i in F# minor",
+    "value": "/projects/progressions/ii-V-i%20in%20Fsharp%20minor.json",
+    "file": "ii-V-i in Fsharp minor.json"
+  },
+  {
+    "text": "ii-V-I in G major",
+    "value": "/projects/progressions/ii-V-I%20in%20G%20major.json",
+    "file": "ii-V-I in G major.json"
+  },
+  {
+    "text": "ii-V-i in G minor",
+    "value": "/projects/progressions/ii-V-i%20in%20G%20minor.json",
+    "file": "ii-V-i in G minor.json"
+  },
+  {
+    "text": "ii-V-i in G# minor",
+    "value": "/projects/progressions/ii-V-i%20in%20Gsharp%20minor.json",
+    "file": "ii-V-i in Gsharp minor.json"
+  },
+  {
+    "text": "Minor ii-V-i with tritone sub in C minor",
+    "value": "/projects/progressions/Minor%20ii-V-i%20with%20tritone%20sub%20in%20C%20minor.json",
+    "file": "Minor ii-V-i with tritone sub in C minor.json"
+  },
+  {
+    "text": "Modal So What in D minor",
+    "value": "/projects/progressions/Modal%20So%20What%20in%20D%20minor.json",
+    "file": "Modal So What in D minor.json"
+  },
+  {
+    "text": "Pachelbel canon in C",
+    "value": "/projects/progressions/Pachelbel%20canon%20in%20C.json",
+    "file": "Pachelbel canon in C.json"
+  },
+  {
+    "text": "Pachelbel canon in D",
+    "value": "/projects/progressions/Pachelbel%20canon%20in%20D.json",
+    "file": "Pachelbel canon in D.json"
+  },
+  {
+    "text": "Secondary dominants in C",
+    "value": "/projects/progressions/Secondary%20dominants%20in%20C.json",
+    "file": "Secondary dominants in C.json"
+  }
+]

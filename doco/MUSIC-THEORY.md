@@ -572,9 +572,10 @@ edits the JSON values in place so formatting is preserved, and skips projects
 whose scales are deliberately shared across chords or used as teaching
 examples; those are listed in `bin/regenerate-project-scales.mjs`.
 
-The generated classic library carries an explicit key and the jazz colour per
-progression (`bin/classic-project-definitions.mjs`) and is regenerated
-key-aware by `npm run generate:classic`. The featured projects that have a
+The generated classic, progressions and rock libraries carry an explicit key
+and colour per entry (`bin/classic-project-definitions.mjs`,
+`bin/progressions-project-definitions.mjs`, `bin/rock-project-definitions.mjs`)
+and are regenerated key-aware by `npm run generate:libraries`. The featured projects that have a
 clear key carry one too; the rest fall back to detection at load.
 
 ## Hearing the difference

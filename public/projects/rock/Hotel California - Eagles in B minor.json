@@ -1,0 +1,115 @@
+{
+  "name": "Hotel California - Eagles in B minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Bm",
+      "chord": "Bm",
+      "bass": "B2",
+      "scale1": "B aeolian",
+      "scale2": "B minor pentatonic",
+      "scale3": "B dorian"
+    },
+    {
+      "id": 2,
+      "name": "F#",
+      "chord": "F#",
+      "bass": "F#2",
+      "scale1": "F# major",
+      "scale2": "F# mixolydian",
+      "scale3": "F# lydian"
+    },
+    {
+      "id": 3,
+      "name": "A",
+      "chord": "A",
+      "bass": "A2",
+      "scale1": "A mixolydian",
+      "scale2": "A major",
+      "scale3": "A major pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "E",
+      "chord": "E",
+      "bass": "E2",
+      "scale1": "E major",
+      "scale2": "E mixolydian",
+      "scale3": "E lydian"
+    },
+    {
+      "id": 5,
+      "name": "G",
+      "chord": "G",
+      "bass": "G2",
+      "scale1": "G lydian",
+      "scale2": "G major",
+      "scale3": "G major pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D major",
+      "scale2": "D lydian",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "Em",
+      "chord": "Em",
+      "bass": "E2",
+      "scale1": "E dorian",
+      "scale2": "E minor pentatonic",
+      "scale3": "E aeolian"
+    },
+    {
+      "id": 8,
+      "name": "F#",
+      "chord": "F#",
+      "bass": "F#2",
+      "scale1": "F# major",
+      "scale2": "F# mixolydian",
+      "scale3": "F# lydian"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "B",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "diatonic"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

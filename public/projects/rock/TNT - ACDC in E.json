@@ -1,0 +1,115 @@
+{
+  "name": "TNT - ACDC in E",
+  "chords": [
+    {
+      "id": 1,
+      "name": "E",
+      "chord": "E",
+      "bass": "E2",
+      "scale1": "E major",
+      "scale2": "E lydian",
+      "scale3": "E major pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "A",
+      "chord": "A",
+      "bass": "A2",
+      "scale1": "A lydian",
+      "scale2": "A major",
+      "scale3": "A major pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "B",
+      "chord": "B",
+      "bass": "B2",
+      "scale1": "B mixolydian",
+      "scale2": "B major",
+      "scale3": "B major pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "A",
+      "chord": "A",
+      "bass": "A2",
+      "scale1": "A lydian",
+      "scale2": "A major",
+      "scale3": "A major pentatonic"
+    },
+    {
+      "id": 5,
+      "name": "E",
+      "chord": "E",
+      "bass": "E2",
+      "scale1": "E major",
+      "scale2": "E lydian",
+      "scale3": "E major pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "A",
+      "chord": "A",
+      "bass": "A2",
+      "scale1": "A lydian",
+      "scale2": "A major",
+      "scale3": "A major pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D lydian",
+      "scale2": "D major",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "B",
+      "chord": "B",
+      "bass": "B2",
+      "scale1": "B mixolydian",
+      "scale2": "B major",
+      "scale3": "B major pentatonic"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "E",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "diatonic"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

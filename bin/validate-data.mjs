@@ -21,6 +21,8 @@ const targets = [
         dirs: [
             join(root, 'public/projects/featured'),
             join(root, 'public/projects/classic'),
+            join(root, 'public/projects/progressions'),
+            join(root, 'public/projects/rock'),
         ],
     },
     {

@@ -1,0 +1,115 @@
+{
+  "name": "21st Century Schizoid Man - King Crimson in A minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Am",
+      "chord": "Am",
+      "bass": "A2",
+      "scale1": "A aeolian",
+      "scale2": "A minor pentatonic",
+      "scale3": "A dorian"
+    },
+    {
+      "id": 2,
+      "name": "Bb",
+      "chord": "Bb",
+      "bass": "Bb2",
+      "scale1": "Bb lydian",
+      "scale2": "Bb major",
+      "scale3": "Bb major pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D major",
+      "scale2": "D mixolydian",
+      "scale3": "D lydian"
+    },
+    {
+      "id": 5,
+      "name": "Am",
+      "chord": "Am",
+      "bass": "A2",
+      "scale1": "A aeolian",
+      "scale2": "A minor pentatonic",
+      "scale3": "A dorian"
+    },
+    {
+      "id": 6,
+      "name": "Bb",
+      "chord": "Bb",
+      "bass": "Bb2",
+      "scale1": "Bb lydian",
+      "scale2": "Bb major",
+      "scale3": "Bb major pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "E7",
+      "chord": "E7",
+      "bass": "E2",
+      "scale1": "E phrygian dominant",
+      "scale2": "E lydian dominant",
+      "scale3": "E mixolydian"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "A",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "diatonic"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

@@ -55,10 +55,12 @@ sound in the browser.
 
 ## Using the app
 
-1. Open the app and choose **File -> Open Featured...** or
-   **File -> Open Classic...** to load a demo project. The classic library holds
-   ii-V-I progressions in every key, turnarounds, blues and jazz standard
-   changes.
+1. Open the app and choose **File -> Open Featured...**,
+   **File -> Open Classic...**, **File -> Open Progressions...** or
+   **File -> Open Rock...** to load a demo project. The progressions library
+   holds ii-V-I progressions in every key, turnarounds and blues; the classic
+   library holds jazz standard changes; the rock library holds rock song
+   excerpts.
 2. Play the highlighted left-hand keys to trigger chords.
 3. Play anywhere to the right to jam - the notes are filtered to fit the chord.
 4. Press `1` `2` `3` `4` `5` from anywhere to switch scale1/scale2/scale3, the
@@ -150,13 +152,17 @@ Then open http://localhost:8080/index.html.
 | `npm run validate:scales` | Key-aware report on the scales stored in the static projects. |
 | `npm run regenerate:scales` | Dry-run the engine's scale replacements (`-- --write` to apply). |
 | `npm run generate:classic` | Regenerate the classic project library, keys included. |
+| `npm run generate:progressions` | Regenerate the progressions project library, keys included. |
+| `npm run generate:rock` | Regenerate the rock project library, keys included. |
+| `npm run generate:libraries` | Regenerate the classic, progressions and rock libraries. |
 
 ## Project structure
 
 - `src/views/` - the routed pages (edit/home, perform, settings, about, research).
 - `src/components/` - the UI widgets, such as the keyboards and pickers.
 - `src/lib/` - the framework-independent domain logic and MIDI/audio plumbing.
-- `public/projects/` - featured project JSON.
+- `public/projects/` - featured project JSON, plus the generated classic,
+  progressions and rock libraries.
 - `public/keyboards/` - keyboard config JSON.
 - `bin/generate-manifests.mjs` - writes the manifests that list the static
   libraries, since static hosting cannot list a directory.

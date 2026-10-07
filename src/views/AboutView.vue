@@ -362,7 +362,8 @@ watch(() => globals.helpPage, async () => {
       <h3 id="the-file-menu" class="ui header">The File menu</h3>
       <p>
         Use the <strong>File</strong> menu to open and save projects. It includes
-        <em>New</em>, <em>Open</em>, <em>Open Featured</em>, <em>Save</em>,
+        <em>New</em>, <em>Open</em>, <em>Open Featured</em>, <em>Open Classic</em>,
+        <em>Open Progressions</em>, <em>Open Rock</em>, <em>Save</em>,
         <em>Save As</em>, <em>Reload current Project</em>, <em>Import MIDI file</em>,
         <em>Download / Upload Project</em> (to back up or move projects between
         machines), and <em>Download MIDI Chords</em> in a couple of formats.
@@ -371,7 +372,8 @@ watch(() => globals.helpPage, async () => {
       <h3 id="quick-actions-and-helpers" class="ui header">Quick actions and helpers</h3>
       <ul class="ui list">
         <li><strong>DEMO</strong> - load the C Major II-V-I demo project, focus the keyboard and show a short getting-started guide with a <strong>Jam!</strong> button.</li>
-        <li><strong>Random project</strong> - load a random project from the Classic collection, for when you cannot decide what to play.</li>
+        <li><strong>Random project</strong> - load a random song from the Classic and Rock collections, for when you cannot decide what to play.</li>
+        <li><strong>Random progression</strong> - load a random progression from the Progressions collection.</li>
         <li><strong>Start Tour</strong> - a guided tour of the controls on the current view.</li>
         <li>The chord and scale pickers, with search and audition buttons.</li>
         <li>The <strong>Circle of Fifths</strong> helper.</li>

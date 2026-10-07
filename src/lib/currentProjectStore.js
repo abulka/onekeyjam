@@ -14,13 +14,13 @@ import { resetChordHistory } from './autoScale.js'
  */
 
 const STORAGE_KEY = 'onekeyjam.currentProject'
-const CATEGORIES = ['user', 'featured', 'classic']
+const CATEGORIES = ['user', 'featured', 'classic', 'progressions', 'rock']
 const SCALE_FILTERS = ['scale1', 'scale2', 'scale3', 'notesOfChord']
 
 /**
  * @typedef {object} CurrentProject
  * @property {string} name the current project name
- * @property {'user'|'featured'|'classic'} category which library it came from
+ * @property {'user'|'featured'|'classic'|'progressions'|'rock'} category which library it came from
  * @property {string} [currentChordTriggerNote] highlighted chord trigger note
  * @property {string} currentScaleFilter highlighted scale filter slot
  * @property {number} [maxChordConfigs] how many chord rows the grid was showing

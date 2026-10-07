@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { ref } from "vue";
 import { globals } from '../../src/lib/globals.js'
-import { loadUserProject, loadFeaturedProject, loadClassicProject } from '../../src/lib/boot-project'
+import { loadUserProject, loadFeaturedProject, loadClassicProject, loadProgressionProject, loadRockProject } from '../../src/lib/boot-project'
 
 const modalDialogBoxDiv = ref();
 const showDescriptions = ref(false);
@@ -15,6 +15,10 @@ const options = computed({
             return globals.projectLibrary.userProjectNames
         if (props.userOrFeatured == 'classic')
             return globals.projectLibrary.classicProjectNames
+        if (props.userOrFeatured == 'progressions')
+            return globals.projectLibrary.progressionProjectNames
+        if (props.userOrFeatured == 'rock')
+            return globals.projectLibrary.rockProjectNames
         return globals.projectLibrary.projectNames
     },
 })
@@ -25,6 +29,10 @@ const dialogBoxTitle = computed({
             return 'My'
         if (props.userOrFeatured == 'classic')
             return 'Classic'
+        if (props.userOrFeatured == 'progressions')
+            return 'Progressions'
+        if (props.userOrFeatured == 'rock')
+            return 'Rock'
         return 'Featured'
     }
 })
@@ -44,6 +52,10 @@ function clickOnList(event, name) {
         loadUserProject(name)
     else if (props.userOrFeatured == 'classic')
         loadClassicProject(name)
+    else if (props.userOrFeatured == 'progressions')
+        loadProgressionProject(name)
+    else if (props.userOrFeatured == 'rock')
+        loadRockProject(name)
     else
         loadFeaturedProject(name)
 }

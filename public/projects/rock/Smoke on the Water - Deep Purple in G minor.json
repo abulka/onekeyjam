@@ -1,0 +1,115 @@
+{
+  "name": "Smoke on the Water - Deep Purple in G minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Gm",
+      "chord": "Gm",
+      "bass": "G2",
+      "scale1": "G aeolian",
+      "scale2": "G minor pentatonic",
+      "scale3": "G dorian"
+    },
+    {
+      "id": 2,
+      "name": "Bb",
+      "chord": "Bb",
+      "bass": "Bb2",
+      "scale1": "Bb major",
+      "scale2": "Bb lydian",
+      "scale3": "Bb major pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Eb",
+      "chord": "Eb",
+      "bass": "Eb2",
+      "scale1": "Eb lydian",
+      "scale2": "Eb major",
+      "scale3": "Eb major pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "F",
+      "chord": "F",
+      "bass": "F2",
+      "scale1": "F mixolydian",
+      "scale2": "F major",
+      "scale3": "F major pentatonic"
+    },
+    {
+      "id": 5,
+      "name": "Gm",
+      "chord": "Gm",
+      "bass": "G2",
+      "scale1": "G aeolian",
+      "scale2": "G minor pentatonic",
+      "scale3": "G dorian"
+    },
+    {
+      "id": 6,
+      "name": "Bb",
+      "chord": "Bb",
+      "bass": "Bb2",
+      "scale1": "Bb major",
+      "scale2": "Bb lydian",
+      "scale3": "Bb major pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C mixolydian",
+      "scale3": "C lydian"
+    },
+    {
+      "id": 8,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D phrygian dominant",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "G",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "diatonic"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

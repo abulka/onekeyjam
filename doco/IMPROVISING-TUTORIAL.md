@@ -150,9 +150,9 @@ G7alt: F  B  Eb Ab       (guide tones with altered colour)
 Cm:    B  Eb G  A        (the leading tone resolves)
 ```
 
-### 12-bar blues in C (classic)
+### 12-bar blues in C (progressions)
 
-Load **File -> Open Classic... -> 12-bar blues in C**. The project lays out
+Load **File -> Open Progressions... -> 12-bar blues in C**. The project lays out
 eight bars that alternate the I chord (C7) and the IV chord (F7), starting and
 ending on C7. One bar is a repeat, so the default seven trigger keys cover
 everything you need.

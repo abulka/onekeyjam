@@ -15,6 +15,8 @@ import { listCustomKeyboards, fetchCustomKeyboard } from './keyboardStore.js'
 
 const FEATURED_MANIFEST = '/projects/featured/featured-manifest.json'
 const CLASSIC_MANIFEST = '/projects/classic/classic-manifest.json'
+const PROGRESSIONS_MANIFEST = '/projects/progressions/progressions-manifest.json'
+const ROCK_MANIFEST = '/projects/rock/rock-manifest.json'
 const KEYBOARDS_MANIFEST = '/keyboards/keyboards-manifest.json'
 
 async function fetchJson(url) {
@@ -47,7 +49,7 @@ export async function fetchFeaturedProject(name) {
     return fetchJson(url)
 }
 
-// Classic projects - the static library in public/projects/classic
+// Classic projects - the static library in public/projects/classic (jazz songs)
 
 export async function listClassicProjects() {
     const manifest = await fetchManifest(CLASSIC_MANIFEST)
@@ -58,6 +60,34 @@ export async function listClassicProjects() {
 export async function fetchClassicProject(name) {
     const entry = globals.classicProjects.find(p => p.text === name)
     const url = entry ? entry.value : `/projects/classic/${encodeURIComponent(name + '.json')}`
+    return fetchJson(url)
+}
+
+// Progression projects - the static library in public/projects/progressions
+
+export async function listProgressionProjects() {
+    const manifest = await fetchManifest(PROGRESSIONS_MANIFEST)
+    globals.progressionProjects = manifest
+    globals.projectLibrary.progressionProjectNames = manifest.map(entry => entry.text)
+}
+
+export async function fetchProgressionProject(name) {
+    const entry = globals.progressionProjects.find(p => p.text === name)
+    const url = entry ? entry.value : `/projects/progressions/${encodeURIComponent(name + '.json')}`
+    return fetchJson(url)
+}
+
+// Rock projects - the static library in public/projects/rock
+
+export async function listRockProjects() {
+    const manifest = await fetchManifest(ROCK_MANIFEST)
+    globals.rockProjects = manifest
+    globals.projectLibrary.rockProjectNames = manifest.map(entry => entry.text)
+}
+
+export async function fetchRockProject(name) {
+    const entry = globals.rockProjects.find(p => p.text === name)
+    const url = entry ? entry.value : `/projects/rock/${encodeURIComponent(name + '.json')}`
     return fetchJson(url)
 }
 

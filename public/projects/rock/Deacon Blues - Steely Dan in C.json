@@ -1,0 +1,115 @@
+{
+  "name": "Deacon Blues - Steely Dan in C",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Cmaj7",
+      "chord": "Cmaj7",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "B7",
+      "chord": "B7",
+      "bass": "B2",
+      "scale1": "B mixolydian",
+      "scale2": "B lydian dominant",
+      "scale3": "B mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "E7",
+      "chord": "E7",
+      "bass": "E2",
+      "scale1": "E mixolydian",
+      "scale2": "E lydian dominant",
+      "scale3": "E mixolydian b6"
+    },
+    {
+      "id": 4,
+      "name": "A7",
+      "chord": "A7",
+      "bass": "A2",
+      "scale1": "A mixolydian",
+      "scale2": "A lydian dominant",
+      "scale3": "A mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 7,
+      "name": "C6",
+      "chord": "C6",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

@@ -302,12 +302,16 @@ export const globals = reactive({
     projectUrl: '',
     projects: [],  // featured project combo entries { text, value }, populated from the manifest
     classicProjects: [],  // classic project combo entries { text, value }, populated from the manifest
+    progressionProjects: [],  // progressions combo entries { text, value }, populated from the manifest
+    rockProjects: [],  // rock project combo entries { text, value }, populated from the manifest
     projectLibrary: {
         projectNames: [],  // featured project names (static library)
         classicProjectNames: [],  // classic project names (static library)
+        progressionProjectNames: [],  // progressions names (static library)
+        rockProjectNames: [],  // rock project names (static library)
         userProjectNames: [],  // locally saved project names (IndexedDB)
         projectName: '',   // current project name
-        projectIsUserOrFeatured: '',  // 'user' | 'featured' | 'classic'
+        projectIsUserOrFeatured: '',  // 'user' | 'featured' | 'classic' | 'progressions' | 'rock'
     },
     get isProjectLoaded() {
         // A project is loaded if the globals.chordTriggerMap becomes populated

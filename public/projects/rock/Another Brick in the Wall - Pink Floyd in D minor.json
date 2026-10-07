@@ -1,0 +1,115 @@
+{
+  "name": "Another Brick in the Wall - Pink Floyd in D minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Dm",
+      "chord": "Dm",
+      "bass": "D2",
+      "scale1": "D aeolian",
+      "scale2": "D minor pentatonic",
+      "scale3": "D dorian"
+    },
+    {
+      "id": 2,
+      "name": "F",
+      "chord": "F",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F major pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "G",
+      "chord": "G",
+      "bass": "G2",
+      "scale1": "G major",
+      "scale2": "G mixolydian",
+      "scale3": "G lydian"
+    },
+    {
+      "id": 5,
+      "name": "Dm",
+      "chord": "Dm",
+      "bass": "D2",
+      "scale1": "D aeolian",
+      "scale2": "D minor pentatonic",
+      "scale3": "D dorian"
+    },
+    {
+      "id": 6,
+      "name": "F",
+      "chord": "F",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F major pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "G",
+      "chord": "G",
+      "bass": "G2",
+      "scale1": "G major",
+      "scale2": "G mixolydian",
+      "scale3": "G lydian"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "D",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "diatonic"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

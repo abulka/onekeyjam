@@ -20,8 +20,8 @@ import { resolveProjectKey } from './projectKey.js'
 import { applyProjectKeySettings } from './projectScaleSettings.js'
 import { applyProjectScaleStyle } from './scaleStyles.js'
 import { deletePendingChordConfigs } from './massOperationsOnChordConfigs'
-import { fetchFeaturedProject, fetchClassicProject, fetchUserProject } from './projectLibrary';
-import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listUserProjects } from './projectLibrary';
+import { fetchFeaturedProject, fetchClassicProject, fetchProgressionProject, fetchRockProject, fetchUserProject } from './projectLibrary';
+import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listProgressionProjects, listRockProjects, listUserProjects } from './projectLibrary';
 import { restoreCurrentProject } from './currentProjectStore.js';
 
 /** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
@@ -105,6 +105,28 @@ async function setClassicProject(name, project, currentChordTriggerNote) {
     projectChores2name(project, name, currentChordTriggerNote, 'classic');
 }
 
+async function setProgressionProject(name, project, currentChordTriggerNote) {
+    // Pass in a project name or a project object
+    if (name)
+        project = await fetchProgressionProject(name)
+    else
+        if (!project)
+            throw ('No project specified')
+
+    projectChores2name(project, name, currentChordTriggerNote, 'progressions');
+}
+
+async function setRockProject(name, project, currentChordTriggerNote) {
+    // Pass in a project name or a project object
+    if (name)
+        project = await fetchRockProject(name)
+    else
+        if (!project)
+            throw ('No project specified')
+
+    projectChores2name(project, name, currentChordTriggerNote, 'rock');
+}
+
 async function setUserProject(name, project, currentChordTriggerNote) {
     // Pass in a locally saved project name or a project object
     if (name)
@@ -131,6 +153,20 @@ export function loadClassicProject(name) {
     if (!name)
         name = globals.projectLibrary.projectName
     document.broadcastEvent("switch-project", { name, category: 'classic' })
+}
+export function loadProgressionProject(name) {
+    // 1. Called by the progressions combobox in the File menu
+    // 2. Called by reload current project button in main UI
+    if (!name)
+        name = globals.projectLibrary.projectName
+    document.broadcastEvent("switch-project", { name, category: 'progressions' })
+}
+export function loadRockProject(name) {
+    // 1. Called by the rock combobox in the File menu
+    // 2. Called by reload current project button in main UI
+    if (!name)
+        name = globals.projectLibrary.projectName
+    document.broadcastEvent("switch-project", { name, category: 'rock' })
 }
 export function loadUserProject(name) {
     // 1. Called by combobox select in main UI
@@ -259,6 +295,18 @@ export function wireProjectEvents() {
                 )
             else if (event.detail.category === 'classic')
                 await setClassicProject(
+                    event.detail.name,
+                    event.detail.project,  // usually undefined
+                    event.detail.currentChordTriggerNote,  // usually undefined
+                )
+            else if (event.detail.category === 'progressions')
+                await setProgressionProject(
+                    event.detail.name,
+                    event.detail.project,  // usually undefined
+                    event.detail.currentChordTriggerNote,  // usually undefined
+                )
+            else if (event.detail.category === 'rock')
+                await setRockProject(
                     event.detail.name,
                     event.detail.project,  // usually undefined
                     event.detail.currentChordTriggerNote,  // usually undefined
@@ -527,6 +575,8 @@ export function linkProjectToKeyboard() {
     // This used to be done in wireGuiEvents() but that is gone now, so do here.
     listFeaturedProjects()
     listClassicProjects()
+    listProgressionProjects()
+    listRockProjects()
     listUserProjects()
 }
 

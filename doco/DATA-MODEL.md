@@ -2,8 +2,9 @@
 
 OneKeyJam has no backend. Its "database" is:
 
-- static JSON files in `public/projects/featured/` and
-  `public/projects/classic/` (featured and classic projects), plus
+- static JSON files in `public/projects/featured/`,
+  `public/projects/classic/`, `public/projects/progressions/` and
+  `public/projects/rock/` (featured, classic, progressions and rock projects), plus
   `public/keyboards/` (keyboard configs), discovered through generated
   manifests; and
 - user projects saved in the browser with IndexedDB.
@@ -142,6 +143,8 @@ A project can override these in `options.keyboard`.
 
 - `public/projects/featured/featured-manifest.json`
 - `public/projects/classic/classic-manifest.json`
+- `public/projects/progressions/progressions-manifest.json`
+- `public/projects/rock/rock-manifest.json`
 - `public/keyboards/keyboards-manifest.json`
 
 Each entry is `{ text, value, file }`: display name, URL and file name. These
@@ -153,6 +156,8 @@ are generated, so they are not validated and should not be edited by hand.
 | --- | --- | --- |
 | `public/projects/featured/*.json` | featured projects | `src/lib/projectLibrary.js` |
 | `public/projects/classic/*.json` | generated classic projects | `bin/generate-classic-projects.mjs` |
+| `public/projects/progressions/*.json` | generated progression projects | `bin/generate-progressions-projects.mjs` |
+| `public/projects/rock/*.json` | generated rock projects | `bin/generate-rock-projects.mjs` |
 | `public/keyboards/*.json` | keyboard configs | `src/lib/projectLibrary.js` |
 | IndexedDB `onekeyjam` → `projects` (keyPath `name`) | user projects | `src/lib/localStore.js` |
 | exported/imported `.json` files | backup/move | `src/lib/projectSave.js` |

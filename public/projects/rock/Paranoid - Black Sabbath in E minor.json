@@ -1,0 +1,115 @@
+{
+  "name": "Paranoid - Black Sabbath in E minor",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Em",
+      "chord": "Em",
+      "bass": "E2",
+      "scale1": "E aeolian",
+      "scale2": "E minor pentatonic",
+      "scale3": "E dorian"
+    },
+    {
+      "id": 2,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D major",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "G",
+      "chord": "G",
+      "bass": "G2",
+      "scale1": "G major",
+      "scale2": "G lydian",
+      "scale3": "G major pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "A",
+      "chord": "A",
+      "bass": "A2",
+      "scale1": "A major",
+      "scale2": "A mixolydian",
+      "scale3": "A lydian"
+    },
+    {
+      "id": 5,
+      "name": "Em",
+      "chord": "Em",
+      "bass": "E2",
+      "scale1": "E aeolian",
+      "scale2": "E minor pentatonic",
+      "scale3": "E dorian"
+    },
+    {
+      "id": 6,
+      "name": "D",
+      "chord": "D",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D major",
+      "scale3": "D major pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "G",
+      "chord": "G",
+      "bass": "G2",
+      "scale1": "G major",
+      "scale2": "G lydian",
+      "scale3": "G major pentatonic"
+    },
+    {
+      "id": 8,
+      "name": "B7",
+      "chord": "B7",
+      "bass": "B2",
+      "scale1": "B phrygian dominant",
+      "scale2": "B lydian dominant",
+      "scale3": "B mixolydian"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "E",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "diatonic"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}

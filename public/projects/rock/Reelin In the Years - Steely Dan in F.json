@@ -1,0 +1,115 @@
+{
+  "name": "Reelin In the Years - Steely Dan in F",
+  "chords": [
+    {
+      "id": 1,
+      "name": "F",
+      "chord": "F",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F major pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "Dm",
+      "chord": "Dm",
+      "bass": "D2",
+      "scale1": "D aeolian",
+      "scale2": "D minor pentatonic",
+      "scale3": "D dorian"
+    },
+    {
+      "id": 3,
+      "name": "Bb",
+      "chord": "Bb",
+      "bass": "Bb2",
+      "scale1": "Bb lydian",
+      "scale2": "Bb major",
+      "scale3": "Bb major pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    },
+    {
+      "id": 5,
+      "name": "F",
+      "chord": "F",
+      "bass": "F2",
+      "scale1": "F major",
+      "scale2": "F lydian",
+      "scale3": "F major pentatonic"
+    },
+    {
+      "id": 6,
+      "name": "Dm",
+      "chord": "Dm",
+      "bass": "D2",
+      "scale1": "D aeolian",
+      "scale2": "D minor pentatonic",
+      "scale3": "D dorian"
+    },
+    {
+      "id": 7,
+      "name": "Gm",
+      "chord": "Gm",
+      "bass": "G2",
+      "scale1": "G dorian",
+      "scale2": "G minor pentatonic",
+      "scale3": "G aeolian"
+    },
+    {
+      "id": 8,
+      "name": "C",
+      "chord": "C",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C major",
+      "scale3": "C major pentatonic"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "F",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "diatonic"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  }
+}
