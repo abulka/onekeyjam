@@ -253,7 +253,7 @@ Edit and Perform views, and appears when a project is loaded.
 
 | Element | Where | What it does |
 |---|---|---|
-| `Scale changes` selector | scale settings row | Names the playing style: `I choose (safe)`, `I choose`, `Follow the chords`, `Follow the chords (safe)`, `Follow the melody`, `Add jazz tension`, `Vary it`, `Adventurous`. Shows `Custom` when hand-tuned. |
+| `Scale changes` selector | scale settings row | Names the playing style: `I choose (safe)`, `I choose`, `Follow the chords`, `Follow the chords (safe)`, `Follow the melody`, `Add jazz tension`, `Vary it`, `Adventurous`, `As written` (keeps the song's scales untouched). Shows `Custom` when hand-tuned. |
 | `auto: <scale>` chip | scale settings row | The live scale when a policy chose one that is not a stored slot. |
 | `Options` button | scale settings row | Shows or hides the mechanism and the shuffle feel. |
 | `Colour` | Options panel | The ranking profile: `diatonic`, `jazz` (default) or `adventurous`. |

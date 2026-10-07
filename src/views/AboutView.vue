@@ -392,7 +392,8 @@ watch(() => globals.helpPage, async () => {
           <strong>Scale changes</strong> - one selector above the chord/scale
           grid decides how the right-hand scale moves as you play: I choose,
           Follow the chords, Follow the chords (safe), Follow the melody, Add
-          jazz tension, Vary it or Adventurous. Open
+          jazz tension, Vary it, Adventurous or As written (which keeps the
+          song's stored scales untouched). Open
           Options to see the colour, mode and preset it sets, and to tune the
           shuffle feel. Each project remembers its style.
         </li>

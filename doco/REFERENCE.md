@@ -136,10 +136,14 @@ sets the colour, mode and preset for you:
 | **Add jazz tension** | Keeps the natural scale, adding a tension note only on dominant chords. | `follow`, Tension preset |
 | **Vary it** | The scale shifts on most chord changes, staying close to each chord. | `shuffle`, Varied preset |
 | **Adventurous** | Bolder scales and bigger shifts. | `shuffle`, Wild preset, adventurous colour |
+| **As written** | Plays the stored scales exactly as written in the song, without re-ranking them. | `manual` mode, keeps the song's colour |
 
 The engine underneath has three modes (`manual`, `follow`, `shuffle`); the
 Options panel shows them, and changing any value by hand makes the selector read
 `Custom`. A project remembers its style, so a song reopens sounding as you left it.
+Generated songs carry a default style that matches their colour (jazz songs follow,
+diatonic songs follow safe), so loading a new song shows a real style instead of
+custom. Songs saved under a renamed style fall back to that same default.
 
 Why the automatic styles help:
 

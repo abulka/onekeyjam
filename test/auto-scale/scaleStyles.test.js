@@ -63,7 +63,8 @@ describe('scale styles', () => {
             names.add(style.name)
             assert.ok(style.label.trim().length > 0, `${style.name} needs a label`)
             assert.ok(style.description.trim().length > 0, `${style.name} needs a description`)
-            assert.ok(PROJECT_COLOURS.includes(style.colour), `${style.name} has an unknown colour`)
+            assert.ok(style.colour === null || PROJECT_COLOURS.includes(style.colour),
+                `${style.name} has an unknown colour (or should be null for As written)`)
             assert.ok(SCALE_POLICIES.includes(style.policy), `${style.name} has an unknown policy`)
             if (style.preset) {
                 const presets = POLICY_PRESETS[style.policy] ?? []
@@ -168,11 +169,62 @@ describe('scale styles', () => {
 
         resetGlobals()
         globals.project.options.scaleStyle = CUSTOM_STYLE
+        globals.scaleFiltering.policy = 'shuffle'
         assert.equal(applyProjectScaleStyle(), false)
-        assert.equal(globals.scaleFiltering.policy, 'manual')
+        assert.equal(globals.scaleFiltering.policy, 'shuffle')
 
-        globals.project.options = {}
-        assert.equal(applyProjectScaleStyle(), false)
+        // No stored style: the colour-matched default applies (jazz follows).
+        resetGlobals()
+        globals.project.options = { ...globals.project.options }
+        delete globals.project.options.scaleStyle
+        assert.equal(applyProjectScaleStyle(), true)
+        assert.equal(globals.scaleFiltering.policy, 'follow')
+        assert.equal(globals.project.options.scaleStyle, 'follow')
+        assert.equal(matchScaleStyle(), 'follow')
+    })
+
+    it('falls back to the colour-matched default for unknown style names', () => {
+        // A renamed style degrades to the default instead of custom.
+        globals.project.options.scaleStyle = 'renamed-style'
+        assert.equal(applyProjectScaleStyle(), true)
+        assert.equal(globals.project.options.scaleStyle, 'follow')
+        assert.equal(matchScaleStyle(), 'follow')
+
+        // Diatonic songs follow safe, adventurous songs stay adventurous.
+        resetGlobals()
+        globals.project.options = { ...globals.project.options, colour: 'diatonic' }
+        delete globals.project.options.scaleStyle
+        assert.equal(applyProjectScaleStyle(), true)
+        assert.equal(globals.project.options.scaleStyle, 'follow-safe')
+        assert.equal(matchScaleStyle(), 'follow-safe')
+    })
+
+    it('prefers the colour-specific manual styles over As written', () => {
+        // Manual policy under jazz still reads as "I choose".
+        assert.equal(matchScaleStyle(), 'manual')
+
+        globals.project.options.colour = 'diatonic'
+        assert.equal(matchScaleStyle(), 'manual-safe')
+
+        // No colour-specific manual style exists for adventurous, so the
+        // colour-blind As written style matches there.
+        globals.project.options.colour = 'adventurous'
+        assert.equal(matchScaleStyle(), 'as-written')
+    })
+
+    it('applies As written without touching the colour or stored scales', () => {
+        globals.project.options.colour = 'diatonic'
+        globals.project.chords = [
+            { id: 1, name: 'Dm7', chord: 'Dm7', scale1: 'D dorian' },
+        ]
+        const before = JSON.stringify(globals.project.chords)
+
+        assert.equal(applyScaleStyle('as-written'), true)
+        assert.equal(globals.scaleFiltering.policy, 'manual')
+        assert.equal(globals.getProjectColour(), 'diatonic')
+        assert.equal(JSON.stringify(globals.project.chords), before)
+        assert.equal(globals.project.options.scaleStyle, 'as-written')
+        assert.equal(matchScaleStyle(), 'as-written')
     })
 
 })

@@ -105,7 +105,8 @@
  * ('key'). `colour` chooses how much chromatic colour the key-aware engine
  * prefers: 'diatonic', 'jazz' (the default) or 'adventurous'. `scaleStyle` is
  * the named right-hand scale style (see src/lib/scaleStyles.js), or 'custom'
- * when the engine settings have been hand-tuned.
+ * when the engine settings have been hand-tuned. Generated songs carry a
+ * colour-matched default style.
  * @typedef {object} ProjectOptions
  * @property {Partial<KeyboardConfig>} [keyboard]
  * @property {ProjectKey} [key]

@@ -62,7 +62,8 @@
       "type": "major",
       "source": "user"
     },
-    "colour": "diatonic"
+    "colour": "diatonic",
+    "scaleStyle": "follow-safe"
   },
   "meta": {
     "type": "onekeyjam",

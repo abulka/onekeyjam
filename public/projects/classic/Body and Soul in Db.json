@@ -125,7 +125,8 @@
       "type": "major",
       "source": "user"
     },
-    "colour": "jazz"
+    "colour": "jazz",
+    "scaleStyle": "follow"
   },
   "meta": {
     "type": "onekeyjam",

@@ -41,6 +41,8 @@ import {
  * @property {number} [tempo] default demo loop tempo, applied to the global BPM on load
  * @property {{tonic:string, type:string, source:string}} [key] declared key
  * @property {string} [colour] scale colour for the engine
+ * @property {string} [scaleStyle] default Scale changes style for the song;
+ *   without one the colour decides it (diatonic follows safe, otherwise follows)
  */
 
 export const root = fileURLToPath(new URL('..', import.meta.url))
@@ -50,6 +52,19 @@ function clampTempo(tempo, fallback) {
     if (!Number.isFinite(tempo))
         return fallback
     return Math.min(240, Math.max(40, Math.round(tempo)))
+}
+
+/**
+ * The default Scale changes style for a song colour. The style colour always
+ * equals the song colour, so applying it on load rewrites no scales.
+ * @param {string} colour
+ */
+function defaultScaleStyle(colour) {
+    if (colour === 'diatonic')
+        return 'follow-safe'
+    if (colour === 'adventurous')
+        return 'adventurous'
+    return 'follow'
 }
 
 /**
@@ -70,6 +85,7 @@ export function generateStaticLibrary(definitions, outDirName, label) {
 
     for (const definition of definitions) {
         const colour = definition.colour ?? 'jazz'
+        const scaleStyle = definition.scaleStyle ?? defaultScaleStyle(colour)
         let ok = true
         // Repeats share a grid row, so the rows are the union of the definition
         // chords and every named sequence's chords, in first-appearance order.
@@ -138,7 +154,7 @@ export function generateStaticLibrary(definitions, outDirName, label) {
         const project = {
             name: definition.name,
             chords,
-            options: definition.key ? { key: definition.key, colour } : {},
+            options: definition.key ? { key: definition.key, colour, scaleStyle } : {},
             meta: {
                 type: 'onekeyjam',
                 version: 2,

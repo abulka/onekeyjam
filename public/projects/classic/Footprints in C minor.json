@@ -26,7 +26,8 @@
       "type": "minor",
       "source": "user"
     },
-    "colour": "jazz"
+    "colour": "jazz",
+    "scaleStyle": "follow"
   },
   "meta": {
     "type": "onekeyjam",
