@@ -1,6 +1,8 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 import { globals } from '../../src/lib/globals.js'
+import { audioStatus, recoverAudio } from '../../src/lib/audio/general-midi.js'
+import { ping } from '../../src/lib/audio/general-midi-soundfont-player.js'
 
 function wireGMSwitchUI() {
   // Toggle GM on/off
@@ -13,8 +15,51 @@ function wireGMSwitchUI() {
   })
 }
 
+// Live snapshot of the sound system, so a silent device can report where the
+// failure is: a waiting audio state, samples still loading or failed, or a
+// running system the device itself keeps silent (Silent Mode, volume, route).
+const soundStatus = ref(null)
+const soundMessage = ref('')
+let soundTimer = null
+
+function refreshSoundStatus() {
+  try {
+    soundStatus.value = audioStatus()
+  }
+  catch (error) {
+    soundStatus.value = null
+  }
+}
+
+async function testSound() {
+  soundMessage.value = 'Waking sound…'
+  // Full restart rather than a plain resume: this also clears the iOS state
+  // where everything reports ready yet nothing is heard.
+  const ready = await recoverAudio()
+  refreshSoundStatus()
+  if (!ready) {
+    soundMessage.value = 'Sound is still waiting (suspended). Tap Play test sound again.'
+    return
+  }
+  try {
+    ping()
+    soundMessage.value = 'Test note played. If you heard nothing, see the device notes below.'
+  }
+  catch (error) {
+    soundMessage.value = 'Test note failed: ' + String(error && error.message ? error.message : error)
+  }
+}
+
 onMounted(() => {
   wireGMSwitchUI() // no need to remove listener cos el is destroyed when component is destroyed
+  refreshSoundStatus()
+  soundTimer = setInterval(refreshSoundStatus, 1000)
+})
+
+onUnmounted(() => {
+  if (soundTimer)
+    clearInterval(soundTimer)
+  soundTimer = null
 })
 
 </script>
@@ -24,6 +69,34 @@ onMounted(() => {
   <!-- sub accordion for debug stuff -->
   <div class="ui fluid styled accordion" style="background-color: burlywood;">
 
+
+    <div class="title">
+      <i class="dropdown icon"></i>
+      Sound
+    </div>
+    <div class="content">
+      <p>Audio state: <strong>{{ soundStatus ? soundStatus.state : 'not started' }}</strong><span
+          v-if="soundStatus">, sample rate {{ soundStatus.sampleRate }}</span>
+        <button type="button" class="ui mini button" @click="refreshSoundStatus()">Refresh</button>
+      </p>
+      <div v-if="soundStatus">
+        <p>Samples: jam {{ soundStatus.samples.jam ? 'ready' : 'loading' }}, chord
+          {{ soundStatus.samples.chord ? 'ready' : 'loading' }}, bass
+          {{ soundStatus.samples.bass ? 'ready' : 'loading' }}</p>
+        <ul v-if="Object.keys(soundStatus.samples.errors).length > 0">
+          <li v-for="(message, name) in soundStatus.samples.errors" :key="name">
+            {{ name }} failed: {{ message }}
+          </li>
+        </ul>
+      </div>
+      <p>
+        <button type="button" class="ui small primary button" @click="testSound()">Play test sound</button>
+        <span v-if="soundMessage"> {{ soundMessage }}</span>
+      </p>
+      <p>On iPhone/iPad: if the state says running, the samples are ready, and the test still makes no
+        sound while other apps are audible, the device itself is keeping it silent. Turn Silent Mode off in
+        Control Center, turn the volume up, and disconnect Bluetooth or AirPlay output, then try the test again.</p>
+    </div>
 
     <div class="title">
       <i class="dropdown icon"></i>

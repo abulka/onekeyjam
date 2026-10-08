@@ -74,7 +74,12 @@ export function auditionMidiNote(midi, duration = 0.4) {
 const AUDITION_TRIGGER = 'C21'
 let chordStopTimer = null
 
-function stopAuditionChord() {
+/**
+ * Stop a chord started by auditionChord (or the older auditionNotes, which
+ * shares the same fake trigger) without touching the chord trigger map.
+ * Safe to call when nothing is sounding.
+ */
+export function stopAuditionChord() {
     const chordInfos = globals.pendingChordNoteOffs[AUDITION_TRIGGER]
     if (chordInfos) {
         for (const info of chordInfos) {

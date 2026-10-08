@@ -11,6 +11,11 @@ let sfBassReady = false
 let sfChordReady = false
 let sfJamReady = false
 
+// Records a failed sample fetch per instrument, so the status readout can
+// tell "still loading" apart from "blocked or failed" (for example an iPad
+// content blocker stopping the third-party sample host).
+let sfErrors = {}
+
 export function isSoundfontReady(toneType) {
     switch (toneType) {
         case 'chord':
@@ -23,7 +28,7 @@ export function isSoundfontReady(toneType) {
 }
 
 export function soundfontStatus() {
-    return { jam: sfJamReady, chord: sfChordReady, bass: sfBassReady }
+    return { jam: sfJamReady, chord: sfChordReady, bass: sfBassReady, errors: { ...sfErrors } }
 }
 
 // jam, chord, bass
@@ -35,16 +40,16 @@ export function bootGeneralMidi(audioContext) {
     Soundfont.instrument(audioContext, sounds[0]).then(function (instrument) {
         sfJam = instrument
         sfJamReady = true
-    }).catch(() => { sfJamReady = false })
+    }).catch((error) => { sfJamReady = false; sfErrors.jam = String(error && error.message ? error.message : error) })
     // Soundfont.instrument(audioContext, 'marimba').then(function (instrument) {
     Soundfont.instrument(audioContext, sounds[1]).then(function (instrument) {
         sfChord = instrument
         sfChordReady = true
-    }).catch(() => { sfChordReady = false })
+    }).catch((error) => { sfChordReady = false; sfErrors.chord = String(error && error.message ? error.message : error) })
     Soundfont.instrument(audioContext, sounds[2]).then(function (instrument) {
         sfBass = instrument
         sfBassReady = true
-    }).catch(() => { sfBassReady = false })
+    }).catch((error) => { sfBassReady = false; sfErrors.bass = String(error && error.message ? error.message : error) })
 }
 
 export function stopGmNote(audioContext, noteOffInfo) {

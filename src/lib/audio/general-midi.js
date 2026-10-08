@@ -27,6 +27,47 @@ export function ensureAudioReady() {
     }
 }
 
+/**
+ * A small snapshot of the sound system for the on-screen status readout:
+ * the audio state plus which piano samples have finished loading.
+ * Returns null when the sound system has not booted.
+ */
+export function audioStatus() {
+    if (!audioContext)
+        return null
+    return {
+        state: audioContext.state,
+        sampleRate: audioContext.sampleRate,
+        samples: soundfont.soundfontStatus(),
+    }
+}
+
+/**
+ * Stronger recovery for the case the panel reports running samples yet no
+ * sound is heard. iOS can leave the output silent after an interruption
+ * (notification, lock, another app's audio) while still reporting the
+ * running state, and only a fresh start helps. A suspend followed by resume
+ * restarts the output without rebuilding the samples. Accepts an optional
+ * context so it can be unit tested; defaults to the shared one.
+ */
+export async function recoverAudio(ctx = audioContext) {
+    if (!ctx)
+        return false
+    try {
+        if (ctx.state === 'suspended') {
+            await ctx.resume()
+        }
+        else {
+            await ctx.suspend().catch(() => {})
+            await ctx.resume()
+        }
+    }
+    catch (error) {
+        return false
+    }
+    return ctx.state === 'running'
+}
+
 /** Wake on the first tap and whenever the page returns to the foreground. */
 function installAudioUnlock() {
     if (unlockInstalled)
@@ -38,11 +79,25 @@ function installAudioUnlock() {
     window.addEventListener('pointerdown', wake)
     window.addEventListener('touchend', wake)
     window.addEventListener('click', wake)
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden)
+    // Returning from lock, backgrounding or another app's audio can leave
+    // iOS silent even while reporting running. A short absence only needs a
+    // resume; a longer one gets the full suspend/resume restart.
+    let hiddenAt = null
+    const wakeFromBackground = () => {
+        if (hiddenAt && Date.now() - hiddenAt > 5000)
+            recoverAudio()
+        else
             ensureAudioReady()
+        hiddenAt = null
+    }
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            hiddenAt = Date.now()
+            return
+        }
+        wakeFromBackground()
     })
-    window.addEventListener('pageshow', wake)
+    window.addEventListener('pageshow', wakeFromBackground)
 }
 
 export function bootGeneralMidi() {

@@ -19,64 +19,67 @@ const scaleModeLabel = computed(() => {
   return globals.currentScaleFilter
 })
 
+// True while a note or chord is visibly sounding, so the phone layout can
+// hide the live readout when it is only blank placeholders.
+const isLiveSounding = computed(() => {
+  if (globals.currentRawLiveNote && globals.currentRawLiveNote.trim() !== '')
+    return true
+  const jammed = globals.currentChordBeingJammed
+  return !!(jammed && jammed.chord && !jammed.stale)
+})
+
 </script>
 
 <template>
 
     <div class="ui container wrapper">
-        <div class="ui compact grid">
+        <div class="status-card">
 
-            <div class="thirteen wide column">
-
-                <!-- sub grid  -->
-                <div class="ui four column divided compact grid">
-                    <div class="row">
-                        <div class="column two wide">
-                            Scale:
-                        </div>
-                        <div class="column five wide centered">
-                            <TriggeredScale />
-                        </div>
-                        <div class="center aligned column seven wide">
-                            <TriggeredScaleNotes />
-                        </div>
-                        <div class="column two wide">
-                            <span class="ui small text grey" v-if="globals.isProjectLoaded && globals.currentChordTriggerNote">{{ scaleModeLabel }}</span>
-                            <span class="ui small text grey" v-else></span>
-                        </div>
-                    </div>
-                    <div class="row debug">
-                        <div class="column two wide">
-                            Chord:
-                        </div>
-                        <div class="column five wide">
-                            <TriggeredChord />
-                        </div>
-                        <div class="center aligned column seven wide">
-                            <TriggeredChordNotes />
-                            <TriggeredChordBass />
-                        </div>
-                        <div class="column two wide">
-                            <span class="ui small text grey" v-if="globals.currentChordTriggerNote">via {{ globals.currentChordTriggerNote }}</span>
-                            <span class="ui small text grey" v-else></span>
-                        </div>
-                    </div>
-
+            <div class="status-main">
+                <div class="status-row">
+                    <span class="status-label">Scale:</span>
+                    <span class="status-name" :title="globals.currentScaleName">
+                        <TriggeredScale />
+                    </span>
+                    <span class="status-notes">
+                        <TriggeredScaleNotes />
+                    </span>
+                    <span class="status-meta">
+                        <span class="ui small text grey"
+                            v-if="globals.isProjectLoaded && globals.currentChordTriggerNote">{{ scaleModeLabel
+                            }}</span>
+                        <span class="ui small text grey" v-else></span>
+                    </span>
                 </div>
+                <div class="status-row">
+                    <span class="status-label">Chord:</span>
+                    <span class="status-name" :title="globals.currentChordName()">
+                        <TriggeredChord />
+                    </span>
+                    <span class="status-notes">
+                        <TriggeredChordNotes />
+                        <TriggeredChordBass />
+                    </span>
+                    <span class="status-meta">
+                        <span class="ui small text grey" v-if="globals.currentChordTriggerNote">via <strong
+                                class="via-note">{{
+                                    globals.currentChordTriggerNote }}</strong></span>
+                        <span class="ui small text grey" v-else></span>
+                    </span>
+                </div>
+
             </div>
 
-            <div class="three wide stretched column">
-                <div class="outer">
-                    <!-- wrap each in an extra div so flex layout affects these divs and not the divs inside each component -->
-                    <div>
-                        <JamNote />
-                    </div>
-                    <div>
-                        <DetectedChord />
-                    </div>
-                    <div v-if="globals.debugJamChord">
-                        <DetectedChordDebug />
-                    </div>
+            <div class="status-live" :class="{ 'hide-when-idle': !isLiveSounding }">
+                <!-- wrap each in an extra div so flex layout affects these divs and not the divs inside each component -->
+                <div>
+                    <JamNote />
+                </div>
+                <div>
+                    <DetectedChord />
+                </div>
+                <div v-if="globals.debugJamChord">
+                    <DetectedChordDebug />
                 </div>
             </div>
 
@@ -86,12 +89,72 @@ const scaleModeLabel = computed(() => {
 </template>
 
 <style scoped>
-.outer {
-    height: 100%;
+.status-card {
+    display: flex;
+    gap: 1rem;
+}
+
+.status-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.status-row {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+}
+
+.status-label {
+    flex: 0 0 auto;
+}
+
+.status-name {
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 32%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-notes {
+    flex: 1 1 auto;
+    min-width: 0;
+    text-align: center;
+}
+
+.status-meta {
+    flex: 0 0 auto;
+    margin-left: auto;
+}
+
+/* The chord trigger note, given prominence over the quiet surrounding label. */
+.via-note {
+    font-size: 1.25em;
+    font-weight: bold;
+    color: #2185d0;
+}
+
+.status-live {
+    /* Fixed size: the readout text comes and goes while soloing, and without
+    this the notes column would grow, shrink and jump with every note. */
+    flex: 0 0 10em;
+    max-width: 10em;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    text-align: center;
+    overflow: hidden;
+}
+
+.status-live :deep(p) {
+    margin: 0;
 }
 
 div.wrapper {
@@ -99,5 +162,74 @@ div.wrapper {
     padding: 1em;
     background-color: rgba(240, 195, 134, 0.543);
     box-shadow: chocolate 0px 0px 10px;
+}
+
+/* Compact phone layout: tight wrapped rows, with the live readout in a
+narrow reserved rail on the right (under the quiet labels) instead of
+costing a full line at the bottom. */
+@media (max-width: 768px) {
+    div.wrapper {
+        padding: 0.4em 0.5em;
+    }
+
+    .status-card {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+
+    .status-main {
+        flex: 1 1 auto;
+        min-width: 0;
+        gap: 0.15rem;
+    }
+
+    .status-row {
+        flex-wrap: wrap;
+        gap: 0.1rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    /* Names stay on the first line next to the label; the notes always get
+    their own full line underneath instead of wrapping into leftover space.
+    The quiet labels move up next to the names (order only affects phones;
+    wider screens keep the notes centred with the labels at the far right). */
+    .status-meta {
+        order: 2;
+    }
+
+    .status-notes {
+        flex: 1 1 100%;
+        order: 3;
+        text-align: left;
+    }
+
+    .status-live {
+        /* Fixed narrow rail: always reserved, so notes appearing never move
+        anything, and nothing below is pushed down. */
+        flex: 0 0 5.5em;
+        max-width: 5.5em;
+        min-height: 0;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-end;
+        text-align: right;
+        gap: 0.15rem;
+        overflow: hidden;
+    }
+
+    .status-live :deep(.jam-note-live) {
+        font-size: 0.85rem;
+    }
+
+    .status-live :deep(.detectedChord),
+    .status-live :deep(.detectedBass) {
+        font-size: 1rem;
+    }
+
+    /* Hidden but still reserving its line, so showing a note never moves
+    the rest of the page. */
+    .hide-when-idle {
+        visibility: hidden;
+    }
 }
 </style>

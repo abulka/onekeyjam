@@ -12,7 +12,7 @@ describe('soundfont guards (iPad slow-load safety)', () => {
         assert.equal(isSoundfontReady('jam'), false)
         assert.equal(isSoundfontReady('chord'), false)
         assert.equal(isSoundfontReady('bass'), false)
-        assert.deepEqual(soundfontStatus(), { jam: false, chord: false, bass: false })
+        assert.deepEqual(soundfontStatus(), { jam: false, chord: false, bass: false, errors: {} })
     })
 
     it('play returns null instead of throwing when samples are missing', () => {

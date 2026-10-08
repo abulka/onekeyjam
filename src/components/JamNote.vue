@@ -10,7 +10,7 @@ function showMappedNote() {
 
 <template>
     <!-- current white note being played  -->
-    <div style="font-size:large">
+    <div class="jam-note-live">
         <p v-if="showMappedNote()">
             {{ globals.currentJamNote.real }} ➡
             <span class="ui text blue"> {{ globals.currentJamNote.mapped }} </span>
@@ -21,4 +21,7 @@ function showMappedNote() {
 </template>
 
 <style scoped>
+.jam-note-live {
+    font-size: large;
+}
 </style>

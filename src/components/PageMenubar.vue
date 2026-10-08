@@ -350,4 +350,17 @@ onUnmounted(() => {
 .sequencer-play-toggle .icon {
   margin: 0;
 }
+
+/* On narrow phone screens the File/Actions and shortcut items wrap onto
+further rows instead of running off the right edge. */
+@media (max-width: 768px) {
+  .ui.secondary.menu {
+    flex-wrap: wrap;
+  }
+
+  .ui.secondary.menu .right.menu {
+    margin-left: 0 !important;
+    flex-wrap: wrap;
+  }
+}
 </style>

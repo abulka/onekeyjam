@@ -67,7 +67,7 @@ export function jam(note) {
 }
 
 export function jamOff(note) {
-    // No matter the state of scale filtering, we always need to 
+    // No matter the state of scale filtering, we always need to
     // check pendingNoteOffs for the real note (key) and turn off the allowed note (value)
     let noteOffInfo = globals.pendingNoteOffs[note.identifier]
     if (noteOffInfo) {
@@ -75,6 +75,13 @@ export function jamOff(note) {
         delete globals.pendingNoteOffs[note.identifier]
 
         recordJamNoteOff(allowedNote)
+
+        // Clear the live readout, but only when the released note is the one
+        // shown: with legato playing another note may still be held.
+        if (globals.currentJamNote && globals.currentJamNote.real === note.identifier) {
+            globals.currentJamNote.real = ''
+            globals.currentJamNote.mapped = ''
+        }
 
         // window.document.querySelector('#currentJamNote').innerHTML = `${note.identifier} -x-> ${allowedNote}`;
         // console.log(`${note.identifier} -x-> ${allowedNote} OFF`, 'pendingNoteOffs', globals.pendingNoteOffs)

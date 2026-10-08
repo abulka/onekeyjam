@@ -13,10 +13,14 @@ import KeyboardHelpOverlay from "./KeyboardHelpOverlay.vue"
 import PlaybackKeysOverlay from "./PlaybackKeysOverlay.vue"
 import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.vue"
 
-// window.matchMedia('(min-width: 700px)')
-const isLargeScreen = computed({
-  get: () => window.innerWidth > 768,
-})
+// Track the viewport width so rotation between portrait and landscape picks
+// the right keyboard size. A plain computed on window.innerWidth would only
+// evaluate once and leave the wrong width after rotating.
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+function onWindowResize() {
+  windowWidth.value = window.innerWidth
+}
+const isLargeScreen = computed(() => windowWidth.value > 768)
 
 // The keyboard keeps a fixed pixel width; changing the octave count makes the
 // keys wider or narrower rather than resizing the whole keyboard.
@@ -299,6 +303,7 @@ onMounted(() => {
   window.addEventListener('keyup', onKeyUp)
   window.addEventListener('blur', onWindowBlur)
   window.addEventListener('focus', updateNoteInputState)
+  window.addEventListener('resize', onWindowResize)
   document.addEventListener('live-note', onLiveNote)
   document.addEventListener('focusin', onFocusChange)
   document.addEventListener('focusout', onFocusChange)
@@ -312,6 +317,7 @@ onUnmounted(() => {
   window.removeEventListener('keyup', onKeyUp)
   window.removeEventListener('blur', onWindowBlur)
   window.removeEventListener('focus', updateNoteInputState)
+  window.removeEventListener('resize', onWindowResize)
   document.removeEventListener("live-note", onLiveNote)
   document.removeEventListener('focusin', onFocusChange)
   document.removeEventListener('focusout', onFocusChange)

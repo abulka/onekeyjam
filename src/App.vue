@@ -291,4 +291,16 @@ onUnmounted(() => {
   -webkit-user-select: text !important;
   user-select: text !important;
 }
+
+/* On narrow phone screens the tab bar, tempo and project name wrap onto
+further rows instead of running off the right edge (notably after rotating
+back to portrait, when the viewport shrinks again). */
+@media (max-width: 768px) {
+  .ui.secondary.menu {
+    flex-wrap: wrap;
+  }
+  .ui.secondary.menu .right.menu {
+    margin-left: 0 !important;
+  }
+}
 </style>
