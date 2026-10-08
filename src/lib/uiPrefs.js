@@ -67,6 +67,7 @@ export function clampBpm(value) {
  * @property {boolean} [metronomeEnabled]
  * @property {boolean} [showWelcomeDialog]
  * @property {boolean} [showFavouriteBinColumns]
+ * @property {boolean} [showDeleteColumn]
  * @property {string} [helpPage]
  * @property {string} [scalePolicy]
  * @property {boolean} [scaleAdvanced]
@@ -200,6 +201,8 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.showWelcomeDialog = stored.showWelcomeDialog
         if (stored && typeof stored.showFavouriteBinColumns === 'boolean')
             prefs.showFavouriteBinColumns = stored.showFavouriteBinColumns
+        if (stored && typeof stored.showDeleteColumn === 'boolean')
+            prefs.showDeleteColumn = stored.showDeleteColumn
         if (stored && HELP_PAGES.includes(stored.helpPage))
             prefs.helpPage = stored.helpPage
         if (stored && SCALE_POLICIES.includes(stored.scalePolicy))
@@ -243,6 +246,7 @@ export function currentPrefs() {
         metronomeEnabled: globals.metronomeEnabled,
         showWelcomeDialog: globals.showWelcomeDialog,
         showFavouriteBinColumns: globals.showFavouriteBinColumns,
+        showDeleteColumn: globals.showDeleteColumn,
         helpPage: globals.helpPage,
         scalePolicy: globals.scaleFiltering.policy,
         scaleAdvanced: globals.showScaleAdvanced,
@@ -293,6 +297,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.showWelcomeDialog = prefs.showWelcomeDialog
     if (typeof prefs.showFavouriteBinColumns === 'boolean')
         globals.showFavouriteBinColumns = prefs.showFavouriteBinColumns
+    if (typeof prefs.showDeleteColumn === 'boolean')
+        globals.showDeleteColumn = prefs.showDeleteColumn
     if (prefs.helpPage)
         globals.helpPage = prefs.helpPage
     if (prefs.scalePolicy)
@@ -329,6 +335,7 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.metronomeEnabled,
         globals.showWelcomeDialog,
         globals.showFavouriteBinColumns,
+        globals.showDeleteColumn,
         globals.helpPage,
         globals.scaleFiltering.policy,
         globals.showScaleAdvanced,

@@ -90,6 +90,20 @@ describe('uiPrefs', () => {
         assert.equal(readPrefs(storage).showFavouriteBinColumns, true)
     })
 
+    it('reads, loads and round-trips the delete column flag', () => {
+        assert.equal(globals.showDeleteColumn, false)
+        const on = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showDeleteColumn: true }) })
+        assert.equal(readPrefs(on).showDeleteColumn, true)
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ showDeleteColumn: 'yes' }) })
+        assert.equal(readPrefs(bad).showDeleteColumn, undefined)
+        loadUiPrefs(on)
+        assert.equal(globals.showDeleteColumn, true)
+        globals.showDeleteColumn = false
+        const roundTrip = fakeStorage()
+        writePrefs({ showDeleteColumn: true }, roundTrip)
+        assert.equal(readPrefs(roundTrip).showDeleteColumn, true)
+    })
+
     it('reads, loads and round-trips the scale history flag', () => {
         const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ scaleHistory: true }) })
         assert.equal(readPrefs(storage).scaleHistory, true)
@@ -138,6 +152,7 @@ describe('uiPrefs', () => {
         globals.metronomeEnabled = true
         globals.showWelcomeDialog = false
         globals.showFavouriteBinColumns = true
+        globals.showDeleteColumn = true
         globals.helpPage = 'tutorial'
         globals.scaleFiltering.policy = 'manual'
         globals.showScaleAdvanced = false
@@ -166,6 +181,7 @@ describe('uiPrefs', () => {
             metronomeEnabled: true,
             showWelcomeDialog: false,
             showFavouriteBinColumns: true,
+            showDeleteColumn: true,
             helpPage: 'tutorial',
             scalePolicy: 'manual',
             scaleAdvanced: false,
@@ -178,6 +194,7 @@ describe('uiPrefs', () => {
         })
         globals.showWelcomeDialog = true
         globals.showFavouriteBinColumns = false
+        globals.showDeleteColumn = false
         globals.helpPage = 'overview'
         globals.showScaleCellFill = false
         globals.keyboardOctaves = 2

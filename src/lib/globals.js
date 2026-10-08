@@ -142,6 +142,7 @@ export const globals = reactive({
     showScaleCellFill: false,  // fill the current scale-filter cell instead of a border only
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
     showFavouriteBinColumns: false,  // show the favourite and bin columns in the chord/scale table
+    showDeleteColumn: false,  // show only the bin (delete) column in the chord/scale table
     helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial' | 'reference'
     debugJamChord: false,
     syncChordPickerToJamChord: true,

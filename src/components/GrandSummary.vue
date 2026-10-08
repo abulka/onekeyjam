@@ -15,7 +15,7 @@ import { keyDetection } from '../../src/lib/keyDetection';
 import { projectKeyNotes } from '../../src/lib/projectKey.js';
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
-import { resizeGridRowCount } from '@/lib/boot-project.js'
+import { resizeGridRowCount, deleteSelectedChordConfigs } from '@/lib/boot-project.js'
 import { clampGridRowCount } from '@/lib/maxChordConfig.js'
 import { syncPickerToCurrentChord } from '@/lib/syncPickerToCurrentChord.js'
 
@@ -126,6 +126,13 @@ function onGridResizeKeyDown(event) {
     return
   event.preventDefault()
   commitGridSize(next)
+  releaseControlFocus(event)
+}
+
+function onDeleteSelectedChords(event) {
+  if (!globals.idsToDelete.length)
+    return
+  deleteSelectedChordConfigs()
   releaseControlFocus(event)
 }
 
@@ -676,7 +683,7 @@ function generalTableClick(event) {
 
         <th v-if="globals.showFavouriteBinColumns"><button @click="markAllVisibleChordsAsFavourites(); if (globals.keySignatureDetection.fromFavouritesOnly) keyDetection()" class="circular compact mini transparent ui icon button" title="Add all to favourites"> <i class="heart icon"></i> </button></th>
         <!-- <th><button @click="markAllVisibleChordsForBlackList()" class="circular compact mini transparent ui icon button" title="Add all to blacklist"> <i class="thumbs down icon"></i> </button></th> -->
-        <th v-if="globals.showFavouriteBinColumns"><button @click="markAllVisibleChordsForDeletion()" class="circular compact mini transparent ui icon button" title="Mark all to be deleted - then Actions/Reallocate Chords to apply"> <i class="trash icon"></i> </button></th>
+        <th v-if="globals.showFavouriteBinColumns || globals.showDeleteColumn"><button @click="markAllVisibleChordsForDeletion()" class="circular compact mini transparent ui icon button" title="Mark all to be deleted - then Delete selected below to apply"> <i class="trash icon"></i> </button></th>
 
       </tr>
     </thead>
@@ -826,7 +833,7 @@ function generalTableClick(event) {
         </td>
         <td v-if="globals.showFavouriteBinColumns"><input type="checkbox" v-model="info.favourite" /></td>
         <!-- <td><input type="checkbox" v-model="info.blackListed" /></td> -->
-        <td v-if="globals.showFavouriteBinColumns"><input type="checkbox" v-model="info.todelete" /></td>
+        <td v-if="globals.showFavouriteBinColumns || globals.showDeleteColumn"><input type="checkbox" v-model="info.todelete" /></td>
       </tr>
     </tbody>
   </table>
@@ -854,6 +861,21 @@ function generalTableClick(event) {
       <span v-if="gridFitsComputerKeys" class="fits-keys-tag">7 fits z x c v b n m</span>
       <span v-else-if="displayedGridRows < 7" class="resize-hint">short grid, more keys free for solo</span>
       <span v-else class="resize-hint">tall grid, fewer keys free for solo</span>
+    </div>
+  </div>
+  <div v-if="globals.isProjectLoaded && totalGridRows > 1" class="grid-delete-footer">
+    <button
+      type="button"
+      class="ui tiny button"
+      :disabled="globals.idsToDelete.length === 0"
+      :title="globals.idsToDelete.length === 0 ? 'Tick the bin checkboxes first' : 'Delete the ticked rows'"
+      @click="onDeleteSelectedChords($event)"
+    >
+      Delete selected ({{ globals.idsToDelete.length }})
+    </button>
+    <div class="ui checkbox">
+      <input type="checkbox" id="show-delete-column-grid" v-model="globals.showDeleteColumn">
+      <label for="show-delete-column-grid">Show delete column in the chord/scale table</label>
     </div>
   </div>
   <div v-else class="warn">
@@ -1230,6 +1252,15 @@ select.preset-custom {
 .grid-resize-handle .resize-hint {
   color: #6b5a45;
   font-style: italic;
+}
+
+/* Final delete step and column toggle, directly under the grid resizer. */
+.grid-delete-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-top: 0.5rem;
 }
 
 /* Phones keep the table shape and swipe sideways inside this frame, so the

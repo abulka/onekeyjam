@@ -10,7 +10,7 @@ import { wireScaleFilterShortcuts } from "./midi/scaleFilterShortcuts.js"
 import { emergencyRepairProject } from './emergencyRepairProject.js';
 import { verifyTriggerMap, candidatesToTriggerMapSmart, existingToTriggerMapSmart } from './triggerMaps';
 import { openJsonUrl } from "./util.js";
-import { setMaxDisplayed, applyUserGridRowCount } from './maxChordConfig'
+import { setMaxDisplayed, applyUserGridRowCount, updateGridSliderMax } from './maxChordConfig'
 import { findMatchingScalesForProject } from "./findMatchingScales"
 import { resetChordHistory } from "./autoScale.js"
 import { detectChords } from './parse-midi.js';
@@ -226,6 +226,29 @@ export function resizeGridRowCount(requestedCount) {
     keyDetection();
     linkProjectToKeyboard();
     return next
+}
+
+export function deleteSelectedChordConfigs() {
+    // Delete the grid rows ticked in the bin column, then refresh the grid in
+    // place. This mirrors resizeGridRowCount() rather than reAllocateChords(),
+    // so the remaining rows keep their order instead of being reshuffled.
+    if (!globals.project || !Array.isArray(globals.project.chords))
+        return 0
+    if (!Array.isArray(globals.idsToDelete) || globals.idsToDelete.length === 0)
+        return 0
+    const deletedCount = globals.idsToDelete.length
+    deletePendingChordConfigs()
+
+    const remaining = globals.project.chords.length
+    if (remaining > 0)
+        applyUserGridRowCount(Math.min(globals.maxChordConfigs, remaining), globals.project)
+    else
+        updateGridSliderMax(globals.project)
+    regen(true)
+    globals.projectKey = resolveProjectKey(globals.project) ?? null;
+    keyDetection();
+    linkProjectToKeyboard();
+    return deletedCount
 }
 
 export function reAllocateScales(simple = true) {
