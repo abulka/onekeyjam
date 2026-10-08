@@ -5,6 +5,7 @@ import { globals } from "@/lib/globals.js"
 import { parseChordSequence } from "@/lib/parseChordSequence.js"
 import { voiceChordSequence } from "@/lib/voiceChordSequence.js"
 import { appendChordSequence, lastProjectChordNotes } from "@/lib/appendChordSequence.js"
+import { buildChordSequenceTextFromGrid, gridChordSymbol, orderedGridChordConfigs } from "@/lib/gridChordsToSequenceText.js"
 
 const inputText = ref('')
 const statusMessage = ref('')
@@ -36,6 +37,27 @@ const appendLabel = computed(() => {
   const count = parseResult.value.entries.length
   return count === 1 ? 'Append 1 Chord' : `Append ${count} Chords`
 })
+
+// Number of named grid chords, tracked reactively so the button enables
+// as soon as chords are added elsewhere.
+const gridChordCount = computed(() => {
+  const poolCount = globals.project?.chords?.length ?? 0
+  const idsCount = globals.project?.songs?.default?.ids?.length ?? 0
+  void poolCount
+  void idsCount
+  return orderedGridChordConfigs().filter((config) => gridChordSymbol(config)).length
+})
+const canGenerateFromGrid = computed(() => gridChordCount.value > 0)
+
+function generateFromGrid() {
+  const text = buildChordSequenceTextFromGrid()
+  if (!text)
+    return
+  inputText.value = text
+  statusMessage.value = gridChordCount.value === 1
+    ? 'Loaded 1 chord from the grid.'
+    : `Loaded ${gridChordCount.value} chords from the grid.`
+}
 
 function inversionLabel(inversion) {
   return inversion === 0 ? 'root position' : `inversion ${inversion}`
@@ -101,6 +123,14 @@ function appendToGrid() {
     </div>
 
     <div class="mt-2">
+      <button
+        @click="generateFromGrid"
+        class="ui small button"
+        :disabled="!canGenerateFromGrid"
+        title="Copy grid chord names into the text area"
+      >
+        Generate from Grid
+      </button>
       <button @click="appendToGrid" class="ui small button" :disabled="!canAppend">
         {{ appendLabel }}
       </button>
@@ -115,5 +145,8 @@ textarea {
 }
 .mt-2 {
   margin-top: 0.6em;
+}
+button + button {
+  margin-left: 0.5em;
 }
 </style>
