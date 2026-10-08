@@ -108,39 +108,57 @@ function capturePatternRowToBackground(row, startSec, endSec) {
     }
 }
 
+// Milliseconds until the note's sound time, so a transpose (or any map
+// change) made during the widget's ~1s preload still affects the upcoming
+// chord. Without an audio clock (notably in tests) there is no preload, so
+// the note plays immediately as before.
+function soundDelayMs(when) {
+    if (!audioContext || typeof audioContext.currentTime !== 'number' || typeof when !== 'number')
+        return 0
+    return Math.max(0, (when - audioContext.currentTime) * 1000)
+}
+
 // One note from the widget's play loop. The widget calls this ahead of time
 // (its ~1s preload) with the note's real time in `options.t`, so anything that
 // must line up with the sound is scheduled for `options.t` rather than run now.
 export function patternOnNote(options) {
     // options: {t: note on time, g: note off time, n: note number}
     const allowedNote = indexToNote(options.n - 60, globals.keyboard.lhTriggerOctave)
-    const simulatedEvent = {
-        note: new Note(allowedNote, { attack: 0.5 }),
-        duration: options.g - options.t,
-        when: options.t,
-    }
 
     // Light the played key on the main keyboard and the strips, in time.
     scheduleLiveNote(TonalNote.midi(allowedNote), options.t, options.g)
 
-    const isTrigger = globals.enableLhChordTriggers && (allowedNote in globals.chordTriggerMap)
-    if (isTrigger) {
-        // Count this chord for the Record section's live "Chords" readout (it is
-        // merged into the take on stop).
-        if (rowToTakeNotes(options.n).length > 0)
-            globals.recording.live.chords += 1
-        // playChord schedules the chord audio for `when` now and defers the
-        // scale/chord state to `when` too (see deferStateToWhen).
-        runSuppressed(() => onNoteOnSequenced(simulatedEvent))
+    const delayMs = soundDelayMs(options.t)
+    const play = () => {
+        // Re-evaluate the trigger row at sound time: the row itself is fixed,
+        // but the map it resolves through may have been transposed (or the
+        // chord-trigger switch toggled) during the preload window.
+        const triggerNote = indexToNote(options.n - 60, globals.keyboard.lhTriggerOctave)
+        const event = {
+            note: new Note(triggerNote, { attack: 0.5 }),
+            duration: options.g - options.t,
+            when: options.t,
+        }
+        const trigger = globals.enableLhChordTriggers && (triggerNote in globals.chordTriggerMap)
+        if (trigger) {
+            // Count this chord for the Record section's live "Chords" readout
+            // (it is merged into the take on stop).
+            if (rowToTakeNotes(options.n).length > 0)
+                globals.recording.live.chords += 1
+            // Both the chord audio and the scale/chord state now read the
+            // current map at sound time, so a transpose made during the
+            // preload window retunes this chord instead of the one after it.
+            // playChord's own deferStateToWhen stays as a safety net; with the
+            // note fired at sound time its remaining delay is near zero.
+            runSuppressed(() => onNoteOnSequenced(event))
+            capturePatternRowToBackground(options.n, options.t, options.g)
+            return
+        }
+        // A single note (an unassigned trigger row): play it at its real time.
+        globals.recording.live.jam += 1
         capturePatternRowToBackground(options.n, options.t, options.g)
-        return
+        runSuppressed(() => onNoteOnSequenced(event))
     }
-
-    // A single note (an unassigned trigger row): play it at its real time.
-    globals.recording.live.jam += 1
-    capturePatternRowToBackground(options.n, options.t, options.g)
-    const delayMs = Math.max(0, (options.t - audioContext.currentTime) * 1000)
-    const play = () => runSuppressed(() => onNoteOnSequenced(simulatedEvent))
     if (delayMs > 8)
         visualTimers.push(setTimeout(play, delayMs))
     else

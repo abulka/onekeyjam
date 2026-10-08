@@ -529,6 +529,83 @@ function _setActiveScaleFilter(scaleNotes) {
     // reportScaleChange(scale ? scale : 'default')  // does various broadcasts
 }
 
+/**
+ * Move a pitch-class note (for example 'C' or 'Bb') by an interval without
+ * adding an octave. Tonal can return an octave for some inputs, so the pitch
+ * class is kept when the input had none.
+ * @param {string} note
+ * @param {string} intervalName
+ * @returns {string}
+ */
+function transposePitchClass(note, intervalName) {
+    if (!note)
+        return note
+    const transposed = Tonal.Note.simplify(Tonal.Note.transpose(note, intervalName))
+    if (!transposed)
+        return note
+    const hadOctave = Tonal.Note.get(note).oct !== undefined
+    if (!hadOctave) {
+        const pc = Tonal.Note.get(transposed).pc
+        return pc || transposed
+    }
+    return transposed
+}
+
+/**
+ * Move a scale name (for example 'C major') by an interval, keeping the type.
+ * Empty names pass through; 'notes of chord' is left alone.
+ * @param {string} name
+ * @param {string} intervalName
+ * @returns {string}
+ */
+function transposeLockedScaleName(name, intervalName) {
+    if (!name || name === 'notes of chord')
+        return name
+    const scaleObj = Tonal.Scale.get(name)
+    if (scaleObj.empty || !scaleObj.tonic)
+        return name
+    const newTonic = transposePitchClass(scaleObj.tonic, intervalName)
+    return `${newTonic} ${scaleObj.type}`
+}
+
+/**
+ * Retune a locked solo scale after a live transposition, so a frozen scale or
+ * an explicit ScalePicker override moves with the chords instead of staying
+ * on the old notes while the sequencer plays the new ones.
+ *
+ * The normal chord-slot scales are already transposed in the trigger map and
+ * are rebuilt by changeScaleFilter, so this only handles the two locked
+ * states that changeScaleFilter leaves alone: the ScalePicker override (which
+ * it would otherwise clear) and the frozen scale (which it leaves untouched).
+ * Rebuilds the trigger map in place and preserves the lock.
+ * @param {string} intervalName Tonal interval (for example '2m' or '5P')
+ * @returns {boolean} true when a locked scale was retuned
+ */
+export function retuneLockedSoloScale(intervalName) {
+    if (globals.scaleOverrideName && globals.scaleOverrideNotes.length > 0) {
+        const newName = transposeLockedScaleName(globals.scaleOverrideName, intervalName)
+        const newNotes = globals.scaleOverrideNotes.map(note => transposePitchClass(note, intervalName))
+        const scaleObj = Tonal.Scale.get(newName)
+        if (!scaleObj.empty) {
+            globals.scaleFiltering.scaleTonic = scaleObj.tonic
+            globals.scaleFiltering.scaleType = scaleObj.type
+        }
+        globals.scaleOverrideName = newName
+        globals.scaleOverrideNotes = newNotes
+        _setActiveScaleFilter(newNotes)
+        return true
+    }
+    if (globals.scaleFiltering.frozen && globals.scaleFiltering.frozenScaleNotes.length > 0) {
+        const newNotes = globals.scaleFiltering.frozenScaleNotes.map(note => transposePitchClass(note, intervalName))
+        if (globals.scaleFiltering.scaleTonic)
+            globals.scaleFiltering.scaleTonic = transposePitchClass(globals.scaleFiltering.scaleTonic, intervalName)
+        globals.scaleFiltering.frozenScaleNotes = newNotes
+        _setActiveScaleFilter(newNotes)
+        return true
+    }
+    return false
+}
+
 function clearActiveScaleFilter() {
     clearAutoScaleState()
     globals.scaleFiltering.manualScaleNote = ''

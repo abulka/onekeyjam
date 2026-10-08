@@ -40,7 +40,7 @@ function graceWindow(value) {
 /**
  * Recompute held solo notes against globals.scaleTriggerMap and correct any
  * that changed and are still inside the grace window.
- * @param {{ now?: number }} [options] now is injectable for tests.
+ * @param {{ now?: number, windowMs?: number }} [options] now is injectable for tests; windowMs overrides the repair setting (for example a transpose moves every held note).
  * @returns {number} how many held notes were corrected or stopped
  */
 export function remapHeldSoloNotes(options = {}) {
@@ -56,7 +56,7 @@ export function remapHeldSoloNotes(options = {}) {
         return 0
 
     const now = options.now ?? nowMs()
-    const window = graceWindow(repair && repair.windowMs)
+    const window = graceWindow(options.windowMs ?? (repair && repair.windowMs))
     let corrected = 0
 
     for (const realKey of Object.keys(globals.pendingNoteOffs)) {

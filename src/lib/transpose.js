@@ -2,9 +2,10 @@
 import * as Tonal from '@tonaljs/tonal';
 import { globals } from "./globals.js"
 import { expandChordConfig } from "./expandChordConfig"
-import { changeScaleFilter } from './change-scale';
+import { changeScaleFilter, retuneLockedSoloScale } from './change-scale';
 import { removeBassSlash } from './removeBassSlash.js';
 import { resetChordHistory } from './autoScale.js';
+import { remapHeldSoloNotes } from './midi/remap-held-solo-notes.js';
 
 /**
  * @module lib/transpose
@@ -173,12 +174,32 @@ function transposeChordTriggerMapBy(intervalName, semitoneDelta) {
     // history and any held draw are cleared.
     resetChordHistory()
 
+    // A frozen scale or an explicit ScalePicker override is not rebuilt by
+    // changeScaleFilter, so move it here. Otherwise the sequencer sounds the
+    // transposed chords while the solo stays on the old notes.
+    const lockedRetuned = retuneLockedSoloScale(intervalName)
+
     // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
     document.broadcastEvent('chord-changed', {
         notes: globals.currentLhNotes(),
         bass: globals.currentBass()
     })
-    changeScaleFilter()  // broadcast a scale change since the scale is affected by the chord change
+    if (lockedRetuned) {
+        // changeScaleFilter would leave a locked scale alone (frozen) or clear
+        // it (override), so broadcast the retune directly.
+        // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+        document.broadcastEvent('scale-changed', { notes: globals.currentScaleNotes })
+        // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+        document.broadcastEvent('scale-filtering-changed', { state: globals.scaleFilteringEnabled, notes: globals.currentScaleNotes })
+    }
+    else {
+        changeScaleFilter()  // broadcast a scale change since the scale is affected by the chord change
+    }
+    // A transpose is an explicit retune of everything, so move held solo notes
+    // even when they started outside the usual short grace window. Already
+    // ringing chord audio is left to decay; future sequencer notes already read
+    // the transposed map.
+    remapHeldSoloNotes({ windowMs: Infinity })
 }
 
 export function transposeChordTriggerMap(degrees) {
