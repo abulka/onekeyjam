@@ -6,6 +6,7 @@ import DebugAdmin from '@/components/DebugAdmin.vue'
 import { registerAccordion } from '@/lib/accordionState.js'
 import { globals } from '@/lib/globals.js'
 import { BACKGROUND_WINDOW_OPTIONS } from '@/lib/midi/background-recorder.js'
+import { KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX } from '@/lib/uiPrefs.js'
 
 function backgroundWindowLabel(sec) {
   return sec < 60 ? `${sec} seconds` : `${sec / 60} minute${sec / 60 === 1 ? '' : 's'}`
@@ -71,6 +72,25 @@ onUnmounted(() => stopAccordion())
               With this on, the cell for the sounding scale filter gets a pale
               background, in manual, follow and shuffle modes alike. Leave it off
               for a quieter grid where only the border marks the current cell.
+            </p>
+          </div>
+          <div class="mt-2 settings-suboption">
+            <label title="How many octaves to squeeze onto the screen before scrolling instead.">
+              Fit up to
+              <select v-model.number="globals.keyboardFitOctaves">
+                <option :value="KEYBOARD_OCTAVE_MIN">2 octaves</option>
+                <option :value="3">3 octaves</option>
+                <option :value="4">4 octaves</option>
+                <option :value="5">5 octaves</option>
+                <option :value="KEYBOARD_OCTAVE_MAX">6 octaves (always fit)</option>
+              </select>
+              before scrolling the keyboard
+            </label>
+            <p class="settings-hint">
+              Adding octaves squeezes the keys until this limit, then the
+              keyboard keeps its 2-octave key size and grows wider instead, so
+              the extra notes are reached with the Scroll buttons or the
+              scrollbar.
             </p>
           </div>
           <div class="mt-2">
@@ -156,5 +176,11 @@ onUnmounted(() => stopAccordion())
 
 .settings-suboption {
   margin-left: 1.5rem;
+}
+
+/* The fit-limit hint sits inside its suboption row, so drop its usual indent
+to keep it lined up with the other hints. */
+.settings-suboption > .settings-hint {
+  margin-left: 0;
 }
 </style>

@@ -363,11 +363,15 @@ and the validation commands.
   the button above the on-screen keyboard, next to the Key labels control.
 - The number of octaves shown on the main keyboard (2 to 6, default 2) is set
   by the "Octaves" -/+ stepper in that row and saved as `globals.keyboardOctaves`
-  by `src/lib/uiPrefs.js`. The keyboard keeps a fixed pixel width while the keys
-  grow or shrink, and the black-key label font and the computer-key shortcut
-  badges grow with the key width. Only the display changes: the leftmost key is
-  always the chord-trigger octave, extra octaves extend upward, and notes
-  outside the visible range still play (they simply do not light up).
+  by `src/lib/uiPrefs.js`. Up to the Settings "Fit up to" limit
+  (`globals.keyboardFitOctaves`, default 3) the keyboard keeps a fixed pixel
+  width while the keys grow or shrink; beyond that limit it keeps its 2-octave
+  key size and grows wider instead (see `src/lib/keyboard-size.js`), so the
+  extra notes are reached with the Scroll buttons or the scrollbar. The
+  black-key label font and the computer-key shortcut badges grow with the key
+  width. Only the display changes: the leftmost key is always the chord-trigger
+  octave, extra octaves extend upward, and notes outside the visible range still
+  play (they simply do not light up).
 - The separate `src/components/PianoKeyboard.vue` component (reachable only from
   the research view) is an older experiment. It highlights keys when computer
   keys are pressed but does not emit events, so it does not produce sound.

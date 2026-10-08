@@ -9,6 +9,7 @@ import { getNoteKeyForCode } from "@/lib/midi/piano-key-map.js"
 import { isTypingTarget } from "@/lib/is-typing-target.js"
 import { consumePendingKeyboardFocus } from "@/lib/demo-project.js"
 import { KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX } from "@/lib/uiPrefs.js"
+import { computeKeyboardWidth } from "@/lib/keyboard-size.js"
 import KeyboardHelpOverlay from "./KeyboardHelpOverlay.vue"
 import PlaybackKeysOverlay from "./PlaybackKeysOverlay.vue"
 import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.vue"
@@ -17,30 +18,61 @@ import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.vue"
 // the right keyboard size. A plain computed on window.innerWidth would only
 // evaluate once and leave the wrong width after rotating.
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
-// The wrapper is a block, so its clientWidth is the width available to the
-// keyboard. Measuring it lets the keyboard fill landscape/wide layouts while
-// portrait phones stay at the small width and crop.
+// The wrapper is the horizontal scroll container, so its clientWidth is the
+// visible width available to the keyboard. Measuring it lets the keyboard
+// fill landscape/wide layouts while portrait phones keep the small width and
+// scroll sideways to reach higher notes.
 const keyboardWrap = ref(null)
 const containerWidth = ref(windowWidth.value)
+// Whether the keyboard currently overflows, driving the scroll buttons.
+const canScrollLeft = ref(false)
+const canScrollRight = ref(false)
+function updateScrollButtons() {
+  const el = keyboardWrap.value
+  if (!el) {
+    canScrollLeft.value = false
+    canScrollRight.value = false
+    return
+  }
+  canScrollLeft.value = el.scrollLeft > 1
+  canScrollRight.value = el.scrollLeft + el.clientWidth < el.scrollWidth - 1
+}
 function measureContainer() {
   const el = keyboardWrap.value
   if (el && el.clientWidth > 0)
     containerWidth.value = el.clientWidth
+  updateScrollButtons()
+}
+// Scroll by most of the visible width so a tap moves about an octave.
+// Touch gestures that start on the keys keep playing notes (slide-to-play),
+// so these buttons and the scrollbar are the touch scrolling path.
+function scrollKeyboard(direction) {
+  const el = keyboardWrap.value
+  if (!el)
+    return
+  const amount = Math.max(120, Math.floor(el.clientWidth * 0.8)) * direction
+  el.scrollBy({ left: amount, behavior: 'smooth' })
+}
+function onKeyboardScroll() {
+  updateScrollButtons()
 }
 function onWindowResize() {
   windowWidth.value = window.innerWidth
   measureContainer()
 }
 
-// The keyboard keeps a fixed pixel width; changing the octave count makes the
-// keys wider or narrower rather than resizing the whole keyboard. The width
-// fills the available container, clamped so portrait phones crop at the small
-// width and wide screens never exceed the large width.
+// The keyboard squeezes its keys to fit the available width up to the fit
+// limit from Settings, then keeps its 2-octave key size and grows wider, so
+// the extra notes are reached by scrolling. Narrow screens still scroll at
+// the small width and wide screens never fit wider than the large width.
 const LARGE_KEYBOARD_WIDTH = 1130
 const SMALL_KEYBOARD_WIDTH = 710
 const keyboardWidth = computed(() => {
   const available = containerWidth.value || windowWidth.value
-  return Math.max(SMALL_KEYBOARD_WIDTH, Math.min(LARGE_KEYBOARD_WIDTH, available))
+  return computeKeyboardWidth(available, globals.keyboardOctaves, globals.keyboardFitOctaves, {
+    small: SMALL_KEYBOARD_WIDTH,
+    large: LARGE_KEYBOARD_WIDTH,
+  })
 })
 
 const NONOTE = ' '
@@ -284,6 +316,8 @@ function applyKeyboardGeometry() {
   el.min = 0
   el.width = keyboardWidth.value
   el.keys = keyboardKeys.value
+  // The inner width changed, so the scroll overflow may have changed too.
+  nextTick(() => updateScrollButtons())
 }
 
 async function attachKeyboard() {
@@ -389,13 +423,26 @@ onUnmounted(() => {
         </label>
         <button type="button" class="shortcuts-help-button" title="Show the keyboard shortcuts quick reference"
           @click="showShortcutsHelp = true">Shortcuts help</button>
+        <div class="keyboard-scroll-group"
+          title="Scroll the keyboard sideways to reach lower or higher notes. Swipes starting on the keys still play notes.">
+          <span class="scroll-label">Scroll</span>
+          <button type="button" class="scroll-button" :disabled="!canScrollLeft"
+            aria-label="Scroll keyboard to lower notes" title="Scroll keyboard to lower notes"
+            @click="scrollKeyboard(-1)">&lsaquo;</button>
+          <button type="button" class="scroll-button" :disabled="!canScrollRight"
+            aria-label="Scroll keyboard to higher notes" title="Scroll keyboard to higher notes"
+            @click="scrollKeyboard(1)">&rsaquo;</button>
+        </div>
       </div>
     </div>
-    <div ref="keyboardWrap" class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }">
-      <webaudio-keyboard ref="pianoKeyboard" keys="49" width="1130"></webaudio-keyboard>
-      <PlaybackKeysOverlay :keyboard-el="pianoKeyboard" :keys="keyboardKeys" />
-      <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off' || globals.showKeyShortcuts" :keyboard-el="pianoKeyboard"
-        :keys="keyboardKeys" />
+    <div ref="keyboardWrap" class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }"
+      @scroll="onKeyboardScroll">
+      <div class="piano-keyboard-inner" :style="{ width: keyboardWidth + 'px' }">
+        <webaudio-keyboard ref="pianoKeyboard" keys="49" width="1130"></webaudio-keyboard>
+        <PlaybackKeysOverlay :keyboard-el="pianoKeyboard" :keys="keyboardKeys" />
+        <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off' || globals.showKeyShortcuts" :keyboard-el="pianoKeyboard"
+          :keys="keyboardKeys" />
+      </div>
     </div>
     <KeyboardShortcutsHelp v-model="showShortcutsHelp" />
   </div>
@@ -403,10 +450,10 @@ onUnmounted(() => {
 
 <style scoped>
 .piano-keyboard-wrap {
-  position: relative;
   display: block;
   max-width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   line-height: 0;
   outline: 2px solid rgba(0, 0, 0, 0.12);
   outline-offset: 2px;
@@ -417,13 +464,54 @@ onUnmounted(() => {
   outline: 2px solid #2e8b57;
 }
 
-/* On phones just crop the keyboard to what fits. Playing still sounds all
-keys, so there is no need for sideways scrolling. */
-@media (max-width: 991.98px) {
-  .piano-keyboard-wrap {
-    max-width: 100%;
-    overflow: hidden;
-  }
+/* The inner box is the full keyboard width, so it scrolls inside the wrapper
+and carries the label overlays with it. Swipes starting on the keys still
+play notes, while these buttons and the scrollbar move sideways. */
+.piano-keyboard-inner {
+  position: relative;
+  line-height: 0;
+}
+
+.piano-keyboard-inner webaudio-keyboard {
+  display: block;
+}
+
+.keyboard-scroll-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.78rem;
+  color: #333;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.scroll-label {
+  margin-right: 0.1rem;
+}
+
+.scroll-button {
+  width: 1.35rem;
+  height: 1.35rem;
+  line-height: 1;
+  padding: 0;
+  border: 1px solid #2f4fa8;
+  border-radius: 4px;
+  background: #4a6fd4;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.scroll-button:hover:not(:disabled) {
+  background: #3a5cc0;
+}
+
+.scroll-button:disabled {
+  opacity: 0.4;
+  cursor: default;
 }
 
 .keyboard-hint-row {

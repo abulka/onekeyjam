@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { readPrefs, writePrefs, loadUiPrefs, currentPrefs, KEYBOARD_HELP_MODES, KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX, clampKeyboardOctaves, BPM_MIN, BPM_MAX, clampBpm } from '@/lib/uiPrefs.js'
+import { readPrefs, writePrefs, loadUiPrefs, currentPrefs, KEYBOARD_HELP_MODES, KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX, KEYBOARD_FIT_OCTAVES_DEFAULT, clampKeyboardOctaves, clampKeyboardFitOctaves, BPM_MIN, BPM_MAX, clampBpm } from '@/lib/uiPrefs.js'
 import { globals } from '@/lib/globals.js'
 
 function fakeStorage(initial = {}) {
@@ -20,6 +20,11 @@ describe('uiPrefs', () => {
 
     it('defaults the keyboard to two octaves', () => {
         assert.equal(globals.keyboardOctaves, 2)
+    })
+
+    it('defaults the keyboard to fit up to three octaves', () => {
+        assert.equal(KEYBOARD_FIT_OCTAVES_DEFAULT, 3)
+        assert.equal(globals.keyboardFitOctaves, 3)
     })
 
     it('defaults the scale policy options panel to hidden', () => {
@@ -128,6 +133,7 @@ describe('uiPrefs', () => {
         globals.keyboardHelpMode = 'white'
         globals.showKeyShortcuts = true
         globals.keyboardOctaves = 5
+        globals.keyboardFitOctaves = 4
         globals.recording.bpm = 140
         globals.metronomeEnabled = true
         globals.showWelcomeDialog = false
@@ -155,6 +161,7 @@ describe('uiPrefs', () => {
             keyboardHelpMode: 'white',
             showKeyShortcuts: true,
             keyboardOctaves: 5,
+            keyboardFitOctaves: 4,
             bpm: 140,
             metronomeEnabled: true,
             showWelcomeDialog: false,
@@ -174,6 +181,7 @@ describe('uiPrefs', () => {
         globals.helpPage = 'overview'
         globals.showScaleCellFill = false
         globals.keyboardOctaves = 2
+        globals.keyboardFitOctaves = 3
         globals.recording.bpm = 120
         globals.metronomeEnabled = false
     })
@@ -215,6 +223,31 @@ describe('uiPrefs', () => {
         const storage = fakeStorage()
         writePrefs({ keyboardOctaves: 6 }, storage)
         assert.equal(readPrefs(storage).keyboardOctaves, 6)
+    })
+
+    it('clamps the keyboard fit octave count to the supported range', () => {
+        assert.equal(clampKeyboardFitOctaves(1), KEYBOARD_OCTAVE_MIN)
+        assert.equal(clampKeyboardFitOctaves(99), KEYBOARD_OCTAVE_MAX)
+        assert.equal(clampKeyboardFitOctaves(3.4), 3)
+        assert.equal(clampKeyboardFitOctaves('nonsense'), undefined)
+    })
+
+    it('reads and validates the keyboard fit octave count', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyboardFitOctaves: 4 }) })
+        assert.equal(readPrefs(good).keyboardFitOctaves, 4)
+        const clamped = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyboardFitOctaves: 99 }) })
+        assert.equal(readPrefs(clamped).keyboardFitOctaves, KEYBOARD_OCTAVE_MAX)
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyboardFitOctaves: 'wide' }) })
+        assert.equal(readPrefs(bad).keyboardFitOctaves, undefined)
+    })
+
+    it('loads and round-trips the keyboard fit octave count', () => {
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyboardFitOctaves: 4 }) }))
+        assert.equal(globals.keyboardFitOctaves, 4)
+        globals.keyboardFitOctaves = 3
+        const storage = fakeStorage()
+        writePrefs({ keyboardFitOctaves: 5 }, storage)
+        assert.equal(readPrefs(storage).keyboardFitOctaves, 5)
     })
 
     it('clamps the BPM to the supported range', () => {

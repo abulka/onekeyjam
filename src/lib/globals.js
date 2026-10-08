@@ -368,6 +368,12 @@ export const globals = reactive({
     // changes what is drawn; notes can still be played anywhere. Persisted via
     // src/lib/uiPrefs.js.
     keyboardOctaves: 2,
+    // How many octaves to squeeze onto the screen before scrolling instead.
+    // When the shown octaves are at or below this limit the keyboard fits the
+    // available width; above it the keyboard keeps its 2-octave key size and
+    // grows wider, so the extra notes are reached by scrolling. Persisted via
+    // src/lib/uiPrefs.js.
+    keyboardFitOctaves: 3,
     // Click track on/off, toggled next to the BPM in the top bar.
     metronomeEnabled: false,
     computerKeyboard: {     // normal-piano computer-keyboard state

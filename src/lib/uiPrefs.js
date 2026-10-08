@@ -17,6 +17,7 @@ export const KEYBOARD_HELP_MODES = ['off', 'black', 'white', 'all']
 export const HELP_PAGES = ['overview', 'tutorial', 'reference']
 export const KEYBOARD_OCTAVE_MIN = 2
 export const KEYBOARD_OCTAVE_MAX = 6
+export const KEYBOARD_FIT_OCTAVES_DEFAULT = 3
 export const BPM_MIN = 40
 export const BPM_MAX = 240
 
@@ -26,6 +27,18 @@ export const BPM_MAX = 240
  * @returns {number|undefined}
  */
 export function clampKeyboardOctaves(value) {
+    const n = Number(value)
+    if (!Number.isFinite(n))
+        return undefined
+    return Math.min(KEYBOARD_OCTAVE_MAX, Math.max(KEYBOARD_OCTAVE_MIN, Math.round(n)))
+}
+
+/**
+ * Clamp a stored fit-up-to octave count to the supported 2-6 range.
+ * @param {*} value
+ * @returns {number|undefined}
+ */
+export function clampKeyboardFitOctaves(value) {
     const n = Number(value)
     if (!Number.isFinite(n))
         return undefined
@@ -49,6 +62,7 @@ export function clampBpm(value) {
  * @property {string} [keyboardHelpMode]
  * @property {boolean} [showKeyShortcuts]
  * @property {number} [keyboardOctaves]
+ * @property {number} [keyboardFitOctaves]
  * @property {number} [bpm]
  * @property {boolean} [metronomeEnabled]
  * @property {boolean} [showWelcomeDialog]
@@ -173,6 +187,9 @@ export function readPrefs(storage = defaultStorage()) {
             const octaves = clampKeyboardOctaves(stored.keyboardOctaves)
             if (octaves !== undefined)
                 prefs.keyboardOctaves = octaves
+            const fitOctaves = clampKeyboardFitOctaves(stored.keyboardFitOctaves)
+            if (fitOctaves !== undefined)
+                prefs.keyboardFitOctaves = fitOctaves
             const bpm = clampBpm(stored.bpm)
             if (bpm !== undefined)
                 prefs.bpm = bpm
@@ -221,6 +238,7 @@ export function currentPrefs() {
         keyboardHelpMode: globals.keyboardHelpMode,
         showKeyShortcuts: globals.showKeyShortcuts,
         keyboardOctaves: globals.keyboardOctaves,
+        keyboardFitOctaves: globals.keyboardFitOctaves,
         bpm: globals.recording.bpm,
         metronomeEnabled: globals.metronomeEnabled,
         showWelcomeDialog: globals.showWelcomeDialog,
@@ -265,6 +283,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.showKeyShortcuts = prefs.showKeyShortcuts
     if (typeof prefs.keyboardOctaves === 'number')
         globals.keyboardOctaves = prefs.keyboardOctaves
+    if (typeof prefs.keyboardFitOctaves === 'number')
+        globals.keyboardFitOctaves = prefs.keyboardFitOctaves
     if (typeof prefs.bpm === 'number')
         globals.recording.bpm = prefs.bpm
     if (typeof prefs.metronomeEnabled === 'boolean')
@@ -304,6 +324,7 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.keyboardHelpMode,
         globals.showKeyShortcuts,
         globals.keyboardOctaves,
+        globals.keyboardFitOctaves,
         globals.recording.bpm,
         globals.metronomeEnabled,
         globals.showWelcomeDialog,
