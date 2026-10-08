@@ -390,6 +390,15 @@ onUnmounted(() => {
   outline: 2px solid #2e8b57;
 }
 
+/* On phones just crop the keyboard to what fits. Playing still sounds all
+keys, so there is no need for sideways scrolling. */
+@media (max-width: 768px) {
+  .piano-keyboard-wrap {
+    max-width: 100%;
+    overflow: hidden;
+  }
+}
+
 .keyboard-hint-row {
   display: flex;
   align-items: center;

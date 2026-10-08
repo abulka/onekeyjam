@@ -194,6 +194,8 @@ function keyDownListener(e) {
   }
 }
 
+let removeBreakpointListener = null
+
 onMounted(() => {
   window.addEventListener('keydown', keyDownListener)
   // Initialise only the dropdowns inside this bar so the menus work on every
@@ -201,10 +203,32 @@ onMounted(() => {
   if (menuEl.value)
     $(menuEl.value).find('.ui.dropdown').dropdown({ action: 'select' })
   steps.value = availableSteps()
+  // The More dropdown starts hidden on desktop, so its position is measured
+  // wrong until the phone layout shows it. Refresh when crossing the
+  // breakpoint so the popup opens fully inside the screen.
+  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function' && menuEl.value) {
+    const media = window.matchMedia('(max-width: 768px)')
+    const refresh = () => {
+      if (menuEl.value)
+        $(menuEl.value).find('.ui.dropdown').dropdown('refresh')
+    }
+    if (typeof media.addEventListener === 'function') {
+      media.addEventListener('change', refresh)
+      removeBreakpointListener = () => media.removeEventListener('change', refresh)
+    }
+    else if (typeof media.addListener === 'function') {
+      media.addListener(refresh)
+      removeBreakpointListener = () => media.removeListener(refresh)
+    }
+  }
 })
 
 onUnmounted(() => {
   window.removeEventListener('keydown', keyDownListener)
+  if (removeBreakpointListener) {
+    removeBreakpointListener()
+    removeBreakpointListener = null
+  }
 })
 </script>
 
@@ -267,7 +291,8 @@ onUnmounted(() => {
       </div>
 
       <div class="right menu">
-        <div v-if="sequenceOptionsList.length > 0" class="item sequencer-transport">
+        <!-- Desktop transport: sequence picker plus play button. -->
+        <div v-if="sequenceOptionsList.length > 0" class="item sequencer-transport desktop-transport">
           <select v-if="sequenceOptionsList.length > 1" class="sequencer-sequence-select"
             :value="globals.currentChordSequenceName" title="Song sequence" @change="onSequenceChange">
             <option v-for="option in sequenceOptionsList" :key="option.name" :value="option.name">{{ option.label }}</option>
@@ -277,12 +302,36 @@ onUnmounted(() => {
             <i :class="sequencerControl.isPlaying ? 'stop icon' : 'play icon'"></i>
           </button>
         </div>
+        <!-- Phone transport: keep the play button visible; the sequence
+        picker moves into the More dropdown. -->
+        <div v-if="sequenceOptionsList.length > 0" class="item sequencer-transport mobile-only">
+          <button type="button" class="sequencer-play-toggle" :disabled="!sequencerControl.hasNotes"
+            :class="{ playing: sequencerControl.isPlaying }" :title="sequencerButtonTitle" @click="sequencerControl.toggle()">
+            <i :class="sequencerControl.isPlaying ? 'stop icon' : 'play icon'"></i>
+          </button>
+        </div>
         <a class="item" title="Load a random song from the classic and rock collections"
-          @click="loadRandomClassicProject()">🎲 Random project</a>
-        <a class="item" title="Load a random progression from the progressions collection"
+          @click="loadRandomClassicProject()">🎲 <span class="random-project-full">Random project</span><span class="random-project-short">Project</span></a>
+        <a class="item desktop-only" title="Load a random progression from the progressions collection"
           @click="loadRandomProgressionProject()">🎲 Random progression</a>
-        <a class="item" title="Load a demo project and get started" @click="loadDemoProject()">DEMO</a>
-        <a class="item" @click="tutorial()">Start Tour 🧭</a>
+        <a class="item desktop-only" title="Load a demo project and get started" @click="loadDemoProject()">DEMO</a>
+        <a class="item desktop-only" @click="tutorial()">Start Tour 🧭</a>
+        <div class="ui dropdown item mobile-only">
+          <div class="text">More</div>
+          <i class="dropdown icon"></i>
+          <div class="menu">
+            <template v-if="sequenceOptionsList.length > 1">
+              <a v-for="option in sequenceOptionsList" :key="option.name" class="item"
+                :class="{ active: option.name === globals.currentChordSequenceName }" title="Song sequence"
+                @click="sequencerControl.selectSequence(option.name)">{{ option.label }}</a>
+              <div class="ui divider"></div>
+            </template>
+            <a class="item" title="Load a random progression from the progressions collection"
+              @click="loadRandomProgressionProject()">🎲 Random progression</a>
+            <a class="item" title="Load a demo project and get started" @click="loadDemoProject()">DEMO</a>
+            <a class="item" @click="tutorial()">Start Tour 🧭</a>
+          </div>
+        </div>
         <ComboProjectLibrary ref="fileOpenComponent" userOrFeatured="featured" />
         <ComboProjectLibrary ref="fileOpenComponentClassic" userOrFeatured="classic" />
         <ComboProjectLibrary ref="fileOpenComponentProgressions" userOrFeatured="progressions" />
@@ -351,16 +400,96 @@ onUnmounted(() => {
   margin: 0;
 }
 
-/* On narrow phone screens the File/Actions and shortcut items wrap onto
-further rows instead of running off the right edge. */
+/* The Random progression, DEMO and Start Tour shortcuts show inline on
+larger screens and collapse into the More dropdown on small displays. */
+.mobile-only {
+  display: none !important;
+}
+
+/* "Random project" is shortened to "Project" on phones only; the dice icon
+already conveys the randomness. */
+.random-project-short {
+  display: none;
+}
+
+/* On narrow phone screens keep File, Actions, Random project and More on one
+row. The menu itself must stay overflow-visible so the More popup can overlay
+the page instead of being clipped by a scrolling container. */
 @media (max-width: 768px) {
-  .ui.secondary.menu {
-    flex-wrap: wrap;
+  .ui.container {
+    overflow: visible;
   }
 
+  .ui.secondary.menu {
+    flex-wrap: nowrap;
+    overflow: visible;
+    margin-left: 0;
+    margin-right: 0;
+    min-width: 0;
+  }
+
+  .ui.secondary.menu .item {
+    padding: 0.45em 0.5em;
+    margin: 0 0.15em;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  /* Plain links may shrink with ellipsis; dropdown triggers must stay
+  overflow-visible so their popups are not clipped. */
+  .ui.secondary.menu > a.item {
+    flex: 0 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .ui.secondary.menu .ui.dropdown.item {
+    flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  /* Do not let the right group shrink below its content, otherwise it
+  spills to the left under flex-end and covers Actions. It keeps its content
+  width and stays right-aligned via margin-left: auto. */
   .ui.secondary.menu .right.menu {
-    margin-left: 0 !important;
-    flex-wrap: wrap;
+    margin-left: auto !important;
+    flex-wrap: nowrap;
+    overflow: visible;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+  }
+
+  .sequencer-transport {
+    gap: 0.25rem;
+  }
+
+  .sequencer-sequence-select {
+    max-width: 5rem;
+    min-width: 0;
+  }
+
+  .desktop-only,
+  .desktop-transport {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  .random-project-full {
+    display: none;
+  }
+
+  .random-project-short {
+    display: inline;
+  }
+
+  /* Keep the More popup inside the phone screen. */
+  .mobile-only .menu {
+    right: 0 !important;
+    left: auto !important;
   }
 }
 </style>

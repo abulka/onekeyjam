@@ -620,8 +620,10 @@ function generalTableClick(event) {
     </span>
   </div>
 
-  <!-- grand summary table -->
-  <table v-if="globals.isProjectLoaded" id="grand-summary" style="width:100%;" border="1" bordercolor="green"
+  <!-- grand summary table: the scroll wrapper lets phones swipe sideways
+  inside the table frame instead of pushing the whole page wide -->
+  <div v-if="globals.isProjectLoaded" class="grand-summary-scroll">
+  <table id="grand-summary" style="width:100%;" border="1" bordercolor="green"
     :class="{ 'solo-in-key-grid': keyModeActive, 'follow-grid': globals.scaleFiltering.policy === 'follow', 'scale-cell-fill': globals.showScaleCellFill }">
     <thead>
       <tr>
@@ -808,6 +810,7 @@ function generalTableClick(event) {
       </tr>
     </tbody>
   </table>
+  </div>
   <div v-if="globals.isProjectLoaded && totalGridRows > 1" class="grid-resize-footer">
     <div
       ref="gridResizeHandle"
@@ -1207,6 +1210,21 @@ select.preset-custom {
 .grid-resize-handle .resize-hint {
   color: #6b5a45;
   font-style: italic;
+}
+
+/* Phones keep the table shape and swipe sideways inside this frame, so the
+page itself never grows wider than the screen. */
+@media (max-width: 768px) {
+  .grand-summary-scroll {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .grand-summary-scroll #grand-summary {
+    min-width: 640px;
+  }
 }
 
 </style>

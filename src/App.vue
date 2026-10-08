@@ -110,7 +110,7 @@ onUnmounted(() => {
         <RouterLink class="item" active-class="active" to="/perform">Perform</RouterLink>
         <RouterLink class="item" active-class="active" to="/settings">Settings</RouterLink>
         <RouterLink class="item" active-class="active" to="/about">Help</RouterLink>
-        <RouterLink v-if="showResearch" class="item" active-class="active" to="/research">Research</RouterLink>
+        <RouterLink v-if="showResearch" class="item research-tab" active-class="active" to="/research">Research</RouterLink>
 
         <!-- Just for development ease -->
         <!-- <div class="item"> <a href="#" @click="newProject()">New</a> </div> -->
@@ -298,9 +298,24 @@ back to portrait, when the viewport shrinks again). */
 @media (max-width: 768px) {
   .ui.secondary.menu {
     flex-wrap: wrap;
+    max-width: 100%;
   }
   .ui.secondary.menu .right.menu {
     margin-left: 0 !important;
+    flex-wrap: wrap;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .app-bpm-input {
+    width: 3.2rem;
+  }
+  .app-project-name {
+    max-width: 100%;
+  }
+  /* The Research playground stays available on larger screens but is hidden
+  on small displays to save tab-bar space. */
+  .research-tab {
+    display: none !important;
   }
 }
 </style>

@@ -164,12 +164,15 @@ div.wrapper {
     box-shadow: chocolate 0px 0px 10px;
 }
 
-/* Compact phone layout: tight wrapped rows, with the live readout in a
-narrow reserved rail on the right (under the quiet labels) instead of
-costing a full line at the bottom. */
+/* Phone layout: the scale and chord text uses the full container width, and
+the live note/mapping sits in a reserved rail on the right. The rail is always
+reserved (hidden, not collapsed) so playing a note never pushes the page down. */
 @media (max-width: 768px) {
     div.wrapper {
-        padding: 0.4em 0.5em;
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.5em 0.6em;
     }
 
     .status-card {
@@ -185,14 +188,21 @@ costing a full line at the bottom. */
 
     .status-row {
         flex-wrap: wrap;
-        gap: 0.1rem 0.5rem;
-        font-size: 0.85rem;
+        gap: 0.15rem 0.5rem;
+        font-size: 0.9rem;
     }
 
-    /* Names stay on the first line next to the label; the notes always get
-    their own full line underneath instead of wrapping into leftover space.
-    The quiet labels move up next to the names (order only affects phones;
-    wider screens keep the notes centred with the labels at the far right). */
+    /* Let names use the available width instead of being capped, so long
+    scale names are not squeezed into a narrow column. */
+    .status-name {
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
     .status-meta {
         order: 2;
     }
@@ -204,8 +214,8 @@ costing a full line at the bottom. */
     }
 
     .status-live {
-        /* Fixed narrow rail: always reserved, so notes appearing never move
-        anything, and nothing below is pushed down. */
+        /* Reserved narrow rail: always holds its space so a note appearing
+        never moves anything, and nothing below is pushed down. */
         flex: 0 0 5.5em;
         max-width: 5.5em;
         min-height: 0;
@@ -226,7 +236,7 @@ costing a full line at the bottom. */
         font-size: 1rem;
     }
 
-    /* Hidden but still reserving its line, so showing a note never moves
+    /* Hidden but still reserving its space, so showing a note never moves
     the rest of the page. */
     .hide-when-idle {
         visibility: hidden;
