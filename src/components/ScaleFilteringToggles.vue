@@ -6,7 +6,8 @@ import { projectKeyName } from '@/lib/projectKey.js'
 import { registerAccordion } from '@/lib/accordionState.js'
 
 // The filters and mode block is collapsible because the Magic/Normal switch is
-// not used often. It opens by default and its state is remembered per page.
+// not used often. It starts collapsed and its state is remembered per page
+// for the session.
 const filtersAccordion = ref(null)
 let stopAccordion = () => {}
 
@@ -49,11 +50,11 @@ const soloKeyName = computed(() => {
 
   <div ref="filtersAccordion" class="ui fluid styled accordion mode-filters-accordion"
     style="background-color: burlywood;">
-    <div class="title active">
+    <div class="title">
       <i class="dropdown icon"></i>
       Filters &amp; mode
     </div>
-    <div class="content active">
+    <div class="content">
       <div class="ui one column centered padded stackable grid">
         <div class="three column centered middle aligned row andyshade">
           <div class="center aligned column">
