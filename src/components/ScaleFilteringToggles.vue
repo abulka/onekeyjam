@@ -12,6 +12,7 @@ const filtersAccordion = ref(null)
 let stopAccordion = () => {}
 
 onMounted(() => {
+  document.addEventListener('open-mode-filters', openFiltersAccordion)
   if (!filtersAccordion.value)
     return
   stopAccordion = registerAccordion(filtersAccordion.value, 'modeFilters')
@@ -19,8 +20,31 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  document.removeEventListener('open-mode-filters', openFiltersAccordion)
   stopAccordion()
 })
+
+function openFiltersAccordion() {
+  const root = filtersAccordion.value ?? document.querySelector('.mode-filters-accordion')
+  if (!root)
+    return
+  try {
+    const title = root.querySelector(':scope > .title')
+    const content = root.querySelector(':scope > .content')
+    if (title)
+      title.classList.add('active')
+    if (content)
+      content.classList.add('active')
+    // @ts-ignore: jQuery is a browser global
+    if (typeof $ === 'function' && typeof $(root).accordion === 'function')
+      // @ts-ignore: Fomantic accordion behaviour
+      $(root).accordion('open', 0)
+    if (typeof root.scrollIntoView === 'function')
+      root.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  } catch (error) {
+    console.warn('Could not open Filters & mode section', error)
+  }
+}
 
 function setMagicMode() {
   globals.bypass = false

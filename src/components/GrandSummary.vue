@@ -17,6 +17,24 @@ import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
 import { resizeGridRowCount } from '@/lib/boot-project.js'
 import { clampGridRowCount } from '@/lib/maxChordConfig.js'
+import { syncPickerToCurrentChord } from '@/lib/syncPickerToCurrentChord.js'
+
+function syncPickerAfterGridClick(triggerNote) {
+  // Clicking the grid used to only trigger the chord for audition. Copy the
+  // selected project chord into the Chord Picker as well, so the voicing list
+  // and Edit Notes follow the grid without a second click. This must work in
+  // Normal piano mode too, where onNoteOn() takes the jam path and never
+  // updates the current trigger, so select the row first and then sync.
+  try {
+    if (!globals.syncChordPickerToCurrentTriggeredChord)
+      return
+    if (triggerNote && triggerNote in globals.chordTriggerMap)
+      globals.currentChordTriggerNote = triggerNote
+    syncPickerToCurrentChord()
+  } catch (error) {
+    console.warn('Could not sync Chord Picker to grid chord', error)
+  }
+}
 
 let showFavourites = ref(true)  // deprecated
 
@@ -494,6 +512,7 @@ function scaleFilterTableClick(event) {
   }
   onNoteOn(simulatedEvent)
   onNoteOff(simulatedEvent)
+  syncPickerAfterGridClick(triggerNote)
 
   // change scale filter
   let octave = '6'  // TODO should calculate this properly
@@ -514,6 +533,7 @@ function generalTableClick(event) {
   }
   onNoteOn(simulatedEvent)  
   onNoteOff(simulatedEvent)
+  syncPickerAfterGridClick(triggerNote)
 }
 
 </script>

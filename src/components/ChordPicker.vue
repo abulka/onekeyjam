@@ -5,9 +5,8 @@ import { globals } from "../../src/lib/globals.js"
 import { sanitiseNoteToSharp } from "../../src/lib/note-tools.js"
 import { setActiveScaleFilterToMatchChord } from "../../src/lib/change-scale.js"
 import { noteOptions } from "../../src/lib/note-tools";
-import { currentChordInfo } from "../../src/lib/currentChordInfo";
 import { chordPlay, auditionInfo } from "../../src/lib/auditionNotes"
-import { chordPickerToJammed, chordPickerToJammedExtraPrecision } from "../../src/lib/chordPicker";
+import { chordPickerToJammed } from "../../src/lib/chordPicker";
 import { setChordPicker, setChordSmart } from "../../src/lib/chordPicker";
 import { chordInvert, nextChord, circleOfFifthTranspose, transpose } from "../../src/lib/chordPicker";
 import { chordOptions } from "../../src/lib/chordPicker";
@@ -72,19 +71,6 @@ function chordFromEvent(eventDetail) {
   chordPickerToJammed()
 }
 
-function setChordToMatchLhTriggered() {
-  // Sync the chord picker combo to the current global lh chord. Does not set
-  // the scale - because we don't set the globals.scaleFiltering object here - though we could...
-  const { chordSymbolNoRoot, bass, rootNote, chordNotes } = currentChordInfo()
-  const success = setChordPicker(chordSymbolNoRoot, bass, rootNote)
-
-  chordPickerToJammed()
-  chordPickerToJammedExtraPrecision(chordNotes, bass)
-
-  if (success)
-    chordPlay()
-}
-
 
 // ╦  ┬┌─┐┌┬┐┌─┐┌┐┌┌─┐┬─┐┌─┐
 // ║  │└─┐ │ ├┤ │││├┤ ├┬┘└─┐
@@ -141,9 +127,16 @@ onUnmounted(() => {
 
 // chordPickerToJammed()  // populated jammed notes from initial state of chordPicker on bootup
 
-function bypassOn() {
+function bypassOn(event) {
+  if (event)
+    event.preventDefault()
   console.log('bypassOn()')
   globals.bypass = true
+  // Remind the user they have left magic mode by opening Filters & mode.
+  // @ts-ignore: broadcastEvent is added in index.html
+  if (typeof document !== 'undefined' && typeof document.broadcastEvent === 'function')
+    // @ts-ignore: broadcastEvent is added in index.html
+    document.broadcastEvent('open-mode-filters', {})
 }
 
 </script>
@@ -159,16 +152,11 @@ function bypassOn() {
 
 
         <div class="centered row bigbottom">
-          👋 Set the Chord Picker below by playing a chord on your Midi Keyboard (<b>toggle 
-          <a href="#" @click="bypassOn()"
-            :disabled="globals.currentConfigEmpty()">Bypass</a> on</b>
-          whilst doing this) OR
-          Choose a chord directly from the Chord Picker OR
-          Choose a chord from Common Chords
-          <span class="mr-2" v-if="!globals.currentConfigEmpty()"> OR click on</span>
-          <a href="#" @click.prevent="setChordToMatchLhTriggered()"
-            :disabled="globals.currentConfigEmpty()">{{ globals.currentChordName() }}</a> to set the Chord Picker to the
-          current {{ globals.currentChordName() }} Project Chord (this is the way to change an exising Project chord).
+          👋 Click a chord in the grid above to load it into the Chord Picker for editing.
+          You can also play a chord on your Midi Keyboard (first toggle
+          <a href="#" @click="bypassOn($event)">Normal Keyboard mode on (magic keyboard off)</a>
+          whilst doing this), choose a chord directly from the Chord Picker,
+          or choose one from Common Chords below.
         </div>
 
         <!-- chord combo box -->
