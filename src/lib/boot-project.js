@@ -8,9 +8,10 @@ import { suggestConfigName } from './keyboardStore.js'
 import { wireQwertyKeyState } from "./midi/qwertyKeyState.js"
 import { wireScaleFilterShortcuts } from "./midi/scaleFilterShortcuts.js"
 import { emergencyRepairProject } from './emergencyRepairProject.js';
-import { verifyTriggerMap, candidatesToTriggerMapSmart, existingToTriggerMapSmart } from './triggerMaps';
+import { verifyTriggerMap, dealArrangement } from './triggerMaps';
+import { dealGrid, reorderGrid, resizeGrid, deleteGridChords, rebuildTriggerMap } from './gridArrangement.js';
 import { openJsonUrl } from "./util.js";
-import { setMaxDisplayed, applyUserGridRowCount, updateGridSliderMax } from './maxChordConfig'
+import { setMaxDisplayed, applyUserGridRowCount } from './maxChordConfig'
 import { findMatchingScalesForProject } from "./findMatchingScales"
 import { resetChordHistory } from "./autoScale.js"
 import { detectChords } from './parse-midi.js';
@@ -19,10 +20,9 @@ import { keyDetection } from "./keyDetection"
 import { resolveProjectKey } from './projectKey.js'
 import { applyProjectKeySettings } from './projectScaleSettings.js'
 import { applyProjectScaleStyle } from './scaleStyles.js'
-import { deletePendingChordConfigs } from './massOperationsOnChordConfigs'
 import { fetchFeaturedProject, fetchClassicProject, fetchProgressionProject, fetchRockProject, fetchUserProject } from './projectLibrary';
 import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listProgressionProjects, listRockProjects, listUserProjects } from './projectLibrary';
-import { restoreCurrentProject } from './currentProjectStore.js';
+import { restoreCurrentProject, flushCurrentProject } from './currentProjectStore.js';
 import { clampBpm } from './uiPrefs.js';
 
 /** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
@@ -178,35 +178,24 @@ export function loadUserProject(name) {
 }
 
 export function reAllocateChords() {
-    // 4. only called from the button 'reallocate chords'
-
-    deletePendingChordConfigs()
-
-    // document.broadcastEvent("switch-project", {
-    //     url: undefined, // must specify undefined so that project is not re-loaded
-    //     docId: undefined,  // must specify undefined so that project is not re-loaded
-    //     project: globals.project,
-    //     currentChordTriggerNote: globals.currentChordTriggerNote, // preserve current chord config
-    //     preserveSongIds: true,
-    //     maxChordConfigs: globals.maxChordConfigs,
-    // });
-
-    const project = globals.project;
-    const currentChordTriggerNote = globals.currentChordTriggerNote; // preserve current chord config
-    const name = globals.projectLibrary.projectName;
-    const maxChordConfigs = globals.maxChordConfigs;
-    const preserveSongIds = true;
-    const userOrFeatured = globals.projectLibrary.projectIsUserOrFeatured;
-
-    projectChores2name(project, name, currentChordTriggerNote, userOrFeatured);
-    projectChores({ project, maxChordConfigs, preserveSongIds });
+    // The explicit Deal/Shuffle action: the only random allocation besides MIDI
+    // import. It replaces the grid arrangement with a fresh draw from the pool,
+    // pinning favourites first when `allocateFavourites` is on. Deletions are
+    // applied by their own button, never here.
+    if (!globals.project || !Array.isArray(globals.project.chords))
+        return
+    dealGrid(globals.maxChordConfigs, globals.allocateFavourites)
+    globals.projectKey = resolveProjectKey(globals.project) ?? null;
+    keyDetection();
+    linkProjectToKeyboard();
 }
 
-export function reAllocateChordsPreserveCurrentChordConfig(ids) {
-    // NEW!
-    const preserveSongIds = true;
-    const useExistingChordMap = true;
-    regen(preserveSongIds, useExistingChordMap, ids) // ids is and araay of ids in the new order we want
+export function reorderGridChords(ids) {
+    // Apply a drag order to the grid arrangement and persist it. The pool order
+    // is left untouched.
+    if (!globals.project || !Array.isArray(globals.project.chords))
+        return
+    reorderGrid(ids)
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
     keyDetection();
     linkProjectToKeyboard();
@@ -214,14 +203,10 @@ export function reAllocateChordsPreserveCurrentChordConfig(ids) {
 
 export function resizeGridRowCount(requestedCount) {
     // User-driven grid height change from the drag handle or the row-count
-    // slider. Unlike projectChores() this never re-expands to the full
-    // favourite count, so a grid deliberately shrunk to fewer rows stays
-    // shrunk. Allocation keeps the first N favourites in song order, so
-    // shrinking then expanding restores the next chords in order.
+    // slider.
     if (!globals.project || !Array.isArray(globals.project.chords) || globals.project.chords.length === 0)
         return globals.maxChordConfigs
-    const next = applyUserGridRowCount(requestedCount, globals.project)
-    regen(true)
+    const next = resizeGrid(requestedCount)
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
     keyDetection();
     linkProjectToKeyboard();
@@ -229,25 +214,18 @@ export function resizeGridRowCount(requestedCount) {
 }
 
 export function deleteSelectedChordConfigs() {
-    // Delete the grid rows ticked in the bin column, then refresh the grid in
-    // place. This mirrors resizeGridRowCount() rather than reAllocateChords(),
-    // so the remaining rows keep their order instead of being reshuffled.
+    // Delete the grid rows ticked in the bin column, then shrink the grid to
+    // match. The autosave is flushed so a quick reload cannot restore the
+    // pre-delete snapshot.
     if (!globals.project || !Array.isArray(globals.project.chords))
         return 0
     if (!Array.isArray(globals.idsToDelete) || globals.idsToDelete.length === 0)
         return 0
-    const deletedCount = globals.idsToDelete.length
-    deletePendingChordConfigs()
-
-    const remaining = globals.project.chords.length
-    if (remaining > 0)
-        applyUserGridRowCount(Math.min(globals.maxChordConfigs, remaining), globals.project)
-    else
-        updateGridSliderMax(globals.project)
-    regen(true)
+    const deletedCount = deleteGridChords()
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
     keyDetection();
     linkProjectToKeyboard();
+    flushCurrentProject()
     return deletedCount
 }
 
@@ -289,7 +267,13 @@ export function parseMidiAndAllocateChords(midi, fileName) {
 
     project.name = `Imported ${fileName}`;
 
-    setMaxDisplayed(project); // adjust UI range slider
+    // Seed the grid with an initial hand drawn from the imported pool. This is
+    // the sampling workflow's entry point; the exact hand is saved with the
+    // project and only changes when the user deals again.
+    const gridRows = Math.min(globals.maxChordConfigs, project.chords.length)
+    const song = project.songs.default
+    song.ids = /** @type {number[]} */ (dealArrangement(project.chords, gridRows, song, globals.allocateFavourites))
+    applyUserGridRowCount(gridRows, project) // remember the grid size and adjust the slider
 
     document.broadcastEvent("switch-project", {
         url: undefined,
@@ -302,7 +286,7 @@ export function parseMidiAndAllocateChords(midi, fileName) {
 export function newProject() {
     // 7. Called by Menu File/New. Creates a fresh empty project.
     projectChores2name(emptyProject(), '', undefined, 'user');
-    projectChores({ project: globals.project, maxChordConfigs: globals.maxChordConfigs, preserveSongIds: false });
+    projectChores({ project: globals.project, maxChordConfigs: globals.maxChordConfigs });
 }
 
 // ┌─┐┬ ┬┬┌┬┐┌─┐┬ ┬   ┌─┐┬─┐┌─┐ ┬┌─┐┌─┐┌┬┐
@@ -362,7 +346,6 @@ export function wireProjectEvents() {
         projectChores({
             project: event.detail.project,
             maxChordConfigs: event.detail.maxChordConfigs,
-            preserveSongIds: event.detail.preserveSongIds
         });
 
         document.broadcastEvent("project-loaded", { name: globals.projectLibrary.projectName });
@@ -415,9 +398,9 @@ function projectChores2url(project, url, currentChordTriggerNote) {
     resetChordHistory();
 }
 
-function projectChores({ project, maxChordConfigs, preserveSongIds }) {
+function projectChores({ project, maxChordConfigs }) {
     setMaxDisplayed(project, maxChordConfigs);
-    regen(preserveSongIds);
+    regen();
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
     keyDetection();
     // A project remembers how its right hand should choose scales.
@@ -449,31 +432,33 @@ export function applyProjectTempo(name) {
 // ├┬┘├┤ │ ┬├┤ │││
 // ┴└─└─┘└─┘└─┘┘└┘
 
-export function regen(updateSong = false, useExistingChordMap = false, idsInOrder = []) {
+export function regen() {
+    // Rebuild the trigger map as a deterministic view over the grid
+    // arrangement. This never writes to the project, so it can be called
+    // freely (keyboard switches, device changes) without reshuffling anything.
+    const project = globals.project ?? {}
+    const chords = Array.isArray(project.chords) ? project.chords : []
+    const song = project.songs?.default
     /** @type {ChordTriggerMap} */
-    let chordTriggerMap
-    let ids, statistics
-    if (useExistingChordMap) {
-        ({ chordTriggerMap, ids, statistics } = existingToTriggerMapSmart(
-            globals.chordTriggerMap,
-            idsInOrder,
-        ))
-    }
-    else
-        ({ chordTriggerMap, ids, statistics } = candidatesToTriggerMapSmart(
-            globals.project.chords,
-            globals.maxChordConfigs,
-            globals.project.songs.default,
-            globals.allocateFavourites,
-            false
-        ));
+    const chordTriggerMap = rebuildTriggerMap()
 
-    globals.chordTriggerMap = chordTriggerMap;
-    globals.statistics = statistics;
-
-    if (updateSong)
-        globals.project.songs.default.ids = ids;
+    globals.statistics = _buildStatistics(chords, chordTriggerMap, song);
     verifyTriggerMap(chordTriggerMap);
+}
+
+function _buildStatistics(chords, chordTriggerMap, song) {
+    const numAllocated = Object.keys(chordTriggerMap).length
+    const numFavourites = Array.isArray(song?.favourites) ? song.favourites.length : 0
+    const numBlacklisted = Array.isArray(song?.blacklist) ? song.blacklist.length : 0
+    const numInPool = Math.max(0, chords.length - numAllocated)
+    return {
+        totalChordsAvailable: chords.length,
+        numAllocated,
+        numFavourites,
+        numBlacklisted,
+        numUnAllocated: Math.max(0, numInPool - numBlacklisted),
+        summaryMsg: `Showing ${numAllocated} of ${chords.length} chords (${numInPool} left in the pool).`,
+    }
 }
 
 // ╦╔═┌─┐┬ ┬┌┐ ┌─┐┌─┐┬─┐┌┬┐  ┌─┐┌─┐┌┐┌┌─┐┬┌─┐

@@ -68,9 +68,10 @@ project and the current allocation, so read the **Trigger** column of the chord
 table in the app, or the welcome message. Unless a song says otherwise, start
 each chord on filter 1.
 
-If a project has more chords than the chord-count slider shows, some chords are
-not on a key. On the Edit view, open **Number of Chords to display**, raise the
-slider, then click **Reallocate Chords** to fit them all on. The Blue Bossa
+If a project has more chords than the grid height, some chords are not on a key.
+On the Edit view, raise the **Number of Chords to display** slider (or drag the
+grid's bottom edge) to fit more on. The grid grows by pulling the next chords
+from the pool, so the same rows come back if you shrink it again. The Blue Bossa
 walkthrough below needs this.
 
 ### C Major II-V-I (featured)
@@ -203,9 +204,11 @@ F7:  A  C  A  F           (settle)
 Load **File -> Open Classic... -> Blue Bossa in C minor**. The tune moves
 between C minor and its relative major, with a beautiful bII chord.
 
-This project has eight chords, so the default seven trigger keys hide one. On
-the Edit view, open **Number of Chords to display**, drag the slider from 7 to
-14 and click **Reallocate Chords**, so the Dbmaj7 is on a key too.
+This project has eight chords, and a saved project reopens with all of its grid
+chords on keys, so the Dbmaj7 is on a trigger too. Eight chords reach into the
+next octave (trigger 8 is C4 by default). If you instead open a project with a
+large imported pool, the grid shows the dealt hand; raise **Number of Chords to
+display** (or drag the grid's bottom edge) to pull more chords from the pool.
 
 | Chord | Filter 1 | Filter 2 | Filter 3 |
 |---|---|---|---|

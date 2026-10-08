@@ -2,7 +2,6 @@
 import * as Tonal from "@tonaljs/tonal";
 import { bassNoteOctave } from './settings.js';  // if running via node, need '../../src/lib/settings.js' or './settings.js' 
 import { removeBassSlash } from "./removeBassSlash.js";
-import { getRandomArbitary } from './util.js';
 import { chordSymbolToNotes } from './chordSymbolToNotes';
 import { scaleNameToNotes, chordNotesToScaleNotes } from './scaleToNotes';
 import { suggestBass } from './note-tools';
@@ -34,10 +33,9 @@ import { globals } from './globals.js';
  *   they will be filled in 
  */
 export function expandChordConfig(config) {
-    // Id
-    if (config.id == undefined) {
-        config.id = getRandomArbitary(500, 1000000);
-    }
+    // Id: ids are assigned deterministically by the caller (see
+    // emergencyRepairProject and chordAddToProject). Never mint a random id
+    // here, because a random id makes the same chord look like a new one.
 
     // Symbols
     if (!config.symbols) {

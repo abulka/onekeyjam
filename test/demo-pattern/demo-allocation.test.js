@@ -1,6 +1,6 @@
 import assert from 'assert'
 import { globals } from '@/lib/globals.js'
-import { candidatesToTriggerMapSmart } from '@/lib/triggerMaps.js'
+import { buildTriggerMap } from '@/lib/triggerMaps.js'
 import { demoSequenceMml } from '@/lib/demo-pattern.js'
 
 function generatedLikeProject(chordCount) {
@@ -32,15 +32,9 @@ describe('generated songs allocate triggers in definition order', () => {
         globals.keyboard = previousKeyboard
     })
 
-    it('assigns eight favourites to C3..B3 then C4 in order', () => {
+    it('assigns the eight grid chords to C3..B3 then C4 in order', () => {
         const project = generatedLikeProject(8)
-        const { chordTriggerMap } = candidatesToTriggerMapSmart(
-            project.chords,
-            8,
-            project.songs.default,
-            true,
-            false,
-        )
+        const chordTriggerMap = buildTriggerMap(project.chords, project.songs.default.ids, 8)
         assert.deepEqual(Object.keys(chordTriggerMap), [
             'C3',
             'D3',

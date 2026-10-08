@@ -42,12 +42,35 @@ describe('setMaxDisplayed with favourited songs', () => {
         assert.equal(globals.maxChordConfigs, 7)
     })
 
-    it('leaves a hand-built project with partial favourites at the requested size', () => {
+    it('shows the whole grid arrangement for a hand-built project', () => {
         const ids = Array.from({ length: 12 }, (_, i) => i + 1)
         const project = {
             name: 'test',
             chords: ids.map((id) => ({ id })),
             songs: { default: { ids, favourites: [1, 2, 3], blacklist: [] } },
+        }
+        setMaxDisplayed(project)
+        assert.equal(globals.maxChordConfigs, 12)
+    })
+
+    it('uses the grid size remembered on the project', () => {
+        const ids = Array.from({ length: 12 }, (_, i) => i + 1)
+        const project = {
+            name: 'test',
+            options: { gridRows: 7 },
+            chords: ids.map((id) => ({ id })),
+            songs: { default: { ids, favourites: [], blacklist: [] } },
+        }
+        setMaxDisplayed(project)
+        assert.equal(globals.maxChordConfigs, 7)
+    })
+
+    it('opens a large pool at the dealt arrangement size, not the whole pool', () => {
+        const poolIds = Array.from({ length: 300 }, (_, i) => i + 1)
+        const project = {
+            name: 'import',
+            chords: poolIds.map((id) => ({ id })),
+            songs: { default: { ids: poolIds.slice(0, 7), favourites: [], blacklist: [] } },
         }
         setMaxDisplayed(project)
         assert.equal(globals.maxChordConfigs, 7)

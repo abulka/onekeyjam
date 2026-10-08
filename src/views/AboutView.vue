@@ -307,7 +307,7 @@ watch(() => globals.helpPage, async () => {
         On the Edit view it offers:
       </p>
       <ul class="ui list">
-        <li><strong>Reallocate Chords</strong> - shuffle the chord triggers across the keyboard.</li>
+        <li><strong>Deal new chords</strong> - draw a fresh hand of chords from the pool onto the trigger keys. Keeper (favourite) chords stay where they are, and the result is saved with the project.</li>
         <li><strong>Find Matching Scales</strong> - suggest scales that fit the chords, guided by the project key and colour.</li>
         <li><strong>Reset Transpositions</strong> - undo any transposing you did while playing.</li>
         <li><strong>Fill with Key Signature</strong> - detect the key, save it on the project and re-rank every chord scale in that key.</li>

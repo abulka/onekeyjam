@@ -64,10 +64,15 @@
 
 /**
  * A song is a named selection of chord config ids plus favourites/blacklist.
+ * `ids` is the grid arrangement: the ordered list of chord ids currently on the
+ * trigger keys. It is the single source of truth for the grid, persisted and
+ * restored exactly (no random rebuild on load). `favourites` are the keepers
+ * pinned first when a hand is dealt from a large pool. `blacklist` is excluded
+ * from draws.
  * @typedef {object} Song
- * @property {Array<number>} ids the chord config ids in this song
- * @property {Array<number>} favourites ids shown at the top of the chord list
- * @property {Array<number>} blacklist ids excluded in this song only
+ * @property {Array<number>} ids the ordered grid arrangement (chords on trigger keys)
+ * @property {Array<number>} favourites keeper ids, pinned first on a deal
+ * @property {Array<number>} blacklist ids excluded from a deal
  */
 
 /** @typedef {Object.<string, Song>} Songs */
@@ -106,13 +111,15 @@
  * prefers: 'diatonic', 'jazz' (the default) or 'adventurous'. `scaleStyle` is
  * the named right-hand scale style (see src/lib/scaleStyles.js), or 'custom'
  * when the engine settings have been hand-tuned. Generated songs carry a
- * colour-matched default style.
+ * colour-matched default style. `gridRows` is the remembered number of trigger
+ * keys (the grid height), so a project reopens at the size it was left.
  * @typedef {object} ProjectOptions
  * @property {Partial<KeyboardConfig>} [keyboard]
  * @property {ProjectKey} [key]
  * @property {'chord'|'key'} [soloMode]
  * @property {'diatonic'|'jazz'|'adventurous'} [colour]
  * @property {string} [scaleStyle]
+ * @property {number} [gridRows]
  */
 
 /**

@@ -142,6 +142,16 @@ export function saveCurrentProject(storage = defaultStorage()) {
 }
 
 /**
+ * Write the current working state immediately, bypassing the debounce. Called
+ * after a destructive action such as delete, so a quick reload cannot restore
+ * the pre-action snapshot.
+ * @param {Storage|null} [storage]
+ */
+export function flushCurrentProject(storage = defaultStorage()) {
+    saveCurrentProject(storage)
+}
+
+/**
  * Applies a stored snapshot back into globals, re-expanding the chord configs.
  * @param {Storage|null} [storage]
  * @returns {boolean} true when a valid snapshot was restored

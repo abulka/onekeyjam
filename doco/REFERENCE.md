@@ -327,8 +327,9 @@ room, and the solo keys shift up with it, leaving fewer keys for soloing. On
 the computer keyboard this means the lower `q` row keys become chord triggers
 once assigned, and soloing moves up to the `i o p` row and beyond. An external
 MIDI keyboard config can raise the soloing start note to make more room.
-Loading a generated song whose favourites cover every chord expands the grid
-so each keeps its key; other projects keep the requested grid size.
+A project remembers its grid height, so it reopens at the size it was left.
+Generated songs whose chord list covers every chord open with all of them on
+keys.
 
 Every classic, rock and progression song ships one or more demo loops in the
 pattern sequencer that follow the song's harmony rhythm. Pressing play recreates
@@ -351,9 +352,11 @@ Loading a song also sets the global tempo to the selected sequence's tempo, so
 each tune plays at its own speed. Turning the tempo knob afterwards still works
 and is remembered until the next song loads.
 
-Projects with more chords than the chord-count slider allows only put some chords
-on keys, and which non-favourite chords are allocated can change between loads,
-so always read the trigger key from the chord table rather than assuming.
+Projects with more chords than the grid height only put some chords on keys.
+The exact chords and their trigger positions are saved with the project, so they
+do not change between loads. Use **Deal new chords** to draw a different hand
+from the pool; favourite (keeper) chords stay pinned. You can always read the
+trigger key for a chord from the chord table.
 
 ---
 

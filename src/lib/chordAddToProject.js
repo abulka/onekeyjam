@@ -1,5 +1,5 @@
 import { globals } from "./globals.js"
-import { appendChordTriggerMap } from './triggerMaps';
+import { appendChordConfigsToGrid } from './gridArrangement.js';
 import { fillInChordConfig, fillInChordConfig2 } from './fillInChordConfig';
 import { removeBassSlash } from './removeBassSlash.js';
 import { keyDetection } from './keyDetection';
@@ -31,17 +31,15 @@ class ChordAddToProjectBase {
         this.symbols = []
     }
     recipe() {
-        console.log('global.project.chords.length: ' + globals.project.chords.length)
         this.chordConfig.id = allocatedNextId(globals.project.chords)
 
         this.doFillInChordConfig()  // template method pattern
 
-        globals.project.chords.push(this.chordConfig)
-        globals.project.songs.default.ids.push(this.chordConfig.id)
+        // Append to the pool and the grid arrangement, and grow the grid so the
+        // new chord is visible and saved. The arrangement is the source of
+        // truth, so this persists where a random rebuild would not.
+        appendChordConfigsToGrid([this.chordConfig])
 
-        globals.maxChordConfigs++
-
-        appendChordTriggerMap(globals.chordTriggerMap, this.chordConfig)
         globals.projectKey = resolveProjectKey(globals.project) ?? globals.projectKey ?? null
         keyDetection()
     }

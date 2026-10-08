@@ -32,7 +32,7 @@ There are two closely related project shapes:
 | `meta` | `ProjectMeta` | no | `{ type: "onekeyjam", version, source }` |
 | `name` | `string` | yes | display name |
 | `chords` | `ChordConfig[]` | yes | the chord configs |
-| `options` | `ProjectOptions` | no | per-project overrides: `keyboard`, `key`, `soloMode` |
+| `options` | `ProjectOptions` | no | per-project overrides: `keyboard`, `key`, `soloMode`, `colour`, `scaleStyle`, `gridRows` |
 | `songs` | `Songs` | no | chord configs grouped by song |
 | `chordSequences` | `{ [name]: ChordSequence }` | no | sequencer patterns keyed by name. Generated songs store the short excerpt in `default` and may add a `medium` middle section and a `full` form; each has an optional `label` for the picker. Repeats reuse rows, with half bars and holds. `markstart`, `markend`, `enabled` and `loopManual` frame the loop, and `tempo` is the sequence's tempo, applied to the global BPM when it loads |
 
@@ -108,9 +108,10 @@ Static projects are hand-authored and are looser than the in-memory model:
 - `chord` and `chordNotes` may be omitted. `expandChordConfig()` derives the
   missing parts on load (Tonal detects the chord from the notes, or the notes
   from the chord).
-- `id` is normally a number but some older files use numeric strings. The app
-  compares ids loosely (`==`) and `emergencyRepairProject()` reallocates ids
-  when they are entirely missing.
+- `id` is normally a number but some older files use numeric strings. On load
+  `emergencyRepairProject()` coerces numeric strings to numbers, fills missing
+  ids sequentially and reallocates duplicates, so ids are unique numbers from
+  then on. Ids are never assigned randomly.
 
 The JSON Schema accepts this variance while still type-checking every field
 that is present. If you want a stricter dataset later, normalising ids to
@@ -122,9 +123,19 @@ numbers across `public/projects/` is the first step.
 
 | Field | Type | Notes |
 | --- | --- | --- |
-| `ids` | `number[]` | chord config ids in this song |
-| `favourites` | `number[]` | ids shown at the top |
-| `blacklist` | `number[]` | ids excluded in this song only |
+| `ids` | `number[]` | **the grid arrangement**: the ordered chord config ids currently assigned to the trigger keys. This is the single source of truth for the grid. It is saved and restored exactly; loading never reshuffles it. |
+| `favourites` | `number[]` | keeper ids, pinned first when a new hand is dealt from a large pool. Not used to select chords from a hand-built grid. |
+| `blacklist` | `number[]` | ids excluded from a deal (and from growing the grid). |
+
+### The grid arrangement
+
+The grid is a deterministic view of `ids`: trigger slot `i` (C, D, E, F, G, A,
+B, then the next octave) maps to the `i`th id resolved against `options`'
+chord pool (`project.chords`). `project.options.gridRows` remembers how many
+slots are shown, so a project reopens at the size it was left. When `ids` is
+missing or empty, the loader seeds a stable hand: favourites first, then the
+next pool chords up to the grid size. Randomness exists only in the explicit
+**Deal new chords** action and in MIDI import; nothing else reshuffles the grid.
 
 ## KeyboardConfig
 
@@ -167,9 +178,10 @@ are generated, so they are not validated and should not be edited by hand.
 
 - `ProjectMeta.version` currently `2`; `createDefaultMetaProjectConfig()`
   creates it.
-- `emergencyRepairProject()` fills in missing top-level fields, reallocates
-  chord ids when absent, and expands each chord config. It is called whenever a
-  project is loaded, so partial files are tolerated.
+- `emergencyRepairProject()` fills in missing top-level fields, normalises chord
+  ids to unique numbers, seeds or repairs the grid arrangement and expands each
+  chord config. It is called whenever a project is loaded, so partial files are
+  tolerated.
 
 ## Checking your changes
 

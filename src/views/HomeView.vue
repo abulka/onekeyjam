@@ -33,7 +33,7 @@ function flashbackCapture() {
 
     <PageMenubar>
       <template #actions>
-        <a class="item" @click="reAllocateChords()">Reallocate Chords 🎲</a>
+        <a class="item" @click="reAllocateChords()" title="Deal a new hand of chords from the pool onto the trigger keys. Keepers (favourites) stay put.">Deal new chords 🎲</a>
         <a class="item" @click="reAllocateScales()">Find Matching Scales 🎹</a>
         <div class="ui divider"></div>
         <a class="item" @click="resetTranspositionsEtc()">Reset Transpositions</a>

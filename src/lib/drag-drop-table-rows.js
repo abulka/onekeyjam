@@ -1,4 +1,4 @@
-import { reAllocateChordsPreserveCurrentChordConfig } from './boot-project';
+import { reorderGridChords } from './boot-project';
 
 let row;  // <tr>
 
@@ -23,7 +23,7 @@ export function dragover(event) {
 
 export function dragend() {
     let ids = _getIdsOfVisibleTable();
-    reAllocateChordsPreserveCurrentChordConfig(ids)
+    reorderGridChords(ids)
 }
 
 function _getIdsOfVisibleTable() {

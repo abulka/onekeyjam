@@ -2,7 +2,7 @@
 
 import assert from 'assert';
 import { candidatesToTriggerMapDumbDeprecated } from "../../src/lib/triggerMaps"
-import { candidatesToTriggerMapSmart } from "../../src/lib/triggerMaps"
+import { buildTriggerMap, dealArrangement, nextPoolIds } from "../../src/lib/triggerMaps"
 import { createDefaultMetaProjectConfig } from '../../src/lib/projectConfig';
 
 /** @typedef {import("../../src/lib/typedefs").ChordConfig} ChordConfig */
@@ -91,30 +91,22 @@ describe('trigger maps - smart', () => {
     }
 
 
-    it('candidatesToTriggerMapSmart', () => {
+    it('buildTriggerMap follows the grid arrangement in order', () => {
         const chordConfigs = project.chords
-        const maxChordConfigs = 7
-        const song = project.songs['default']
-        const allocateFavourites = true
-        const sortIds = false
-        let {chordTriggerMap, ids} = candidatesToTriggerMapSmart(chordConfigs, maxChordConfigs, song, allocateFavourites, sortIds)
+        const chordTriggerMap = buildTriggerMap(chordConfigs, [0, 1], 7)
         // console.log('triggerMap', chordTriggerMap)
 
         assert.equal(Object.keys(chordTriggerMap).length, 2);
-        assert.deepEqual(ids.sort(), [0, 1].sort());
-
         assert.equal(Object.keys(chordTriggerMap)[0], 'C3');
         assert.equal(Object.keys(chordTriggerMap)[1], 'D3');
 
+        // The first arrangement id is always the first trigger key.
+        assert.equal(chordTriggerMap['C3'].id, 0);
+        assert.equal(chordTriggerMap['C3'].chord, 'Am#5');
+        assert.equal(chordTriggerMap['D3'].id, 1);
+        assert.equal(chordTriggerMap['D3'].chord, 'FM');
 
-        // some random allocation is going on so cater for this
-        assert.ok(chordTriggerMap['C3'].chord == 'Am#5' || chordTriggerMap['C3'].chord == 'FM')
-
-        // grab the chord config for the 'Am#5' chord
-        const chordConfig = (chordTriggerMap['C3'].chord == 'Am#5') ? chordTriggerMap['C3'] : chordTriggerMap['D3']
-        // console.log('chordConfig', chordConfig)
-
-        assert.equal(chordConfig.chord, 'Am#5');
+        const chordConfig = chordTriggerMap['C3']
         assert.deepEqual(chordConfig.chordNotes, ['A3', 'C4', 'F4']);
         assert.equal(chordConfig.bass, 'A');
         assert.equal(chordConfig.bassNote, "A2");
@@ -125,7 +117,32 @@ describe('trigger maps - smart', () => {
         assert.notDeepEqual(chordConfig.scale2Notes, []);  // not empty
         assert.notDeepEqual(chordConfig.scale3Notes, []);  // not empty
         assert.deepEqual(chordConfig.scaleNotesOfChord, ['C', 'F', 'A']);
+    });
 
+    it('buildTriggerMap falls back to pool order when the arrangement is empty', () => {
+        const chordTriggerMap = buildTriggerMap(project.chords, [], 7)
+        assert.deepEqual(
+            Object.values(chordTriggerMap).map(config => config.id),
+            [0, 1],
+        )
+    });
+
+    it('dealArrangement pins favourites first then draws the rest', () => {
+        const song = { ids: [], favourites: [1], blacklist: [] }
+        const rng = () => 0  // deterministic draw
+        const ids = dealArrangement(project.chords, 2, song, true, rng)
+        assert.deepEqual(ids, [1, 0])  // favourite pinned first, then the draw
+    });
+
+    it('dealArrangement in browse mode sets favourites aside', () => {
+        const song = { ids: [], favourites: [0], blacklist: [] }
+        const ids = dealArrangement(project.chords, 2, song, false, () => 0)
+        assert.deepEqual(ids, [1])  // only the non-favourite candidate remains
+    });
+
+    it('nextPoolIds returns unarranged pool chords in pool order', () => {
+        const ids = nextPoolIds(project.chords, [1], 5)
+        assert.deepEqual(ids, [0])
     });
 
 });

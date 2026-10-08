@@ -45,6 +45,10 @@
           "description": "The named right-hand scale style (see src/lib/scaleStyles.js). 'custom' means the colour, policy and options have been hand-tuned.",
           "enum": ["manual-safe", "manual", "follow", "follow-safe", "follow-melody", "tension", "vary", "adventurous", "custom"]
         },
+        "gridRows": {
+          "description": "The remembered grid height: how many chords are assigned to trigger keys. Restored on load.",
+          "type": "number"
+        },
         "keyboard": { "type": "object" }
       }
     },

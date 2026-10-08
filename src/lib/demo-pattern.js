@@ -14,8 +14,8 @@
  * the first unique chord in the definition, trigger 2 the second, and so on
  * into higher octaves after seven. Repeats point back at the earlier row, so
  * Blue Moon plays triggers 1-2-3-4-1-2-3-4 on four grid rows. This matches how
- * `candidatesToTriggerMapSmart` allocates favourites in order, and how the
- * sequencer maps widget rows back to trigger notes.
+ * the grid arrangement (`songs.default.ids`) maps chords to trigger notes in
+ * order, and how the sequencer maps widget rows back to trigger notes.
  *
  * MML rows are widget rows relative to C4 (60) with the sequencer's
  * `octadj = -1`, so `o4c` is row 60 (the first trigger), `o4b` is row 71 (the

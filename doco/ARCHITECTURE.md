@@ -85,7 +85,7 @@ logic.
    and `bootProject()` restores the last working project from the autosave (or
    seeds an empty project when there is none). The autosave is started later,
    once boot has finished (see Persistence and backend).
-6. `regen()` allocates the project chords into `globals.chordTriggerMap`, then
+6. `regen()` builds `globals.chordTriggerMap` from the grid arrangement, then
    `resolveProjectKey()` (in `src/lib/projectKey.js`) stores the declared or
    detected project key in `globals.projectKey`.
 7. `keyDetection()`, `initChordPlayEvents()` and `linkProjectToKeyboard()`
@@ -111,8 +111,14 @@ logic.
   chord as a scale (`scaleNotesOfChord`). Scale names can be rewritten by the
   key-aware engine (`src/lib/chordScaleEngine.js`, `src/lib/scaleMatching.js`)
   and by `bin/regenerate-project-scales.mjs`.
-- `chordTriggerMap` maps a left-hand MIDI note to a chord config. It is built
-  by `regen()` from the project chords, capped by `globals.maxChordConfigs`.
+- `chordTriggerMap` maps a left-hand MIDI note to a chord config. It is a
+  deterministic view over the project's **grid arrangement**
+  (`project.songs.default.ids`, the ordered ids on the trigger keys), built by
+  `regen()` and capped by `globals.maxChordConfigs` (mirrored on the project as
+  `options.gridRows`). Trigger slot `i` is always the `i`th arranged id, so a
+  load never reshuffles the grid. Randomness exists only in the explicit
+  **Deal new chords** action and in MIDI import (`dealArrangement()` in
+  `src/lib/triggerMaps.js`).
 - `scaleTriggerMap` maps a right-hand played note to the allowed scale note.
   It is rebuilt whenever the current scale changes.
 - A keyboard config sets `lhTriggerOctave` (where chords are triggered) and
@@ -442,13 +448,16 @@ and the validation commands.
 - The **current working project** is autosaved to `localStorage` (key
   `onekeyjam.currentProject`) by `src/lib/currentProjectStore.js`, so a browser
   reload does not lose unsaved edits. The snapshot holds the slim persisted
-  project (`getProjectForPersistence()`), the project name and library category,
-  the highlighted grid row and scale column (`currentChordTriggerNote`,
-  `currentScaleFilter`) and the number of displayed chord rows. `bootProject()`
+  project (`getProjectForPersistence()`) — including the grid arrangement
+  (`songs.default.ids`) and the remembered height (`options.gridRows`) — the
+  project name and library category, and the highlighted grid row and scale
+  column (`currentChordTriggerNote`, `currentScaleFilter`). `bootProject()`
   restores it at boot, and `initCurrentProjectAutosave()` (called at the end of
   the boot in `src/lib/main.js`) keeps it up to date with a debounced deep watch,
-  flushing on `pagehide`. Loading or creating another project simply replaces
-  the snapshot; the take, sequencer pattern and UI prefs persist separately.
+  flushing on `pagehide`. Destructive actions call `flushCurrentProject()` so a
+  quick reload cannot restore a pre-delete snapshot. Loading or creating another
+  project simply replaces the snapshot; the take, sequencer pattern and UI prefs
+  persist separately.
 
 ## Further reading
 

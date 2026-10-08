@@ -13,7 +13,7 @@ function onSliderChange(event) {
 
 <template>
     <div class="ui row">
-      <button @click="reAllocateChords" class="ui button">Reallocate Chords 🎲</button>
+      <button @click="reAllocateChords" class="ui button" title="Deal a new hand of chords from the pool onto the trigger keys. Keepers (favourites) stay put. The result is saved with the project.">Deal new chords 🎲</button>
       <input type="range" id="max-chord-configs" min="1" max="235" step="1" v-model.number="globals.maxChordConfigs" @change="onSliderChange"> {{
           globals.maxChordConfigs
       }} of {{ globals.project.chords.length }}

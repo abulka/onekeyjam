@@ -30,46 +30,41 @@ export function updateGridSliderMax(project = globals.project) {
 export function applyUserGridRowCount(requested, project = globals.project) {
     const chordCount = Array.isArray(project?.chords) ? project.chords.length : 0
     globals.maxChordConfigs = clampGridRowCount(requested, chordCount)
+    if (project) {
+        if (!project.options)
+            project.options = {}
+        // Remember the size with the project so it survives save and reopen.
+        project.options.gridRows = globals.maxChordConfigs
+    }
     updateGridSliderMax(project)
     return globals.maxChordConfigs
 }
 
 export function setMaxDisplayed(project = globals.project, maxChordConfigs) {
-    // v1.
-    // deprecated - reset the max number of chord configs to the number of candidate chord configs in the project
-    // globals.maxChordConfigs = project.chords.length;
-    // const nearestMultipleOfSeven = Math.round(globals.maxChordConfigs / 7 + 0.5) * 7;
-
-    // v2.
-    // Generated songs mark every chord as a favourite in song order, so a
-    // fresh load must be at least that tall or the last chord (and its demo
-    // pattern note) would be dropped. This expansion only applies to fresh
-    // loads where no explicit size was requested; an explicit user size from
-    // the drag handle, the import slider or a restored working size is always
-    // kept as requested, so a grid deliberately shrunk to fewer rows stays
-    // shrunk even when favourites cover every chord.
-    const explicit = maxChordConfigs !== undefined
-    if (!explicit)
-        maxChordConfigs = maxChordConfigsDefault
+    // The grid height, in order of preference:
+    //   1. an explicit size from the caller (drag handle, import, restore);
+    //   2. the size remembered on the project (`options.gridRows`);
+    //   3. a fallback that shows the whole grid arrangement, with a minimum of
+    //      the seven-row default. The arrangement length is used rather than
+    //      the chord pool, so a large imported pool opens at its dealt size
+    //      rather than showing every candidate.
     const chordCount = Array.isArray(project?.chords) ? project.chords.length : 0
-    const favourites = project?.songs?.default?.favourites
-    const favouritesCount = Array.isArray(favourites) ? favourites.length : 0
-    const coversAll = chordCount > 0 && favouritesCount >= chordCount
-    if (explicit) {
-        // An explicit size (drag handle, slider, restored working size) is
-        // always kept as requested, so shrinking below the favourite count
-        // stays shrunk. Larger-than-total sizes are kept for compatibility
-        // with restored working sizes; allocation still clamps to available
-        // chords. User drags use applyUserGridRowCount() which clamps to total.
+    const arrangement = project?.songs?.default?.ids
+    const arrangementCount = Array.isArray(arrangement) ? arrangement.length : 0
+    const stored = project?.options?.gridRows
+
+    if (maxChordConfigs !== undefined) {
         let n = Math.floor(Number(maxChordConfigs))
         if (!Number.isFinite(n))
             n = maxChordConfigsDefault
         globals.maxChordConfigs = Math.min(Math.max(n, 1), 235)
-    } else {
-        globals.maxChordConfigs = coversAll
-            ? Math.max(maxChordConfigs, favouritesCount)
-            : maxChordConfigs;
     }
-    // console.log('setMaxDisplayed', globals.maxChordConfigs);  // TODO maxChordConfigs debugging 2
+    else if (Number.isFinite(stored)) {
+        globals.maxChordConfigs = Math.min(Math.max(Math.floor(stored), 1), 235)
+    }
+    else {
+        const basis = arrangementCount > 0 ? arrangementCount : chordCount
+        globals.maxChordConfigs = Math.min(Math.max(basis, maxChordConfigsDefault), 235)
+    }
     updateGridSliderMax(project)
 }

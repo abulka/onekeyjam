@@ -4,6 +4,7 @@ import { stringify } from './prettyjson.js'
 import { getProjectForPersistence } from './projectConfig'
 import { saveUserProject } from './projectLibrary'
 import { loadUserProject } from '../../src/lib/boot-project'
+import { flushCurrentProject } from './currentProjectStore.js'
 import { exportMidiChords, exportMidiChordsForChordMemoryTrigger } from './parse-midi';
 import { sanitizeFilename } from './filename.js';
 
@@ -17,6 +18,10 @@ async function _saveProject(name, project) {
 
     globals.projectLibrary.projectName = name
     globals.projectLibrary.projectIsUserOrFeatured = 'user'
+
+    // Keep the working snapshot in step with the explicit save, so a reload
+    // does not restore an older working copy.
+    flushCurrentProject()
 
     $('body')
         .toast({
