@@ -295,7 +295,7 @@ onUnmounted(() => {
 /* On narrow phone screens the tab bar, tempo and project name wrap onto
 further rows instead of running off the right edge (notably after rotating
 back to portrait, when the viewport shrinks again). */
-@media (max-width: 768px) {
+@media (max-width: 991.98px) {
   .ui.secondary.menu {
     flex-wrap: wrap;
     max-width: 100%;

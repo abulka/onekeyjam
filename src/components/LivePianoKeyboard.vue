@@ -17,16 +17,31 @@ import KeyboardShortcutsHelp from "./KeyboardShortcutsHelp.vue"
 // the right keyboard size. A plain computed on window.innerWidth would only
 // evaluate once and leave the wrong width after rotating.
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 1024)
+// The wrapper is a block, so its clientWidth is the width available to the
+// keyboard. Measuring it lets the keyboard fill landscape/wide layouts while
+// portrait phones stay at the small width and crop.
+const keyboardWrap = ref(null)
+const containerWidth = ref(windowWidth.value)
+function measureContainer() {
+  const el = keyboardWrap.value
+  if (el && el.clientWidth > 0)
+    containerWidth.value = el.clientWidth
+}
 function onWindowResize() {
   windowWidth.value = window.innerWidth
+  measureContainer()
 }
-const isLargeScreen = computed(() => windowWidth.value > 768)
 
 // The keyboard keeps a fixed pixel width; changing the octave count makes the
-// keys wider or narrower rather than resizing the whole keyboard.
+// keys wider or narrower rather than resizing the whole keyboard. The width
+// fills the available container, clamped so portrait phones crop at the small
+// width and wide screens never exceed the large width.
 const LARGE_KEYBOARD_WIDTH = 1130
 const SMALL_KEYBOARD_WIDTH = 710
-const keyboardWidth = computed(() => (isLargeScreen.value ? LARGE_KEYBOARD_WIDTH : SMALL_KEYBOARD_WIDTH))
+const keyboardWidth = computed(() => {
+  const available = containerWidth.value || windowWidth.value
+  return Math.max(SMALL_KEYBOARD_WIDTH, Math.min(LARGE_KEYBOARD_WIDTH, available))
+})
 
 const NONOTE = ' '
 let lhCsharpStuckDown = false
@@ -250,6 +265,7 @@ function onLiveNote(event) {
 }
 
 let attachedEl = null
+let resizeObserver = null
 
 function detachKeyboard() {
   if (!attachedEl)
@@ -276,6 +292,7 @@ async function attachKeyboard() {
   const el = pianoKeyboard.value
   if (!el)
     return
+  measureContainer()
 
   // Take over keyboard input: clear the widget's hard-wired key map so it does
   // not play notes itself. Mouse/touch and drawing are unaffected.
@@ -308,11 +325,21 @@ onMounted(() => {
   document.addEventListener('focusin', onFocusChange)
   document.addEventListener('focusout', onFocusChange)
   document.addEventListener('focus-keyboard', onFocusKeyboardRequest)
+  // Follow the container as it changes (rotation, wrapping, accordion toggles).
+  if (typeof ResizeObserver !== 'undefined' && keyboardWrap.value) {
+    resizeObserver = new ResizeObserver(() => measureContainer())
+    resizeObserver.observe(keyboardWrap.value)
+  }
+  measureContainer()
   updateNoteInputState()
 })
 
 onUnmounted(() => {
   detachKeyboard()
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
   window.removeEventListener('keydown', onKeyDown)
   window.removeEventListener('keyup', onKeyUp)
   window.removeEventListener('blur', onWindowBlur)
@@ -364,7 +391,7 @@ onUnmounted(() => {
           @click="showShortcutsHelp = true">Shortcuts help</button>
       </div>
     </div>
-    <div class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }">
+    <div ref="keyboardWrap" class="piano-keyboard-wrap" :class="{ 'keyboard-focused': keyboardFocused }">
       <webaudio-keyboard ref="pianoKeyboard" keys="49" width="1130"></webaudio-keyboard>
       <PlaybackKeysOverlay :keyboard-el="pianoKeyboard" :keys="keyboardKeys" />
       <KeyboardHelpOverlay v-if="globals.keyboardHelpMode !== 'off' || globals.showKeyShortcuts" :keyboard-el="pianoKeyboard"
@@ -392,7 +419,7 @@ onUnmounted(() => {
 
 /* On phones just crop the keyboard to what fits. Playing still sounds all
 keys, so there is no need for sideways scrolling. */
-@media (max-width: 768px) {
+@media (max-width: 991.98px) {
   .piano-keyboard-wrap {
     max-width: 100%;
     overflow: hidden;

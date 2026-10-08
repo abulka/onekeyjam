@@ -80,7 +80,22 @@ function availableSteps() {
   return allSteps.filter(step => document.querySelector(step.target))
 }
 
+/**
+ * Open the collapsible "Filters & mode" section if it wraps the tour's bypass
+ * target, so the highlight is never placed on hidden content.
+ */
+function openAccordionForTarget(target) {
+  const el = document.querySelector(target)
+  const accordion = el && el.closest('.ui.accordion')
+  if (!accordion || typeof $ !== 'function')
+    return
+  const title = Array.from(accordion.children).find(child => child.classList.contains('title'))
+  if (title && !title.classList.contains('active'))
+    $(accordion).accordion('open', 0)
+}
+
 async function tutorial() {
+  openAccordionForTarget('[data-step="bypass-filtering"]')
   steps.value = availableSteps()
   await nextTick()
   tour.value?.resetTour()
@@ -304,7 +319,7 @@ onUnmounted(() => {
         </div>
         <!-- Phone transport: keep the play button visible; the sequence
         picker moves into the More dropdown. -->
-        <div v-if="sequenceOptionsList.length > 0" class="item sequencer-transport mobile-only">
+        <div v-if="sequenceOptionsList.length > 0" class="item sequencer-transport phone-transport">
           <button type="button" class="sequencer-play-toggle" :disabled="!sequencerControl.hasNotes"
             :class="{ playing: sequencerControl.isPlaying }" :title="sequencerButtonTitle" @click="sequencerControl.toggle()">
             <i :class="sequencerControl.isPlaying ? 'stop icon' : 'play icon'"></i>
@@ -400,9 +415,14 @@ onUnmounted(() => {
   margin: 0;
 }
 
-/* The Random progression, DEMO and Start Tour shortcuts show inline on
-larger screens and collapse into the More dropdown on small displays. */
+/* The Random progression, DEMO and Start Tour shortcuts and the sequence
+picker show inline on larger screens and collapse into the More dropdown on
+phone-portrait widths. */
 .mobile-only {
+  display: none !important;
+}
+
+.phone-transport {
   display: none !important;
 }
 
@@ -412,10 +432,12 @@ already conveys the randomness. */
   display: none;
 }
 
-/* On narrow phone screens keep File, Actions, Random project and More on one
-row. The menu itself must stay overflow-visible so the More popup can overlay
-the page instead of being clipped by a scrolling container. */
-@media (max-width: 768px) {
+/* On narrow screens (phones, including landscape, and small tablets) keep the
+menu on one row with tighter spacing, and keep it overflow-visible so the More
+popup can overlay the page instead of being clipped by a scrolling container.
+The menu contents are the desktop ones here; only true portrait phones drop to
+the compact set below. */
+@media (max-width: 991.98px) {
   .ui.container {
     overflow: visible;
   }
@@ -465,17 +487,8 @@ the page instead of being clipped by a scrolling container. */
   }
 
   .sequencer-sequence-select {
-    max-width: 5rem;
+    max-width: 10rem;
     min-width: 0;
-  }
-
-  .desktop-only,
-  .desktop-transport {
-    display: none !important;
-  }
-
-  .mobile-only {
-    display: flex !important;
   }
 
   .random-project-full {
@@ -484,6 +497,20 @@ the page instead of being clipped by a scrolling container. */
 
   .random-project-short {
     display: inline;
+  }
+}
+
+/* True phone-portrait widths: collapse the shortcuts and the sequence picker
+into the More dropdown, keeping only the play button in the transport. */
+@media (max-width: 768px) {
+  .desktop-only,
+  .desktop-transport {
+    display: none !important;
+  }
+
+  .mobile-only,
+  .phone-transport {
+    display: flex !important;
   }
 
   /* Keep the More popup inside the phone screen. */

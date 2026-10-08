@@ -1214,7 +1214,7 @@ select.preset-custom {
 
 /* Phones keep the table shape and swipe sideways inside this frame, so the
 page itself never grows wider than the screen. */
-@media (max-width: 768px) {
+@media (max-width: 991.98px) {
   .grand-summary-scroll {
     display: block;
     max-width: 100%;

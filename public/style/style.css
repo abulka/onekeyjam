@@ -61,6 +61,18 @@ th {
 
 /* responsive piano keyboard */
 
+/* Fomantic fixes the container at 723px (768-991px) and 933px (992-1199px),
+   which leaves side gaps on landscape phones and small tablets. Make the
+   containers fluid below 992px so the app fills the width; the desktop
+   (1200px+) centred layout is unchanged. */
+@media only screen and (max-width: 991.98px) {
+    .ui.ui.ui.container:not(.fluid) {
+        width: auto;
+        margin-left: 1em;
+        margin-right: 1em;
+    }
+}
+
 /* On smaller resolutions, hide the text for Large screens */
 @media only screen and (max-width: 960px) {
     .large-screen {display: none;}

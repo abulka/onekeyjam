@@ -1,8 +1,25 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { globals } from '@/lib/globals.js'
 import { setSoloMode } from '@/lib/change-scale.js'
 import { projectKeyName } from '@/lib/projectKey.js'
+import { registerAccordion } from '@/lib/accordionState.js'
+
+// The filters and mode block is collapsible because the Magic/Normal switch is
+// not used often. It opens by default and its state is remembered per page.
+const filtersAccordion = ref(null)
+let stopAccordion = () => {}
+
+onMounted(() => {
+  if (!filtersAccordion.value)
+    return
+  stopAccordion = registerAccordion(filtersAccordion.value, 'modeFilters')
+  $(filtersAccordion.value).accordion({ exclusive: false })
+})
+
+onUnmounted(() => {
+  stopAccordion()
+})
 
 function setMagicMode() {
   globals.bypass = false
@@ -30,59 +47,68 @@ const soloKeyName = computed(() => {
 
 <template>
 
-  <div class="ui one column centered padded stackable grid">
-    <div class="three column centered middle aligned row andyshade">
-      <div class="center aligned column">
-        <label class="checkboxLabel"
-          title="Left hand: Left Hand Chord Triggers so that you can play notes and chords on the whole keyboard. 🥸 Note this also turns off Scale Filtering.">
-          White note C{{globals.keyboard.lhTriggerOctave}}⇢B{{globals.keyboard.rhJamSoundOctave-1}} one finger chords 
-          <input type="checkbox" v-model="globals.enableLhChordTriggers" />
-        </label>
-      </div>
-      <div class="center aligned column">
-        <div class="ui compact buttons mode-toggle" data-step="bypass-filtering">
-          <button type="button" class="ui button" :class="{ active: !globals.bypass, boldy: !globals.bypass }"
-            :aria-pressed="!globals.bypass"
-            title="One note chords, white notes conform to the current scale"
-            @click="setMagicMode()">
-            ✨ Magic mode
-          </button>
-          <button type="button" class="ui button" :class="{ active: globals.bypass, boldy: globals.bypass }"
-            :aria-pressed="globals.bypass"
-            title="Bypass filtering, use when playing chords to add to project"
-            @click="setNormalPiano()">
-            🎹 Normal piano
-          </button>
-        </div>
-        <div class="mode-description">
-          {{ globals.bypass
-            ? 'Bypass filtering: play a normal piano keyboard'
-            : 'One note chords, white notes conform to the current scale.' }}
-        </div>
-      </div>
-      <div class="center aligned column">
-        <div class="rh-toggles">
-          <label class="checkboxLabel"
-            title="Right hand: filter white notes by scale on/off. 🥸 turn this off to play proper jam chords.">
-            White notes C{{globals.keyboard.rhJamSoundOctave}}⇢ conform to current Scale
-            <input type="checkbox" v-model="globals.scaleFilteringEnabled" />
-          </label>
-          <label v-if="globals.isProjectLoaded" class="checkboxLabel solo-label"
-            title="Solo in key: while the chords change, the right hand stays on the project key scale instead of switching to each chord's scale. You cannot play a wrong note. The 1-4 shortcuts still switch temporarily; press 0 or Shift+Bb on a MIDI keyboard to toggle this. A safety switch for performing.">
-            <!-- The badge sits to the left of the label. The row is
-                 right-aligned, so the checkbox keeps its position whether or
-                 not the badge is shown. -->
-            <span v-if="keyModeActive" class="solo-active-badge"
-              title="Every chord is currently filtered to this key scale">
-              Solo in key → {{ soloKeyName }}
-            </span>
-            <span v-else-if="soloInKey" class="solo-paused-note"
-              title="A temporary scale switch is in force until the next chord trigger">
-              Solo in key (overridden)
-            </span>
-            <span class="solo-label-text">Solo in key</span>
-            <input type="checkbox" v-model="soloInKey" />
-          </label>
+  <div ref="filtersAccordion" class="ui fluid styled accordion mode-filters-accordion"
+    style="background-color: burlywood;">
+    <div class="title active">
+      <i class="dropdown icon"></i>
+      Filters &amp; mode
+    </div>
+    <div class="content active">
+      <div class="ui one column centered padded stackable grid">
+        <div class="three column centered middle aligned row andyshade">
+          <div class="center aligned column">
+            <label class="checkboxLabel"
+              title="Left hand: Left Hand Chord Triggers so that you can play notes and chords on the whole keyboard. 🥸 Note this also turns off Scale Filtering.">
+              White note C{{globals.keyboard.lhTriggerOctave}}⇢B{{globals.keyboard.rhJamSoundOctave-1}} one finger chords 
+              <input type="checkbox" v-model="globals.enableLhChordTriggers" />
+            </label>
+          </div>
+          <div class="center aligned column">
+            <div class="ui compact buttons mode-toggle" data-step="bypass-filtering">
+              <button type="button" class="ui button" :class="{ active: !globals.bypass, boldy: !globals.bypass }"
+                :aria-pressed="!globals.bypass"
+                title="One note chords, white notes conform to the current scale"
+                @click="setMagicMode()">
+                ✨ Magic mode
+              </button>
+              <button type="button" class="ui button" :class="{ active: globals.bypass, boldy: globals.bypass }"
+                :aria-pressed="globals.bypass"
+                title="Bypass filtering, use when playing chords to add to project"
+                @click="setNormalPiano()">
+                🎹 Normal piano
+              </button>
+            </div>
+            <div class="mode-description">
+              {{ globals.bypass
+                ? 'Bypass filtering: play a normal piano keyboard'
+                : 'One note chords, white notes conform to the current scale.' }}
+            </div>
+          </div>
+          <div class="center aligned column">
+            <div class="rh-toggles">
+              <label class="checkboxLabel"
+                title="Right hand: filter white notes by scale on/off. 🥸 turn this off to play proper jam chords.">
+                White notes C{{globals.keyboard.rhJamSoundOctave}}⇢ conform to current Scale
+                <input type="checkbox" v-model="globals.scaleFilteringEnabled" />
+              </label>
+              <label v-if="globals.isProjectLoaded" class="checkboxLabel solo-label"
+                title="Solo in key: while the chords change, the right hand stays on the project key scale instead of switching to each chord's scale. You cannot play a wrong note. The 1-4 shortcuts still switch temporarily; press 0 or Shift+Bb on a MIDI keyboard to toggle this. A safety switch for performing.">
+                <!-- The badge sits to the left of the label. The row is
+                     right-aligned, so the checkbox keeps its position whether or
+                     not the badge is shown. -->
+                <span v-if="keyModeActive" class="solo-active-badge"
+                  title="Every chord is currently filtered to this key scale">
+                  Solo in key → {{ soloKeyName }}
+                </span>
+                <span v-else-if="soloInKey" class="solo-paused-note"
+                  title="A temporary scale switch is in force until the next chord trigger">
+                  Solo in key (overridden)
+                </span>
+                <span class="solo-label-text">Solo in key</span>
+                <input type="checkbox" v-model="soloInKey" />
+              </label>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -91,6 +117,17 @@ const soloKeyName = computed(() => {
 </template>
 
 <style scoped>
+/* Collapsible "Filters & mode" header, matching the app's other accordions. */
+.mode-filters-accordion > .title {
+  font-weight: bold;
+  color: #5b4326;
+}
+
+.mode-filters-accordion > .content {
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+}
+
 .ui.grid > .row.andyshade {
   padding-top: 6px;
   padding-bottom: 6px;

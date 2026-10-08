@@ -166,7 +166,9 @@ div.wrapper {
 
 /* Phone layout: the scale and chord text uses the full container width, and
 the live note/mapping sits in a reserved rail on the right. The rail is always
-reserved (hidden, not collapsed) so playing a note never pushes the page down. */
+reserved (hidden, not collapsed) so playing a note never pushes the page down.
+Only the true phone-portrait range is compact; landscape phones and up have
+room for the desktop single-row layout. */
 @media (max-width: 768px) {
     div.wrapper {
         margin: 0;
