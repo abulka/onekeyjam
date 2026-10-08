@@ -4,6 +4,7 @@ import { keyDownListener, keyUpListener } from "@/lib/midi/livePianoKeyboardShor
 import { registerAccordion } from "@/lib/accordionState.js"
 import GrandSummary from './GrandSummary.vue'
 import ChordPicker from './ChordPicker.vue'
+import ChordSequenceCreator from './ChordSequenceCreator.vue'
 import ScalePicker from './ScalePicker.vue'
 import KeySignature from './KeySignature.vue'
 import MidiParser from './MidiParser.vue'
@@ -66,6 +67,15 @@ onUnmounted(() => {
       </div>
       <div id="chordPicker" class="content">
         <ChordPicker />
+      </div>
+
+
+      <div class="title">
+        <i class="dropdown icon"></i>
+        Create Chord Sequence
+      </div>
+      <div class="content">
+        <ChordSequenceCreator />
       </div>
 
 
