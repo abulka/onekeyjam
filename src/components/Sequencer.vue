@@ -7,7 +7,7 @@ import { resolveTriggerNote } from "@/lib/resolveTriggerNote.js"
 import { audioContext } from '@/lib/audio/general-midi.js'
 import { auditionMidiNote, auditionChord } from '@/lib/midi/audition-note.js'
 import { commitTakeEdit } from '@/lib/midi/recorder.js'
-import { patternToTakeNotes, rowToTakeNotes } from '@/lib/sequencer-notes.js'
+import { patternToTakeNotes, rowToTakeNotes, scalePatternNoteLengths } from '@/lib/sequencer-notes.js'
 import { triggerRowCountFor } from '@/lib/demo-pattern.js'
 import { patternOnNote, clearPatternTimers, resetLiveCounts } from '@/lib/pattern-playback.js'
 import { noteSequencerStarted, noteSequencerStopped } from '@/lib/pattern-snapshot.js'
@@ -494,6 +494,40 @@ async function clearPatternAndLoop() {
   scheduleCountRefresh()
 }
 
+// ── Note length scaling ────────────────────────────────────────────────
+
+/** Whether the length buttons can run: notes exist and no take is recording. */
+const canScaleLengths = computed(() => hasNotes.value && !globals.recording.isRecording)
+
+/**
+ * Double (factor 2) or halve (factor 0.5) every trigger note proportionally,
+ * so the progression runs slower or quicker with gaps scaled too. The loop is
+ * always refit. When the pattern is playing it is stopped first and restarted
+ * from the beginning, because live-mutating the widget sequence mid-play is
+ * unreliable; during a take recording the buttons are disabled instead so the
+ * take merge stays consistent.
+ */
+async function scaleNoteLengths(factor) {
+  if (!panel.value || globals.recording.isRecording)
+    return
+  const notes = panel.value.getNotes()
+  if (!notes || notes.length === 0)
+    return
+  const wasPlaying = isPlaying.value
+  if (wasPlaying)
+    sequencerStop()
+  const scaled = scalePatternNoteLengths(notes, factor)
+  await panel.value.setNotes(scaled)
+  lastUserEditCount = scaled.length
+  loopManuallySet.value = false
+  fitLoopToNotes(false)
+  await panel.value.fitToNotes()
+  writeProjectPattern()
+  scheduleCountRefresh()
+  if (wasPlaying)
+    playIfHasNotes()
+}
+
 // ── Recording integration ──────────────────────────────────────────────────
 
 function startPatternForRecording() {
@@ -631,6 +665,10 @@ defineExpose({ playIfHasNotes, stop: sequencerStop, resume: sequencerResume, isP
     <button @click="sequencerResume()" class="ui button">Resume</button>
     <button @click="fitLoopToNotes()" class="ui button">Fit loop to notes</button>
     <button @click="clearPatternAndLoop()" class="ui button">Clear pattern</button>
+    <button :disabled="!canScaleLengths" title="Double every trigger note and stretch the pattern, so the progression runs slower"
+      @click="scaleNoteLengths(2)" class="ui button">Double lengths</button>
+    <button :disabled="!canScaleLengths" title="Halve every trigger note and shrink the pattern, so the progression runs quicker"
+      @click="scaleNoteLengths(0.5)" class="ui button">Halve lengths</button>
 
     <br><br>
     <label v-if="sequenceOptionsList.length > 1" class="sequence-picker">

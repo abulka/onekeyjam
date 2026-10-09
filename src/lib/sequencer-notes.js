@@ -153,6 +153,47 @@ export function filterAllowedRows(notes, allowedRows) {
 }
 
 /**
+ * Scale a pattern's starts and lengths proportionally, anchored at tick 0, so
+ * the progression gets slower (factor 2) or quicker (factor 0.5) while keeping
+ * existing gaps proportional. The input is not mutated; the result is sorted
+ * by start tick with same-start notes kept together.
+ *
+ * Odd lengths only round when halving: values round half up with a one-tick
+ * minimum, then an earlier note is trimmed to the next start when rounding
+ * alone would overlap it. One-tick rounding gaps are left alone.
+ * @param {PanelNote[]} notes
+ * @param {number} factor 2 to double, 0.5 to halve
+ * @returns {PanelNote[]}
+ */
+export function scalePatternNoteLengths(notes, factor) {
+    if (!Array.isArray(notes) || notes.length === 0)
+        return []
+    if (factor !== 2 && factor !== 0.5)
+        return notes.map(note => ({ ...note }))
+    const scaled = notes.map(note => ({
+        ...note,
+        t: Math.max(0, Math.round(Number(note.t) * factor)),
+        g: Math.max(1, Math.round(Number(note.g) * factor)),
+    }))
+    scaled.sort((a, b) => a.t - b.t || a.n - b.n)
+    for (let i = 0; i < scaled.length; i++) {
+        const current = scaled[i]
+        // Same-start notes sound together, so compare against the next
+        // distinct start rather than the immediate successor.
+        let nextStart = null
+        for (let j = i + 1; j < scaled.length; j++) {
+            if (scaled[j].t > current.t) {
+                nextStart = scaled[j].t
+                break
+            }
+        }
+        if (nextStart != null && nextStart < current.t + current.g)
+            current.g = Math.max(1, nextStart - current.t)
+    }
+    return scaled
+}
+
+/**
  * Repeat a looping pattern's notes from `loopStart` up to `totalTicks`.
  * Notes that do not fall inside the loop are ignored; notes are not clipped at
  * the loop end (the repeated note at the boundary simply belongs to the next
