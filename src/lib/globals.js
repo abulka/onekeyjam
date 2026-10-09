@@ -3,7 +3,7 @@ import { reactive } from 'vue'
 import { maxChordConfigs } from './globals-config.js'
 import { stringify } from './prettyjson.js'
 import { getProjectForPersistence } from './projectSerialize.js'
-import { resolveProjectKey, projectKeyName, projectKeyNotes, projectColour, setProjectColour, transposeKey } from './projectKey.js'
+import { resolveProjectKey, resolveChordKey, projectKeyName, projectKeyNotes, projectColour, setProjectColour, transposeKey } from './projectKey.js'
 import { isProduction } from './settings.js'
 
 /** @typedef {import("./typedefs").Chord} Chord */
@@ -60,7 +60,7 @@ export const globals = reactive({
         if (this.scaleOverrideName)
             return `${this.scaleOverrideName} (override)`
         if (this.soloMode === 'key' && this.scaleFiltering.keyModeActive) {
-            const key = this.getProjectKey()
+            const key = this.getActiveKey()
             if (key)
                 return projectKeyName(key)
         }
@@ -84,7 +84,7 @@ export const globals = reactive({
         if (this.scaleFiltering.autoScaleNotes.length > 0)
             return this.scaleFiltering.autoScaleNotes
         if (this.soloMode === 'key' && this.scaleFiltering.keyModeActive) {
-            const key = this.getProjectKey()
+            const key = this.getActiveKey()
             const keyNotes = key ? projectKeyNotes(key) : []
             if (keyNotes.length > 0)
                 return keyNotes
@@ -272,6 +272,21 @@ export const globals = reactive({
         const key = this.projectKey ?? resolveProjectKey(this.project)
         return transposeKey(key, this.transpositionSemitones)
     },
+    // The key that governs a given chord: its own section key when it has one,
+    // otherwise the project key. Falls back to the cached project key so we do
+    // not re-run detection on every call.
+    getChordKey(chordConfig) {
+        if (chordConfig && chordConfig.key) {
+            const chordKey = resolveChordKey(this.project, chordConfig)
+            return transposeKey(chordKey, this.transpositionSemitones)
+        }
+        return this.getProjectKey()
+    },
+    // The key of the chord that is currently triggered, used by the header chip
+    // and Solo in key so the sounding key follows the music through a modulation.
+    getActiveKey() {
+        return this.getChordKey(this.currentChordConfig())
+    },
     getProjectColour() {
         return projectColour(this.project)
     },
@@ -316,14 +331,16 @@ export const globals = reactive({
     classicProjects: [],  // classic project combo entries { text, value }, populated from the manifest
     progressionProjects: [],  // progressions combo entries { text, value }, populated from the manifest
     rockProjects: [],  // rock project combo entries { text, value }, populated from the manifest
+    multiKeyProjects: [],  // multi-key project combo entries { text, value }, populated from the manifest
     projectLibrary: {
         projectNames: [],  // featured project names (static library)
         classicProjectNames: [],  // classic project names (static library)
         progressionProjectNames: [],  // progressions names (static library)
         rockProjectNames: [],  // rock project names (static library)
+        multiKeyProjectNames: [],  // multi-key names (static library)
         userProjectNames: [],  // locally saved project names (IndexedDB)
         projectName: '',   // current project name
-        projectIsUserOrFeatured: '',  // 'user' | 'featured' | 'classic' | 'progressions' | 'rock'
+        projectIsUserOrFeatured: '',  // 'user' | 'featured' | 'classic' | 'progressions' | 'rock' | 'multi-key'
     },
     get isProjectLoaded() {
         // A project is loaded if the globals.chordTriggerMap becomes populated

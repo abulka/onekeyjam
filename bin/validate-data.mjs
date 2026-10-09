@@ -23,6 +23,7 @@ const targets = [
             join(root, 'public/projects/classic'),
             join(root, 'public/projects/progressions'),
             join(root, 'public/projects/rock'),
+            join(root, 'public/projects/multi-key'),
         ],
     },
     {

@@ -1,0 +1,195 @@
+{
+  "name": "Rhythm Changes in Bb (multi-key bridge)",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Bbmaj7",
+      "chord": "Bbmaj7",
+      "bass": "Bb2",
+      "scale1": "Bb major",
+      "scale2": "Bb lydian",
+      "scale3": "Bb harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "F7",
+      "chord": "F7",
+      "bass": "F2",
+      "scale1": "F mixolydian",
+      "scale2": "F lydian dominant",
+      "scale3": "F mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6",
+      "key": {
+        "tonic": "G",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 6,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6",
+      "key": {
+        "tonic": "C",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 7,
+      "name": "C7",
+      "chord": "C7",
+      "bass": "C2",
+      "scale1": "C mixolydian",
+      "scale2": "C lydian dominant",
+      "scale3": "C mixolydian b6",
+      "key": {
+        "tonic": "F",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 8,
+      "name": "Bb7",
+      "chord": "Bb7",
+      "bass": "Bb2",
+      "scale1": "Bb mixolydian",
+      "scale2": "Bb lydian dominant",
+      "scale3": "Bb mixolydian b6",
+      "key": {
+        "tonic": "Eb",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 9,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6",
+      "key": {
+        "tonic": "Ab",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 10,
+      "name": "Ab7",
+      "chord": "Ab7",
+      "bass": "Ab2",
+      "scale1": "Ab mixolydian",
+      "scale2": "Ab lydian dominant",
+      "scale3": "Ab mixolydian b6",
+      "key": {
+        "tonic": "Db",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 11,
+      "name": "Db7",
+      "chord": "Db7",
+      "bass": "Db2",
+      "scale1": "Db mixolydian",
+      "scale2": "Db lydian dominant",
+      "scale3": "Db mixolydian b6",
+      "key": {
+        "tonic": "Gb",
+        "type": "major",
+        "source": "user"
+      }
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "Bb",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz",
+    "scaleStyle": "follow"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t176o4c1d1e1f1c1d1e1f1g1a1b1f1o5c1d1e1f1o4c1d1e1f1c1d1e1f1",
+      "markstart": 0,
+      "markend": 384,
+      "tempo": 176,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Excerpt (24 bars)"
+    }
+  }
+}

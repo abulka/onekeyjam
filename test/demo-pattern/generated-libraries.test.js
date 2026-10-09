@@ -4,7 +4,7 @@ import { join } from 'node:path'
 
 // Vitest runs with the project root as the working directory.
 const root = process.cwd()
-const libraries = ['classic', 'progressions', 'rock']
+const libraries = ['classic', 'progressions', 'rock', 'multi-key']
 
 function libraryFiles(library) {
     const dir = join(root, 'public', 'projects', library)
@@ -107,5 +107,27 @@ describe('generated demo loops', () => {
                 assert.ok(Number.isFinite(tempo) && tempo >= 40 && tempo <= 240, `${path} tempo ${tempo}`)
             }
         }
+    })
+
+    it('every multi-key song carries at least one section key', () => {
+        let checked = 0
+        for (const path of libraryFiles('multi-key')) {
+            const project = loadProject(path)
+            const keyed = project.chords.filter((chord) => chord.key)
+            assert.ok(keyed.length > 0, `${path} has a section key`)
+            for (const chord of keyed) {
+                assert.ok(chord.key.tonic && chord.key.type, `${path} chord ${chord.chord} key is complete`)
+            }
+            checked++
+        }
+        assert.ok(checked >= 5, `checked ${checked} multi-key songs`)
+    })
+
+    it('a chord under two keys becomes two grid rows', () => {
+        const rhythm = loadProject(join(root, 'public', 'projects', 'multi-key', 'Rhythm Changes in Bb (multi-key bridge).json'))
+        const g7Rows = rhythm.chords.filter((chord) => chord.chord === 'G7')
+        assert.equal(g7Rows.length, 2)
+        const keyNames = g7Rows.map((chord) => chord.key ? `${chord.key.tonic} ${chord.key.type}` : 'Bb major').sort()
+        assert.deepEqual(keyNames, ['Bb major', 'C major'])
     })
 })

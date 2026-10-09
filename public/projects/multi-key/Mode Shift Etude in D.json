@@ -1,0 +1,109 @@
+{
+  "name": "Mode Shift Etude in D",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D minor pentatonic",
+      "scale3": "D aeolian"
+    },
+    {
+      "id": 2,
+      "name": "Em7",
+      "chord": "Em7",
+      "bass": "E2",
+      "scale1": "E minor pentatonic",
+      "scale2": "E aeolian",
+      "scale3": "E dorian"
+    },
+    {
+      "id": 3,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D aeolian",
+      "scale2": "D dorian",
+      "scale3": "D minor pentatonic",
+      "key": {
+        "tonic": "D",
+        "type": "minor",
+        "source": "user"
+      }
+    },
+    {
+      "id": 4,
+      "name": "Gm7",
+      "chord": "Gm7",
+      "bass": "G2",
+      "scale1": "G dorian",
+      "scale2": "G minor pentatonic",
+      "scale3": "G aeolian",
+      "key": {
+        "tonic": "D",
+        "type": "minor",
+        "source": "user"
+      }
+    },
+    {
+      "id": 5,
+      "name": "A7",
+      "chord": "A7",
+      "bass": "A2",
+      "scale1": "A phrygian dominant",
+      "scale2": "A lydian dominant",
+      "scale3": "A mixolydian",
+      "key": {
+        "tonic": "D",
+        "type": "minor",
+        "source": "user"
+      }
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "D",
+      "type": "dorian",
+      "source": "user"
+    },
+    "colour": "diatonic",
+    "scaleStyle": "follow-safe"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t96o4c1d1c1d1e1f1g1e1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 96,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    }
+  }
+}

@@ -4,11 +4,24 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import * as chordDb from '../src/lib/config.js'
 import { checkScaleAgainstChord, chordSymbolVoicingMismatch } from '../src/lib/chordScaleEngine.js'
-import { declaredProjectKey, projectColour } from '../src/lib/projectKey.js'
+import { declaredProjectKey, normalizeKey, projectColour } from '../src/lib/projectKey.js'
 
 /** The declared key plus the project's colour, for key-aware checking. */
 export function projectKeyContext(project) {
     const key = declaredProjectKey(project)
+    return key ? { ...key, colour: projectColour(project) } : undefined
+}
+
+/**
+ * The key that governs a chord for checking: the chord's own section key when
+ * it has one, else the declared project key. Unlike resolveChordKey this does
+ * not fall back to detection, so key-free projects are checked without a key
+ * exactly as before.
+ * @param {*} project
+ * @param {*} chord
+ */
+export function chordKeyContext(project, chord) {
+    const key = normalizeKey(chord && chord.key) ?? declaredProjectKey(project)
     return key ? { ...key, colour: projectColour(project) } : undefined
 }
 
@@ -18,6 +31,7 @@ export const projectDirs = [
     join(root, 'public/projects/classic'),
     join(root, 'public/projects/progressions'),
     join(root, 'public/projects/rock'),
+    join(root, 'public/projects/multi-key'),
 ]
 
 /** List every project file across the static libraries. */
@@ -58,9 +72,9 @@ export function chordInfoFor(chord) {
 
 /** @param {*} project */
 export function findScaleProblems(project) {
-    const key = projectKeyContext(project)
     const problems = []
     for (const chord of project.chords ?? []) {
+        const key = chordKeyContext(project, chord)
         const input = chordInfoFor(chord)
         for (const scaleKey of ['scale1', 'scale2', 'scale3']) {
             const scaleName = chord[scaleKey]
@@ -77,15 +91,16 @@ export function findScaleProblems(project) {
 /**
  * Scales whose colour notes fall outside the declared project key, without
  * counting as failures. These are reported as warnings because chromatic
- * colour is often deliberate. Projects without a declared key are skipped.
+ * colour is often deliberate. Chords governed by no key (a key-free project)
+ * are skipped.
  * @param {*} project
  */
 export function findOutOfKeyScales(project) {
-    const key = projectKeyContext(project)
-    if (!key)
-        return []
     const warnings = []
     for (const chord of project.chords ?? []) {
+        const key = chordKeyContext(project, chord)
+        if (!key)
+            continue
         const input = chordInfoFor(chord)
         for (const scaleKey of ['scale1', 'scale2', 'scale3']) {
             const scaleName = chord[scaleKey]

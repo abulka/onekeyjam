@@ -1,0 +1,238 @@
+{
+  "name": "All the Things You Are in Ab (multi-key)",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Fm7",
+      "chord": "Fm7",
+      "bass": "F2",
+      "scale1": "F dorian",
+      "scale2": "F aeolian",
+      "scale3": "F minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "Bbm7",
+      "chord": "Bbm7",
+      "bass": "Bb2",
+      "scale1": "Bb dorian",
+      "scale2": "Bb aeolian",
+      "scale3": "Bb minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 4,
+      "name": "Abmaj7",
+      "chord": "Abmaj7",
+      "bass": "Ab2",
+      "scale1": "Ab major",
+      "scale2": "Ab lydian",
+      "scale3": "Ab harmonic major"
+    },
+    {
+      "id": 5,
+      "name": "Dbmaj7",
+      "chord": "Dbmaj7",
+      "bass": "Db2",
+      "scale1": "Db lydian",
+      "scale2": "Db major",
+      "scale3": "Db harmonic major"
+    },
+    {
+      "id": 6,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic",
+      "key": {
+        "tonic": "C",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 7,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6",
+      "key": {
+        "tonic": "C",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 8,
+      "name": "Cmaj7",
+      "chord": "Cmaj7",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major",
+      "key": {
+        "tonic": "C",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 9,
+      "name": "Am7",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A dorian",
+      "scale2": "A aeolian",
+      "scale3": "A minor pentatonic",
+      "key": {
+        "tonic": "G",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 10,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6",
+      "key": {
+        "tonic": "G",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 11,
+      "name": "Gmaj7",
+      "chord": "Gmaj7",
+      "bass": "G2",
+      "scale1": "G major",
+      "scale2": "G lydian",
+      "scale3": "G harmonic major",
+      "key": {
+        "tonic": "G",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 12,
+      "name": "F#m7b5",
+      "chord": "F#m7b5",
+      "bass": "F#2",
+      "scale1": "F# locrian #2",
+      "scale2": "F# locrian",
+      "scale3": "F# minor blues",
+      "key": {
+        "tonic": "E",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 13,
+      "name": "B7",
+      "chord": "B7",
+      "bass": "B2",
+      "scale1": "B mixolydian",
+      "scale2": "B lydian dominant",
+      "scale3": "B mixolydian b6",
+      "key": {
+        "tonic": "E",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 14,
+      "name": "Emaj7",
+      "chord": "Emaj7",
+      "bass": "E2",
+      "scale1": "E major",
+      "scale2": "E lydian",
+      "scale3": "E harmonic major",
+      "key": {
+        "tonic": "E",
+        "type": "major",
+        "source": "user"
+      }
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "Ab",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz",
+    "scaleStyle": "follow"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t160o4c1d1e1f1g1a1b1o5c1o4c1d1e1f1g1a1b1o5c1d1e1f1f1g1a1b1b1o4c1d1e1f1g1a1b1o5c1o4f1g1d2e2f1",
+      "markstart": 0,
+      "markend": 576,
+      "tempo": 160,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Excerpt (36 bars)"
+    }
+  }
+}

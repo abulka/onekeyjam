@@ -20,8 +20,8 @@ import { keyDetection } from "./keyDetection"
 import { resolveProjectKey } from './projectKey.js'
 import { applyProjectKeySettings } from './projectScaleSettings.js'
 import { applyProjectScaleStyle } from './scaleStyles.js'
-import { fetchFeaturedProject, fetchClassicProject, fetchProgressionProject, fetchRockProject, fetchUserProject } from './projectLibrary';
-import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listProgressionProjects, listRockProjects, listUserProjects } from './projectLibrary';
+import { fetchFeaturedProject, fetchClassicProject, fetchProgressionProject, fetchRockProject, fetchMultiKeyProject, fetchUserProject } from './projectLibrary';
+import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listProgressionProjects, listRockProjects, listMultiKeyProjects, listUserProjects } from './projectLibrary';
 import { restoreCurrentProject, flushCurrentProject } from './currentProjectStore.js';
 import { clampBpm } from './uiPrefs.js';
 
@@ -128,6 +128,17 @@ async function setRockProject(name, project, currentChordTriggerNote) {
     projectChores2name(project, name, currentChordTriggerNote, 'rock');
 }
 
+async function setMultiKeyProject(name, project, currentChordTriggerNote) {
+    // Pass in a project name or a project object
+    if (name)
+        project = await fetchMultiKeyProject(name)
+    else
+        if (!project)
+            throw ('No project specified')
+
+    projectChores2name(project, name, currentChordTriggerNote, 'multi-key');
+}
+
 async function setUserProject(name, project, currentChordTriggerNote) {
     // Pass in a locally saved project name or a project object
     if (name)
@@ -168,6 +179,13 @@ export function loadRockProject(name) {
     if (!name)
         name = globals.projectLibrary.projectName
     document.broadcastEvent("switch-project", { name, category: 'rock' })
+}
+export function loadMultiKeyProject(name) {
+    // 1. Called by the multi-key combobox in the File menu
+    // 2. Called by reload current project button in main UI
+    if (!name)
+        name = globals.projectLibrary.projectName
+    document.broadcastEvent("switch-project", { name, category: 'multi-key' })
 }
 export function loadUserProject(name) {
     // 1. Called by combobox select in main UI
@@ -331,6 +349,12 @@ export function wireProjectEvents() {
                 )
             else if (event.detail.category === 'rock')
                 await setRockProject(
+                    event.detail.name,
+                    event.detail.project,  // usually undefined
+                    event.detail.currentChordTriggerNote,  // usually undefined
+                )
+            else if (event.detail.category === 'multi-key')
+                await setMultiKeyProject(
                     event.detail.name,
                     event.detail.project,  // usually undefined
                     event.detail.currentChordTriggerNote,  // usually undefined
@@ -622,6 +646,7 @@ export function linkProjectToKeyboard() {
     listClassicProjects()
     listProgressionProjects()
     listRockProjects()
+    listMultiKeyProjects()
     listUserProjects()
 }
 

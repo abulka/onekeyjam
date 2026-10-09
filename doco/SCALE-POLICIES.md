@@ -47,8 +47,8 @@ defaults preserve the sound of the original engine.
 | 2 | Progression context: dominant resolutions and a two-chord ii-V-I | Done |
 | 3 | History strip and UI polish (README) | Done |
 | 4 | Phrase-aware bias from the last solo note | Done |
-| 5 | Modulation: declared per-chord and per-section keys | Planned |
-| 5b | Automatic local key inference (experimental, off by default) | Planned |
+| 5 | Modulation: declared per-chord keys and derived key groups | Done |
+| 5b | Automatic local key inference (experimental, off by default) | Detector added, suggestions only |
 
 ## Phase 1: shuffle options
 
@@ -225,14 +225,20 @@ continuity and spread; held notes are handled by the note-repair setting in
 `Settings`. Without that, an inert Phrase control in shuffle only added
 confusion.
 
-## Phase 5: modulation (planned)
+## Phase 5: modulation
 
-A project currently has one key. The first step is **declared overrides**: an
-optional per-chord `key` and a per-song key, resolved before the project key,
-so a tune that changes key can say so. This touches the schemas, the data
-model, key resolution and the chord and song editors. An experimental
-automatic mode that infers a local key from recent chords, with hysteresis,
-comes later and stays off by default.
+**Declared keys are done.** A chord may carry an optional section key in
+`chords[].key`, resolved before the project key by `resolveChordKey()`, so a
+tune that changes key can say so. Groups are derived from equal keys; the grid
+shows a key badge and the header **Key:** chip and Solo in key follow the
+sounding chord's key. The Edit view's **Key Groups** editor assigns a key to a
+run of chords and re-ranks only that group. See `doco/MULTI-KEY.md`.
+
+**Phase 5b, automatic inference**, is experimental and suggestion-only:
+`suggestKeyGroups()` in `src/lib/keyGroupDetection.js` scores non-overlapping
+windows of the arranged chords and offers key groups to accept by hand. It is
+never applied automatically, and it only tests major and natural minor keys, so
+relative keys are ambiguous.
 
 ## Interaction with the other controls
 

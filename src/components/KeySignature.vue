@@ -1,15 +1,69 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { globals } from '../../src/lib/globals.js'
 import { keyDetection } from '../../src/lib/keyDetection';
 import { arraysAreEqual } from "../../src/lib/array-tools"
-import { declaredProjectKey, projectKeyName, describeProjectKey } from '../../src/lib/projectKey.js'
-import { applyProjectKeySettings } from '../../src/lib/projectScaleSettings.js'
+import { declaredProjectKey, projectKeyName, describeProjectKey, keyGroupsForProject } from '../../src/lib/projectKey.js'
+import { applyProjectKeySettings, applyChordKeySettings } from '../../src/lib/projectScaleSettings.js'
 import { sanitiseNoteToSharp } from '../../src/lib/note-tools.js'
 import { setChordFromSymbol } from '../../src/lib/chordPicker.js'
+import { suggestKeyGroups } from '../../src/lib/keyGroupDetection.js'
+import { getProjectChordsTriggers } from '../../src/lib/project-chord-triggers.js'
 import ComboScale from './ComboScale.vue'
 
 const currentKey = computed(() => globals.getProjectKey())
+
+// The chords currently on the grid, in trigger order, so the key groups shown
+// here match the rows shown in the chord grid.
+const gridChords = computed(() =>
+    getProjectChordsTriggers()
+        .map((note) => globals.chordTriggerMap?.[note])
+        .filter(Boolean))
+
+// Runs of grid chords that share an effective key. A run with no explicit keys
+// follows the project key; assigning a key turns the whole run into a group.
+const keyGroups = computed(() => {
+    void globals.project // recompute when the project changes
+    return keyGroupsForProject(globals.project, gridChords.value).map((group) => ({
+        ...group,
+        chordNames: group.chords.map((chord) => chord.chord).join(', '),
+        hasOwnKeys: group.chords.some((chord) => chord.key),
+    }))
+})
+
+function setGroupKey(group, eventDetail) {
+    const tonic = eventDetail.tonic ? sanitiseNoteToSharp(eventDetail.tonic) : group.key?.tonic
+    const type = eventDetail.type ? eventDetail.type : group.key?.type
+    if (tonic && type)
+        applyChordKeySettings(group.chords, { tonic, type })
+}
+
+function clearGroupKey(group) {
+    applyChordKeySettings(group.chords, null)
+}
+
+// Suggested key groups from the experimental modulation detector. Nothing is
+// applied until the user accepts a suggestion.
+const detectedGroups = ref([])
+
+function detectKeyGroups() {
+    detectedGroups.value = suggestKeyGroups(globals.project, gridChords.value)
+}
+
+function applyDetectedGroup(group) {
+    if (group.key)
+        applyChordKeySettings(group.chords, { tonic: group.key.tonic, type: group.key.type }, 'detected')
+}
+
+// Apply every suggestion whose key differs from the project key, leaving the
+// project-key run as the fallback.
+function applyAllDetectedGroups() {
+    for (const group of detectedGroups.value) {
+        if (group.key && group.keyName !== projectKeyName(currentKey.value))
+            applyDetectedGroup(group)
+    }
+    detectedGroups.value = []
+}
 
 const keyIsDeclared = computed(() => !!declaredProjectKey(globals.project))
 
@@ -214,8 +268,50 @@ const noKeySignatureBecauseNoChords = computed({
         </div>
     </div>
 
-
-
+    <div v-if="keyGroups.length > 0" class="ui fluid styled accordion" style="background-color: burlywood;">
+        <div class="title">
+            <i class="dropdown icon"></i>
+            Key Groups ({{ keyGroups.length }})
+        </div>
+        <div class="content">
+            <p class="ui small text grey mb-2">
+                Grid chords that share a key form a key signature group. Chords with no
+                key of their own follow the project key and are shown in italics.
+                Changing a group's key re-ranks only that group's scales.
+            </p>
+            <p class="mb-2">
+                <button class="ui mini button" @click="detectKeyGroups()"
+                    title="Suggest key groups by analysing the arranged chords (experimental)">Detect key groups</button>
+                <span v-if="detectedGroups.length === 0" class="ui small text grey ml-2">
+                    Analyses runs of chords and suggests where the key changes.
+                </span>
+            </p>
+            <div v-if="detectedGroups.length > 0" class="detected-groups mb-2">
+                <div v-for="(group, i) in detectedGroups" :key="i" class="detected-group-row">
+                    <code>{{ group.keyName || '(uncertain)' }}</code>
+                    <span class="detected-chords">{{ group.chords.map((chord) => chord.chord).join(', ') }}</span>
+                    <button v-if="group.key && group.keyName !== projectKeyName(currentKey)"
+                        class="ui mini basic button" @click="applyDetectedGroup(group)">Apply</button>
+                    <span v-else-if="group.key" class="ui small text grey">project key</span>
+                </div>
+                <button class="ui mini button" @click="applyAllDetectedGroups()">Apply all changes</button>
+            </div>
+            <div v-for="(group, i) in keyGroups" :key="i" class="key-group-row">
+                <span class="key-group-combo">
+                    <ComboScale :tonic="sanitiseNoteToSharp(group.key?.tonic ?? 'C')"
+                        :scale-type="group.key?.type ?? 'major'" :scale-types="keyTypes"
+                        @set-scale="setGroupKey(group, $event)" />
+                </span>
+                <span class="key-group-chords" :title="group.chordNames">
+                    <code>{{ group.chordNames || '(no chords)' }}</code>
+                </span>
+                <span v-if="group.hasOwnKeys" class="key-group-actions">
+                    <a href="#" title="Remove the key from this group so it follows the project key"
+                        @click.prevent="clearGroupKey(group)">follow project key</a>
+                </span>
+            </div>
+        </div>
+    </div>
 
     <!-- TIP: use class 'hidden' on input and attribute 'for' on label to get cursor to show when hovering over checkbox labels -->
 
@@ -229,5 +325,45 @@ const noKeySignatureBecauseNoChords = computed({
 .key-source-badge {
     margin-left: 0.5em;
     color: #6b5a45;
+}
+
+.key-group-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.15em 0;
+}
+
+.detected-groups {
+    border-left: 3px solid #b08968;
+    padding-left: 0.6em;
+}
+
+.detected-group-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    padding: 0.1em 0;
+}
+
+.detected-chords {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: small;
+    color: #6b5a45;
+}
+
+.key-group-chords {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.key-group-actions a {
+    font-size: small;
+    white-space: nowrap;
 }
 </style>

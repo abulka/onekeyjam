@@ -2,7 +2,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { chordScaleNamesFor } from '../src/lib/chordScaleEngine.js'
-import { findScaleProblems, findSymbolVoicingMismatches, chordInfoFor, listProjectFiles, projectKeyContext } from './project-scale-utils.mjs'
+import { findScaleProblems, findSymbolVoicingMismatches, chordInfoFor, listProjectFiles, projectKeyContext, chordKeyContext } from './project-scale-utils.mjs'
 
 const write = process.argv.includes('--write')
 const requested = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
@@ -76,13 +76,14 @@ for (const { dir, file } of targets) {
     const projectKey = projectKeyContext(project)
     const problems = findScaleProblems(project)
     const mismatches = findSymbolVoicingMismatches(project)
-    if (!projectKey && problems.length === 0 && mismatches.length === 0)
+    // A declared project key, or any per-chord section key, marks the project
+    // for key-aware regeneration: re-rank every slot in the chord's own key.
+    const hasSectionKeys = (project.chords ?? []).some((chord) => chordKeyContext(project, chord))
+    if (!projectKey && !hasSectionKeys && problems.length === 0 && mismatches.length === 0)
         continue
 
     const flagged = new Map()
-    if (projectKey) {
-        // A declared key means the project was marked for key-aware
-        // regeneration: re-rank all three slots in that key.
+    if (projectKey || hasSectionKeys) {
         for (const chord of project.chords ?? [])
             flagged.set(chord, new Set(['scale1', 'scale2', 'scale3']))
     }
@@ -107,7 +108,7 @@ for (const { dir, file } of targets) {
         if (!info.symbol && (!info.notes || info.notes.length === 0))
             continue
 
-        const ranked = chordScaleNamesFor(info, 8, projectKey)
+        const ranked = chordScaleNamesFor(info, 8, chordKeyContext(project, chord))
         const assigned = new Map()
         const changes = new Map()
 

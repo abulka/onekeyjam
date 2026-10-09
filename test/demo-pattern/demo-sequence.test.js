@@ -4,6 +4,7 @@ import {
     mergeConsecutiveHolds,
     planDemoPattern,
     planDemoSequences,
+    planKeyedDemoSequences,
     normalizeSequences,
     demoSequenceMml,
     demoEntryForTriggers,
@@ -241,6 +242,60 @@ describe('planDemoSequences', () => {
             { index: 1, bars: 1 },
             { index: 2, bars: 1 },
         ])
+    })
+})
+
+describe('planKeyedDemoSequences', () => {
+    const C = { tonic: 'C', type: 'major' }
+    const Eb = { tonic: 'Eb', type: 'major' }
+
+    it('inherits the running key through a sequence', () => {
+        const { rows, sequences } = planKeyedDemoSequences({
+            sequences: {
+                default: [
+                    { chord: 'Cmaj7', bars: 1, key: C },
+                    { chord: 'Dm7', bars: 1 },
+                    { chord: 'Ebmaj7', bars: 1, key: Eb },
+                    { chord: 'Fm7', bars: 1 },
+                ],
+            },
+        })
+        assert.deepEqual(rows.map((row) => row.keyName), ['C major', 'C major', 'Eb major', 'Eb major'])
+        assert.deepEqual(sequences.default.map((entry) => entry.index), [0, 1, 2, 3])
+    })
+
+    it('makes two rows for the same chord under two keys', () => {
+        const { rows, sequences } = planKeyedDemoSequences({
+            sequences: {
+                default: [
+                    { chord: 'G7', bars: 1, key: { tonic: 'Bb', type: 'major' } },
+                    { chord: 'G7', bars: 1, key: { tonic: 'C', type: 'major' } },
+                ],
+            },
+        })
+        assert.equal(rows.length, 2)
+        assert.deepEqual(rows.map((row) => row.symbol), ['G7', 'G7'])
+        assert.notEqual(rows[0].keyName, rows[1].keyName)
+        // The same row is reused when the key repeats.
+        const repeat = planKeyedDemoSequences({
+            sequences: {
+                default: [
+                    { chord: 'G7', bars: 1, key: { tonic: 'Bb', type: 'major' } },
+                    { chord: 'G7', bars: 1, key: { tonic: 'C', type: 'major' } },
+                    { chord: 'G7', bars: 1 },
+                ],
+            },
+        })
+        assert.equal(repeat.rows.length, 2)
+        assert.equal(repeat.sequences.default[2].index, 1)
+    })
+
+    it('keys definition chords by inheritance too', () => {
+        const { rows } = planKeyedDemoSequences({
+            key: { tonic: 'F', type: 'major' },
+            chords: ['Fmaj7', { chord: 'Gbmaj7', key: { tonic: 'Gb', type: 'major' } }, 'Abmaj7'],
+        })
+        assert.deepEqual(rows.map((row) => row.keyName), ['F major', 'Gb major', 'Gb major'])
     })
 })
 

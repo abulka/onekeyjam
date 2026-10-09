@@ -17,6 +17,7 @@ const FEATURED_MANIFEST = '/projects/featured/featured-manifest.json'
 const CLASSIC_MANIFEST = '/projects/classic/classic-manifest.json'
 const PROGRESSIONS_MANIFEST = '/projects/progressions/progressions-manifest.json'
 const ROCK_MANIFEST = '/projects/rock/rock-manifest.json'
+const MULTI_KEY_MANIFEST = '/projects/multi-key/multi-key-manifest.json'
 const KEYBOARDS_MANIFEST = '/keyboards/keyboards-manifest.json'
 
 async function fetchJson(url) {
@@ -88,6 +89,20 @@ export async function listRockProjects() {
 export async function fetchRockProject(name) {
     const entry = globals.rockProjects.find(p => p.text === name)
     const url = entry ? entry.value : `/projects/rock/${encodeURIComponent(name + '.json')}`
+    return fetchJson(url)
+}
+
+// Multi-key projects - the static library in public/projects/multi-key
+
+export async function listMultiKeyProjects() {
+    const manifest = await fetchManifest(MULTI_KEY_MANIFEST)
+    globals.multiKeyProjects = manifest
+    globals.projectLibrary.multiKeyProjectNames = manifest.map(entry => entry.text)
+}
+
+export async function fetchMultiKeyProject(name) {
+    const entry = globals.multiKeyProjects.find(p => p.text === name)
+    const url = entry ? entry.value : `/projects/multi-key/${encodeURIComponent(name + '.json')}`
     return fetchJson(url)
 }
 

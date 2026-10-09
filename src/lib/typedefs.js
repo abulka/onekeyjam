@@ -41,6 +41,8 @@
  * @property {string} scale1 default scale e.g. "d dorian"
  * @property {string} [scale2] alternative scale e.g. "c major pentatonic"
  * @property {string} [scale3] alternative scale e.g. "f# minor"
+ * @property {ProjectKey} [key] optional section key override; when set, this
+ *   chord's scales are ranked in this key instead of the project key
  * @property {Array<string>} [scale1Notes] derived: scale1 expanded to notes sans octave
  * @property {Array<string>} [scale2Notes] derived
  * @property {Array<string>} [scale3Notes] derived

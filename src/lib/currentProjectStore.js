@@ -14,7 +14,7 @@ import { resetChordHistory } from './autoScale.js'
  */
 
 const STORAGE_KEY = 'onekeyjam.currentProject'
-const CATEGORIES = ['user', 'featured', 'classic', 'progressions', 'rock']
+const CATEGORIES = ['user', 'featured', 'classic', 'progressions', 'rock', 'multi-key']
 const SCALE_FILTERS = ['scale1', 'scale2', 'scale3', 'notesOfChord']
 
 /**

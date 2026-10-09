@@ -3,6 +3,7 @@ import * as Tonal from '@tonaljs/tonal'
 import { globals } from './globals.js'
 import { resolveChord, rankScales } from './chordScaleEngine.js'
 import { scaleNameToNotes } from './scaleToNotes.js'
+import { projectKeyName, projectKeyNotes } from './projectKey.js'
 
 /**
  * @module lib/autoScale
@@ -108,6 +109,8 @@ const mod12 = (n) => ((n % 12) + 12) % 12
  * @property {ChordShape} shape
  * @property {Set<number>} scalePcs
  * @property {string} scaleName
+ * @property {string} [keyName] the key in force for this chord, e.g. "Ab major"
+ * @property {Set<number>} [keyPcs] the pitch classes of that key
  * @property {string} [policy] which policy or a manual pick chose the scale
  */
 
@@ -708,7 +711,7 @@ export function chooseScaleForChord(chordConfig, policy = globals.scaleFiltering
 
     if (policy === 'shuffle') {
         const poolSize = clampPoolSize(globals.scaleFiltering.policyOptions?.poolSize)
-        const key = globals.getProjectKey() ?? undefined
+        const key = globals.getChordKey(chordConfig) ?? undefined
         const candidates = shuffleCandidatesFor(chordConfig, poolSize, key)
         if (candidates.length === 0)
             return null
@@ -776,12 +779,24 @@ function soundingScaleName() {
     if (globals.scaleFiltering.autoScaleName)
         return globals.scaleFiltering.autoScaleName
     if (globals.soloMode === 'key' && globals.scaleFiltering.keyModeActive) {
-        const key = globals.getProjectKey()
+        const key = globals.getActiveKey()
         return key ? `${key.tonic} ${key.type}` : ''
     }
     if (globals.currentScaleFilter === 'notesOfChord')
         return 'notes of chord'
     return globals.currentChordConfig()[globals.currentScaleFilter] ?? ''
+}
+
+/** The name of the key in force for the current chord. */
+function activeKeyName() {
+    const key = globals.getActiveKey()
+    return key ? projectKeyName(key) : ''
+}
+
+/** The pitch classes of the key in force for the current chord. */
+function activeKeyPitchClasses() {
+    const key = globals.getActiveKey()
+    return key ? pitchClassSet(projectKeyNotes(key)) : new Set()
 }
 
 export function resetChordHistory() {
@@ -830,6 +845,8 @@ export function recordChordHistory() {
         shape,
         scalePcs: pitchClassSet(globals.currentScaleNotes),
         scaleName: soundingScaleName(),
+        keyName: activeKeyName(),
+        keyPcs: activeKeyPitchClasses(),
         policy: globals.scaleFiltering.manualScaleNote ? 'manual' : globals.scaleFiltering.policy,
     }
     const history = globals.chordHistory

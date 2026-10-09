@@ -12,7 +12,7 @@ import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events.js"
 import { start, dragover, dragend } from '../../src/lib/drag-drop-table-rows.js'
 import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '../../src/lib/massOperationsOnChordConfigs'
 import { keyDetection } from '../../src/lib/keyDetection';
-import { projectKeyNotes } from '../../src/lib/projectKey.js';
+import { projectKeyNotes, projectKeyName, projectKeyShortName, keyColourHue } from '../../src/lib/projectKey.js';
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
 import { resizeGridRowCount, deleteSelectedChordConfigs } from '@/lib/boot-project.js'
@@ -215,14 +215,19 @@ const keyModeActive = computed(() => globals.scaleFiltering.keyModeActive)
 
 // The last few chord-to-scale choices, newest first, for the history strip.
 const scaleHistoryEntries = computed(() => {
-  const key = globals.getProjectKey()
-  const keyPcs = key ? pitchClassSet(projectKeyNotes(key)) : null
-  return globals.chordHistory.slice(-4).reverse().map((entry) => ({
-    chordName: entry.chordName,
-    scaleName: entry.scaleName,
-    policy: entry.policy ?? 'manual',
-    outOfKey: keyPcs ? [...entry.scalePcs].some((pc) => !keyPcs.has(pc)) : false,
-  }))
+  // Each history entry carries the key that was in force for its chord, so the
+  // out-of-key tint follows a multi-key song's modulations.
+  const fallbackKey = globals.getProjectKey()
+  const fallbackPcs = fallbackKey ? pitchClassSet(projectKeyNotes(fallbackKey)) : null
+  return globals.chordHistory.slice(-4).reverse().map((entry) => {
+    const keyPcs = entry.keyPcs ?? fallbackPcs
+    return {
+      chordName: entry.chordName,
+      scaleName: entry.scaleName,
+      policy: entry.policy ?? 'manual',
+      outOfKey: keyPcs ? [...entry.scalePcs].some((pc) => !keyPcs.has(pc)) : false,
+    }
+  })
 })
 
 function configGrandSummary() {
@@ -232,11 +237,17 @@ function configGrandSummary() {
   if (!globals.isProjectLoaded)
     return result
 
+  let previousKeyName = null
   for (let note of getProjectChordsTriggers()) {
     let info = _generateSummaryInfo(note)
     if (info) {
-      if (_amAllowedToDisplayThisInfo(info))
+      if (_amAllowedToDisplayThisInfo(info)) {
+        // Mark the first row of a new key run, so the grid can draw a divider
+        // when the music modulates. Only displayed rows count.
+        info.keyChanged = previousKeyName !== null && info.keyName !== previousKeyName
+        previousKeyName = info.keyName
         result.push(info)
+      }
     }
     else  // abort if info is ever null
       return []
@@ -401,7 +412,7 @@ function _generateSummaryInfo(note) {
     name: chordConfig.name,
   }
   const annotate = (scaleName) => {
-    const key = globals.getProjectKey()
+    const key = globals.getChordKey(chordConfig)
     if (!key || !scaleName || scaleName === 'notes of chord' || typeof scaleName !== 'string')
       return { outOfKey: [], colour: null }
     return scaleAnnotation(annotationInput, scaleName, key)
@@ -461,6 +472,15 @@ function _generateSummaryInfo(note) {
   //   info.bass += ' 🎸'  // indicate that user explicitly entered a bass note e.g. 'C2'
 
   info.id = chordConfig.id
+
+  // The key that governs this row: the chord's own section key when it has
+  // one, otherwise the project key. Shown as a colour-coded badge so a
+  // modulation is visible in the grid.
+  const rowKey = globals.getChordKey(chordConfig)
+  info.keyName = rowKey ? projectKeyShortName(rowKey) : ''
+  info.keyFullName = rowKey ? projectKeyName(rowKey) : ''
+  info.keyHasOwn = !!chordConfig.key
+  info.keyHue = keyColourHue(rowKey)
   return info
 }
 
@@ -656,6 +676,7 @@ function generalTableClick(event) {
       <tr>
         <th>Id</th>
         <th>Trigger</th>
+        <th title="The key this row's scales are ranked in. Chords with their own key form a key signature group; the rest follow the project key.">Key</th>
         <!-- <th>Config Name</th> -->
         <th>Chord</th>
         <!-- <th>Symbols</th> -->
@@ -690,6 +711,7 @@ function generalTableClick(event) {
     <tbody>
       <tr v-for="(info) in configGrandSummary()" :key="info.id"
         :data-trigger-note="info.lhTriggerNote"
+        :class="{ 'key-group-change': info.keyChanged }"
         @click="generalTableClick($event);"
       >
         <td class="move-cursor" draggable="true" @dragstart="ondragstart($event)" @dragover="ondragover($event)"
@@ -721,6 +743,14 @@ function generalTableClick(event) {
             class="trigger-btn p-2">
             {{ info.lhTriggerNote }}
           </button>
+        </td>
+        <td class="key-cell">
+          <span v-if="info.keyName" class="key-badge"
+            :class="{ 'key-badge-fallback': !info.keyHasOwn, 'key-badge-change': info.keyChanged }"
+            :style="info.keyHue != null ? { '--key-hue': info.keyHue } : null"
+            :title="(info.keyChanged ? 'Key change. ' : '') + 'Scales on this row are ranked in ' + info.keyFullName + (info.keyHasOwn ? ' (section key)' : ' (project key)')">
+            {{ info.keyName }}
+          </span>
         </td>
         <!-- <td>
           {{ info.chordConfigName }}
@@ -1153,6 +1183,44 @@ select.preset-custom {
   color: #256b25;
   border-color: #a8d8a8;
   font-weight: bold;
+}
+
+/* Key badge: the key signature group each row's scales are ranked in. A chord
+   with its own section key gets a saturated colour from its tonic; rows on the
+   fallback project key are muted. */
+.key-cell {
+  width: 4.5rem;
+  text-align: center;
+}
+
+.key-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  line-height: 1.3;
+  padding: 0 0.35rem;
+  border-radius: 3px;
+  white-space: nowrap;
+  border: 1px solid hsl(var(--key-hue, 35) 45% 60%);
+  background: hsl(var(--key-hue, 35) 55% 88%);
+  color: hsl(var(--key-hue, 35) 55% 24%);
+}
+
+.key-badge-fallback {
+  border-color: #d9c9b0;
+  background: #f1e8da;
+  color: #8a7a63;
+  font-style: italic;
+}
+
+.key-badge-change {
+  box-shadow: inset 2px 0 0 hsl(var(--key-hue, 35) 60% 40%);
+  font-weight: bold;
+}
+
+/* A divider marks the first row of a new key run, so a modulation is easy to
+   spot as the grid is scanned. */
+tr.key-group-change > td {
+  border-top: 2px solid #b08968;
 }
 
 /* When Solo in key is sounding, the stored per-chord scales are dormant. */

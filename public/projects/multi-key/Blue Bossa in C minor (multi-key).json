@@ -1,0 +1,131 @@
+{
+  "name": "Blue Bossa in C minor (multi-key)",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C dorian",
+      "scale2": "C aeolian",
+      "scale3": "C minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "Fm7",
+      "chord": "Fm7",
+      "bass": "F2",
+      "scale1": "F dorian",
+      "scale2": "F aeolian",
+      "scale3": "F minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Dm7b5",
+      "chord": "Dm7b5",
+      "bass": "D2",
+      "scale1": "D locrian #2",
+      "scale2": "D locrian",
+      "scale3": "D minor blues"
+    },
+    {
+      "id": 4,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G phrygian dominant",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian"
+    },
+    {
+      "id": 5,
+      "name": "Ebm7",
+      "chord": "Ebm7",
+      "bass": "Eb2",
+      "scale1": "Eb dorian",
+      "scale2": "Eb aeolian",
+      "scale3": "Eb minor pentatonic",
+      "key": {
+        "tonic": "Db",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 6,
+      "name": "Ab7",
+      "chord": "Ab7",
+      "bass": "Ab2",
+      "scale1": "Ab mixolydian",
+      "scale2": "Ab lydian dominant",
+      "scale3": "Ab mixolydian b6",
+      "key": {
+        "tonic": "Db",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 7,
+      "name": "Dbmaj7",
+      "chord": "Dbmaj7",
+      "bass": "Db2",
+      "scale1": "Db major",
+      "scale2": "Db lydian",
+      "scale3": "Db harmonic major",
+      "key": {
+        "tonic": "Db",
+        "type": "major",
+        "source": "user"
+      }
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "minor",
+      "source": "user"
+    },
+    "colour": "jazz",
+    "scaleStyle": "follow"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t126o4c1d1e1f1c1d1e1f1g1a1b1b1e1f1c1c1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 126,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Excerpt (16 bars)"
+    }
+  }
+}

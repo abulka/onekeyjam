@@ -1,0 +1,147 @@
+{
+  "name": "Two Key Etude in C and Eb",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Cmaj7",
+      "chord": "Cmaj7",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "Am7",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A aeolian",
+      "scale2": "A dorian",
+      "scale3": "A minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D minor pentatonic",
+      "scale3": "D aeolian"
+    },
+    {
+      "id": 4,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "Ebmaj7",
+      "chord": "Ebmaj7",
+      "bass": "Eb2",
+      "scale1": "Eb major",
+      "scale2": "Eb lydian",
+      "scale3": "Eb harmonic major",
+      "key": {
+        "tonic": "Eb",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 6,
+      "name": "Cm7",
+      "chord": "Cm7",
+      "bass": "C2",
+      "scale1": "C aeolian",
+      "scale2": "C dorian",
+      "scale3": "C minor pentatonic",
+      "key": {
+        "tonic": "Eb",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 7,
+      "name": "Fm7",
+      "chord": "Fm7",
+      "bass": "F2",
+      "scale1": "F dorian",
+      "scale2": "F minor pentatonic",
+      "scale3": "F aeolian",
+      "key": {
+        "tonic": "Eb",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 8,
+      "name": "Bb7",
+      "chord": "Bb7",
+      "bass": "Bb2",
+      "scale1": "Bb mixolydian",
+      "scale2": "Bb lydian dominant",
+      "scale3": "Bb mixolydian b6",
+      "key": {
+        "tonic": "Eb",
+        "type": "major",
+        "source": "user"
+      }
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "diatonic",
+    "scaleStyle": "follow-safe"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t100o4c1d1e1f1g1a1b1o5c1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 100,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    }
+  }
+}

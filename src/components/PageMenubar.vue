@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, useSlots } from 'vue'
 import { globals } from '@/lib/globals.js'
-import { newProject, loadUserProject, loadFeaturedProject, loadClassicProject, loadProgressionProject, loadRockProject } from '@/lib/boot-project'
+import { newProject, loadUserProject, loadFeaturedProject, loadClassicProject, loadProgressionProject, loadRockProject, loadMultiKeyProject } from '@/lib/boot-project'
 import { saveProject, saveProjectAs, downloadProject, downloadMidiChords, downloadMidiChordsForChordMemoryTrigger, uploadProject } from '@/lib/projectSave.js'
 import { loadDemoProject } from '@/lib/demo-project.js'
 import { sequencerControl, sequenceOptions } from '@/lib/sequencer-control.js'
@@ -40,6 +40,7 @@ const fileOpenComponent = ref()
 const fileOpenComponentClassic = ref()
 const fileOpenComponentProgressions = ref()
 const fileOpenComponentRock = ref()
+const fileOpenComponentMultiKey = ref()
 const fileOpenComponentUser = ref()
 const fileImportMidiDialog = ref()
 
@@ -117,6 +118,8 @@ function reloadCurrentProject() {
     loadProgressionProject()
   else if (category == 'rock')
     loadRockProject()
+  else if (category == 'multi-key')
+    loadMultiKeyProject()
   else
     loadFeaturedProject()
 }
@@ -135,6 +138,10 @@ function fileOpenProgressions() {
 
 function fileOpenRock() {
   fileOpenComponentRock.value.fileOpen()
+}
+
+function fileOpenMultiKey() {
+  fileOpenComponentMultiKey.value.fileOpen()
 }
 
 function fileOpenUser() {
@@ -217,6 +224,9 @@ function keyDownListener(e) {
   if (e.code === 'KeyR' && e.altKey && !e.metaKey && !e.repeat) {
     fileOpenRock()
   }
+  if (e.code === 'KeyM' && e.altKey && !e.metaKey && !e.repeat) {
+    fileOpenMultiKey()
+  }
 }
 
 let removeBreakpointListener = null
@@ -284,6 +294,9 @@ onUnmounted(() => {
           <a class="item" @click="fileOpenRock()"><i class="file icon"></i>
             <span class="description">alt + r</span>
             Open Rock...</a>
+          <a class="item" @click="fileOpenMultiKey()"><i class="file icon"></i>
+            <span class="description">alt + m</span>
+            Open Multi-key...</a>
           <a class="item" :class="{ disabled: !fileSaveAllowed }" @click="saveProject()">
             <span class="description">alt + s</span>
             <i class="save icon"></i>Save</a>
@@ -369,6 +382,7 @@ onUnmounted(() => {
         <ComboProjectLibrary ref="fileOpenComponentClassic" userOrFeatured="classic" />
         <ComboProjectLibrary ref="fileOpenComponentProgressions" userOrFeatured="progressions" />
         <ComboProjectLibrary ref="fileOpenComponentRock" userOrFeatured="rock" />
+        <ComboProjectLibrary ref="fileOpenComponentMultiKey" userOrFeatured="multi-key" />
         <ComboProjectLibrary ref="fileOpenComponentUser" userOrFeatured="user" />
       </div>
 

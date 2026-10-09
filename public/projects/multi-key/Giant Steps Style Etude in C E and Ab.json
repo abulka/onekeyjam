@@ -1,0 +1,211 @@
+{
+  "name": "Giant Steps Style Etude in C E and Ab",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Cmaj7",
+      "chord": "Cmaj7",
+      "bass": "C2",
+      "scale1": "C major",
+      "scale2": "C lydian",
+      "scale3": "C harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "Am7",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A dorian",
+      "scale2": "A aeolian",
+      "scale3": "A minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Dm7",
+      "chord": "Dm7",
+      "bass": "D2",
+      "scale1": "D dorian",
+      "scale2": "D aeolian",
+      "scale3": "D minor pentatonic"
+    },
+    {
+      "id": 4,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G mixolydian",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian b6"
+    },
+    {
+      "id": 5,
+      "name": "Emaj7",
+      "chord": "Emaj7",
+      "bass": "E2",
+      "scale1": "E major",
+      "scale2": "E lydian",
+      "scale3": "E harmonic major",
+      "key": {
+        "tonic": "E",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 6,
+      "name": "C#m7",
+      "chord": "C#m7",
+      "bass": "C#2",
+      "scale1": "C# dorian",
+      "scale2": "C# aeolian",
+      "scale3": "C# minor pentatonic",
+      "key": {
+        "tonic": "E",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 7,
+      "name": "F#m7",
+      "chord": "F#m7",
+      "bass": "F#2",
+      "scale1": "F# dorian",
+      "scale2": "F# aeolian",
+      "scale3": "F# minor pentatonic",
+      "key": {
+        "tonic": "E",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 8,
+      "name": "B7",
+      "chord": "B7",
+      "bass": "B2",
+      "scale1": "B mixolydian",
+      "scale2": "B lydian dominant",
+      "scale3": "B mixolydian b6",
+      "key": {
+        "tonic": "E",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 9,
+      "name": "Abmaj7",
+      "chord": "Abmaj7",
+      "bass": "Ab2",
+      "scale1": "Ab major",
+      "scale2": "Ab lydian",
+      "scale3": "Ab harmonic major",
+      "key": {
+        "tonic": "Ab",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 10,
+      "name": "Fm7",
+      "chord": "Fm7",
+      "bass": "F2",
+      "scale1": "F dorian",
+      "scale2": "F aeolian",
+      "scale3": "F minor pentatonic",
+      "key": {
+        "tonic": "Ab",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 11,
+      "name": "Bbm7",
+      "chord": "Bbm7",
+      "bass": "Bb2",
+      "scale1": "Bb dorian",
+      "scale2": "Bb aeolian",
+      "scale3": "Bb minor pentatonic",
+      "key": {
+        "tonic": "Ab",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 12,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6",
+      "key": {
+        "tonic": "Ab",
+        "type": "major",
+        "source": "user"
+      }
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "C",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz",
+    "scaleStyle": "follow"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t150o4c1d1e1f1g1a1b1o5c1d1e1f1g1",
+      "markstart": 0,
+      "markend": 192,
+      "tempo": 150,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Excerpt (12 bars)"
+    }
+  }
+}

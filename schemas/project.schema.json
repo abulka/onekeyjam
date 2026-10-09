@@ -66,6 +66,16 @@
     "chordSequences": { "type": "object" }
   },
   "definitions": {
+    "projectKey": {
+      "description": "A musical key. type is a Tonal scale type; major and minor are the common values, modes such as dorian are allowed.",
+      "type": "object",
+      "required": ["tonic", "type"],
+      "properties": {
+        "tonic": { "type": "string" },
+        "type": { "type": "string" },
+        "source": { "enum": ["user", "detected"] }
+      }
+    },
     "id": {
       "description": "Chord config ids are normally numbers, but some hand-authored projects still use numeric strings. The app compares ids loosely, so both are accepted.",
       "type": ["number", "string"]
@@ -84,6 +94,10 @@
         "scale1": { "type": "string" },
         "scale2": { "type": "string" },
         "scale3": { "type": "string" },
+        "key": {
+          "description": "Optional section key override. When present, this chord's scales are ranked in this key instead of the project key, so a project can contain several key signature groups.",
+          "$ref": "#/definitions/projectKey"
+        },
         "scale1Notes": { "type": "array", "items": { "type": "string" } },
         "scale2Notes": { "type": "array", "items": { "type": "string" } },
         "scale3Notes": { "type": "array", "items": { "type": "string" } },

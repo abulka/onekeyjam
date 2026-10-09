@@ -3,7 +3,7 @@ import { globals } from './globals.js';
 import { expandChordConfig } from './expandChordConfig.js';
 import { updateProjectChordConfig } from './projectConfig';
 import { findTop3MatchingScales } from './scaleMatching.js';
-import { resolveProjectKey } from './projectKey.js';
+import { resolveChordKey } from './projectKey.js';
 
 // Re-exported so existing callers can keep importing it from here.
 export { findTop3MatchingScales };
@@ -34,8 +34,8 @@ function chordInfoForConfig(chordConfig) {
  */
 export function findMatchingScalesForProject(project, simple = true, updateProjectChords = true) {
     const chordConfigs = Object.values(globals.chordTriggerMap);
-    const key = resolveProjectKey(project);
     for (let chordConfig of chordConfigs) {
+        const key = resolveChordKey(project, chordConfig);
         [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([], simple, chordInfoForConfig(chordConfig), key);
         expandChordConfig(chordConfig); // convert scales into scale notes etc. in this chord triggermap chord config
         if (updateProjectChords)
@@ -52,11 +52,26 @@ export function findMatchingScalesForProject(project, simple = true, updateProje
  * @param {boolean} [simple=true]
  */
 export function findMatchingScalesForAllProjectChords(project, simple = true) {
-    const key = resolveProjectKey(project);
     for (const chordConfig of project.chords) {
+        const key = resolveChordKey(project, chordConfig);
         [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([], simple, chordInfoForConfig(chordConfig), key);
         expandChordConfig(chordConfig);
     }
+    syncTriggerMapScales(project);
+}
+
+/**
+ * Re-rank a single chord's scales in its own key (section key, else project
+ * key) and sync any allocated trigger-map entry. Used when a chord is added to
+ * a key group or moved between groups, so large projects do not need a full
+ * re-rank.
+ * @param {Project} project
+ * @param {ChordConfig} chordConfig
+ */
+export function reRankChordScales(project, chordConfig) {
+    const key = resolveChordKey(project, chordConfig);
+    [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([], true, chordInfoForConfig(chordConfig), key);
+    expandChordConfig(chordConfig);
     syncTriggerMapScales(project);
 }
 

@@ -42,10 +42,23 @@ const WHITE_MML_NOTES = ['c', 'd', 'e', 'f', 'g', 'a', 'b']
  */
 
 /**
- * One step of a hand-authored song sequence, naming the chord by symbol.
+ * One step of a hand-authored song sequence, naming the chord by symbol. An
+ * optional `key` starts a new key signature group from this step on, until a
+ * later step changes it again. Steps without a key inherit the current key.
  * @typedef {object} DemoSequenceStep
  * @property {string} chord chord symbol, matching an entry of the definition's chord list
  * @property {number} bars length in bars
+ * @property {{tonic:string, type:string}} [key] key in force from this step
+ */
+
+/**
+ * One grid row for a keyed song: a chord symbol plus the key it belongs to.
+ * The same symbol under two keys becomes two rows, so a modulation that
+ * returns to the same chord can keep the right scales in each group.
+ * @typedef {object} DemoRow
+ * @property {string} symbol chord symbol
+ * @property {{tonic:string, type:string}} [key] the row's section key, if any
+ * @property {string} keyName normalised key signature, '' when unkeyed
  */
 
 /**
@@ -54,12 +67,16 @@ const WHITE_MML_NOTES = ['c', 'd', 'e', 'f', 'g', 'a', 'b']
  * `sequences` (named) describe the demo loops as chord symbols with bar
  * lengths; without either, every chord gets one bar in definition order with
  * back to back repeats merged into holds.
+ *
+ * For a multi-key song, `chords` entries and sequence steps may carry a `key`,
+ * which starts a new key signature group from that point on.
  * @typedef {object} DemoDefinition
- * @property {string[]} [chords] chord symbols for the grid, in row order
+ * @property {Array<string|{chord:string, key?:{tonic:string, type:string}}>} [chords] chord symbols for the grid, in row order
  * @property {DemoSequenceStep[]} [sequence] legacy single demo loop (becomes `default`)
  * @property {Object.<string, DemoSequenceStep[]>} [sequences] named demo loops
  * @property {Object.<string, string>} [sequenceLabels] display labels per sequence name
  * @property {number} [tempo] stored tempo, applied to the global BPM on load
+ * @property {{tonic:string, type:string}} [key] the song's default key
  */
 
 /** Human labels for the conventional sequence names. */
@@ -136,43 +153,91 @@ export function normalizeSequences(definition) {
  * The grid is the union of the definition's chords and every sequence's
  * chords, so a full form only adds its distinct chords.
  * @param {DemoDefinition} definition
- * @returns {{ uniqueSymbols: string[], sequences: Object.<string, DemoTrigger[]>, missing: string[] }}
+ * @returns {{ uniqueSymbols: string[], rows: DemoRow[], sequences: Object.<string, DemoTrigger[]>, missing: string[] }}
  */
 export function planDemoSequences(definition) {
-    const symbols = definition && Array.isArray(definition.chords) ? definition.chords : []
+    const { rows, sequences, missing } = planKeyedDemoSequences(definition)
+    return { uniqueSymbols: rows.map((row) => row.symbol), rows, sequences, missing }
+}
+
+/**
+ * Plan the grid rows and demo loops for a song definition that may change key.
+ * Rows are keyed by symbol *and* key, so the same chord can appear once per
+ * group. Sequence steps inherit the current key until a step supplies a new
+ * one; `chords` entries work the same way, so a plain string keeps the previous
+ * group and an object with a `key` starts a new one.
+ *
+ * For definitions with no keys this returns exactly the rows and triggers that
+ * `planDemoSequences` always produced.
+ * @param {DemoDefinition} definition
+ * @returns {{ rows: DemoRow[], sequences: Object.<string, DemoTrigger[]>, missing: string[] }}
+ */
+export function planKeyedDemoSequences(definition) {
     const authored = normalizeSequences(definition)
+    const chordsInput = definition && Array.isArray(definition.chords) ? definition.chords : []
+    /** @type {DemoRow[]} */
+    const rows = []
+    /** @type {Map<string, number>} */
+    const rowIndexByDescriptor = new Map()
+
+    /** @param {string} symbol @param {{tonic:string, type:string}|undefined} key */
+    function rowFor(symbol, key) {
+        const keyName = key ? `${key.tonic} ${key.type}` : ''
+        const descriptor = `${symbol}|${keyName}`
+        const existing = rowIndexByDescriptor.get(descriptor)
+        if (existing !== undefined)
+            return existing
+        const index = rows.length
+        rows.push({ symbol, key: key || undefined, keyName })
+        rowIndexByDescriptor.set(descriptor, index)
+        return index
+    }
+
+    // Definition chords first, in order, inheriting the running key.
+    let chordsKey = definition && definition.key ? definition.key : undefined
+    /** @type {Array<{index:number, bars:number}>} */
+    const chordSteps = []
+    for (const entry of chordsInput) {
+        if (!entry)
+            continue
+        let symbol
+        if (typeof entry === 'string') {
+            symbol = entry
+        }
+        else {
+            symbol = entry.chord
+            if (entry.key)
+                chordsKey = entry.key
+        }
+        if (!symbol)
+            continue
+        chordSteps.push({ index: rowFor(symbol, chordsKey), bars: 1 })
+    }
+
     const names = Object.keys(authored)
-    const sequenceSymbols = names.flatMap((name) => authored[name].map((step) => step.chord))
-    const uniqueSymbols = dedupeSymbols([...symbols, ...sequenceSymbols])
-    /** @type {string[]} */
-    const missing = []
     /** @type {Object.<string, DemoTrigger[]>} */
     const sequences = {}
 
     // The excerpt is derived from the chord order unless the definition
     // authors its own `default`.
-    if (!authored.default && symbols.length > 0) {
-        sequences.default = mergeConsecutiveHolds(
-            symbols.map((symbol) => ({ index: uniqueSymbols.indexOf(symbol), bars: 1 })),
-        )
-    }
+    if (!authored.default && chordSteps.length > 0)
+        sequences.default = mergeConsecutiveHolds(chordSteps)
 
     for (const name of names) {
+        let sequenceKey = definition && definition.key ? definition.key : undefined
         /** @type {DemoTrigger[]} */
         const triggers = []
         for (const step of authored[name]) {
-            const index = uniqueSymbols.indexOf(step.chord)
-            if (index < 0) {
-                if (!missing.includes(step.chord))
-                    missing.push(step.chord)
+            if (step.key)
+                sequenceKey = step.key
+            if (!step.chord)
                 continue
-            }
-            triggers.push({ index, bars: step.bars })
+            triggers.push({ index: rowFor(step.chord, sequenceKey), bars: step.bars })
         }
         sequences[name] = triggers
     }
 
-    return { uniqueSymbols, sequences, missing }
+    return { rows, sequences, missing: [] }
 }
 
 /**

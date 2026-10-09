@@ -185,7 +185,9 @@ export function changeScaleFilter(scaleFilter) {
  * @returns {boolean} false when the project has no resolvable key
  */
 export function applyKeyScale() {
-    const key = globals.getProjectKey()
+    // The key of the chord that is currently sounding, so Solo in key follows
+    // a modulation. With no current chord this is the project key.
+    const key = globals.getActiveKey()
     if (!key)
         return false
     const scaleObj = Tonal.Scale.get(`${key.tonic} ${key.type}`)
@@ -224,7 +226,7 @@ export function toggleSoloMode() {
 
 /** @param {boolean} on */
 function showSoloModeToast(on) {
-    const key = globals.getProjectKey()
+    const key = globals.getActiveKey()
     const keyName = key ? projectKeyName(key) : ''
     const message = on
         ? `Solo in key: ON${keyName ? ` (${keyName})` : ' (no key set)'}`
@@ -309,7 +311,11 @@ export function setActiveScaleFilterToMatchChord(chordTonic, chordType, strategy
         return
     const chordSymbol = createChordSymbol(chordTonic, chordType)
 
-    const scaleTypes = calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy, globals.getProjectKey())
+    // If this chord is already in the project and belongs to a key group, rank
+    // its scales in that key; otherwise use the project key.
+    const projectChord = globals.project?.chords?.find((chordConfig) => chordConfig.chord === chordSymbol)
+    const key = projectChord ? globals.getChordKey(projectChord) : globals.getProjectKey()
+    const scaleTypes = calcScaleTypesDropdownFromChordSymbol(chordSymbol, strategy, key)
     const scale1 = `${chordTonic} ${scaleTypes[0]}`
 
     const scaleObj = Tonal.Scale.get(scale1)
@@ -644,7 +650,7 @@ function calcScaleTypesDropdown(chordConfig) {
     // May fail with custom chords, but we don't care about that for now
     let extraScaleTypes = []
     try {
-        extraScaleTypes = chordSymbolToScaleNames(chordConfig.chord, globals.getProjectKey())
+        extraScaleTypes = chordSymbolToScaleNames(chordConfig.chord, globals.getChordKey(chordConfig))
         // console.log('extraScaleTypes for', chordConfig.chord, 'are', extraScaleTypes.join(', '))
         // eslint-disable-next-line no-empty
     } catch (error) {

@@ -94,6 +94,23 @@ Setting the key in the UI re-ranks every chord scale automatically (see
 `src/lib/projectScaleSettings.js`), so the stored `scale1/2/3` always match
 the declared key. The same happens when the colour preference changes.
 
+### Section keys and the active key
+
+A chord may carry its own key in `chords[].key`, so one project can hold
+several key signature groups (a verse in A minor and a chorus in C major, or a
+standard that modulates). The key that governs a chord resolves in
+`resolveChordKey()`: the chord's own key when it has one, otherwise the project
+key, with the project colour. `globals.getChordKey()` adds the live
+transposition, and `globals.getActiveKey()` returns the key of the chord that is
+currently sounding, so Solo in key and the header **Key:** chip follow a
+modulation.
+
+Every place that ranks a chord scale now passes the chord's own key rather than
+the single project key, so a modulated section stores scales that fit its key.
+The same chord symbol under two keys becomes two grid rows. See
+`doco/MULTI-KEY.md` for the model, the grid badge and the experimental
+detector.
+
 ### Colour preference
 
 The key is a bias, and `options.colour` decides how hard it pushes. Function

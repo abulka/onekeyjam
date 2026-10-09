@@ -4,6 +4,7 @@ import { createDefaultMetaProjectConfig } from './projectConfig';
 import { expandChordConfig } from './expandChordConfig.js';
 import { numericId, uniqueNumericIds } from './id.js';
 import { maxChordConfigs as maxChordConfigsDefault } from './globals-config.js';
+import { normalizeKey } from './projectKey.js';
 
 /** @typedef {import("../../src/lib/typedefs").Project} Project */
 
@@ -32,8 +33,25 @@ export function emergencyRepairProject(project) {
         project.songs = createDefaultSongs()
 
     normaliseChordIds(project);
+    normaliseChordKeys(project);
     expandProjectChordConfigs(project); // in place
     repairArrangement(project);
+}
+
+/**
+ * Keep only valid optional section keys on chords. An invalid or partial key is
+ * dropped, so the chord falls back to the project key rather than failing.
+ */
+function normaliseChordKeys(project) {
+    for (const chord of project.chords) {
+        if (!chord || !chord.key)
+            continue;
+        const normalized = normalizeKey(chord.key);
+        if (normalized)
+            chord.key = normalized;
+        else
+            delete chord.key;
+    }
 }
 
 /**

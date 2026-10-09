@@ -64,7 +64,7 @@ const soloInKey = computed({
 const keyModeActive = computed(() => globals.scaleFiltering.keyModeActive)
 
 const soloKeyName = computed(() => {
-  const key = globals.getProjectKey()
+  const key = globals.getActiveKey()
   return key ? projectKeyName(key) : ''
 })
 

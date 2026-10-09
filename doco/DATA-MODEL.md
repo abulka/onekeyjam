@@ -3,10 +3,10 @@
 OneKeyJam has no backend. Its "database" is:
 
 - static JSON files in `public/projects/featured/`,
-  `public/projects/classic/`, `public/projects/progressions/` and
-  `public/projects/rock/` (featured, classic, progressions and rock projects), plus
-  `public/keyboards/` (keyboard configs), discovered through generated
-  manifests; and
+  `public/projects/classic/`, `public/projects/progressions/`,
+  `public/projects/rock/` and `public/projects/multi-key/` (featured, classic,
+  progressions, rock and multi-key projects), plus `public/keyboards/`
+  (keyboard configs), discovered through generated manifests; and
 - user projects saved in the browser with IndexedDB.
 
 This document is the reference for those shapes. The machine-readable type
@@ -85,6 +85,24 @@ prefers when ranking chord scales; see `doco/MUSIC-THEORY.md`. When a chord is
 added, or when the key or colour is changed in the UI, every chord's
 `scale1/2/3` is re-ranked automatically in the new context.
 
+## Multi-key projects
+
+A project may contain chords from more than one key. A chord carries an
+optional section key in `chords[].key` (`{ tonic, type, source }`, the same
+shape as `options.key`). The key that governs a chord resolves in
+`resolveChordKey()` (`src/lib/projectKey.js`): the chord's own key when it has
+one, otherwise `options.key`, with `options.colour` carried through and the
+live transposition applied on top.
+
+- Grid rows that share an effective key form a key signature group; groups are
+  derived from the keys, not stored as a separate list.
+- The same chord symbol under two keys is two grid rows, so a tune that returns
+  to a chord in another key keeps the right scales per group.
+- `options.key` stays the base and the fallback; it is not silently rewritten
+  when a group changes.
+- The Edit view's **Key Groups** editor sets or clears a group's key and ranks
+  only that group's scales. See `doco/MULTI-KEY.md`.
+
 ## ChordConfig
 
 | Field | Type | Required | Notes |
@@ -98,6 +116,7 @@ added, or when the key or colour is changed in the UI, every chord's
 | `bassNote` | `string` | no | bass note with octave |
 | `scale1` | `string` | no | default scale |
 | `scale2`, `scale3` | `string` | no | alternative scales |
+| `key` | `ProjectKey` | no | optional section key override; when set, this chord's scales are ranked in this key instead of the project key. See "Multi-key projects" |
 | `scale1Notes`, `scale2Notes`, `scale3Notes` | `string[]` | no | derived; stripped on save |
 | `scaleNotesOfChord` | `string[]` | no | derived; stripped on save |
 
@@ -156,6 +175,7 @@ A project can override these in `options.keyboard`.
 - `public/projects/classic/classic-manifest.json`
 - `public/projects/progressions/progressions-manifest.json`
 - `public/projects/rock/rock-manifest.json`
+- `public/projects/multi-key/multi-key-manifest.json`
 - `public/keyboards/keyboards-manifest.json`
 
 Each entry is `{ text, value, file }`: display name, URL and file name. These
@@ -169,6 +189,7 @@ are generated, so they are not validated and should not be edited by hand.
 | `public/projects/classic/*.json` | generated classic projects | `bin/generate-classic-projects.mjs` |
 | `public/projects/progressions/*.json` | generated progression projects | `bin/generate-progressions-projects.mjs` |
 | `public/projects/rock/*.json` | generated rock projects | `bin/generate-rock-projects.mjs` |
+| `public/projects/multi-key/*.json` | generated multi-key projects | `bin/generate-multi-key-projects.mjs` |
 | `public/keyboards/*.json` | keyboard configs | `src/lib/projectLibrary.js` |
 | IndexedDB `onekeyjam` → `projects` (keyPath `name`) | user projects | `src/lib/localStore.js` |
 | exported/imported `.json` files | backup/move | `src/lib/projectSave.js` |

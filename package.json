@@ -29,7 +29,8 @@
     "generate:classic": "node bin/generate-classic-projects.mjs",
     "generate:progressions": "node bin/generate-progressions-projects.mjs",
     "generate:rock": "node bin/generate-rock-projects.mjs",
-    "generate:libraries": "node bin/generate-classic-projects.mjs && node bin/generate-progressions-projects.mjs && node bin/generate-rock-projects.mjs"
+    "generate:multi-key": "node bin/generate-multi-key-projects.mjs",
+    "generate:libraries": "node bin/generate-classic-projects.mjs && node bin/generate-progressions-projects.mjs && node bin/generate-rock-projects.mjs && node bin/generate-multi-key-projects.mjs"
   },
   "dependencies": {
     "@globalhive/vuejs-tour": "^3.0.1",

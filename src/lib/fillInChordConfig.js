@@ -28,7 +28,7 @@ export function fillInChordConfig(chordConfig, chordRoot, chordType, inversion, 
     chordConfig.symbols = detectedChordSymbols.join(',')
 
     fillBass(bass, chordConfig);
-    [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([chordSymbolInclRoot], true, {}, globals.getProjectKey())
+    [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([chordSymbolInclRoot], true, {}, globals.getChordKey(chordConfig))
 }
 
 export function fillInChordConfig2(chordConfig, chordSymbolInclRoot, chordSymbols, chordNotes, bass) {
@@ -40,7 +40,7 @@ export function fillInChordConfig2(chordConfig, chordSymbolInclRoot, chordSymbol
     chordConfig.symbols = chordSymbols.join(',')
 
     fillBass(bass, chordConfig);
-    [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([chordSymbolInclRoot], true, {}, globals.getProjectKey())
+    [chordConfig.scale1, chordConfig.scale2, chordConfig.scale3] = findTop3MatchingScales([chordSymbolInclRoot], true, {}, globals.getChordKey(chordConfig))
 }
 
 function fillBass(bass, chordConfig) {

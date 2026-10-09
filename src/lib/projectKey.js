@@ -70,6 +70,42 @@ export function projectKeyName(key) {
     return key ? `${key.tonic} ${key.type}` : '';
 }
 
+const KEY_TYPE_ABBREVIATIONS = {
+    major: 'maj',
+    minor: 'min',
+    dorian: 'dor',
+    phrygian: 'phr',
+    lydian: 'lyd',
+    mixolydian: 'mix',
+    locrian: 'loc',
+};
+
+/**
+ * A compact key label for tight UI such as the chord grid's key badge,
+ * e.g. "Ab maj", "C min", "D dor".
+ * @param {ProjectKey} [key]
+ */
+export function projectKeyShortName(key) {
+    if (!key)
+        return '';
+    const type = KEY_TYPE_ABBREVIATIONS[key.type] ?? key.type.slice(0, 3);
+    return `${key.tonic} ${type}`;
+}
+
+/**
+ * A stable hue (0-359) for a key, so each key group can get a consistent badge
+ * colour in the grid. Enharmonic tonics share a hue because they share chroma.
+ * @param {ProjectKey} [key]
+ */
+export function keyColourHue(key) {
+    if (!key)
+        return null;
+    const chroma = Tonal.Note.chroma(key.tonic);
+    if (Number.isNaN(chroma))
+        return null;
+    return Math.round((chroma / 12) * 360);
+}
+
 /**
  * Move a key's tonic by a number of semitones, preserving its type, source and
  * colour. Used by live chord transposition so the key context moves with the
@@ -179,6 +215,68 @@ export function resolveProjectKey(project) {
     if (!key)
         return undefined;
     return { ...key, colour: projectColour(project) };
+}
+
+/**
+ * The key that governs a single chord: the chord's own optional key when it is
+ * declared, otherwise the project key. A chord key wins so a project can hold
+ * several key signature groups (sections that modulate). The project colour
+ * carries through so the engine can rank the chord's scales in context.
+ * @param {Project} [project]
+ * @param {import("./typedefs").ChordConfig} [chordConfig]
+ * @returns {(ProjectKey & {colour?: string})|undefined}
+ */
+export function resolveChordKey(project, chordConfig) {
+    const chordKey = normalizeKey(chordConfig && chordConfig.key);
+    if (chordKey)
+        return { ...chordKey, colour: projectColour(project) };
+    return resolveProjectKey(project);
+}
+
+/**
+ * Write a section key onto a chord config. Returns the normalised key, or
+ * undefined when the key is invalid (in which case the chord is left alone).
+ * @param {import("./typedefs").ChordConfig} chordConfig
+ * @param {{tonic:string, type:string}} key
+ * @param {'user'|'detected'} [source]
+ * @returns {ProjectKey|undefined}
+ */
+export function setChordKey(chordConfig, key, source = 'user') {
+    const normalized = normalizeKey({ ...key, source });
+    if (!normalized || !chordConfig)
+        return undefined;
+    chordConfig.key = normalized;
+    return normalized;
+}
+
+/** Remove a chord's section key, so it follows the project key again. */
+export function clearChordKey(chordConfig) {
+    if (chordConfig)
+        delete chordConfig.key;
+}
+
+/**
+ * Group the arranged chords into key signature runs, in grid order. Each run is
+ * `{ keyName, key, chords }`, where a chord with no key uses the project key.
+ * Used by the grid badge and the key group editor. Adjacent runs with the same
+ * effective key are merged.
+ * @param {Project|undefined} project
+ * @param {Array<import("./typedefs").ChordConfig>} [chordConfigs] arranged chords, in order
+ * @returns {Array<{keyName:string, key:(ProjectKey & {colour?:string})|undefined, chords:Array<import("./typedefs").ChordConfig>}>}
+ */
+export function keyGroupsForProject(project, chordConfigs) {
+    /** @type {Array<{keyName:string, key:any, chords:Array<import("./typedefs").ChordConfig>}>} */
+    const groups = [];
+    for (const chordConfig of chordConfigs ?? []) {
+        const key = resolveChordKey(project, chordConfig);
+        const keyName = key ? projectKeyName(key) : '';
+        const last = groups[groups.length - 1];
+        if (last && last.keyName === keyName)
+            last.chords.push(chordConfig);
+        else
+            groups.push({ keyName, key, chords: [chordConfig] });
+    }
+    return groups;
 }
 
 /** @param {string} type */

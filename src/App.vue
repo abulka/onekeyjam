@@ -17,12 +17,13 @@ const router = useRouter()
 // The current project name, shown prominently at the right of the page tabs.
 const projectName = computed(() => globals.projectLibrary.projectName || 'Untitled')
 
-// The resolved project key, shown next to the project name. It follows live
-// transposition because getProjectKey() applies the transposition offset.
+// The key of the chord that is currently sounding, shown next to the project
+// name. It follows a multi-key song's modulation and live transposition, and
+// falls back to the project key when no chord is current.
 const projectKeyLabel = computed(() => {
   if (!globals.isProjectLoaded)
     return ''
-  const key = globals.getProjectKey()
+  const key = globals.getActiveKey()
   return key ? projectKeyName(key) : ''
 })
 

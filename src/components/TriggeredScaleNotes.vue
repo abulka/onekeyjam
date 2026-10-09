@@ -3,8 +3,10 @@ import { globals } from '../../src/lib/globals.js'
 import { samePitchClass, noteInAnyPitchClass, unionPitchClassNotes, describeNoteRoles } from '../../src/lib/note-tools.js'
 import { projectKeyNotes } from '../../src/lib/projectKey.js'
 
+// The key of the chord that is currently sounding, so the faded reference
+// notes follow a modulation. With no current chord this is the project key.
 function keyNotes() {
-    return projectKeyNotes(globals.getProjectKey())
+    return projectKeyNotes(globals.getActiveKey())
 }
 
 function displayNotes() {

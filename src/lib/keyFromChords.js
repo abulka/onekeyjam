@@ -75,7 +75,15 @@ function addPlainNotes(chord) {  // chord is array of string notes
     _addIntervals(intervals);
 }
 
-function compareScalesAndNotes(options = {}) {
+/**
+ * Score every major/minor key candidate and return the full list, best first.
+ * The score is the hit-weighted coverage of the chord notes minus the penalty
+ * for chord notes the key misses. Used by the modulation detector, which needs
+ * the whole ranking (and the margin between candidates), not just the winners.
+ * @param {{useHitWeight?: boolean, usePenalty?: boolean}} options
+ * @returns {Array<{scaleName: string, score: number}>}
+ */
+function scoreScalesAndNotes(options = {}) {
     let stats = []
     for (let scaleTonicInterval of allNotes) {
         // We ony need the two scales, major and natural minor (aeolian) with their intervals 
@@ -104,6 +112,11 @@ function compareScalesAndNotes(options = {}) {
     stats.sort(function (a, b) {
         return b.score - a.score
     })
+    return stats
+}
+
+function compareScalesAndNotes(options = {}) {
+    const stats = scoreScalesAndNotes(options)
     if (debug >= 1) {
         console.log('---------------------')
         for (let stat of stats)  // 5. debug
@@ -126,6 +139,11 @@ function process(options) {
         console.log('chord notes', chordNotes, '\n', dumpChordNotes(), '\n', dumpAsNotes(chordNotes), '\n', stringify(dumpChordNoteWeights()));
     // options = { useHitWeight: true, usePenalty: true }  // force
     return compareScalesAndNotes(options);
+}
+
+function processRanked(options) {
+    chordNotes.sort(); // keep it sorted, in place
+    return scoreScalesAndNotes(options);
 }
 
 function init() {
@@ -154,6 +172,35 @@ export function keyFromNotes(chordsAsNotes, options) {
         addPlainNotes(chord);
     });
     return process(options);
+}
+
+/**
+ * The full ranked major/minor key candidates for a set of chord symbols, best
+ * first, each `{ scaleName, score }`. Ties are kept, so the caller can measure
+ * the margin between the top key and its runner-up.
+ * @param {string[]} chordSymbols
+ * @param {{useHitWeight?: boolean, usePenalty?: boolean}} [options]
+ */
+export function rankedKeysFromChords(chordSymbols, options) {
+    init();
+    chordSymbols.forEach(function (symbol) {
+        addChordNotes(symbol);
+    });
+    return processRanked(options);
+}
+
+/**
+ * The full ranked major/minor key candidates for a set of chord voicings (each
+ * an array of note names), best first.
+ * @param {string[][]} chordsAsNotes
+ * @param {{useHitWeight?: boolean, usePenalty?: boolean}} [options]
+ */
+export function rankedKeysFromNotes(chordsAsNotes, options) {
+    init();
+    chordsAsNotes.forEach(function (chord) {
+        addPlainNotes(chord);
+    });
+    return processRanked(options);
 }
 
 

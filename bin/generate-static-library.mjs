@@ -10,7 +10,7 @@ import {
     defaultSequenceLabel,
     demoEntryForTriggers,
     normalizeSequences,
-    planDemoSequences,
+    planKeyedDemoSequences,
 } from '../src/lib/demo-pattern.js'
 
 /*
@@ -33,9 +33,9 @@ import {
  * `sequenceTempos` overrides the stored tempo per sequence.
  * @typedef {object} StaticLibraryDefinition
  * @property {string} name display name
- * @property {string[]} chords chord symbols for the grid, in row order
- * @property {Array<{chord: string, bars: number}>} [sequence] legacy single demo loop
- * @property {Object.<string, Array<{chord: string, bars: number}>>} [sequences] named demo loops
+ * @property {Array<string|{chord:string, key?:{tonic:string,type:string}}>} [chords] chord symbols for the grid, in row order
+ * @property {Array<{chord: string, bars: number, key?:{tonic:string,type:string}}>} [sequence] legacy single demo loop
+ * @property {Object.<string, Array<{chord: string, bars: number, key?:{tonic:string,type:string}}>>} [sequences] named demo loops
  * @property {Object.<string, string>} [sequenceLabels] display labels per sequence name
  * @property {Object.<string, number>} [sequenceTempos] tempo per sequence name
  * @property {number} [tempo] default demo loop tempo, applied to the global BPM on load
@@ -86,10 +86,13 @@ export function generateStaticLibrary(definitions, outDirName, label) {
     for (const definition of definitions) {
         const colour = definition.colour ?? 'jazz'
         const scaleStyle = definition.scaleStyle ?? defaultScaleStyle(colour)
+        const definitionKeyName = definition.key ? `${definition.key.tonic} ${definition.key.type}` : ''
         let ok = true
         // Repeats share a grid row, so the rows are the union of the definition
         // chords and every named sequence's chords, in first-appearance order.
-        const { uniqueSymbols, sequences, missing } = planDemoSequences(definition)
+        // A multi-key song keys each row, so the same symbol under two keys
+        // becomes two rows.
+        const { rows, sequences, missing } = planKeyedDemoSequences(definition)
         const authored = normalizeSequences(definition)
         for (const [name, steps] of Object.entries(authored)) {
             for (const step of steps) {
@@ -104,16 +107,22 @@ export function generateStaticLibrary(definitions, outDirName, label) {
         if (missing.length > 0)
             ok = false
         const chords = []
-        for (let i = 0; i < uniqueSymbols.length; i++) {
-            const symbol = uniqueSymbols[i]
+        for (let i = 0; i < rows.length; i++) {
+            const row = rows[i]
+            const symbol = row.symbol
             const chord = Tonal.Chord.get(symbol)
             if (chord.empty) {
                 problems.push(`${definition.name}: "${symbol}" is not a Tonal chord symbol`)
                 ok = false
                 continue
             }
-            const scaleNames = chordScaleNamesFor(symbol, 3, { ...definition.key, colour })
-            chords.push({
+            // A row's own key (a multi-key section) wins; otherwise the song's
+            // default key applies. Scales are ranked in that key.
+            const rowKey = row.key ?? definition.key
+            const scaleNames = rowKey
+                ? chordScaleNamesFor(symbol, 3, { ...rowKey, colour })
+                : chordScaleNamesFor(symbol, 3, { colour })
+            const config = {
                 id: i + 1,
                 name: symbol,
                 chord: symbol,
@@ -121,7 +130,12 @@ export function generateStaticLibrary(definitions, outDirName, label) {
                 scale1: scaleNames[0] ?? '',
                 scale2: scaleNames[1] ?? '',
                 scale3: scaleNames[2] ?? '',
-            })
+            }
+            // Only write a section key when it differs from the song's default
+            // key; rows in the default key stay as the project-key fallback.
+            if (row.key && row.keyName !== definitionKeyName)
+                config.key = row.key
+            chords.push(config)
         }
         // Every trigger must land on an assigned row; definitions without a
         // hand-authored sequence always satisfy this by construction.
