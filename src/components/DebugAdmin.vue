@@ -3,6 +3,17 @@ import { onMounted, onUnmounted, ref } from "vue";
 import { globals } from '../../src/lib/globals.js'
 import { audioStatus, recoverAudio } from '../../src/lib/audio/general-midi.js'
 import { ping } from '../../src/lib/audio/general-midi-soundfont-player.js'
+import { gridChordsDebugJson, projectDebugJson } from '../../src/lib/debugPayloads.js'
+import { copyTextToClipboard } from '../../src/lib/clipboard.js'
+
+async function copyDebug(text, label) {
+  const ok = await copyTextToClipboard(text)
+  $('body').toast({
+    message: ok ? `${label} copied to clipboard.` : `Could not copy ${label}.`,
+    displayTime: ok ? 3000 : 2500,
+    class: ok ? 'teal' : 'brown',
+  })
+}
 
 function wireGMSwitchUI() {
   // Toggle GM on/off
@@ -103,6 +114,11 @@ onUnmounted(() => {
       Chord Trigger Map
     </div>
     <div class="content">
+      <p>
+        <button type="button" class="ui mini basic button" title="Copy the grid chords as JSON" @click="copyDebug(gridChordsDebugJson(), 'Grid chords')">
+          <i class="copy icon"></i> Copy chords in grid
+        </button>
+      </p>
       <pre class="mono-json">{{ globals.getResolvedChordsConfig() }}</pre>
     </div>
 
@@ -140,6 +156,12 @@ onUnmounted(() => {
       </div>
 
       <pre class="mono-json">{{ globals.getProjectConfig() }}</pre>
+
+      <p>
+        <button type="button" class="ui mini basic button" title="Copy the whole project config as JSON" @click="copyDebug(projectDebugJson(), 'Project JSON')">
+          <i class="copy icon"></i> Copy project JSON
+        </button>
+      </p>
 
     </div>
 

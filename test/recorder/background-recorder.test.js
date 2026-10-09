@@ -49,7 +49,7 @@ describe('background recorder', () => {
         recordBackgroundNoteOn('chords', 'C4', 0.8, undefined, 10)
         recordBackgroundNoteOff('chords', 'C4', 10.5)
         recordBackgroundNoteOn('jam', 'E5', 0.5, 'D5', 10.25)
-        recordBackgroundNoteOff('jam', 'E5', 10.5)
+        recordBackgroundNoteOff('jam', 'E5', 10.5, 'D5')
 
         const take = captureBufferedTake({ now: 10.5, windowSec: 120 })
         assert.ok(take)

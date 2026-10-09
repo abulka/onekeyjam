@@ -74,7 +74,7 @@ export function jamOff(note) {
         const allowedNote = noteOffInfo.allowedNote
         delete globals.pendingNoteOffs[note.identifier]
 
-        recordJamNoteOff(allowedNote)
+        recordJamNoteOff(allowedNote, { playedNote: note.identifier })
 
         // Clear the live readout, but only when the released note is the one
         // shown: with legato playing another note may still be held.

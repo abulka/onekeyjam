@@ -204,7 +204,7 @@ export function playChordOff(singleNote) {
     // Turn off all notes of chord (on channel 2)
     if (singleNote in globals.pendingChordNoteOffs) {
         for (let noteOffInfo of globals.pendingChordNoteOffs[singleNote]) {
-            recordChordNoteOff(noteOffInfo.allowedNote)
+            recordChordNoteOff(noteOffInfo.allowedNote, { playedNote: singleNote })
             if (globals.GM)
                 stopGmNote(noteOffInfo)
             else
@@ -223,7 +223,7 @@ export function playChordOff(singleNote) {
         if (noteOffInfo) {
             let oldNote = noteOffInfo.allowedNote
             delete globals.pendingChordBassNoteOffs[singleNote]
-            recordChordNoteOff(oldNote)
+            recordChordNoteOff(oldNote, { playedNote: singleNote })
             if (globals.GM)
                 stopGmNote(noteOffInfo)
             else

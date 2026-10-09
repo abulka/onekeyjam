@@ -104,7 +104,7 @@ function capturePatternRowToBackground(row, startSec, endSec) {
             ? TonalNote.fromMidi(expansion.playedMidi)
             : undefined
         recordBackgroundNoteOn('chords', name, globals.fixedNoteVelocity, playedName ?? undefined, onAt, expansion.role)
-        recordBackgroundNoteOff('chords', name, Math.max(offAt, onAt))
+        recordBackgroundNoteOff('chords', name, Math.max(offAt, onAt), playedName ?? undefined)
     }
 }
 

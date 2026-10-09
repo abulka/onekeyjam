@@ -61,10 +61,12 @@ function resolveNow(now) {
 /**
  * @param {string} track
  * @param {string} noteName
+ * @param {string} [playedNote]
  * @returns {string}
  */
-function heldKey(track, noteName) {
-    return `${track}:${noteName}`
+function heldKey(track, noteName, playedNote) {
+    const identity = playedNote === undefined ? noteName : playedNote
+    return `${track}\u0000${identity}\u0000${noteName}`
 }
 
 /**
@@ -143,7 +145,7 @@ export function recordBackgroundNoteOn(track, noteName, velocity, playedNote, no
         return
     const at = resolveNow(now)
 
-    const key = heldKey(track, noteName)
+    const key = heldKey(track, noteName, playedNote)
     const existing = held.get(key)
     if (existing)
         existing.endSec = at
@@ -173,12 +175,13 @@ export function recordBackgroundNoteOn(track, noteName, velocity, playedNote, no
  * @param {'chords'|'jam'} track
  * @param {string} noteName
  * @param {number} [now]
+ * @param {string} [playedNote] the key/trigger that produced the note, when known
  */
-export function recordBackgroundNoteOff(track, noteName, now) {
+export function recordBackgroundNoteOff(track, noteName, now, playedNote) {
     if (!backgroundEnabled())
         return
     const at = resolveNow(now)
-    const key = heldKey(track, noteName)
+    const key = heldKey(track, noteName, playedNote)
     const event = held.get(key)
     if (event) {
         event.endSec = at

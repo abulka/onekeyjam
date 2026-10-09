@@ -209,14 +209,27 @@ function commit(track, noteName, entry, endTick) {
 }
 
 /**
+ * The key a held note is stored under. A note is identified by the trigger (or
+ * physical key) that produced it as well as its sounding name, so releasing one
+ * chord does not close another overlapping chord's shared notes.
+ * @param {string} noteName
+ * @param {string} [playedNote]
+ * @returns {string}
+ */
+function heldKey(noteName, playedNote) {
+    const identity = playedNote === undefined ? noteName : playedNote
+    return `${identity}\u0000${noteName}`
+}
+
+/**
  * @param {'chords'|'jam'} track
  * @param {number} endTick
  */
 function finalizeHeld(track, endTick) {
     const held = globals.recording.held[track]
-    for (const noteName of Object.keys(held)) {
-        commit(track, noteName, held[noteName], endTick)
-        delete held[noteName]
+    for (const key of Object.keys(held)) {
+        commit(track, held[key].noteName, held[key], endTick)
+        delete held[key]
     }
 }
 
@@ -367,12 +380,14 @@ function recordNoteOn(track, noteName, velocity, now, playedNote, role) {
         return
     const playedMidi = playedNote === undefined ? undefined : noteNameToMidi(playedNote)
     const startTick = tickFrom(now)
-    const existing = rec.held[track][noteName]
-    // Retrigger of a note that is still held: close out the previous note at
-    // this point rather than silently overwriting it.
+    const key = heldKey(noteName, playedNote)
+    const existing = rec.held[track][key]
+    // Retrigger of a note that is still held (by the same key): close out the
+    // previous note at this point rather than silently overwriting it.
     if (existing)
         commit(track, noteName, existing, startTick)
-    rec.held[track][noteName] = {
+    rec.held[track][key] = {
+        noteName,
         midi,
         velocity: normaliseVelocity(velocity),
         startTick,
@@ -385,19 +400,21 @@ function recordNoteOn(track, noteName, velocity, now, playedNote, role) {
  * @param {'chords'|'jam'} track
  * @param {string} noteName
  * @param {number} [now]
+ * @param {string} [playedNote] the key/trigger that produced the note, when known
  */
-function recordNoteOff(track, noteName, now) {
+function recordNoteOff(track, noteName, now, playedNote) {
     const rec = globals.recording
     if (rec.suppressCapture)
         return
-    recordBackgroundNoteOff(track, noteName)
+    recordBackgroundNoteOff(track, noteName, now, playedNote)
     if (!rec.isRecording)
         return
     const held = rec.held[track]
-    const entry = held[noteName]
+    const key = heldKey(noteName, playedNote)
+    const entry = held[key]
     if (!entry)
         return
-    delete held[noteName]
+    delete held[key]
     commit(track, noteName, entry, tickFrom(now))
 }
 
@@ -412,10 +429,10 @@ export function recordChordNoteOn(noteName, velocity, { now, playedNote, role } 
 
 /**
  * @param {string} noteName
- * @param {{ now?: number }} [options]
+ * @param {{ now?: number, playedNote?: string }} [options]
  */
-export function recordChordNoteOff(noteName, { now } = {}) {
-    recordNoteOff('chords', noteName, now)
+export function recordChordNoteOff(noteName, { now, playedNote } = {}) {
+    recordNoteOff('chords', noteName, now, playedNote)
 }
 
 /**
@@ -429,8 +446,8 @@ export function recordJamNoteOn(noteName, velocity, { now, playedNote } = {}) {
 
 /**
  * @param {string} noteName
- * @param {{ now?: number }} [options]
+ * @param {{ now?: number, playedNote?: string }} [options]
  */
-export function recordJamNoteOff(noteName, { now } = {}) {
-    recordNoteOff('jam', noteName, now)
+export function recordJamNoteOff(noteName, { now, playedNote } = {}) {
+    recordNoteOff('jam', noteName, now, playedNote)
 }
