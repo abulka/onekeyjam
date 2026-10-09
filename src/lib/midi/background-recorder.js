@@ -20,6 +20,12 @@ export const DEFAULT_BACKGROUND_WINDOW_SEC = 120
 /** Window lengths offered in the Settings UI, in seconds. */
 export const BACKGROUND_WINDOW_OPTIONS = [30, 60, 120, 300, 600]
 
+/** How long silence clears the buffer by default, in seconds. 0 disables it. */
+export const DEFAULT_BACKGROUND_SILENCE_SEC = 10
+
+/** Silence lengths offered in the Settings UI, in seconds. 0 means never. */
+export const BACKGROUND_SILENCE_OPTIONS = [0, 5, 10, 20, 30, 60]
+
 /** Safety cap on buffered events, so a very long session cannot grow forever. */
 const MAX_EVENTS = 20000
 
@@ -99,6 +105,57 @@ export function backgroundEnabled() {
 }
 
 /**
+ * How long a silence clears the buffer, in seconds. 0 disables the automatic
+ * clear, so the buffer is only emptied by the window or by hand.
+ * @returns {number}
+ */
+export function backgroundSilenceSec() {
+    const configured = globals.recording && globals.recording.background
+        ? globals.recording.background.silenceSec
+        : undefined
+    if (configured === 0)
+        return 0
+    return Number.isFinite(configured) && configured > 0 ? configured : DEFAULT_BACKGROUND_SILENCE_SEC
+}
+
+/** @type {ReturnType<typeof setTimeout>|null} */
+let silenceTimer = null
+
+/** Cancel the pending silence timer, if any. */
+function cancelSilenceTimer() {
+    if (silenceTimer !== null) {
+        clearTimeout(silenceTimer)
+        silenceTimer = null
+    }
+}
+
+/**
+ * Restart the silence countdown. Called on every buffered note event, so the
+ * buffer is cleared only once playing has actually stopped.
+ */
+function armSilenceTimer() {
+    cancelSilenceTimer()
+    const sec = backgroundSilenceSec()
+    if (!backgroundEnabled() || sec <= 0)
+        return
+    silenceTimer = setTimeout(clearAfterSilence, sec * 1000)
+    // Do not keep a Node process (or a test run) alive for this timer.
+    if (silenceTimer && typeof silenceTimer.unref === 'function')
+        silenceTimer.unref()
+}
+
+/** Clear the buffer once it has been silent long enough. A note that is still
+ * held is not silence, so wait for it to be released first. */
+function clearAfterSilence() {
+    silenceTimer = null
+    if (held.size > 0) {
+        armSilenceTimer()
+        return
+    }
+    clearBackgroundCapture()
+}
+
+/**
  * Drop buffered events that have fallen out of the window. Open notes are kept,
  * since they still end in the future, and the hard cap only ever removes closed
  * notes from the front.
@@ -168,6 +225,7 @@ export function recordBackgroundNoteOn(track, noteName, velocity, playedNote, no
     held.set(key, event)
     prune(at)
     publishSummary()
+    armSilenceTimer()
 }
 
 /**
@@ -189,6 +247,7 @@ export function recordBackgroundNoteOff(track, noteName, now, playedNote) {
     }
     prune(at)
     publishSummary()
+    armSilenceTimer()
 }
 
 /**
@@ -201,6 +260,7 @@ export function backgroundNoteCount() {
 
 /** Forget the buffered notes. */
 export function clearBackgroundCapture() {
+    cancelSilenceTimer()
     events = []
     held = new Map()
     publishSummary()

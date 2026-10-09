@@ -14,6 +14,7 @@ import {
     captureBufferedTake,
     clearBackgroundCapture,
     backgroundNoteCount,
+    DEFAULT_BACKGROUND_SILENCE_SEC,
 } from '@/lib/midi/background-recorder.js'
 
 // 120 BPM and 480 PPQ give one tick every 1/960 second, so 1s == 960 ticks.
@@ -27,12 +28,15 @@ describe('background recorder', () => {
         globals.recording.suppressCapture = false
         globals.recording.background.enabled = true
         globals.recording.background.windowSec = 120
+        globals.recording.background.silenceSec = DEFAULT_BACKGROUND_SILENCE_SEC
     })
 
     afterEach(() => {
+        vi.useRealTimers()
         clearTake()
         globals.recording.background.enabled = true
         globals.recording.background.windowSec = 120
+        globals.recording.background.silenceSec = DEFAULT_BACKGROUND_SILENCE_SEC
     })
 
     it('buffers notes even though recording was never started', () => {
@@ -196,5 +200,61 @@ describe('background recorder', () => {
         assert.equal(result.remaining, 0)
         assert.equal(backgroundNoteCount(), 0)
         assert.equal(globals.recording.take.chords.length, takeLength)
+    })
+
+    it('clears the buffer after the configured silence', () => {
+        vi.useFakeTimers()
+        globals.recording.background.silenceSec = 10
+        recordBackgroundNoteOn('chords', 'C4', 0.8, undefined, 0)
+        recordBackgroundNoteOff('chords', 'C4', 0.5)
+        assert.equal(backgroundNoteCount(), 1)
+
+        vi.advanceTimersByTime(9999)
+        assert.equal(backgroundNoteCount(), 1, 'still within the silence window')
+
+        vi.advanceTimersByTime(2)
+        assert.equal(backgroundNoteCount(), 0, 'cleared just after the window')
+        assert.equal(globals.recording.background.available, false)
+    })
+
+    it('restarts the silence countdown on any chord or solo activity', () => {
+        vi.useFakeTimers()
+        globals.recording.background.silenceSec = 10
+        recordBackgroundNoteOn('chords', 'C4', 0.8, undefined, 0)
+        recordBackgroundNoteOff('chords', 'C4', 0.1)
+
+        // Five seconds later a solo note arrives, so the countdown restarts.
+        vi.advanceTimersByTime(5000)
+        recordBackgroundNoteOn('jam', 'E5', 0.5, undefined, 5)
+        recordBackgroundNoteOff('jam', 'E5', 5.1)
+
+        vi.advanceTimersByTime(9999)
+        assert.equal(backgroundNoteCount(), 2, 'activity kept the buffer alive')
+
+        vi.advanceTimersByTime(2)
+        assert.equal(backgroundNoteCount(), 0)
+    })
+
+    it('treats a still-held note as activity, not silence', () => {
+        vi.useFakeTimers()
+        globals.recording.background.silenceSec = 10
+        recordBackgroundNoteOn('chords', 'C4', 0.8, undefined, 0)
+
+        vi.advanceTimersByTime(10001)
+        assert.equal(backgroundNoteCount(), 1, 'a held note keeps the buffer')
+
+        recordBackgroundNoteOff('chords', 'C4', 10.1)
+        vi.advanceTimersByTime(10001)
+        assert.equal(backgroundNoteCount(), 0, 'the buffer clears after release plus silence')
+    })
+
+    it('does not auto-clear when the silence preference is zero', () => {
+        vi.useFakeTimers()
+        globals.recording.background.silenceSec = 0
+        recordBackgroundNoteOn('chords', 'C4', 0.8, undefined, 0)
+        recordBackgroundNoteOff('chords', 'C4', 0.5)
+
+        vi.advanceTimersByTime(60000)
+        assert.equal(backgroundNoteCount(), 1)
     })
 })

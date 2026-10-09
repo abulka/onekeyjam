@@ -5,11 +5,15 @@ import MidiKeyboardsDetected from '@/components/MidiKeyboardsDetected.vue'
 import DebugAdmin from '@/components/DebugAdmin.vue'
 import { registerAccordion } from '@/lib/accordionState.js'
 import { globals } from '@/lib/globals.js'
-import { BACKGROUND_WINDOW_OPTIONS } from '@/lib/midi/background-recorder.js'
+import { BACKGROUND_WINDOW_OPTIONS, BACKGROUND_SILENCE_OPTIONS } from '@/lib/midi/background-recorder.js'
 import { KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX } from '@/lib/uiPrefs.js'
 
 function backgroundWindowLabel(sec) {
   return sec < 60 ? `${sec} seconds` : `${sec / 60} minute${sec / 60 === 1 ? '' : 's'}`
+}
+
+function backgroundSilenceLabel(sec) {
+  return sec === 0 ? 'Never' : `${sec} seconds`
 }
 
 const fixedVelocityLabel = computed(() => Number(globals.fixedNoteVelocity).toFixed(2))
@@ -131,6 +135,22 @@ onUnmounted(() => stopAccordion())
                 </option>
               </select>
             </label>
+          </div>
+          <div class="mt-2 settings-suboption" v-if="globals.recording.background.enabled">
+            <label title="Clear the hidden buffer after this much silence, so a forgotten take is not recovered long after you stopped playing. Any chord trigger or solo note restarts the countdown.">
+              Clear after silence:
+              <select v-model.number="globals.recording.background.silenceSec">
+                <option v-for="sec in BACKGROUND_SILENCE_OPTIONS" :key="sec" :value="sec">
+                  {{ backgroundSilenceLabel(sec) }}
+                </option>
+              </select>
+            </label>
+            <p class="settings-hint">
+              When nothing has been played for this long, the buffer empties
+              itself, so Flashback Capture only offers what you just played.
+              Choose Never to keep the buffer until it falls out of the capture
+              window or you clear it by hand.
+            </p>
           </div>
           <div class="mt-2">
             <label class="checkboxLabel" title="Move a still-sounding solo note onto the new scale after a chord trigger changes it.">

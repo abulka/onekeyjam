@@ -427,6 +427,9 @@ export const globals = reactive({
         background: {
             enabled: true,
             windowSec: 120,
+            // Seconds of no playing (no chord trigger and no solo note) after
+            // which the buffer clears itself. 0 turns the automatic clear off.
+            silenceSec: 10,
             noteCount: 0,
             available: false,
         },

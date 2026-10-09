@@ -173,6 +173,7 @@ describe('uiPrefs', () => {
         globals.showScaleCellFill = true
         globals.recording.background.enabled = true
         globals.recording.background.windowSec = 120
+        globals.recording.background.silenceSec = 30
         assert.deepEqual(currentPrefs(), {
             keyboardHelpMode: 'white',
             showKeyShortcuts: true,
@@ -193,6 +194,7 @@ describe('uiPrefs', () => {
             heldNoteRepair: { enabled: true, windowMs: 40 },
             backgroundCaptureEnabled: true,
             backgroundCaptureWindowSec: 120,
+            backgroundCaptureSilenceSec: 30,
         })
         globals.showWelcomeDialog = true
         globals.showFavouriteBinColumns = false
@@ -204,6 +206,7 @@ describe('uiPrefs', () => {
         globals.recording.bpm = 120
         globals.fixedNoteVelocity = 0.5
         globals.metronomeEnabled = false
+        globals.recording.background.silenceSec = 10
     })
 
     it('reads, loads and round-trips the metronome flag', () => {
@@ -456,27 +459,33 @@ describe('uiPrefs', () => {
     })
 
     it('reads and validates the background capture settings', () => {
-        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureEnabled: false, backgroundCaptureWindowSec: 300 }) })
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureEnabled: false, backgroundCaptureWindowSec: 300, backgroundCaptureSilenceSec: 20 }) })
         assert.equal(readPrefs(good).backgroundCaptureEnabled, false)
         assert.equal(readPrefs(good).backgroundCaptureWindowSec, 300)
+        assert.equal(readPrefs(good).backgroundCaptureSilenceSec, 20)
         const badWindow = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureWindowSec: 7 }) })
         assert.equal(readPrefs(badWindow).backgroundCaptureWindowSec, undefined)
+        const badSilence = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureSilenceSec: 7 }) })
+        assert.equal(readPrefs(badSilence).backgroundCaptureSilenceSec, undefined)
         const badFlag = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureEnabled: 'yes' }) })
         assert.equal(readPrefs(badFlag).backgroundCaptureEnabled, undefined)
     })
 
     it('loads the background capture settings into globals', () => {
-        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureEnabled: false, backgroundCaptureWindowSec: 600 }) }))
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ backgroundCaptureEnabled: false, backgroundCaptureWindowSec: 600, backgroundCaptureSilenceSec: 30 }) }))
         assert.equal(globals.recording.background.enabled, false)
         assert.equal(globals.recording.background.windowSec, 600)
+        assert.equal(globals.recording.background.silenceSec, 30)
         globals.recording.background.enabled = true
         globals.recording.background.windowSec = 120
+        globals.recording.background.silenceSec = 10
     })
 
     it('round-trips the background capture settings', () => {
         const storage = fakeStorage()
-        writePrefs({ backgroundCaptureEnabled: true, backgroundCaptureWindowSec: 60 }, storage)
+        writePrefs({ backgroundCaptureEnabled: true, backgroundCaptureWindowSec: 60, backgroundCaptureSilenceSec: 5 }, storage)
         assert.equal(readPrefs(storage).backgroundCaptureEnabled, true)
         assert.equal(readPrefs(storage).backgroundCaptureWindowSec, 60)
+        assert.equal(readPrefs(storage).backgroundCaptureSilenceSec, 5)
     })
 })

@@ -2,7 +2,7 @@
 import { watch } from 'vue'
 import { globals } from './globals.js'
 import { SCALE_POLICIES } from './autoScale.js'
-import { BACKGROUND_WINDOW_OPTIONS } from './midi/background-recorder.js'
+import { BACKGROUND_WINDOW_OPTIONS, BACKGROUND_SILENCE_OPTIONS } from './midi/background-recorder.js'
 
 /**
  * @module lib/uiPrefs
@@ -92,6 +92,7 @@ export function clampFixedVelocity(value) {
  * @property {HeldNoteRepair} [heldNoteRepair]
  * @property {boolean} [backgroundCaptureEnabled]
  * @property {number} [backgroundCaptureWindowSec]
+ * @property {number} [backgroundCaptureSilenceSec]
  */
 
 /**
@@ -245,6 +246,8 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.backgroundCaptureEnabled = stored.backgroundCaptureEnabled
         if (stored && BACKGROUND_WINDOW_OPTIONS.includes(stored.backgroundCaptureWindowSec))
             prefs.backgroundCaptureWindowSec = stored.backgroundCaptureWindowSec
+        if (stored && BACKGROUND_SILENCE_OPTIONS.includes(stored.backgroundCaptureSilenceSec))
+            prefs.backgroundCaptureSilenceSec = stored.backgroundCaptureSilenceSec
         return prefs
     }
     catch (error) {
@@ -277,6 +280,7 @@ export function currentPrefs() {
         heldNoteRepair: { ...globals.heldNoteRepair },
         backgroundCaptureEnabled: globals.recording.background.enabled,
         backgroundCaptureWindowSec: globals.recording.background.windowSec,
+        backgroundCaptureSilenceSec: globals.recording.background.silenceSec,
     }
 }
 
@@ -340,6 +344,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.recording.background.enabled = prefs.backgroundCaptureEnabled
     if (typeof prefs.backgroundCaptureWindowSec === 'number')
         globals.recording.background.windowSec = prefs.backgroundCaptureWindowSec
+    if (typeof prefs.backgroundCaptureSilenceSec === 'number')
+        globals.recording.background.silenceSec = prefs.backgroundCaptureSilenceSec
 }
 
 /**
@@ -380,6 +386,7 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.heldNoteRepair.windowMs,
         globals.recording.background.enabled,
         globals.recording.background.windowSec,
+        globals.recording.background.silenceSec,
     ], () => {
         writePrefs(currentPrefs(), storage)
     })
