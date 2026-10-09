@@ -72,7 +72,8 @@ onMounted(() => {
   if (globals.metronomeEnabled)
     setMetronomeEnabled(true)
 
-  // Tab toggles between the Edit page and the Help page.
+  // Tab toggles between the Edit and Perform pages; Shift+Tab toggles the
+  // current page and the Help page.
   wireHelpShortcuts(router)
 })
 

@@ -182,6 +182,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 
           <h4>Other shortcuts</h4>
           <div class="sc-item"><div class="sc-body"><code class="kb">Space</code> stop recording, stop the pattern or take playback, or play the pattern when it has notes. Pauses while you type in a field.</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">Tab</code> switch between the Edit and Perform pages · <code class="kb">Shift+Tab</code> switch between the current page and Help</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">F1</code> (hold) play / audition the picked chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">F2</code> (hold) play the current left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">F3</code> (hold) step to and play the next left-hand chord</div></div>

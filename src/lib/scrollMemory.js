@@ -2,8 +2,8 @@
 
 /**
  * A tiny in-memory store of per-page scroll positions, used by the router's
- * scrollBehaviour so that jumping between the Edit page and the Help page with
- * the Tab key returns you to where you were reading.
+ * scrollBehaviour so that jumping between pages with the Tab and Shift+Tab
+ * shortcuts returns you to where you were.
  */
 
 const positions = new Map()
