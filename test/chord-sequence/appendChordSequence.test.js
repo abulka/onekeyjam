@@ -2,7 +2,7 @@ import assert from 'assert';
 import { globals } from "../../src/lib/globals.js";
 import { parseChordSequence } from "../../src/lib/parseChordSequence.js";
 import { voiceChordSequence } from "../../src/lib/voiceChordSequence.js";
-import { appendChordSequence } from "../../src/lib/appendChordSequence.js";
+import { appendChordSequence, lastProjectChordNotes } from "../../src/lib/appendChordSequence.js";
 
 function snapshotGlobals() {
     return {
@@ -50,6 +50,26 @@ describe('appendChordSequence', () => {
                 assert.ok(config.chordNotes.length > 0);
                 assert.ok(config.scale1);
             }
+        } finally {
+            restoreGlobals(snapshot);
+        }
+    });
+
+    it('anchors from the last arranged grid chord, not pool order', () => {
+        const snapshot = snapshotGlobals();
+        try {
+            globals.project = {
+                name: 'Anchor Test',
+                chords: [
+                    { id: 1, chordNotes: ['D3', 'F#3', 'A3'] },
+                    { id: 2, chordNotes: ['C#3', 'E3', 'G#3'] },
+                ],
+                options: {},
+                songs: { default: { ids: [2, 1], favourites: [], blacklist: [] } },
+            };
+            assert.deepEqual(lastProjectChordNotes(), ['D3', 'F#3', 'A3']);
+            globals.project.songs.default.ids = [];
+            assert.deepEqual(lastProjectChordNotes(), ['C#3', 'E3', 'G#3']);
         } finally {
             restoreGlobals(snapshot);
         }

@@ -5,7 +5,7 @@ import { globals } from "@/lib/globals.js"
 import { parseChordSequence } from "@/lib/parseChordSequence.js"
 import { voiceChordSequence } from "@/lib/voiceChordSequence.js"
 import { appendChordSequence, lastProjectChordNotes } from "@/lib/appendChordSequence.js"
-import { buildChordSequenceTextFromGrid, gridChordSymbol, orderedGridChordConfigs } from "@/lib/gridChordsToSequenceText.js"
+import { buildChordSequenceTextFromGrid, gridChordSymbol, orderedLiveGridChordConfigs } from "@/lib/gridChordsToSequenceText.js"
 
 const inputText = ref('')
 const statusMessage = ref('')
@@ -39,13 +39,19 @@ const appendLabel = computed(() => {
 })
 
 // Number of named grid chords, tracked reactively so the button enables
-// as soon as chords are added elsewhere.
+// as soon as chords are added elsewhere. Reads the live sounded grid so the
+// count matches the text that Generate from Grid will produce, including
+// after a transposition.
 const gridChordCount = computed(() => {
   const poolCount = globals.project?.chords?.length ?? 0
   const idsCount = globals.project?.songs?.default?.ids?.length ?? 0
+  const triggerCount = globals.chordTriggerMap ? Object.keys(globals.chordTriggerMap).length : 0
   void poolCount
   void idsCount
-  return orderedGridChordConfigs().filter((config) => gridChordSymbol(config)).length
+  void triggerCount
+  // Touch live chord and bass strings so a transposition refreshes the count.
+  void Object.values(globals.chordTriggerMap ?? {}).map((config) => `${config.chord}/${config.bass}`).join("|")
+  return orderedLiveGridChordConfigs().filter((config) => gridChordSymbol(config)).length
 })
 const canGenerateFromGrid = computed(() => gridChordCount.value > 0)
 
@@ -80,7 +86,8 @@ function appendToGrid() {
     <p>
       Type chord names separated by spaces, commas, or new lines, for example
       <code>Dsus4 Dmaj7 C#min11</code>. Each chord is appended to the chord grid
-      with a voicing chosen to minimise movement from the previous chord.
+      with a voicing chosen to minimise movement from the last grid chord.
+      A slash bass such as <code>Amadd9/C</code> requests that bass note lowest.
     </p>
 
     <textarea

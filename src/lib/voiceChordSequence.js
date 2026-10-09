@@ -43,10 +43,16 @@ export function voiceChordSequence(entries, options = {}) {
             voiced.push({ ...entry, chordNotes: [], inversion: 0, octaveShift: 0 })
             continue
         }
-        let best = candidates[0]
+        // An explicit slash bass states the intended lowest note. Prefer the
+        // inversions that put that pitch class lowest so the text round trips.
+        // A non chord tone slash matches nothing and falls back to free choice.
+        const bass = typeof entry.bass === "string" ? entry.bass.trim() : ""
+        const matching = bass ? candidates.filter((candidate) => lowestNoteMatchesBass(candidate.chordNotes, bass)) : []
+        const pool = matching.length > 0 ? matching : candidates
+        let best = pool[0]
         if (prevNotes.length > 0) {
             let bestCost = Infinity
-            for (const candidate of candidates) {
+            for (const candidate of pool) {
                 const cost = voiceLeadingCost(prevNotes, candidate.chordNotes, baseOctave)
                 if (cost < bestCost - 1e-9) {
                     bestCost = cost
@@ -81,6 +87,24 @@ function buildCandidates(chordSymbol, baseOctave) {
         candidates.push({ chordNotes: notes, inversion, octaveShift: 0 })
     }
     return candidates
+}
+
+/**
+ * Whether the lowest note of a voicing carries the requested slash bass pitch.
+ * @param {Array<string>} chordNotes notes with octaves, ascending
+ * @param {string} bass explicit bass pitch class, e.g. "C"
+ * @returns {boolean}
+ */
+export function lowestNoteMatchesBass(chordNotes, bass) {
+    if (!Array.isArray(chordNotes) || chordNotes.length === 0 || !bass)
+        return false
+    const low = Tonal.Note.get(chordNotes[0])
+    const wanted = Tonal.Note.get(bass)
+    if (low.empty || wanted.empty)
+        return false
+    if (typeof low.chroma === "number" && typeof wanted.chroma === "number")
+        return low.chroma === wanted.chroma
+    return (low.pc || "").toLowerCase() === (wanted.pc || "").toLowerCase()
 }
 
 /**

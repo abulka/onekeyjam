@@ -1,5 +1,6 @@
 import assert from 'assert';
-import { voiceChordSequence, voiceLeadingCost } from "../../src/lib/voiceChordSequence.js";
+import * as Tonal from "@tonaljs/tonal";
+import { lowestNoteMatchesBass, voiceChordSequence, voiceLeadingCost } from "../../src/lib/voiceChordSequence.js";
 import { chordSymbolToNotesInversion } from "../../src/lib/chordSymbolToNotes.js";
 import { parseChordSequence } from "../../src/lib/parseChordSequence.js";
 
@@ -44,5 +45,25 @@ describe('voiceChordSequence example', () => {
         const [voiced] = voiceChordSequence(entries);
         assert.equal(voiced.bass, 'D');
         assert.ok(voiced.chordNotes.length > 0);
+    });
+
+    it('voices a slash chord with the bass note lowest', () => {
+        const { entries } = parseChordSequence('Amadd9/C');
+        const [voiced] = voiceChordSequence(entries);
+        assert.ok(voiced.chordNotes.length > 0);
+        assert.ok(lowestNoteMatchesBass(voiced.chordNotes, 'C'));
+        assert.equal(Tonal.Note.get(voiced.chordNotes[0]).pc, 'C');
+    });
+
+    it('still voices a non chord tone slash instead of failing', () => {
+        const { entries } = parseChordSequence('C/D');
+        const [voiced] = voiceChordSequence(entries);
+        assert.equal(voiced.bass, 'D');
+        assert.ok(voiced.chordNotes.length > 0);
+    });
+
+    it('matches enharmonic slash bass spellings', () => {
+        assert.equal(lowestNoteMatchesBass(['Db4', 'F4', 'Ab4'], 'C#'), true);
+        assert.equal(lowestNoteMatchesBass(['C4', 'E4', 'G4'], 'D'), false);
     });
 });

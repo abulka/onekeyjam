@@ -17,11 +17,14 @@ Here we support 3.
 
 function auditionMouseDown(notes, bass, state) {
     // Play notes without changing the current chord config.
-    // console.log('auditionMouseDown', notes, bass, state)
-    if (notes.length > 0)
+    // An empty note list (for example before anything has been jammed) is a
+    // silent no-op so hovering or clicking never throws.
+    if (Array.isArray(notes) && notes.length > 0)
         auditionNotes(notes, bass, state)
-    else
-        throw ('auditionMouseDown: no notes specified to audition');
+    else if (state) {
+        // Note-off is still safe to send so a stuck preview cannot ring.
+        auditionNotes([], bass, false)
+    }
 }
 </script>
 

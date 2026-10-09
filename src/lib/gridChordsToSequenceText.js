@@ -1,6 +1,7 @@
 // @ts-check
+import * as Tonal from "@tonaljs/tonal";
 import { globals } from "./globals.js";
-import { resolveGridChords } from "./triggerMaps.js";
+import { numericId, resolveGridChords } from "./triggerMaps.js";
 
 /**
  * @module lib/gridChordsToSequenceText
@@ -30,7 +31,29 @@ export function orderedGridChordConfigs(project = globals.project) {
 }
 
 /**
+ * Whether two pitch spellings sound the same pitch class, e.g. "C#" and
+ * "Db", ignoring any octave. Returns false when either is not a note.
+ * @param {string} a
+ * @param {string} b
+ * @returns {boolean}
+ */
+function isSamePitchClass(a, b) {
+    if (!a || !b)
+        return false
+    const noteA = Tonal.Note.get(a)
+    const noteB = Tonal.Note.get(b)
+    if (noteA.empty || noteB.empty)
+        return false
+    if (typeof noteA.chroma !== "number" || typeof noteB.chroma !== "number")
+        return false
+    return noteA.chroma === noteB.chroma
+}
+
+/**
  * The sequence-ready symbol for one grid chord, e.g. "Dm7" or "E7/D".
+ * A slash bass that duplicates the chord root is omitted, because the
+ * stored `bass` is often just the automatic lowest note rather than an
+ * explicitly chosen slash chord.
  * @param {ChordConfig} config
  * @returns {string} "" when the config has no chord name
  */
@@ -39,15 +62,106 @@ export function gridChordSymbol(config) {
     if (!chord)
         return ""
     const bass = typeof config?.bass === "string" ? config.bass.trim() : ""
-    return bass ? `${chord}/${bass}` : chord
+    if (!bass)
+        return chord
+    const bassNote = Tonal.Note.get(bass)
+    if (bassNote.empty)
+        return `${chord}/${bass}`
+    const chordObj = Tonal.Chord.get(chord)
+    if (chordObj.empty || !chordObj.tonic)
+        return `${chord}/${bass}`
+    if (isSamePitchClass(chordObj.tonic, bass))
+        return chord
+    return `${chord}/${bass}`
+}
+
+/**
+ * Sort trigger notes such as "C3" and "D3" into ascending sounding order
+ * without mutating the input.
+ * @param {Array<string>} triggers
+ * @returns {Array<string>}
+ */
+function sortedTriggerNotes(triggers) {
+    return [...triggers].sort((a, b) => {
+        const midiA = Tonal.Note.midi(a)
+        const midiB = Tonal.Note.midi(b)
+        if (typeof midiA === "number" && typeof midiB === "number")
+            return midiA - midiB
+        return String(a).localeCompare(String(b))
+    })
+}
+
+/**
+ * Resolve the live trigger map to configs in trigger order. Used only as a
+ * fallback when the project has no stored arrangement.
+ * @param {Record<string, ChordConfig>} liveMap
+ * @returns {Array<ChordConfig>}
+ */
+function liveMapInTriggerOrder(liveMap) {
+    if (!liveMap || typeof liveMap !== "object")
+        return []
+    return sortedTriggerNotes(Object.keys(liveMap))
+        .map((trigger) => liveMap[trigger])
+        .filter(Boolean)
+}
+
+/**
+ * The grid chords as currently sounded, in trigger order (top to bottom on
+ * the grid). For each arranged id the live transposed trigger-map config is
+ * preferred when present, falling back to the stored pool config. This keeps
+ * hidden arrangement tails and works before the trigger map is built.
+ * @param {Project} [project]
+ * @param {Record<string, ChordConfig>} [liveMap]
+ * @returns {Array<ChordConfig>}
+ */
+export function orderedLiveGridChordConfigs(project = globals.project, liveMap) {
+    const chords = Array.isArray(project?.chords) ? project.chords : []
+    if (chords.length === 0)
+        return []
+    const effectiveLiveMap = liveMap !== undefined
+        ? liveMap
+        : (project === globals.project ? globals.chordTriggerMap : undefined)
+    const rawIds = project?.songs?.default?.ids
+    const ids = Array.isArray(rawIds) ? rawIds : []
+    if (ids.length === 0) {
+        const live = liveMapInTriggerOrder(/** @type {any} */(effectiveLiveMap))
+        if (live.length > 0)
+            return live
+        return [...chords]
+    }
+    /** @type {Map<number|string, ChordConfig>} */
+    const liveById = new Map()
+    if (effectiveLiveMap && typeof effectiveLiveMap === "object") {
+        for (const config of Object.values(effectiveLiveMap)) {
+            if (!config)
+                continue
+            liveById.set(numericId(/** @type {any} */(config).id), /** @type {ChordConfig} */(config))
+        }
+    }
+    /** @type {Map<number|string, ChordConfig>} */
+    const poolById = new Map()
+    for (const config of chords)
+        poolById.set(numericId(/** @type {any} */(config).id), /** @type {ChordConfig} */(config))
+    /** @type {Array<ChordConfig>} */
+    const result = []
+    for (const rawId of ids) {
+        const id = numericId(rawId)
+        const config = liveById.get(id) ?? poolById.get(id)
+        if (config)
+            result.push(config)
+    }
+    return result
 }
 
 /**
  * Space-separated chord names from the grid in trigger order, e.g.
- * "Dsus4 Dmaj7 C#m11". Returns "" when the grid has no named chords.
+ * "Dsus4 Dmaj7 C#m11". Uses the live sounded chords when available so the
+ * text matches the grid after a transposition, and omits a slash bass that
+ * merely duplicates the root. Returns "" when the grid has no named chords.
  * @param {Project} [project]
+ * @param {Record<string, ChordConfig>} [liveMap]
  * @returns {string}
  */
-export function buildChordSequenceTextFromGrid(project = globals.project) {
-    return orderedGridChordConfigs(project).map(gridChordSymbol).filter(Boolean).join(" ")
+export function buildChordSequenceTextFromGrid(project = globals.project, liveMap) {
+    return orderedLiveGridChordConfigs(project, liveMap).map(gridChordSymbol).filter(Boolean).join(" ")
 }

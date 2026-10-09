@@ -1,6 +1,7 @@
 // @ts-check
 import * as Tonal from "@tonaljs/tonal";
 import { globals } from "./globals.js";
+import { numericId } from "./triggerMaps.js";
 import { appendChordConfigsToGrid } from "./gridArrangement.js";
 import { fillInChordConfig2 } from "./fillInChordConfig.js";
 import { keyDetection } from "./keyDetection.js";
@@ -65,14 +66,22 @@ export function appendChordSequence(voicedEntries) {
 }
 
 /**
- * Chord notes of the last project chord, used to anchor the next sequence
- * so the first new voicing joins smoothly onto the existing grid.
+ * Chord notes of the last grid chord, used to anchor the next sequence so
+ * the first new voicing joins smoothly onto what the grid shows. Prefers the
+ * last arranged id and falls back to pool order when there is no arrangement.
  * @returns {Array<string>}
  */
 export function lastProjectChordNotes() {
     const chords = globals.project?.chords
     if (!Array.isArray(chords) || chords.length === 0)
         return []
+    const rawIds = globals.project?.songs?.default?.ids
+    if (Array.isArray(rawIds) && rawIds.length > 0) {
+        const lastId = numericId(rawIds[rawIds.length - 1])
+        const match = chords.find((config) => numericId(config.id) === lastId)
+        if (match && Array.isArray(match.chordNotes))
+            return [...match.chordNotes]
+    }
     const last = chords[chords.length - 1]
     return Array.isArray(last.chordNotes) ? [...last.chordNotes] : []
 }

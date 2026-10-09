@@ -190,7 +190,7 @@ function bypassOn(event) {
         }})</span>
 
         <ButtonAudition title="Audition Chord (keyboard shortcut: F1)" class="ml-3!"
-          :notes="auditionInfo().currentChordBeingJammed.notes" :bass="auditionInfo().currentChordBeingJammed.bass" />
+          :notes="auditionInfo().defaultVoicing.notes" :bass="auditionInfo().defaultVoicing.bass" />
 
       </div>
 
