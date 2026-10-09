@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import PageMenubar from '@/components/PageMenubar.vue'
 import MidiKeyboardsDetected from '@/components/MidiKeyboardsDetected.vue'
 import DebugAdmin from '@/components/DebugAdmin.vue'
@@ -11,6 +11,8 @@ import { KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX } from '@/lib/uiPrefs.js'
 function backgroundWindowLabel(sec) {
   return sec < 60 ? `${sec} seconds` : `${sec / 60} minute${sec / 60 === 1 ? '' : 's'}`
 }
+
+const fixedVelocityLabel = computed(() => Number(globals.fixedNoteVelocity).toFixed(2))
 
 let stopAccordion = () => {}
 
@@ -43,6 +45,20 @@ onUnmounted(() => stopAccordion())
               <input type="checkbox" v-model="globals.showWelcomeDialog" />
               Show the welcome message when opening a demo project
             </label>
+          </div>
+          <div class="mt-2 settings-suboption">
+            <label title="Velocity for notes that do not come from a MIDI keyboard: the computer keyboard, the pattern sequencer and auditions. Live MIDI keyboards keep their own velocity. The same value is recorded, so the take sounds like what you played.">
+              Fixed note velocity (computer keyboard / pattern):
+              <input type="range" min="0.1" max="1" step="0.05" v-model.number="globals.fixedNoteVelocity"
+                class="velocity-slider" />
+              <b>{{ fixedVelocityLabel }}</b>
+            </label>
+            <p class="settings-hint">
+              The on-screen and computer keyboard, pattern chords and auditions
+              all use this velocity, and it is recorded into the take, so playback
+              matches what you heard. An external MIDI keyboard still records your
+              real playing dynamics.
+            </p>
           </div>
           <div class="mt-2">
             <label class="checkboxLabel" title="Show the favourite and bin columns in the chord/scale table. Usually only useful while importing from MIDI.">
@@ -182,5 +198,11 @@ onUnmounted(() => stopAccordion())
 to keep it lined up with the other hints. */
 .settings-suboption > .settings-hint {
   margin-left: 0;
+}
+
+.velocity-slider {
+  vertical-align: middle;
+  margin: 0 0.4rem;
+  width: 10rem;
 }
 </style>

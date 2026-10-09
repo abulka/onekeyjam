@@ -46,6 +46,7 @@ export function panelTicksToTake(panelTick, ppq, panelTimebase) {
  * @property {number} f selected flag
  * @property {number} [playedMidi] the key that was pressed
  * @property {'chords'|'jam'} [_track] which take track the note came from
+ * @property {string} [role] 'chord' | 'bass' | 'jam'
  */
 
 /**
@@ -75,6 +76,8 @@ export function takeToPanelNotes(take, { ppq = 480, panelTimebase = 1920, tracks
             }
             if (typeof note.playedMidi === 'number')
                 panelNote.playedMidi = note.playedMidi
+            if (typeof note.role === 'string')
+                panelNote.role = note.role
             notes.push(panelNote)
         }
     }
@@ -90,11 +93,11 @@ export function takeToPanelNotes(take, { ppq = 480, panelTimebase = 1920, tracks
  * Convert widget notes back into take notes.
  * @param {PanelNote[]} panelNotes
  * @param {{ ppq?: number, panelTimebase?: number }} [options]
- * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number }>}
+ * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number, role?: string }>}
  */
 export function panelNotesToTakeNotes(panelNotes, { ppq = 480, panelTimebase = 1920 } = {}) {
     return panelNotes.map(note => {
-        /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number }} */
+        /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number, role?: string }} */
         const takeNote = {
             midi: note.n,
             startTick: Math.round(panelTicksToTake(note.t, ppq, panelTimebase)),
@@ -105,6 +108,8 @@ export function panelNotesToTakeNotes(panelNotes, { ppq = 480, panelTimebase = 1
         // itself is the sensible default so the "played" view stays meaningful.
         const playedMidi = typeof note.playedMidi === 'number' ? note.playedMidi : note.n
         takeNote.playedMidi = playedMidi
+        if (typeof note.role === 'string')
+            takeNote.role = note.role
         return takeNote
     })
 }
@@ -181,9 +186,11 @@ export function renderLoopToTicks(notes, loopStart, loopEnd, totalTicks) {
 /**
  * Expand a pattern row into the notes it should sound in the take: a chord
  * trigger becomes its chord notes (and bass), anything else a single raw note.
- * `playedMidi` is the trigger key, matching live chord recording.
+ * `playedMidi` is the trigger key, matching live chord recording. `role` marks
+ * the bass separately from the chord voicing so playback can use the right
+ * instrument.
  * @param {number} row widget row (a MIDI note number in the trigger octave)
- * @returns {Array<{ midi: number, playedMidi?: number }>}
+ * @returns {Array<{ midi: number, playedMidi?: number, role?: string }>}
  */
 export function rowToTakeNotes(row) {
     const triggerNote = indexToNote(row - 60, globals.keyboard.lhTriggerOctave)
@@ -195,18 +202,19 @@ export function rowToTakeNotes(row) {
     const out = []
     const playedMidi = typeof triggerMidi === 'number' ? triggerMidi : undefined
     if (!globals.playBassOnly) {
-        for (const name of config.chordNotes || []) {
-            if (!globals.playChordBass && name === config.bassNote)
-                continue
+        const chordChannelNotes = (config.chordNotes || []).filter(name => name !== config.bassNote)
+        if (globals.playChordBass && config.bassNote)
+            chordChannelNotes.push(config.bassNote)
+        for (const name of chordChannelNotes) {
             const midi = TonalNote.midi(name)
             if (typeof midi === 'number')
-                out.push({ midi, playedMidi: playedMidi ?? midi })
+                out.push({ midi, playedMidi: playedMidi ?? midi, role: 'chord' })
         }
     }
     if (!globals.playChordOnly && config.bassNote) {
         const midi = TonalNote.midi(config.bassNote)
         if (typeof midi === 'number')
-            out.push({ midi, playedMidi: playedMidi ?? midi })
+            out.push({ midi, playedMidi: playedMidi ?? midi, role: 'bass' })
     }
     return out
 }
@@ -226,8 +234,9 @@ export function rowToTakeNotes(row) {
  * @param {number} [options.loopStart] loop start, panel ticks
  * @param {number} [options.loopEnd] loop end, panel ticks
  * @param {number} [options.totalTakeTicks] how long the take is, take ticks
- * @param {(row: number) => Array<{ midi: number, playedMidi?: number }>} [options.rowToNotes] expand a row into the notes it sounds
- * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi: number }>}
+ * @param {number} [options.velocity] velocity for the merged notes; defaults to the fixed played velocity
+ * @param {(row: number) => Array<{ midi: number, playedMidi?: number, role?: string }>} [options.rowToNotes] expand a row into the notes it sounds
+ * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi: number, role?: string }>}
  */
 export function patternToTakeNotes(patternNotes, {
     ppq = 480,
@@ -235,10 +244,18 @@ export function patternToTakeNotes(patternNotes, {
     loopStart = 0,
     loopEnd = 0,
     totalTakeTicks = 0,
+    velocity = undefined,
     rowToNotes = undefined,
 } = {}) {
     if (typeof rowToNotes !== 'function' || totalTakeTicks <= 0 || loopEnd <= loopStart)
         return []
+
+    // Pattern chords sound at the fixed played velocity, so the merged take uses
+    // the same value. Without this the take played back louder than the loop.
+    const fixedVelocity = typeof velocity === 'number'
+        ? velocity
+        : (typeof globals.fixedNoteVelocity === 'number' ? globals.fixedNoteVelocity : 0.5)
+    const useVelocity = Math.min(1, Math.max(0, fixedVelocity))
 
     const loopLength = loopEnd - loopStart
     const totalPanelTicks = Math.max(1, Math.round(totalTakeTicks * panelTimebase / (ppq * 4)))
@@ -255,6 +272,7 @@ export function patternToTakeNotes(patternNotes, {
     }
 
     const rendered = renderLoopToTicks(clipped, loopStart, loopEnd, renderedTotal)
+    /** @type {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi: number, role?: string }>} */
     const out = []
     for (const note of rendered) {
         const expansions = rowToNotes(note.n)
@@ -262,17 +280,20 @@ export function patternToTakeNotes(patternNotes, {
             continue
         const startTick = Math.round(panelTicksToTake(note.t, ppq, panelTimebase))
         const durationTicks = Math.max(1, Math.round(panelTicksToTake(note.g, ppq, panelTimebase)))
-        const velocity = Math.min(1, Math.max(0, (typeof note.v === 'number' ? note.v : 100) / 127))
         for (const expansion of expansions) {
             if (!expansion || typeof expansion.midi !== 'number')
                 continue
-            out.push({
+            /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi: number, role?: string }} */
+            const takeNote = {
                 midi: expansion.midi,
                 startTick,
                 durationTicks,
-                velocity,
+                velocity: useVelocity,
                 playedMidi: typeof expansion.playedMidi === 'number' ? expansion.playedMidi : expansion.midi,
-            })
+            }
+            if (typeof expansion.role === 'string')
+                takeNote.role = expansion.role
+            out.push(takeNote)
         }
     }
     return out

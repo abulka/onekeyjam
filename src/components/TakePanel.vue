@@ -1,7 +1,8 @@
 <script setup>
 import { computed, onUnmounted, ref, watch } from 'vue'
+import { Note as TonalNote } from '@tonaljs/tonal'
 import { globals } from '@/lib/globals.js'
-import { startRecording, stopRecording, clearTake, captureTakeFromBackground } from '@/lib/midi/recorder.js'
+import { startRecording, stopRecording, clearTake, captureTakeFromBackground, clearFlashback } from '@/lib/midi/recorder.js'
 import { startPlayback, stopPlayback, seekPlayback, previewVisuals, takeDurationSec } from '@/lib/midi/playback.js'
 import { downloadRecording } from '@/lib/midi/export-recording.js'
 import RecordingPianoRoll from './RecordingPianoRoll.vue'
@@ -28,10 +29,24 @@ const jamCount = computed(() => rec.take.jam.length + rec.live.jam)
 const canClear = computed(() => rec.hasTake || rec.isRecording || rec.playback.isPlaying)
 const durationSec = computed(() => takeDurationSec(rec))
 
+// Every distinct note in the take, with its name and MIDI number, so the
+// recorded pitch can be checked against what was heard (and the exported file).
+const takeNoteNames = computed(() => {
+  const byMidi = new Map()
+  for (const note of [...rec.take.chords, ...rec.take.jam]) {
+    if (typeof note.midi === 'number' && !byMidi.has(note.midi))
+      byMidi.set(note.midi, TonalNote.fromMidi(note.midi))
+  }
+  return [...byMidi.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([midi, name]) => ({ midi, name }))
+})
+
 // Hidden background capture: the last few minutes of playing are kept so they
 // can be recovered even though Record was never pressed.
 const background = globals.recording.background
 const canCapture = computed(() => background.enabled && !rec.isRecording && background.available)
+const canClearFlashback = computed(() => background.enabled && background.available)
 const backgroundWindowLabel = computed(() => formatWindow(background.windowSec))
 const readyLabel = computed(() => `${background.noteCount} note${background.noteCount === 1 ? '' : 's'} ready`)
 
@@ -58,6 +73,14 @@ function requestCapture() {
     showToast('Nothing has been played in the capture window yet.', 'brown')
   else if (result.reason === 'disabled')
     showToast('Background capture is turned off in Settings.', 'brown')
+}
+
+function clearFlashbackBuffer() {
+  const result = clearFlashback()
+  if (result.count > 0)
+    showToast(`Cleared ${result.count} buffered note${result.count === 1 ? '' : 's'} from Flashback Capture.`, 'brown')
+  else
+    showToast('Flashback Capture buffer is already empty.', 'brown')
 }
 
 // The scrubber tracks the play head unless the user is dragging it.
@@ -145,7 +168,7 @@ onUnmounted(() => {
 })
 
 // Exposed so the Perform page's Actions menu can drive the same controls.
-defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
+defineExpose({ toggleRecord, exportTake, captureTake: requestCapture, clearFlashback: clearFlashbackBuffer })
 </script>
 
 <template>
@@ -153,7 +176,7 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
     <div class="ui segment">
       <div class="ui grid middle aligned">
         <div class="row">
-          <div class="six wide column">
+          <div class="five wide column">
             <div class="record-actions">
               <button
                 class="ui large red button"
@@ -199,13 +222,21 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
             </div>
           </div>
 
-          <div class="four wide column right aligned">
-            <button class="ui button" :class="{ disabled: !rec.hasTake }" :disabled="!rec.hasTake" @click="exportTake">
-              <i class="download icon"></i> Export MIDI
-            </button>
-            <button class="ui basic button" :class="{ disabled: !canClear }" :disabled="!canClear" @click="clear">
-              Clear
-            </button>
+          <div class="five wide column">
+            <div class="take-actions">
+              <button class="ui small button" :class="{ disabled: !rec.hasTake }" :disabled="!rec.hasTake" @click="exportTake">
+                <i class="download icon"></i> Export MIDI
+              </button>
+              <button class="ui small basic brown button" :class="{ disabled: !canClearFlashback }"
+                :disabled="!canClearFlashback"
+                title="Discard the hidden Flashback Capture buffer without touching the current take. Useful for debugging."
+                @click="clearFlashbackBuffer">
+                <i class="eraser icon"></i> Clear Flashback
+              </button>
+              <button class="ui small basic button" :class="{ disabled: !canClear }" :disabled="!canClear" @click="clear">
+                Clear
+              </button>
+            </div>
           </div>
         </div>
 
@@ -265,6 +296,12 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
       <div class="ui divider take-editor-divider"></div>
       <h4 class="take-editor-heading">Edit the take</h4>
       <RecordingPianoRoll />
+      <details class="take-notes-debug" v-if="takeNoteNames.length">
+        <summary>Debug: notes in the take ({{ takeNoteNames.length }})</summary>
+        <div class="take-notes-list">
+          <code v-for="note in takeNoteNames" :key="note.midi">{{ note.name }} ({{ note.midi }})</code>
+        </div>
+      </details>
     </div>
   </div>
 </template>
@@ -290,6 +327,30 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
   color: #4a3d2a;
 }
 
+.take-notes-debug {
+  margin-top: 0.4rem;
+  font-size: 0.85rem;
+  color: #4a3d2a;
+}
+
+.take-notes-debug > summary {
+  cursor: pointer;
+  color: #8a7c66;
+}
+
+.take-notes-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  margin-top: 0.35em;
+}
+
+.take-notes-list code {
+  padding: 0 4px;
+  background: #efe6d6;
+  border-radius: 3px;
+}
+
 /* Record and Capture share one row so they stay aligned with each other. */
 .record-actions {
   display: flex;
@@ -310,6 +371,20 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture })
   color: #db2828;
   font-weight: bold;
   margin-left: 0.5rem;
+}
+
+/* Keep the Export / Clear Flashback / Clear buttons on one line. */
+.take-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  flex-wrap: nowrap;
+}
+
+.take-actions .button {
+  margin: 0;
+  white-space: nowrap;
 }
 
 .ui.statistics .statistic {

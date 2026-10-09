@@ -3,12 +3,16 @@ import { globals } from "./globals.js";
 import { currentChordInfo } from "./currentChordInfo.js";
 import { setChordPicker } from "./chordPicker.js";
 import { chordPickerToJammed, chordPickerToJammedExtraPrecision } from "./chordPicker.js";
-import { chordPlay } from "./auditionNotes.js";
 
 /**
  * @module lib/syncPickerToCurrentChord
  * @desc Copy the currently triggered project chord into the Chord Picker,
  * preserving the stored voicing so the voicing list and Edit Notes update.
+ *
+ * This is a silent state sync: selecting a chord must not audition a
+ * different voicing through the Chord Picker, because the trigger keys and
+ * the grey audition buttons already play the stored voicing. The Chord Picker
+ * still auditions on its own explicit edits (see ChordPicker.vue).
  */
 
 /**
@@ -40,7 +44,5 @@ export function syncPickerToCurrentChord() {
     if (Array.isArray(chordNotes) && chordNotes.length > 0)
         chordPickerToJammedExtraPrecision(chordNotes, bass)
 
-    if (success)
-        chordPlay()
     return success
 }

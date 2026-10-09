@@ -6,6 +6,7 @@ import {
     recordChordNoteOn,
     recordChordNoteOff,
     recordJamNoteOn,
+    clearFlashback,
 } from '@/lib/midi/recorder.js'
 import {
     recordBackgroundNoteOn,
@@ -166,5 +167,34 @@ describe('background recorder', () => {
         assert.equal(backgroundNoteCount(), 1)
         clearTake()
         assert.equal(backgroundNoteCount(), 0)
+    })
+
+    it('clears the hidden buffer when a project is loaded', () => {
+        recordBackgroundNoteOn('chords', 'C4', 0.8, undefined, 0)
+        assert.ok(backgroundNoteCount() > 0)
+
+        document.dispatchEvent(new Event('project-loaded'))
+
+        assert.equal(backgroundNoteCount(), 0)
+        assert.equal(globals.recording.background.available, false)
+    })
+
+    it('clearFlashback empties the buffer but keeps the current take', () => {
+        // Build a take from the first note.
+        recordBackgroundNoteOn('chords', 'C4', 0.8, undefined, 0)
+        recordBackgroundNoteOff('chords', 'C4', 0.5)
+        assert.equal(captureTakeFromBackground(120, 0.5).ok, true)
+        const takeLength = globals.recording.take.chords.length
+        assert.ok(takeLength > 0)
+
+        // Buffer a second note, then clear only the buffer.
+        recordBackgroundNoteOn('chords', 'E4', 0.8, undefined, 1)
+        recordBackgroundNoteOff('chords', 'E4', 1.5)
+        const result = clearFlashback()
+
+        assert.equal(result.count, 1)
+        assert.equal(result.remaining, 0)
+        assert.equal(backgroundNoteCount(), 0)
+        assert.equal(globals.recording.take.chords.length, takeLength)
     })
 })

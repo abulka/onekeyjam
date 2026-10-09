@@ -27,7 +27,7 @@ export function auditionNotes(notes, bass, noteState = true) {
     // console.log('  auditionNotes', notes, bass, noteState);
     const fakeOriginNote = Tonal.Note.get('C20')
     const fakeTriggerNote = 'C21'  // fake trigger just for this auditioned chord
-    fakeOriginNote.attack = 0.5
+    fakeOriginNote.attack = globals.fixedNoteVelocity
 
     const options = {
         originNote: fakeOriginNote,
@@ -36,15 +36,27 @@ export function auditionNotes(notes, bass, noteState = true) {
     }
 
     if (noteState) {
-        // chord
-        if (!(fakeTriggerNote in globals.pendingChordNoteOffs))
-            globals.pendingChordNoteOffs[fakeTriggerNote] = []
-        for (let noteName of notes)
-            playChordNote(noteName, 'chord', options, globals.channel2, fakeTriggerNote, globals.pendingChordNoteOffs);
+        // An audition is a preview, not a performance, so it must never reach
+        // the live take or the hidden background buffer. Without this the grey
+        // audition buttons and the Chord Picker's chordPlay() would record
+        // notes the user never triggered, and Flashback Capture would recover
+        // them. Mirrors auditionChord() in midi/audition-note.js.
+        const wasSuppressed = globals.recording.suppressCapture
+        globals.recording.suppressCapture = true
+        try {
+            // chord
+            if (!(fakeTriggerNote in globals.pendingChordNoteOffs))
+                globals.pendingChordNoteOffs[fakeTriggerNote] = []
+            for (let noteName of notes)
+                playChordNote(noteName, 'chord', options, globals.channel2, fakeTriggerNote, globals.pendingChordNoteOffs);
 
-        // bass
-        if (bass)
-            playChordNote(bass, 'bass', options, globals.channel3, fakeTriggerNote, globals.pendingChordBassNoteOffs);
+            // bass
+            if (bass)
+                playChordNote(bass, 'bass', options, globals.channel3, fakeTriggerNote, globals.pendingChordBassNoteOffs);
+        }
+        finally {
+            globals.recording.suppressCapture = wasSuppressed
+        }
     }
     else
         // The fake trigger is not in the chord trigger map, so playChordOff

@@ -53,6 +53,21 @@ describe('midi recorder', () => {
         assert.equal(globals.recording.take.jam.length, 0)
     })
 
+    it('stores the note role so playback can pick the right instrument', () => {
+        startRecording(0)
+        recordChordNoteOn('E4', 0.9, { now: 0, playedNote: 'C3', role: 'chord' })
+        recordChordNoteOn('C2', 0.9, { now: 0, playedNote: 'C3', role: 'bass' })
+        recordJamNoteOn('E5', 0.5, { now: 0 })
+        stopRecording(0.5)
+
+        const chord = globals.recording.take.chords.find(n => n.midi === 64)
+        const bass = globals.recording.take.chords.find(n => n.midi === 36)
+        const jam = globals.recording.take.jam[0]
+        assert.equal(chord.role, 'chord')
+        assert.equal(bass.role, 'bass')
+        assert.equal(jam.role, 'jam')
+    })
+
     it('puts jam notes on their own track', () => {
         startRecording(0)
         recordJamNoteOn('E5', 0.5, { now: 0.25 })

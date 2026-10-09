@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { readPrefs, writePrefs, loadUiPrefs, currentPrefs, KEYBOARD_HELP_MODES, KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX, KEYBOARD_FIT_OCTAVES_DEFAULT, clampKeyboardOctaves, clampKeyboardFitOctaves, BPM_MIN, BPM_MAX, clampBpm } from '@/lib/uiPrefs.js'
+import { readPrefs, writePrefs, loadUiPrefs, currentPrefs, KEYBOARD_HELP_MODES, KEYBOARD_OCTAVE_MIN, KEYBOARD_OCTAVE_MAX, KEYBOARD_FIT_OCTAVES_DEFAULT, clampKeyboardOctaves, clampKeyboardFitOctaves, BPM_MIN, BPM_MAX, clampBpm, clampFixedVelocity, FIXED_VELOCITY_MIN, FIXED_VELOCITY_MAX } from '@/lib/uiPrefs.js'
 import { globals } from '@/lib/globals.js'
 
 function fakeStorage(initial = {}) {
@@ -149,6 +149,7 @@ describe('uiPrefs', () => {
         globals.keyboardOctaves = 5
         globals.keyboardFitOctaves = 4
         globals.recording.bpm = 140
+        globals.fixedNoteVelocity = 0.7
         globals.metronomeEnabled = true
         globals.showWelcomeDialog = false
         globals.showFavouriteBinColumns = true
@@ -178,6 +179,7 @@ describe('uiPrefs', () => {
             keyboardOctaves: 5,
             keyboardFitOctaves: 4,
             bpm: 140,
+            fixedNoteVelocity: 0.7,
             metronomeEnabled: true,
             showWelcomeDialog: false,
             showFavouriteBinColumns: true,
@@ -200,6 +202,7 @@ describe('uiPrefs', () => {
         globals.keyboardOctaves = 2
         globals.keyboardFitOctaves = 3
         globals.recording.bpm = 120
+        globals.fixedNoteVelocity = 0.5
         globals.metronomeEnabled = false
     })
 
@@ -293,6 +296,24 @@ describe('uiPrefs', () => {
         const storage = fakeStorage()
         writePrefs({ bpm: 96 }, storage)
         assert.equal(readPrefs(storage).bpm, 96)
+    })
+
+    it('clamps the fixed note velocity to the supported range', () => {
+        assert.equal(clampFixedVelocity(0), FIXED_VELOCITY_MIN)
+        assert.equal(clampFixedVelocity(99), FIXED_VELOCITY_MAX)
+        assert.equal(clampFixedVelocity(0.723), 0.72)
+        assert.equal(clampFixedVelocity('loud'), undefined)
+    })
+
+    it('reads, loads and round-trips the fixed note velocity', () => {
+        const good = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ fixedNoteVelocity: 0.65 }) })
+        assert.equal(readPrefs(good).fixedNoteVelocity, 0.65)
+        loadUiPrefs(good)
+        assert.equal(globals.fixedNoteVelocity, 0.65)
+        globals.fixedNoteVelocity = 0.5
+        const roundTrip = fakeStorage()
+        writePrefs({ fixedNoteVelocity: 0.8 }, roundTrip)
+        assert.equal(readPrefs(roundTrip).fixedNoteVelocity, 0.8)
     })
 
     it('reads, validates and clamps the shuffle options', () => {

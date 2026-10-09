@@ -38,6 +38,12 @@ function captureTake() {
   recorder.value?.captureTake()
 }
 
+function clearFlashbackBuffer() {
+  // The Take section owns the toast, so open it first.
+  $('#big-accordion-perform').accordion('open', 0)
+  recorder.value?.clearFlashback()
+}
+
 let stopAccordion = () => {}
 
 onMounted(() => {
@@ -69,6 +75,7 @@ onUnmounted(() => {
       </a>
       <a class="item" @click="toggleRecord()">{{ globals.recording.isRecording ? 'Stop Recording' : 'Record' }}</a>
       <a class="item" :class="{ disabled: globals.recording.isRecording || !globals.recording.background.enabled || !globals.recording.background.available }" @click="captureTake()">Flashback Capture</a>
+      <a class="item" :class="{ disabled: !globals.recording.background.enabled || !globals.recording.background.available }" @click="clearFlashbackBuffer()">Clear Flashback Capture</a>
       <a class="item" :class="{ disabled: !globals.recording.hasTake }" @click="exportTake()">Export MIDI</a>
     </template>
   </PageMenubar>

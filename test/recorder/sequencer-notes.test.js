@@ -1,4 +1,5 @@
 import assert from 'assert'
+import { globals } from '@/lib/globals.js'
 import {
     takeTicksToPanel,
     panelTicksToTake,
@@ -92,7 +93,15 @@ describe('patternToTakeNotes', () => {
         const notes = [{ t: 0, n: 60, g: 4, v: 100, f: 0 }]
         const out = patternToTakeNotes(notes, { ...options, loopStart: 0, loopEnd: 16, totalTakeTicks: 1920 })
         assert.equal(out.length, 1)
-        assert.deepEqual(out[0], { midi: 60, startTick: 0, durationTicks: 480, velocity: 100 / 127, playedMidi: 60 })
+        assert.deepEqual(out[0], { midi: 60, startTick: 0, durationTicks: 480, velocity: globals.fixedNoteVelocity, playedMidi: 60 })
+    })
+
+    it('uses the fixed velocity unless an explicit one is passed', () => {
+        const notes = [{ t: 0, n: 60, g: 4, v: 100, f: 0 }]
+        const fixed = patternToTakeNotes(notes, { ...options, loopStart: 0, loopEnd: 16, totalTakeTicks: 1920 })
+        assert.equal(fixed[0].velocity, globals.fixedNoteVelocity)
+        const explicit = patternToTakeNotes(notes, { ...options, velocity: 0.9, loopStart: 0, loopEnd: 16, totalTakeTicks: 1920 })
+        assert.equal(explicit[0].velocity, 0.9)
     })
 
     it('expands a row into several notes with a shared trigger', () => {

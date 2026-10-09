@@ -24,18 +24,85 @@ let startOffsetSec = 0
 let litNotes = new Set()
 
 /**
+ * A stable key for a take note, used to detect a bass note doubled on the
+ * chord channel.
+ * @param {{ startTick: number, midi: number }} note
+ * @returns {string}
+ */
+function noteKey(note) {
+    return `${Math.round(note.startTick)}:${note.midi}`
+}
+
+/**
+ * The notes the take should actually play, each with the instrument role it was
+ * recorded with (chord, bass or jam), after applying the live chord options so
+ * they also shape playback:
+ * - `playChordOnly` (Bass Channel Off) drops the bass.
+ * - `playBassOnly` (Bass Channel Only) drops the chord voicing.
+ * - `playChordBass` adds the bass to the chord channel (doubling it), unless
+ *   the take already has that doubled note; when off, a recorded doubled bass
+ *   is dropped again.
+ * @param {{ chords?: Array<object>, jam?: Array<object> }} [take]
+ * @returns {Array<object>}
+ */
+export function playableNotes(take = globals.recording.take) {
+    const chords = take.chords || []
+    const jam = take.jam || []
+    const bassKeys = new Set()
+    const chordKeys = new Set()
+    for (const note of chords) {
+        if (note.role === 'bass')
+            bassKeys.add(noteKey(note))
+        else
+            chordKeys.add(noteKey(note))
+    }
+
+    const out = []
+    for (const note of jam)
+        out.push({ ...note, toneType: 'jam' })
+    for (const note of chords) {
+        if (note.role === 'bass') {
+            if (globals.playChordOnly)
+                continue
+            out.push({ ...note, toneType: 'bass' })
+            if (globals.playChordBass && !chordKeys.has(noteKey(note)))
+                out.push({ ...note, toneType: 'chord' })
+        }
+        else {
+            if (globals.playBassOnly)
+                continue
+            // A chord note that duplicates a recorded bass note is the doubled
+            // bass, so it only sounds while that option is on.
+            if (!globals.playChordBass && bassKeys.has(noteKey(note)))
+                continue
+            out.push({ ...note, toneType: 'chord' })
+        }
+    }
+    return out
+}
+
+/**
+ * @param {Array<object>} list
+ * @param {number} positionSec
+ * @returns {Iterable<object>} notes whose span contains the position
+ */
+function notesSpanningOf(list, positionSec) {
+    const rec = globals.recording
+    const spt = secondsPerTick(rec.bpm, rec.ppq)
+    return list.filter(note => {
+        const startSec = ticksToSeconds(note.startTick, spt)
+        const endSec = ticksToSeconds(note.startTick + note.durationTicks, spt)
+        return positionSec >= startSec && positionSec < endSec
+    })
+}
+
+/**
  * @param {typeof globals.recording.take} take
  * @param {number} positionSec
  * @returns {Iterable<object>} notes whose span contains the position
  */
 function notesSpanning(take, positionSec) {
-    const rec = globals.recording
-    const spt = secondsPerTick(rec.bpm, rec.ppq)
-    return [...take.chords, ...take.jam].filter(note => {
-        const startSec = ticksToSeconds(note.startTick, spt)
-        const endSec = ticksToSeconds(note.startTick + note.durationTicks, spt)
-        return positionSec >= startSec && positionSec < endSec
-    })
+    return notesSpanningOf([...(take.chords || []), ...(take.jam || [])], positionSec)
 }
 
 /**
@@ -46,7 +113,7 @@ function notesSpanning(take, positionSec) {
  */
 export function soundingNotesAt(take, positionSec) {
     const active = new Set()
-    for (const note of notesSpanning(take, positionSec)) {
+    for (const note of notesSpanningOf(playableNotes(take), positionSec)) {
         if (typeof note.midi === 'number')
             active.add(note.midi)
     }
@@ -246,10 +313,7 @@ export function startPlayback(fromSec = 0) {
     const spt = secondsPerTick(rec.bpm, rec.ppq)
     const offset = Math.max(0, Math.min(fromSec, duration))
     const base = ctx.currentTime + 0.06  // small lead so the first notes are not late
-    const notes = [
-        ...rec.take.jam.map(note => ({ ...note, toneType: 'jam' })),
-        ...rec.take.chords.map(note => ({ ...note, toneType: 'chord' })),
-    ]
+    const notes = playableNotes(rec.take)
 
     for (const note of notes) {
         const startSec = ticksToSeconds(note.startTick, spt)

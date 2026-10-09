@@ -20,6 +20,8 @@ export const KEYBOARD_OCTAVE_MAX = 6
 export const KEYBOARD_FIT_OCTAVES_DEFAULT = 3
 export const BPM_MIN = 40
 export const BPM_MAX = 240
+export const FIXED_VELOCITY_MIN = 0.1
+export const FIXED_VELOCITY_MAX = 1
 
 /**
  * Clamp a stored octave count to the supported 2-6 range.
@@ -58,12 +60,25 @@ export function clampBpm(value) {
 }
 
 /**
+ * Clamp a stored fixed velocity to the supported 0.1-1 range.
+ * @param {*} value
+ * @returns {number|undefined}
+ */
+export function clampFixedVelocity(value) {
+    const n = Number(value)
+    if (!Number.isFinite(n))
+        return undefined
+    return Math.round(Math.min(FIXED_VELOCITY_MAX, Math.max(FIXED_VELOCITY_MIN, n)) * 100) / 100
+}
+
+/**
  * @typedef {Object} UiPrefs
  * @property {string} [keyboardHelpMode]
  * @property {boolean} [showKeyShortcuts]
  * @property {number} [keyboardOctaves]
  * @property {number} [keyboardFitOctaves]
  * @property {number} [bpm]
+ * @property {number} [fixedNoteVelocity]
  * @property {boolean} [metronomeEnabled]
  * @property {boolean} [showWelcomeDialog]
  * @property {boolean} [showFavouriteBinColumns]
@@ -195,6 +210,11 @@ export function readPrefs(storage = defaultStorage()) {
             if (bpm !== undefined)
                 prefs.bpm = bpm
         }
+        if (stored && typeof stored.fixedNoteVelocity === 'number') {
+            const velocity = clampFixedVelocity(stored.fixedNoteVelocity)
+            if (velocity !== undefined)
+                prefs.fixedNoteVelocity = velocity
+        }
         if (stored && typeof stored.metronomeEnabled === 'boolean')
             prefs.metronomeEnabled = stored.metronomeEnabled
         if (stored && typeof stored.showWelcomeDialog === 'boolean')
@@ -243,6 +263,7 @@ export function currentPrefs() {
         keyboardOctaves: globals.keyboardOctaves,
         keyboardFitOctaves: globals.keyboardFitOctaves,
         bpm: globals.recording.bpm,
+        fixedNoteVelocity: globals.fixedNoteVelocity,
         metronomeEnabled: globals.metronomeEnabled,
         showWelcomeDialog: globals.showWelcomeDialog,
         showFavouriteBinColumns: globals.showFavouriteBinColumns,
@@ -291,6 +312,8 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.keyboardFitOctaves = prefs.keyboardFitOctaves
     if (typeof prefs.bpm === 'number')
         globals.recording.bpm = prefs.bpm
+    if (typeof prefs.fixedNoteVelocity === 'number')
+        globals.fixedNoteVelocity = prefs.fixedNoteVelocity
     if (typeof prefs.metronomeEnabled === 'boolean')
         globals.metronomeEnabled = prefs.metronomeEnabled
     if (typeof prefs.showWelcomeDialog === 'boolean')
@@ -332,6 +355,7 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.keyboardOctaves,
         globals.keyboardFitOctaves,
         globals.recording.bpm,
+        globals.fixedNoteVelocity,
         globals.metronomeEnabled,
         globals.showWelcomeDialog,
         globals.showFavouriteBinColumns,

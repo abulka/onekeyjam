@@ -110,6 +110,7 @@ onMounted(loadFromTake)
       ref="panel"
       :timebase="panelTimebase"
       :tempo="bpm"
+      :octadj="-1"
       :editable="editable"
       :note-color="noteColor"
       :initial-bars="8"

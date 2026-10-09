@@ -29,10 +29,12 @@ function setHeaderPpq(midi, ppq) {
  * @param {import('@tonejs/midi').Midi} midi
  * @param {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number }>} notes
  * @param {string} name
+ * @param {number} channel MIDI channel, 0-based (0 = channel 1)
  */
-function notesToTrack(midi, notes, name) {
+function notesToTrack(midi, notes, name, channel) {
     const track = midi.addTrack()
     track.name = name
+    track.channel = channel
     for (const note of notes) {
         track.addNote({
             midi: note.midi,
@@ -53,9 +55,15 @@ export function recordingToMidi(take, bpm = 120, ppq = DEFAULT_PPQ) {
     const midi = new Midi()
     midi.header.setTempo(bpm)
     midi.header.timeSignatures.push({ ticks: 0, timeSignature: [4, 4] })
-    // Track 1 is the solo (jam) part, track 2 is the chord part.
-    notesToTrack(midi, take.jam || [], 'Solo')
-    notesToTrack(midi, take.chords || [], 'Chords')
+    // Three tracks, matching the live channel layout: Solo (jam) on channel 1,
+    // the chord voicing on channel 2 and the bass on channel 3, so a DAW hears
+    // the bass with its own instrument instead of as part of the piano.
+    const chords = take.chords || []
+    const chordVoicing = chords.filter(note => note.role !== 'bass')
+    const bass = chords.filter(note => note.role === 'bass')
+    notesToTrack(midi, take.jam || [], 'Solo', 0)
+    notesToTrack(midi, chordVoicing, 'Chords', 1)
+    notesToTrack(midi, bass, 'Bass', 2)
     setHeaderPpq(midi, ppq)
     return midi.toArray()
 }

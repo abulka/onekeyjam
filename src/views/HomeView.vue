@@ -1,7 +1,7 @@
 <script setup>
 import { reAllocateChords, reAllocateScales, fillScalesFromKeySignature } from '../../src/lib/boot-project'
 import { resetTranspositionsEtc } from '../../src/lib/resetState'
-import { captureTakeFromBackground } from '@/lib/midi/recorder.js'
+import { captureTakeFromBackground, clearFlashback } from '@/lib/midi/recorder.js'
 import { globals } from '@/lib/globals.js'
 
 import Jammer from '@/components/JammerView.vue'
@@ -26,6 +26,16 @@ function flashbackCapture() {
       : 'Nothing has been played in the flashback window yet.'
   $('body').toast({ message, displayTime: 2500, class: 'brown' })
 }
+
+// Discard the hidden Flashback Capture buffer without touching the current
+// take. Handy when debugging what the buffer is holding.
+function clearFlashbackBuffer() {
+  const result = clearFlashback()
+  const message = result.count > 0
+    ? `Cleared ${result.count} buffered note${result.count === 1 ? '' : 's'} from Flashback Capture.`
+    : 'Flashback Capture buffer is already empty.'
+  $('body').toast({ message, displayTime: 2500, class: 'brown' })
+}
 </script>
 
 <template>
@@ -44,6 +54,11 @@ function flashbackCapture() {
           :class="{ disabled: globals.recording.isRecording || !globals.recording.background.enabled || !globals.recording.background.available }"
           @click="flashbackCapture()"
         >Flashback Capture</a>
+        <a
+          class="item"
+          :class="{ disabled: !globals.recording.background.enabled || !globals.recording.background.available }"
+          @click="clearFlashbackBuffer()"
+        >Clear Flashback Capture</a>
       </template>
     </PageMenubar>
 

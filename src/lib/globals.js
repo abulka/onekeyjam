@@ -132,6 +132,10 @@ export const globals = reactive({
     playBassOnly: false,  // play bass note only
     playChordOnly: false,  // play chord channel only
     delayBassToChord: 0,  // delay bass note to chord, 0.5 is not a bad value
+    // Velocity used for notes that do not come from an external MIDI keyboard:
+    // the on-screen/computer keyboard, the pattern sequencer and auditions.
+    // Recording stores this same value, so a take plays back as it sounded.
+    fixedNoteVelocity: 0.5,
     allocateFavourites: true,  // allocate favourites when allocating project.chords -> globals.chordTriggerMap
     scaleFilteringModificationSticky: true,  // whether e.g. 'scale2' is preserved during chord changes
     scaleFilteringEnabled: true,

@@ -4,6 +4,8 @@ import * as Tonal from "@tonaljs/tonal";
 import { globals } from '@/lib/globals.js'
 import { detectChordsBeingPlayed } from "../../src/lib/detectChordsBeingPlayed";
 import { stringify } from '../../src/lib/prettyjson.js'
+import { bassNoteOctave } from '@/lib/settings.js'
+import { describeTriggerChord } from '@/lib/describeTriggerChord.js'
 import ButtonAudition from './ButtonAudition.vue'
 
 const props = defineProps([
@@ -56,6 +58,17 @@ const debug = computed({
     get: () => false
 })
 
+// Exact description of what the current trigger key actually sounds, for
+// debugging. Reads the live trigger and the play flags so it stays in step.
+const currentTrigger = computed(() => {
+    void globals.currentChordTriggerNote
+    void globals.playChordOnly
+    void globals.playBassOnly
+    void globals.playChordBass
+    void globals.chordTriggerMap
+    return describeTriggerChord(globals.currentChordTriggerNote)
+})
+
 </script>
 
 <template>
@@ -69,8 +82,11 @@ const debug = computed({
         <span>Chord Notes</span>
         <input type="text" v-model.lazy="detectedChordNotes" :key="detectedChordNotes" placeholder="notes e.g. C3 E3 G3" class="ml-1 w-60" />
         <span class="ml-2">Bass</span>
-        <input type="text" v-model.lazy="detectedBassNote" :key="detectedBassNote" placeholder="note e.g. C"
-            class="ml-1 w-10" />
+        <span class="bass-field">
+            <input type="text" v-model.lazy="detectedBassNote" :key="detectedBassNote" placeholder="note e.g. C"
+                class="ml-1 w-10" />
+            <span class="bass-octave" title="The bass octave is fixed at 2"> {{ bassNoteOctave }}</span>
+        </span>
 
         <!-- arguably this should clear the chord picker too -->
         <button @click="globals.clearCurrentChordBeingJammed()" class="ui tiny button ml-6!">Clear</button>
@@ -82,6 +98,35 @@ const debug = computed({
         <span class="mr-4">Reset notes to the default voicing of chord picker chord <code class="ml-1">{{ chordPickerChordName }}</code></span>
         <button @click="resetToDefaultChordPickerChord()" class="ui tiny button">Reset</button>
     </div>
+
+    <details class="debug-group" v-if="globals.isProjectLoaded">
+        <summary>Debug: notes this trigger plays</summary>
+        <div class="trigger-notes">
+            <span class="trigger-notes-label">Current trigger</span>
+            <template v-if="currentTrigger.found">
+                <code class="trigger-chip">{{ currentTrigger.trigger }}</code>
+                <code class="trigger-chip">{{ currentTrigger.chord }}</code>
+                <span class="trigger-notes-label">stored</span>
+                <code v-for="note in currentTrigger.storedNotes" :key="'s-' + note.name"
+                    class="trigger-sound trigger-sound-chord">{{ note.name }}
+                    <small>{{ note.midi ?? '?' }}</small></code>
+                <span class="trigger-notes-label">bass</span>
+                <code class="trigger-sound trigger-sound-bass">{{ currentTrigger.bassNote }}
+                    <small>{{ currentTrigger.storedBassMidi ?? '?' }}</small></code>
+                <span v-if="currentTrigger.skippedBassDuplicate" class="trigger-skip"
+                    title="A chord note equal to the bass note is skipped on the chord channel">(bass note skipped on chord channel)</span>
+                <span class="trigger-notes-label">plays</span>
+                <code v-for="sound in currentTrigger.sounds" :key="sound.midi + '-' + sound.channel"
+                    class="trigger-sound" :class="'trigger-sound-' + sound.role">{{ sound.name }}
+                    <small>{{ sound.midi }} · ch{{ sound.channel }}</small></code>
+                <code v-if="currentTrigger.sounds.length === 0">(nothing)</code>
+            </template>
+            <template v-else>
+                <code class="trigger-chip">{{ currentTrigger.trigger || '(none)' }}</code>
+                <span class="trigger-notes-label">no chord on this trigger</span>
+            </template>
+        </div>
+    </details>
 
     <div class="row" v-if="debug">
         <pre>{{ stringify(globals.currentChordBeingJammed) }}</pre>
@@ -98,5 +143,77 @@ const debug = computed({
 .detectedBass {
     color: brown;
     font-size: x-large;
+}
+
+/* The bass octave is fixed, so show it as a suffix label after the input. */
+.bass-field {
+    display: inline-flex;
+    align-items: center;
+}
+
+.bass-octave {
+    margin-left: 1px;
+    padding: 0 3px;
+    font-weight: 700;
+    color: #555;
+    background: #eee;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.trigger-notes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35em;
+    font-size: 0.85rem;
+    color: #4a3d2a;
+}
+
+.debug-group {
+    margin-top: 0.6em;
+}
+
+.debug-group > summary {
+    cursor: pointer;
+    color: #8a7c66;
+    font-size: 0.85rem;
+}
+
+.debug-group .trigger-notes {
+    margin-top: 0.35em;
+}
+
+.trigger-notes-label {
+    color: #8a7c66;
+}
+
+.trigger-chip {
+    padding: 0 4px;
+    background: #efe6d6;
+    border-radius: 3px;
+}
+
+.trigger-skip {
+    color: #9a6a2a;
+    font-style: italic;
+}
+
+.trigger-sound {
+    padding: 0 4px;
+    border-radius: 3px;
+    background: #e8e8e8;
+}
+
+.trigger-sound small {
+    opacity: 0.7;
+}
+
+.trigger-sound-bass {
+    background: #d9e6f7;
+}
+
+.trigger-sound-chord {
+    background: #f7e0d9;
 }
 </style>

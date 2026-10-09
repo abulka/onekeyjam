@@ -115,8 +115,8 @@ onUnmounted(() => {
     <p>Options:</p>
 
     <label class="checkboxLabel" for="playChordBassCheckbox"
-      title="Play bass note of chord on channel 2, as well as on the dedicated bass channel 3. Leave off for 'cleaner' chords.">
-      Play Bass Note of Chords Channel
+      title="Also play the bass note on the chord channel (channel 2), doubling it with the dedicated bass channel 3. Leave off for 'cleaner' chords.">
+      Also play (double) the bass note in the chord channel
       <input type="checkbox" id="playChordBassCheckbox" v-model="globals.playChordBass" />
     </label>
 

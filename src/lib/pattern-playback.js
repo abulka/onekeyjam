@@ -103,7 +103,7 @@ function capturePatternRowToBackground(row, startSec, endSec) {
         const playedName = typeof expansion.playedMidi === 'number'
             ? TonalNote.fromMidi(expansion.playedMidi)
             : undefined
-        recordBackgroundNoteOn('chords', name, 0.5, playedName ?? undefined, onAt)
+        recordBackgroundNoteOn('chords', name, globals.fixedNoteVelocity, playedName ?? undefined, onAt, expansion.role)
         recordBackgroundNoteOff('chords', name, Math.max(offAt, onAt))
     }
 }
@@ -135,7 +135,7 @@ export function patternOnNote(options) {
         // chord-trigger switch toggled) during the preload window.
         const triggerNote = indexToNote(options.n - 60, globals.keyboard.lhTriggerOctave)
         const event = {
-            note: new Note(triggerNote, { attack: 0.5 }),
+            note: new Note(triggerNote, { attack: globals.fixedNoteVelocity }),
             duration: options.g - options.t,
             when: options.t,
         }

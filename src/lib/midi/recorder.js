@@ -37,7 +37,7 @@ function defaultStorage() {
 
 /**
  * @param {unknown} notes
- * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number }>}
+ * @returns {Array<{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number, role?: string }>}
  */
 function sanitizeNotes(notes) {
     if (!Array.isArray(notes))
@@ -49,7 +49,7 @@ function sanitizeNotes(notes) {
             && typeof note.durationTicks === 'number'
             && typeof note.velocity === 'number')
         .map(note => {
-            /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number }} */
+            /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number, role?: string }} */
             const clean = {
                 midi: note.midi,
                 startTick: note.startTick,
@@ -58,6 +58,8 @@ function sanitizeNotes(notes) {
             }
             if (typeof note.playedMidi === 'number')
                 clean.playedMidi = note.playedMidi
+            if (typeof note.role === 'string')
+                clean.role = note.role
             return clean
         })
 }
@@ -181,18 +183,18 @@ function broadcast(name) {
  */
 function normaliseVelocity(velocity) {
     if (typeof velocity !== 'number' || Number.isNaN(velocity))
-        return DEFAULT_VELOCITY
+        return typeof globals.fixedNoteVelocity === 'number' ? globals.fixedNoteVelocity : DEFAULT_VELOCITY
     return Math.min(1, Math.max(0, velocity))
 }
 
 /**
  * @param {'chords'|'jam'} track
  * @param {string} noteName
- * @param {{ midi: number, velocity: number, startTick: number, playedMidi?: number }} entry
+ * @param {{ midi: number, velocity: number, startTick: number, playedMidi?: number, role?: string }} entry
  * @param {number} endTick
  */
 function commit(track, noteName, entry, endTick) {
-    /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number }} */
+    /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number, role?: string }} */
     const note = {
         midi: entry.midi,
         startTick: entry.startTick,
@@ -201,6 +203,8 @@ function commit(track, noteName, entry, endTick) {
     }
     if (typeof entry.playedMidi === 'number')
         note.playedMidi = entry.playedMidi
+    if (typeof entry.role === 'string')
+        note.role = entry.role
     globals.recording.take[track].push(note)
 }
 
@@ -277,6 +281,18 @@ export function clearTake() {
 }
 
 /**
+ * Clear only the hidden background buffer, leaving the current take alone.
+ * Exposed for the "Clear Flashback" action, which lets the user inspect what
+ * the buffer holds without losing a take.
+ * @returns {{ count: number, remaining: number }} `count` is how many events were cleared
+ */
+export function clearFlashback() {
+    const before = globals.recording.background.noteCount || 0
+    clearBackgroundCapture()
+    return { count: before, remaining: globals.recording.background.noteCount || 0 }
+}
+
+/**
  * Recover the last few minutes of playing from the hidden background buffer and
  * make it the current take. Returns a small result for the UI.
  *
@@ -334,14 +350,16 @@ export function commitTakeEdit() {
  * @param {number} [velocity]
  * @param {number} [now]
  * @param {string} [playedNote] the key that was pressed, when it differs from the sounding note
+ * @param {string} [role] 'chord' | 'bass' | 'jam', so playback can pick the right instrument
  */
-function recordNoteOn(track, noteName, velocity, now, playedNote) {
+function recordNoteOn(track, noteName, velocity, now, playedNote, role) {
     const rec = globals.recording
     if (rec.suppressCapture)
         return
     // Always feed the hidden background buffer, whether or not a take is being
-    // recorded, so a forgotten performance can be recovered later.
-    recordBackgroundNoteOn(track, noteName, velocity, playedNote)
+    // recorded, so a forgotten performance can be recovered later. The buffer
+    // keeps its own monotonic clock, so the live `now` is not forwarded.
+    recordBackgroundNoteOn(track, noteName, velocity, playedNote, undefined, role)
     if (!rec.isRecording)
         return
     const midi = noteNameToMidi(noteName)
@@ -359,6 +377,7 @@ function recordNoteOn(track, noteName, velocity, now, playedNote) {
         velocity: normaliseVelocity(velocity),
         startTick,
         playedMidi,
+        role,
     }
 }
 
@@ -385,10 +404,10 @@ function recordNoteOff(track, noteName, now) {
 /**
  * @param {string} noteName note that sounds
  * @param {number} [velocity]
- * @param {{ now?: number, playedNote?: string }} [options]
+ * @param {{ now?: number, playedNote?: string, role?: string }} [options]
  */
-export function recordChordNoteOn(noteName, velocity, { now, playedNote } = {}) {
-    recordNoteOn('chords', noteName, velocity, now, playedNote)
+export function recordChordNoteOn(noteName, velocity, { now, playedNote, role } = {}) {
+    recordNoteOn('chords', noteName, velocity, now, playedNote, role)
 }
 
 /**
@@ -405,7 +424,7 @@ export function recordChordNoteOff(noteName, { now } = {}) {
  * @param {{ now?: number, playedNote?: string }} [options]
  */
 export function recordJamNoteOn(noteName, velocity, { now, playedNote } = {}) {
-    recordNoteOn('jam', noteName, velocity, now, playedNote)
+    recordNoteOn('jam', noteName, velocity, now, playedNote, 'jam')
 }
 
 /**

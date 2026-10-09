@@ -60,8 +60,9 @@ export function playChord(singleNote, options) {
         
     // Play bass note (channel 3)
     // and record the bass note played in globals.pendingChordBassNoteOffs[singleNote]
-    if (!globals.playChordOnly && globals.chordTriggerMap[singleNote].bassNote) {
-        let noteName = globals.chordTriggerMap[singleNote].bassNote
+    const config = globals.chordTriggerMap[singleNote]
+    if (!globals.playChordOnly && config.bassNote) {
+        let noteName = config.bassNote
         // console.log('playChord() playing bass note', noteName, 'triggered by', singleNote, options);
         playChordNote(noteName, 'bass', options, globals.channel3, singleNote, globals.pendingChordBassNoteOffs)
     }
@@ -70,16 +71,18 @@ export function playChord(singleNote, options) {
     // and record the notes played in globals.pendingChordNoteOffs[singleNote]
     if (!(singleNote in globals.pendingChordNoteOffs))
         globals.pendingChordNoteOffs[singleNote] = []
-    for (let noteName of globals.chordTriggerMap[singleNote].chordNotes) {
-        if (globals.playBassOnly)
-            continue
-        // console.log('playChord() playing CHORD note', noteName, 'triggered by', singleNote, options);
-
-        // Skip bass note of chord itself - cleaner sounding
-        if (!globals.playChordBass && noteName === globals.chordTriggerMap[singleNote].bassNote) {
-            continue
+    if (!globals.playBassOnly) {
+        // A chord note that is exactly the bass note is left out of the chord
+        // channel, so the bass is not doubled by the voicing...
+        const chordChannelNotes = config.chordNotes.filter(name => name !== config.bassNote)
+        // ...unless the "double the bass" option is on, in which case the bass
+        // note is also sounded on the chord channel.
+        if (globals.playChordBass && config.bassNote)
+            chordChannelNotes.push(config.bassNote)
+        for (let noteName of chordChannelNotes) {
+            // console.log('playChord() playing CHORD note', noteName, 'triggered by', singleNote, options);
+            playChordNote(noteName, 'chord', options, globals.channel2, singleNote, globals.pendingChordNoteOffs);
         }
-        playChordNote(noteName, 'chord', options, globals.channel2, singleNote, globals.pendingChordNoteOffs);
     }
 
 }
@@ -176,7 +179,7 @@ export function playChordNote(noteName, toneType, options, channel, triggerNote,
     // background buffer. The trigger key is remembered separately so playback
     // can show the keys played.
     if (triggerNote !== undefined)
-        recordChordNoteOn(noteName, options.originNote && options.originNote.attack, { playedNote: triggerNote })
+        recordChordNoteOn(noteName, options.originNote && options.originNote.attack, { playedNote: triggerNote, role: toneType })
 
     if (globals.GM)
         playGmNote(noteName, noteOffInfo, {

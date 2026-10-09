@@ -61,8 +61,10 @@ export function voiceChordSequence(entries, options = {}) {
 }
 
 /**
- * Build every inversion at one octave below, level, and one octave above.
- * Order prefers root position and the base octave so ties are stable.
+ * Build every inversion in the base octave. Chords entered as text must live in
+ * the same register as chords added through the Chord Picker, so unlike the
+ * earlier version this never shifts a chord a whole octave up or down; only the
+ * inversion changes. Order prefers root position so ties are stable.
  * @param {string} chordSymbol
  * @param {number} baseOctave
  */
@@ -73,12 +75,10 @@ function buildCandidates(chordSymbol, baseOctave) {
     const numNotes = chordObj.notes.length
     const candidates = []
     for (let inversion = 0; inversion < numNotes; inversion++) {
-        for (const octaveShift of [0, -1, 1]) {
-            const notes = chordSymbolToNotesInversion(chordSymbol, inversion, baseOctave + octaveShift)
-            if (notes.length === 0)
-                continue
-            candidates.push({ chordNotes: notes, inversion, octaveShift })
-        }
+        const notes = chordSymbolToNotesInversion(chordSymbol, inversion, baseOctave)
+        if (notes.length === 0)
+            continue
+        candidates.push({ chordNotes: notes, inversion, octaveShift: 0 })
     }
     return candidates
 }

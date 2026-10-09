@@ -1,5 +1,6 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { Note as TonalNote } from '@tonaljs/tonal'
 import { fitRange, filterAllowedRows } from '@/lib/sequencer-notes.js'
 import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, sliderWheelSteps } from '@/lib/sequencer-view.js'
 
@@ -335,6 +336,8 @@ async function setNotes(notes) {
       continue
     if (typeof note.playedMidi === 'number')
       event.playedMidi = note.playedMidi
+    if (typeof note.role === 'string')
+      event.role = note.role
     if (note._track)
       event._track = note._track
   }
@@ -353,6 +356,8 @@ function getNotes() {
     const copy = { t: event.t, n: event.n, g: event.g, v: event.v, f: event.f }
     if (typeof event.playedMidi === 'number')
       copy.playedMidi = event.playedMidi
+    if (typeof event.role === 'string')
+      copy.role = event.role
     if (event._track)
       copy._track = event._track
     return copy
@@ -476,6 +481,9 @@ let changeTimer = null
 let stripDragging = false
 let lastAuditionRow = null
 let lastAuditionAt = 0
+// The most recently auditioned note, shown as a small readout so clicking a
+// note (or a piano key) reveals its name and MIDI number.
+const auditionNote = ref(null)
 // Loop markers as they were when a pointer gesture began, so a marker drag can
 // be told apart from a note edit and reported to the parent.
 let loopBeforeInteraction = null
@@ -576,6 +584,9 @@ function emitAudition(row) {
     return
   lastAuditionRow = row
   lastAuditionAt = now
+  const name = TonalNote.fromMidi(row)
+  if (name)
+    auditionNote.value = { midi: row, name }
   emit('audition', { midi: row })
 }
 
@@ -742,6 +753,9 @@ onUnmounted(() => {
           }">
         </div>
       </div>
+      <div v-if="auditionNote" class="audition-readout" aria-live="polite">
+        {{ auditionNote.name }} <small>({{ auditionNote.midi }})</small>
+      </div>
     </div>
 
     <div class="piano-roll-side" @wheel.capture="onSliderWheel">
@@ -798,6 +812,22 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
+}
+
+/* Debug readout: the name and MIDI number of the last clicked note/key. */
+.audition-readout {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #b9a98a;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 0.85rem;
+  color: #4a3d2a;
+  pointer-events: none;
+  z-index: 5;
 }
 
 .strip-key {

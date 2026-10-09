@@ -1096,7 +1096,7 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
         this.redrawYRuler=function(){
             if(this.yruler){
                 this.ctx.textAlign="right";
-                this.ctx.font=(this.steph/2)+"px 'sans-serif'";
+                this.ctx.font="bold "+Math.max(10,Math.min(14,Math.round(this.steph*0.7)))+"px 'sans-serif'";
                 this.ctx.fillStyle=this.colrulerbg;
                 this.ctx.fillRect(0,this.xruler,this.yruler,this.sheight);
                 this.ctx.fillStyle=this.colrulerborder;
@@ -1119,7 +1119,7 @@ customElements.define("webaudio-pianoroll", class Pianoroll extends HTMLElement 
         this.redrawKeyboard=function(){
             if(this.yruler){
                 this.ctx.textAlign="right";
-                this.ctx.font=(this.steph/2)+"px 'sans-serif'";
+                this.ctx.font="bold "+Math.max(10,Math.min(14,Math.round(this.steph*0.7)))+"px 'sans-serif'";
                 this.ctx.fillStyle=this.colortab.kbwh;
                 this.ctx.fillRect(1,this.xruler,this.yruler,this.sheight);
                 this.ctx.fillStyle=this.colortab.kbbk;

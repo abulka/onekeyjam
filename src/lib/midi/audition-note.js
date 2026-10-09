@@ -57,7 +57,7 @@ export function auditionMidiNote(midi, duration = 0.4) {
     ensureAudioReady()
     try {
         playGmNote(Note.fromMidi(midi), {}, {
-            velocity: 0.8,
+            velocity: globals.fixedNoteVelocity,
             toneType: 'jam',
             duration,
             when: audioContext.currentTime + 0.001,
@@ -133,7 +133,7 @@ export function auditionChord(notes, bass, highlightMidi, durationMs = 800) {
     stopAuditionChord()
 
     const originNote = /** @type {any} */ (Note.get('C20'))
-    originNote.attack = 0.5
+    originNote.attack = globals.fixedNoteVelocity
     const options = { originNote, duration: 0, when: 0 }
 
     const wasSuppressed = globals.recording.suppressCapture

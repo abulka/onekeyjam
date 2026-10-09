@@ -468,7 +468,7 @@ function _scaleFilterMouseDown(e) {
   let octave = '6'  // TODO should calculate this properly
   let noteName = e.target.innerText + octave
   let simulatedEvent = {
-    note: new Note(noteName, { attack: 0.5 })  // Note is from global webmidijs not tonaljs
+    note: new Note(noteName, { attack: globals.fixedNoteVelocity })  // Note is from global webmidijs not tonaljs
   }
   onNoteOn(simulatedEvent)
   onNoteOff(simulatedEvent)  // not needed, but just in case
@@ -476,14 +476,14 @@ function _scaleFilterMouseDown(e) {
 
 function chordMouseDown(e) {
   let simulatedEvent = {
-    note: new Note(e.target.innerText, { attack: 0.5 })
+    note: new Note(e.target.innerText, { attack: globals.fixedNoteVelocity })
   }
   onNoteOn(simulatedEvent)
 }
 
 function chordMouseUp(e) {
   let simulatedEvent = {
-    note: new Note(e.target.innerText, { attack: 0.5 })
+    note: new Note(e.target.innerText, { attack: globals.fixedNoteVelocity })
   }
   onNoteOff(simulatedEvent)
 }
@@ -515,7 +515,7 @@ function scaleFilterTableClick(event) {
 
   // change triggered chord
   let simulatedEvent = {
-    note: new Note(triggerNote, { attack: 0.5 })
+    note: new Note(triggerNote, { attack: globals.fixedNoteVelocity })
   }
   onNoteOn(simulatedEvent)
   onNoteOff(simulatedEvent)

@@ -43,7 +43,7 @@ function fakeTrigger(triggerNote, noteState = true) {
 
     // v2. way
     let simulatedEvent = {
-        note: new Note(triggerNote, { attack: 0.5 }),
+        note: new Note(triggerNote, { attack: globals.fixedNoteVelocity }),
         duration: 0,  // need duration 0 for note off to work
         when: 0,
     };

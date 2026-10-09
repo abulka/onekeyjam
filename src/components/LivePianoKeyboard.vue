@@ -198,7 +198,7 @@ function handleNote(state, keyboardIndex) {
   // sequencer piano strips) can follow along. Black modifier keys are excluded.
   if (!globals.isLhMetaKey(note)) {
     // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
-    document.broadcastEvent('live-note', { state, note: new Note(note, { attack: 0.5 }) })
+    document.broadcastEvent('live-note', { state, note: new Note(note, { attack: globals.fixedNoteVelocity }) })
   }
 
   if (state) {
@@ -206,7 +206,7 @@ function handleNote(state, keyboardIndex) {
     if (!isPianoMode() && isLhCsharp(keyboardIndex)) lhCsharpStuckDown = !lhCsharpStuckDown
     let simulatedEvent = {
       // Note is WebMidi's Note (imported from @/lib/webmidi.js), not Tonal's
-      note: new Note(note, { attack: 0.5 })
+      note: new Note(note, { attack: globals.fixedNoteVelocity })
     }
     onNoteOn(simulatedEvent)
     store.inc()   // just for fun
@@ -219,7 +219,7 @@ function handleNote(state, keyboardIndex) {
       return
     }
     let simulatedEvent = {
-      note: new Note(note, { attack: 0.5 })
+      note: new Note(note, { attack: globals.fixedNoteVelocity })
     }
     onNoteOff(simulatedEvent)
   }

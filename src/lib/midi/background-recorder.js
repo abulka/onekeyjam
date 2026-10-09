@@ -28,6 +28,7 @@ const MAX_EVENTS = 20000
  * @property {'chords'|'jam'} track
  * @property {number} midi
  * @property {number} [playedMidi]
+ * @property {string} [role]
  * @property {number} velocity
  * @property {number} startSec
  * @property {number|null} endSec  null while the note is still held
@@ -72,7 +73,7 @@ function heldKey(track, noteName) {
  */
 function normaliseVelocity(velocity) {
     if (typeof velocity !== 'number' || Number.isNaN(velocity))
-        return 0.8
+        return typeof globals.fixedNoteVelocity === 'number' ? globals.fixedNoteVelocity : 0.8
     return Math.min(1, Math.max(0, velocity))
 }
 
@@ -132,8 +133,9 @@ function publishSummary() {
  * @param {number} [velocity]
  * @param {string} [playedNote] the key that was pressed, when it differs
  * @param {number} [now]
+ * @param {string} [role] 'chord' | 'bass' | 'jam'
  */
-export function recordBackgroundNoteOn(track, noteName, velocity, playedNote, now) {
+export function recordBackgroundNoteOn(track, noteName, velocity, playedNote, now, role) {
     if (!backgroundEnabled())
         return
     const midi = Note.midi(noteName)
@@ -157,6 +159,8 @@ export function recordBackgroundNoteOn(track, noteName, velocity, playedNote, no
     const playedMidi = playedNote == null ? undefined : Note.midi(playedNote)
     if (playedMidi != null)
         event.playedMidi = playedMidi
+    if (typeof role === 'string')
+        event.role = role
 
     events.push(event)
     held.set(key, event)
@@ -198,6 +202,13 @@ export function clearBackgroundCapture() {
     held = new Map()
     publishSummary()
 }
+
+// A project load can change the chord voicings, the bass octaves and even the
+// keyboard trigger octave, so notes buffered before the switch no longer
+// describe anything playable. Drop them, so Flashback Capture cannot mix
+// another project's (often lower) notes into the current take.
+if (typeof document !== 'undefined')
+    document.addEventListener('project-loaded', clearBackgroundCapture)
 
 /**
  * Turn the buffered window into two-track take notes.
@@ -246,7 +257,7 @@ export function captureBufferedTake({ windowSec, now, bpm, ppq } = {}) {
     for (const { event, start, end } of windowed) {
         const startTick = secondsToTicks(start - originSec, spt)
         const endTick = secondsToTicks(end - originSec, spt)
-        /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number }} */
+        /** @type {{ midi: number, startTick: number, durationTicks: number, velocity: number, playedMidi?: number, role?: string }} */
         const note = {
             midi: event.midi,
             startTick,
@@ -255,6 +266,8 @@ export function captureBufferedTake({ windowSec, now, bpm, ppq } = {}) {
         }
         if (typeof event.playedMidi === 'number')
             note.playedMidi = event.playedMidi
+        if (typeof event.role === 'string')
+            note.role = event.role
         take[event.track].push(note)
     }
     return take
