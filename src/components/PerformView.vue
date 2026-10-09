@@ -1,7 +1,8 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from "vue";
+import { nextTick, onMounted, onUnmounted, ref } from "vue";
 import { keyDownListener, keyUpListener } from "@/lib/midi/livePianoKeyboardShortcuts"
 import { registerAccordion } from "@/lib/accordionState.js"
+import { consumeTakeSectionOpenRequest } from "@/lib/takeSectionRequest.js"
 import { globals } from '@/lib/globals.js'
 import PageMenubar from './PageMenubar.vue'
 import GrandSummary from './GrandSummary.vue'
@@ -31,16 +32,49 @@ function exportTake() {
   recorder.value?.exportTake()
 }
 
+/**
+ * The Take section's title element (the first `.title` in the accordion).
+ * @returns {Element|null}
+ */
+function takeSectionTitle() {
+  const accordion = document.querySelector('#big-accordion-perform')
+  if (!accordion)
+    return null
+  return Array.from(accordion.children).find(child => child.classList.contains('title')) || null
+}
+
+/** Bring the Take section into view. */
+function scrollToTakeSection() {
+  const title = takeSectionTitle()
+  if (title)
+    title.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+/**
+ * Open the Take accordion section (the first one). Safe to call when it is
+ * already open. `scrollToSection` also brings it into view, which the
+ * cross-page Flashback Capture needs because it sits below the keyboard.
+ * @param {boolean} [scrollToSection]
+ */
+function openTakeSection(scrollToSection = false) {
+  const accordion = document.querySelector('#big-accordion-perform')
+  if (!accordion || typeof $ !== 'function')
+    return
+  $(accordion).accordion('open', 0)
+  if (scrollToSection)
+    scrollToTakeSection()
+}
+
 function captureTake() {
   // The capture prompt and result live in the Take section, so make sure it
   // is open even when the action is triggered from this menu.
-  $('#big-accordion-perform').accordion('open', 0)
+  openTakeSection()
   recorder.value?.captureTake()
 }
 
 function clearFlashbackBuffer() {
   // The Take section owns the toast, so open it first.
-  $('#big-accordion-perform').accordion('open', 0)
+  openTakeSection()
   recorder.value?.clearFlashback()
 }
 
@@ -55,6 +89,17 @@ onMounted(() => {
   stopAccordion = registerAccordion(document.querySelector('#big-accordion-perform'), 'perform')
   $("#big-accordion-perform")  // For nested accordions you only need to initialize the parent accordion.
     .accordion({ exclusive: false })
+
+  // Flashback Capture on the Edit page navigates here and asks for the Take
+  // section to be open. The request is read only after the accordion above is
+  // initialised; the scroll waits a beat so the router's own scroll
+  // restoration and the open animation settle first.
+  if (consumeTakeSectionOpenRequest()) {
+    nextTick(() => {
+      openTakeSection()
+      setTimeout(scrollToTakeSection, 300)
+    })
+  }
 });
 
 onUnmounted(() => {

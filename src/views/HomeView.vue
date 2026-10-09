@@ -1,19 +1,34 @@
 <script setup>
+import { useRouter } from 'vue-router'
 import { reAllocateChords, reAllocateScales, fillScalesFromKeySignature } from '../../src/lib/boot-project'
 import { resetTranspositionsEtc } from '../../src/lib/resetState'
 import { captureTakeFromBackground, clearFlashback } from '@/lib/midi/recorder.js'
+import { requestTakeSectionOpen } from '@/lib/takeSectionRequest.js'
 import { globals } from '@/lib/globals.js'
 
 import Jammer from '@/components/JammerView.vue'
 import PageMenubar from '@/components/PageMenubar.vue'
 
-// Logic-style flashback capture, available from the Edit page too. The take it
-// recovers appears in the Perform view's Take panel.
+const router = useRouter()
+
+// Logic-style flashback capture, available from the Edit page too. On success
+// the recovered take is shown on the Perform page, so navigate there and ask
+// its Take section to open. The request is stored (not broadcast) because the
+// Perform view is lazy-loaded and may not have mounted yet.
 function flashbackCapture() {
   const result = captureTakeFromBackground()
   if (result.ok) {
+    requestTakeSectionOpen()
+    // The menu item lives in the Actions dropdown, which hides with a short
+    // animation when the item is chosen. Routing in the same click detaches the
+    // menu mid-transition, so let the hide finish first; the pending request
+    // above means the Take section still opens when Perform mounts.
+    const openDropdown = $('.ui.dropdown.active')
+    if (openDropdown.length && typeof openDropdown.dropdown === 'function')
+      openDropdown.dropdown('hide')
+    setTimeout(() => router.push('/perform'), 200)
     $('body').toast({
-      message: `Flashback Capture recovered ${result.noteCount} note${result.noteCount === 1 ? '' : 's'}. See the Perform view.`,
+      message: `Flashback Capture recovered ${result.noteCount} note${result.noteCount === 1 ? '' : 's'}.`,
       displayTime: 2500,
       class: 'teal',
     })
