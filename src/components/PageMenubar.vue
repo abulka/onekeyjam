@@ -5,6 +5,7 @@ import { newProject, loadUserProject, loadFeaturedProject, loadClassicProject, l
 import { saveProject, saveProjectAs, downloadProject, downloadMidiChords, downloadMidiChordsForChordMemoryTrigger, uploadProject } from '@/lib/projectSave.js'
 import { loadDemoProject } from '@/lib/demo-project.js'
 import { sequencerControl, sequenceOptions } from '@/lib/sequencer-control.js'
+import { toggleTopBarRecord, handleSpaceTransportKeyDown } from '@/lib/transport.js'
 import ComboProjectLibrary from '@/components/ComboProjectLibrary.vue'
 import FileImportMidiDialog from '@/components/FileImportMidiDialog.vue'
 
@@ -26,7 +27,11 @@ function onSequenceChange(event) {
 const sequencerButtonTitle = computed(() => {
   if (!sequencerControl.hasNotes)
     return 'This song has no pattern notes to play'
-  return sequencerControl.isPlaying ? 'Stop the pattern sequencer' : 'Play the pattern sequencer'
+  return sequencerControl.isPlaying ? 'Stop the pattern sequencer (Space)' : 'Play the pattern sequencer (Space)'
+})
+
+const recordButtonTitle = computed(() => {
+  return globals.recording.isRecording ? 'Stop recording (Space)' : 'Record a take (Space)'
 })
 
 const menuEl = ref(null)
@@ -184,6 +189,11 @@ function loadRandomProgressionProject() {
 }
 
 function keyDownListener(e) {
+  // Space drives the shared transport: stop recording, stop pattern or take
+  // playback, or start the pattern when it has notes. Typing in a field
+  // leaves Space alone, like the piano keyboard shortcuts.
+  if (handleSpaceTransportKeyDown(e))
+    return
   if (e.code === 'KeyN' && e.altKey && !e.metaKey && !e.repeat) {
     newProject()
   }
@@ -316,6 +326,10 @@ onUnmounted(() => {
             :class="{ playing: sequencerControl.isPlaying }" :title="sequencerButtonTitle" @click="sequencerControl.toggle()">
             <i :class="sequencerControl.isPlaying ? 'stop icon' : 'play icon'"></i>
           </button>
+          <button type="button" class="record-toggle" :class="{ recording: globals.recording.isRecording }"
+            :title="recordButtonTitle" :aria-label="recordButtonTitle" @click="toggleTopBarRecord()">
+            <i class="circle icon"></i>
+          </button>
         </div>
         <!-- Phone transport: keep the play button visible; the sequence
         picker moves into the More dropdown. -->
@@ -323,6 +337,10 @@ onUnmounted(() => {
           <button type="button" class="sequencer-play-toggle" :disabled="!sequencerControl.hasNotes"
             :class="{ playing: sequencerControl.isPlaying }" :title="sequencerButtonTitle" @click="sequencerControl.toggle()">
             <i :class="sequencerControl.isPlaying ? 'stop icon' : 'play icon'"></i>
+          </button>
+          <button type="button" class="record-toggle" :class="{ recording: globals.recording.isRecording }"
+            :title="recordButtonTitle" :aria-label="recordButtonTitle" @click="toggleTopBarRecord()">
+            <i class="circle icon"></i>
           </button>
         </div>
         <a class="item" title="Load a random song from the classic and rock collections"
@@ -412,6 +430,33 @@ onUnmounted(() => {
 }
 
 .sequencer-play-toggle .icon {
+  margin: 0;
+}
+
+.record-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 0.9rem;
+  line-height: 1;
+  color: #a13232;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid #a13232;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.record-toggle:hover {
+  background: #f3d8d8;
+}
+
+.record-toggle.recording {
+  color: #fff;
+  background: #db2828;
+  border-color: #a13232;
+}
+
+.record-toggle .icon {
   margin: 0;
 }
 
