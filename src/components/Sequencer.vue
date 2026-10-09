@@ -186,6 +186,24 @@ function sequencerResume(e) {
   sequencerPlay(e, 'current')
 }
 
+// A playhead seek from the panel: move the widget cursor, restarting the loop
+// from the new position when playing so the sound jumps live.
+function onPanelSeek({ tick } = {}) {
+  if (!panel.value)
+    return
+  const position = Math.max(0, Math.round(Number(tick) || 0))
+  if (isPlaying.value) {
+    panel.value.stop()
+    clearPatternTimers()
+    resetLiveCounts()
+    const info = startPatternPlayback(position)
+    markSequencerClock(info)
+  }
+  else {
+    panel.value.setCursor(position)
+  }
+}
+
 function sequencerStop() {
   panel.value.stop()
   isPlaying.value = false
@@ -657,6 +675,7 @@ defineExpose({ playIfHasNotes, stop: sequencerStop, resume: sequencerResume, isP
       @audition="onAudition"
       @change="onPanelChange"
       @loop-change="onLoopChange"
+      @seek="onPanelSeek"
     />
 
     <br>

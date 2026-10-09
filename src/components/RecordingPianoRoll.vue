@@ -5,6 +5,7 @@ import PianoRollPanel from './PianoRollPanel.vue'
 import { takeToPanelNotes, panelNotesToTakeNotes } from '@/lib/sequencer-notes.js'
 import { commitTakeEdit } from '@/lib/midi/recorder.js'
 import { auditionMidiNote } from '@/lib/midi/audition-note.js'
+import { seekPlayback } from '@/lib/midi/playback.js'
 
 // Shows the current recording in a piano roll and lets it be edited. One panel
 // with a track toggle: Chords and Solo are editable; Both is a merged preview.
@@ -33,6 +34,20 @@ function tracksForActive() {
 // per whole note at this tempo.
 function secondsToPanelTicks(seconds) {
   return seconds * panelTimebase.value * bpm.value / 240
+}
+
+function panelTicksToSeconds(ticks) {
+  const rate = panelTimebase.value * bpm.value
+  if (!Number.isFinite(rate) || rate <= 0)
+    return 0
+  return Math.max(0, ticks * 240 / rate)
+}
+
+// A playhead seek from the panel: move the take play head (rescheduling the
+// audio when playing, previewing the keys when stopped). The position watcher
+// below then moves the widget cursor to match.
+function onSeek({ tick } = {}) {
+  seekPlayback(panelTicksToSeconds(Number(tick) || 0))
 }
 
 function barEndTick() {
@@ -116,6 +131,7 @@ onMounted(loadFromTake)
       :initial-bars="8"
       @change="onChange"
       @audition="onAudition"
+      @seek="onSeek"
     />
   </div>
 </template>

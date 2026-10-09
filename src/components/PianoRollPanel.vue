@@ -3,6 +3,7 @@ import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Note as TonalNote } from '@tonaljs/tonal'
 import { fitRange, filterAllowedRows } from '@/lib/sequencer-notes.js'
 import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, sliderWheelSteps } from '@/lib/sequencer-view.js'
+import { tickToX, xToTick } from '@/lib/sequencer-playhead.js'
 
 // A reusable wrapper around the g200kg <webaudio-pianoroll> custom element.
 // It owns the widget, the zoom/scroll sliders and the plumbing for editing
@@ -54,7 +55,7 @@ const props = defineProps({
   newNoteTicks: { type: Number, default: 0 },
 })
 
-const emit = defineEmits(['change', 'audition', 'loop-change'])
+const emit = defineEmits(['change', 'audition', 'loop-change', 'seek'])
 
 const pianoroll = ref(null)
 const mainEl = ref(null)
@@ -160,6 +161,16 @@ function applyConfig() {
   el.allownotes = Array.isArray(props.allowedRows) ? props.allowedRows.join(',') : ''
   applyX()
   applyY()
+  hideVendorCursor()
+}
+
+// The custom playhead line replaces the vendor's small triangle marker, so
+// hide that image. The vendor only moves it (redrawMarker sets `left`), never
+// reshows it, so hiding once per config is enough.
+function hideVendorCursor() {
+  const el = pianoroll.value
+  if (el && el.cursorimg && el.cursorimg.style)
+    el.cursorimg.style.display = 'none'
 }
 
 watch([xrange, xoffset], applyX)
@@ -401,17 +412,32 @@ function play(audioContext, callback, fromTick) {
   if (!el)
     return null
   el.play(audioContext, callback, fromTick)
+  syncCursorFromWidget()
   return { startTime: el.time0, startTick: el.cursor, tick2time: el.tick2time }
 }
 
 function stop() {
-  if (pianoroll.value)
+  if (pianoroll.value) {
     pianoroll.value.stop()
+    syncCursorFromWidget()
+  }
 }
 
 function setCursor(tick) {
-  if (pianoroll.value)
-    pianoroll.value.cursor = tick
+  if (pianoroll.value) {
+    // Kept fractional on purpose: the display line interpolates between ticks
+    // while playing, so rounding here would make slow timebases look steppy.
+    const clamped = Math.max(0, Number(tick) || 0)
+    pianoroll.value.cursor = clamped
+    cursorTick.value = clamped
+  }
+}
+
+function getCursor() {
+  const el = pianoroll.value
+  if (el && Number.isFinite(Number(el.cursor)))
+    return Math.max(0, Number(el.cursor))
+  return cursorTick.value
 }
 
 function setLoop(startTick, endTick) {
@@ -472,7 +498,7 @@ async function fitToNotes(notes) {
   await fitWidth(notes)
 }
 
-defineExpose({ setNotes, getNotes, setMML, getMML, clear, play, stop, setCursor, setLoop, getLoop, fitToNotes, fitWidth, fitHeight })
+defineExpose({ setNotes, getNotes, setMML, getMML, clear, play, stop, setCursor, getCursor, setLoop, getLoop, fitToNotes, fitWidth, fitHeight })
 
 // ── Audition, strip highlighting and change detection ─────────────────────
 
@@ -563,6 +589,184 @@ const rowLabelRects = computed(() => {
   return rects
 })
 
+// ── Playhead line and drag-to-seek ─────────────────────────────────────────
+// The vendor widget draws the playhead only as a small triangle at the top.
+// This overlay adds the full-height vertical line other music tools show and
+// makes the position draggable, including click-to-seek on the top ruler.
+const PLAYHEAD_GRAB_PX = 8
+
+// The widget's cursor in ticks. Kept in step with the vendor element by the
+// frame loop below, so the line tracks playback without extra wiring.
+const cursorTick = ref(0)
+// While a seek drag is in progress, the preview position under the pointer.
+// The committed widget cursor only moves on release, so playback does not
+// fight the drag mid-gesture.
+const seekPreviewTick = ref(null)
+const seeking = ref(false)
+let playheadRafId = null
+
+function playheadGeometry() {
+  const geo = rollGeometry()
+  if (!geo)
+    return null
+  const tb = finite(props.timebase, 1920)
+  const xrangeTicks = Math.max(tb, Number(xrange.value) * tb)
+  const xoffsetTicks = Number(xoffset.value) * tb
+  if (!Number.isFinite(xrangeTicks) || xrangeTicks <= 0 || !Number.isFinite(xoffsetTicks))
+    return null
+  return {
+    xoffsetTicks,
+    xrangeTicks,
+    swidth: geo.swidth,
+    yruler: geo.yruler,
+    kbwidth: geo.kbwidth,
+    xruler: geo.xruler,
+    sheight: geo.sheight,
+  }
+}
+
+// The line position for the current (or preview) tick. Depends on the scroll,
+// zoom and width refs so it re-renders when the view moves, and on the cursor
+// refs so it follows playback and drags.
+const playheadStyle = computed(() => {
+  // Touch the reactive view state so the line moves with zoom and scroll.
+  const _bars = xrange.value
+  const _offset = xoffset.value
+  const _width = computedWidth.value
+  const _tb = props.timebase
+  void _bars
+  void _offset
+  void _width
+  void _tb
+  const tick = seeking.value && seekPreviewTick.value != null ? seekPreviewTick.value : cursorTick.value
+  const geo = playheadGeometry()
+  if (!geo)
+    return null
+  const x = tickToX(tick, geo)
+  const left = geo.yruler + geo.kbwidth
+  if (!Number.isFinite(x) || x < left - 1 || x > left + geo.swidth + 1)
+    return null
+  return {
+    left: x,
+    top: geo.xruler,
+    height: geo.sheight,
+    tick,
+  }
+})
+
+function syncCursorFromWidget() {
+  const el = pianoroll.value
+  if (!el || !Number.isFinite(Number(el.cursor)))
+    return
+  // No rounding: the vendor interpolates the cursor from the audio clock, and
+  // the overlay positions the line fractionally. Rounding to whole ticks is
+  // what made the pattern roll (timebase 16, about 8 ticks a second) jump in
+  // visible steps instead of sweeping smoothly.
+  const tick = Math.max(0, Number(el.cursor))
+  if (tick !== cursorTick.value)
+    cursorTick.value = tick
+}
+
+function startPlayheadLoop() {
+  if (playheadRafId != null || typeof requestAnimationFrame !== 'function')
+    return
+  const frame = () => {
+    if (!seeking.value)
+      syncCursorFromWidget()
+    playheadRafId = requestAnimationFrame(frame)
+  }
+  playheadRafId = requestAnimationFrame(frame)
+}
+
+function stopPlayheadLoop() {
+  if (playheadRafId != null && typeof cancelAnimationFrame === 'function')
+    cancelAnimationFrame(playheadRafId)
+  playheadRafId = null
+}
+
+// Full hit test against the widget canvas (the row helper above only reports
+// piano-strip and note hits). Returns the vendor hit plus the pixel position.
+function hitTestAt(clientX, clientY) {
+  const el = pianoroll.value
+  if (!el || !el.canvas || typeof el.hitTest !== 'function')
+    return null
+  const rect = el.canvas.getBoundingClientRect()
+  const pos = { x: clientX - rect.left, y: clientY - rect.top }
+  const hit = el.hitTest(pos)
+  if (!hit)
+    return null
+  return { hit, x: pos.x, y: pos.y, rect }
+}
+
+function playheadXNow() {
+  const geo = playheadGeometry()
+  if (!geo)
+    return null
+  return tickToX(cursorTick.value, geo)
+}
+
+function tickForClientX(clientX) {
+  const el = pianoroll.value
+  if (!el || !el.canvas)
+    return null
+  const rect = el.canvas.getBoundingClientRect()
+  const geo = playheadGeometry()
+  if (!geo)
+    return null
+  return xToTick(clientX - rect.left, geo)
+}
+
+// True when the pointer should start a seek: a click on the top ruler, or a
+// grab very close to the playhead line over empty grid space. Note hits keep
+// priority so dragging notes that happen to sit under the line still edits.
+function shouldSeek(clientX, clientY) {
+  const found = hitTestAt(clientX, clientY)
+  if (!found)
+    return false
+  if (found.hit.m === 'x')
+    return true
+  if (found.hit.m === 'y' || found.hit.m === 'm')
+    return false
+  if (found.hit.m === 'n' || found.hit.m === 'N' || found.hit.m === 'B' || found.hit.m === 'E')
+    return false
+  const lineX = playheadXNow()
+  if (lineX == null || !Number.isFinite(found.x))
+    return false
+  return Math.abs(found.x - lineX) <= PLAYHEAD_GRAB_PX
+}
+
+function beginSeek(clientX) {
+  const tick = tickForClientX(clientX)
+  if (tick == null)
+    return false
+  seeking.value = true
+  seekPreviewTick.value = tick
+  return true
+}
+
+function moveSeek(clientX) {
+  const tick = tickForClientX(clientX)
+  if (tick == null)
+    return
+  seekPreviewTick.value = tick
+}
+
+function commitSeek() {
+  const tick = seekPreviewTick.value != null ? seekPreviewTick.value : cursorTick.value
+  const clamped = Math.max(0, Math.round(Number(tick) || 0))
+  seeking.value = false
+  seekPreviewTick.value = null
+  if (pianoroll.value)
+    pianoroll.value.cursor = clamped
+  cursorTick.value = clamped
+  emit('seek', { tick: clamped })
+}
+
+function cancelSeek() {
+  seeking.value = false
+  seekPreviewTick.value = null
+}
+
 function onLiveNote(event) {
   const midi = event && event.detail && event.detail.note ? event.detail.note.number : undefined
   if (typeof midi !== 'number')
@@ -609,7 +813,38 @@ function auditionRowAt(event) {
   return null
 }
 
-function startInteraction(event) {
+function startSeekFromPoint(clientX, clientY, sourceEvent) {
+  if (!Number.isFinite(clientX) || !Number.isFinite(clientY))
+    return false
+  // Loop-marker handles sit above the ruler: leave those drags to the widget
+  // so fitting the loop by hand keeps working.
+  const target = sourceEvent && sourceEvent.target
+  if (target && (target.id === 'wac-markstart' || target.id === 'wac-markend' || target.id === 'wac-menu'))
+    return false
+  if (!shouldSeek(clientX, clientY))
+    return false
+  if (!beginSeek(clientX))
+    return false
+  loopBeforeInteraction = getLoop()
+  if (sourceEvent && typeof sourceEvent.stopPropagation === 'function')
+    sourceEvent.stopPropagation()
+  if (sourceEvent && typeof sourceEvent.preventDefault === 'function') {
+    try {
+      sourceEvent.preventDefault()
+    }
+    catch (error) {
+      // A passive touch listener may refuse; the seek still works.
+    }
+  }
+  return true
+}
+
+function startInteraction(event, sourceEvent) {
+  const source = sourceEvent || event
+  if (event && Number.isFinite(event.clientX) && Number.isFinite(event.clientY)) {
+    if (startSeekFromPoint(event.clientX, event.clientY, source))
+      return
+  }
   loopBeforeInteraction = getLoop()
   const found = auditionRowAt(event)
   if (found) {
@@ -637,13 +872,18 @@ function onMouseDownCapture(event) {
 function onTouchStartCapture(event) {
   const touch = event.touches && event.touches[0]
   if (touch)
-    startInteraction(touch)
+    startInteraction(touch, event)
   else
     interacting = true
 }
 
 // Dragging along the strip plays each key it passes over.
 function onPointerMove(event) {
+  if (seeking.value) {
+    if (Number.isFinite(event.clientX))
+      moveSeek(event.clientX)
+    return
+  }
   if (!stripDragging)
     return
   const found = auditionRowAt(event)
@@ -654,6 +894,14 @@ function onPointerMove(event) {
 }
 
 function onPointerUp() {
+  if (seeking.value) {
+    stripDragging = false
+    dragRow.value = null
+    loopBeforeInteraction = null
+    interacting = false
+    commitSeek()
+    return
+  }
   stripDragging = false
   dragRow.value = null
   const loopSnapshot = loopBeforeInteraction
@@ -680,6 +928,34 @@ function onPointerUp() {
   }, 0)
 }
 
+// Touch drags report through touchmove rather than pointermove on some
+// browsers, so a seek started by touch needs its own move handler.
+function onTouchMove(event) {
+  if (!seeking.value)
+    return
+  const touch = event.touches && event.touches[0]
+  if (touch && Number.isFinite(touch.clientX)) {
+    moveSeek(touch.clientX)
+    if (typeof event.preventDefault === 'function') {
+      try {
+        event.preventDefault()
+      }
+      catch (error) {
+        // A passive listener may refuse; the preview still updates.
+      }
+    }
+  }
+}
+
+function onPointerCancel() {
+  if (seeking.value)
+    cancelSeek()
+  stripDragging = false
+  dragRow.value = null
+  loopBeforeInteraction = null
+  interacting = false
+}
+
 watch([yoffset, yrange, xoffset, xrange, computedWidth], () => nextTick(updateStripGeometry))
 
 let resizeObserver = null
@@ -687,6 +963,9 @@ let resizeObserver = null
 onMounted(() => {
   applyConfig()
   updateStripGeometry()
+  hideVendorCursor()
+  syncCursorFromWidget()
+  startPlayheadLoop()
   if (typeof ResizeObserver !== 'undefined' && mainEl.value) {
     resizeObserver = new ResizeObserver(() => {
       measuredWidth.value = mainEl.value ? mainEl.value.clientWidth : 0
@@ -701,24 +980,29 @@ onMounted(() => {
   mainEl.value?.addEventListener('wheel', onWheel, { passive: false, capture: true })
   window.addEventListener('pointermove', onPointerMove)
   window.addEventListener('mousemove', onPointerMove)
+  window.addEventListener('touchmove', onTouchMove, { passive: false })
   window.addEventListener('pointerup', onPointerUp)
   window.addEventListener('mouseup', onPointerUp)
   window.addEventListener('touchend', onPointerUp)
+  window.addEventListener('pointercancel', onPointerCancel)
   document.addEventListener('live-note', onLiveNote)
 })
 
 onUnmounted(() => {
   if (resizeObserver)
     resizeObserver.disconnect()
+  stopPlayheadLoop()
   mainEl.value?.removeEventListener('pointerdown', onPointerDown, true)
   mainEl.value?.removeEventListener('mousedown', onMouseDownCapture, true)
   mainEl.value?.removeEventListener('touchstart', onTouchStartCapture, true)
   mainEl.value?.removeEventListener('wheel', onWheel, { capture: true })
   window.removeEventListener('pointermove', onPointerMove)
   window.removeEventListener('mousemove', onPointerMove)
+  window.removeEventListener('touchmove', onTouchMove)
   window.removeEventListener('pointerup', onPointerUp)
   window.removeEventListener('mouseup', onPointerUp)
   window.removeEventListener('touchend', onPointerUp)
+  window.removeEventListener('pointercancel', onPointerCancel)
   document.removeEventListener('live-note', onLiveNote)
   clearTimeout(changeTimer)
 })
@@ -751,6 +1035,11 @@ onUnmounted(() => {
             width: `${stripGeometry ? stripGeometry.kbwidth : 40}px`,
             height: `${rect.height}px`,
           }">
+        </div>
+        <div v-if="playheadStyle" class="playhead-line" :class="{ 'playhead-seeking': seeking }"
+          :style="{ left: `${playheadStyle.left}px`, top: `${playheadStyle.top}px`, height: `${playheadStyle.height}px` }">
+          <div class="playhead-handle" title="Drag to move the playback position"></div>
+          <div class="playhead-grab"></div>
         </div>
       </div>
       <div v-if="auditionNote" class="audition-readout" aria-live="polite">
@@ -835,6 +1124,50 @@ onUnmounted(() => {
   box-sizing: border-box;
   background: rgba(70, 130, 230, 0.55);
   border: 1px solid rgba(40, 80, 180, 0.85);
+}
+
+/* Playback playhead: a vertical line through the grid with a handle at the
+   top, so the position is visible and grabbable like other music tools. The
+   vendor widget only draws a small triangle, which is hidden in favour of
+   this line (see hideVendorCursor). */
+.playhead-line {
+  position: absolute;
+  width: 2px;
+  margin-left: -1px;
+  box-sizing: border-box;
+  background: rgba(230, 60, 60, 0.9);
+  box-shadow: 0 0 2px rgba(230, 60, 60, 0.55);
+  z-index: 4;
+  pointer-events: none;
+}
+
+.playhead-line.playhead-seeking {
+  background: rgba(200, 30, 30, 1);
+}
+
+.playhead-handle {
+  position: absolute;
+  top: -2px;
+  left: -6px;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
+  background: #e63c3c;
+  border: 1px solid rgba(140, 20, 20, 0.9);
+  border-radius: 2px 2px 5px 5px;
+  pointer-events: none;
+}
+
+.playhead-grab {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -7px;
+  width: 16px;
+  pointer-events: auto;
+  cursor: ew-resize;
+  /* The handle area extends a little above the line for an easier grab. */
+  touch-action: none;
 }
 
 /* Chord-trigger rows in the chord sequencer: a faint lane tint plus a named
