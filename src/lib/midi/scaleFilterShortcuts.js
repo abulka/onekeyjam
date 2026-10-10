@@ -8,6 +8,11 @@ import { isTypingTarget } from '../is-typing-target.js'
  * 1 = scale1, 2 = scale2, 3 = scale3, 4 = notes of chord, 5 = lock/unlock,
  * 0 = toggle Solo in key.
  *
+ * The freed lower-row punctuation keys have their own jobs:
+ *   /  add the jammed chord (works in both magic and normal piano mode)
+ *   ,  switch to magic mode
+ *   .  switch to normal piano mode
+ *
  * These work on every page and every octave and do not need the on-screen
  * keyboard to be focused. They mirror the right-hand black-key modifiers in
  * wire-events.js. Number keys are ignored while typing in a form field.
@@ -22,6 +27,25 @@ function onKeyDown(e) {
         return
     if (isTypingTarget(e.target))
         return
+
+    // The repurposed lower-row keys work in every mode, so handle them before
+    // the magic-mode-only scale shortcuts below.
+    if (!e.shiftKey && e.code === 'Slash') {
+        e.preventDefault()
+        document.broadcastEvent('chord-add', {})
+        return
+    }
+    if (!e.shiftKey && e.code === 'Comma') {
+        e.preventDefault()
+        globals.bypass = false  // magic mode
+        return
+    }
+    if (!e.shiftKey && e.code === 'Period') {
+        e.preventDefault()
+        globals.bypass = true  // normal piano mode
+        return
+    }
+
     // The number keys are only scale shortcuts in magic mode. In normal piano
     // mode scale filtering is off, and digits should do nothing.
     if (!globals.scaleFilteringEnabled)

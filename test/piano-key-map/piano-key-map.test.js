@@ -29,12 +29,18 @@ describe('piano-key-map', () => {
         assert.deepEqual(actual, expected)
     })
 
-    it('maps lower row alias keys to the right hand octave', () => {
-        assert.equal(getNoteKeyForCode('Comma').offset, 12)
-        assert.equal(getNoteKeyForCode('Comma').primary, false)
-        assert.equal(getNoteKeyForCode('KeyL').offset, 13)
-        assert.equal(getNoteKeyForCode('Slash').offset, 16)
-        assert.equal(getNoteKeyForCode('Slash').primary, false)
+    it('gives each offset a single key (one physical key per pitch)', () => {
+        const offsets = NOTE_KEYS.map(key => key.offset)
+        assert.equal(new Set(offsets).size, offsets.length, 'NOTE_KEYS has duplicate offsets')
+        const pianoOffsets = PIANO_NOTE_KEYS.map(key => key.offset)
+        assert.equal(new Set(pianoOffsets).size, pianoOffsets.length, 'PIANO_NOTE_KEYS has duplicate offsets')
+    })
+
+    it('leaves the freed lower-row punctuation unbound as notes', () => {
+        assert.equal(getNoteKeyForCode('Comma'), null)
+        assert.equal(getNoteKeyForCode('Period'), null)
+        assert.equal(getNoteKeyForCode('Slash'), null)
+        assert.equal(getNoteKeyForCode('KeyL'), null)
     })
 
     it('returns null for keys that are not note keys', () => {

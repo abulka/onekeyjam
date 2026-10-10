@@ -48,14 +48,17 @@ matching computer keys.
 
 | Control | MIDI keyboard | Computer keyboard |
 |---|---|---|
-| Trigger a chord | white keys from the trigger octave upwards, C D E F G A B then the next octave for chords 8-14 (C3-B3 by default) | `z x c v b n m`, then `, . /` and `q w e r …` for higher triggers (an assigned higher key triggers its chord instead of soloing) |
-| Solo note | white keys from the jam octave upwards (C4 by default, higher when a song uses more than seven triggers) | `q w e r t y u` for seven chord songs |
+| Trigger a chord | white keys from the trigger octave upwards, C D E F G A B then the next octave for chords 8-14 (C3-B3 by default) | `z x c v b n m`, then `q w e r …` for higher triggers (an assigned higher key triggers its chord instead of soloing) |
+| Solo note | white keys from the jam octave upwards (C4 by default, higher when a song uses more than seven triggers) | the keys after the last chord trigger, `q w e r t y u` for seven chord songs |
 | Scale filter 1 | `C#` in the jam octave and above | `1` |
 | Scale filter 2 | `D#` in the jam octave and above | `2` |
 | Scale filter 3 | `F#` in the jam octave and above | `3` |
 | Notes of chord | `G#` in the jam octave and above | `4` |
 | Lock scale | `A#` in the jam octave and above | `5` |
 | Solo in key | hold `C#` (shift) and press `A#` | `0` |
+
+On the computer keyboard, `,` switches to magic mode, `.` switches to normal
+piano, and `/` adds the chord you are currently jamming (in either mode).
 
 ---
 

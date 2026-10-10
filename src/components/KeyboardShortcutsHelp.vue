@@ -1,6 +1,8 @@
 <script setup>
-import { onMounted, onUnmounted } from "vue";
+import { computed, onMounted, onUnmounted } from "vue";
+import { globals } from '@/lib/globals.js'
 import { labelForOffset } from '@/lib/midi/piano-key-map.js'
+import { describeChordSoloSplit } from '@/lib/midi/keyboard-split.js'
 
 // Keyboard shortcuts reference, shown as a translucent panel pinned to the
 // right, like the demo welcome. The panel stays on screen and lets clicks pass
@@ -18,15 +20,19 @@ function close() {
 function keyLabel(offset) {
   return labelForOffset(offset)
 }
-function joinLabels(offsets) {
-  return offsets.map(labelForOffset).join(' ')
-}
+
+// The chord/solo split floats as the number of chord triggers changes, so the
+// help prints the live split rather than a fixed set of rows. The key lists are
+// previews (first few keys then an ellipsis), because the run continues past the
+// current project's chord count.
+const split = computed(() => describeChordSoloSplit(
+  Object.keys(globals.chordTriggerMap || {}).length,
+  globals.keyboard ? globals.keyboard.lhTriggerOctave : 3,
+))
 
 // The test-songs shortcut only exists in dev builds, like its File menu entry.
 const showTestSongs = import.meta.env.DEV
 
-const lhWhiteKeys = joinLabels([0, 2, 4, 5, 7, 9, 11])
-const rhWhiteKeys = joinLabels([12, 14, 16, 17, 19, 21, 23])
 const lhCsharp = keyLabel(1)
 const lhDsharp = keyLabel(3)
 const lhFsharp = keyLabel(6)
@@ -101,8 +107,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
             pause while you type in a field.</p>
 
           <div class="sc-item">
-            <div class="sc-label">Left hand, white</div>
-            <div class="sc-body"><code class="kb">{{ lhWhiteKeys }}</code> trigger chords</div>
+            <div class="sc-label">Chord triggers (left hand, white)</div>
+            <div class="sc-body">
+              <code class="kb">{{ split.chordKeysPreview }}</code> - the run starts at
+              <code class="kb">Z</code> and continues to the right, so adding chords uses more keys.
+              This project has {{ split.chordNotes.length }} chord triggers.
+            </div>
           </div>
           <div class="sc-item">
             <div class="sc-label">Left hand, black</div>
@@ -124,8 +134,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
             </div>
           </div>
           <div class="sc-item">
-            <div class="sc-label">Right hand, white</div>
-            <div class="sc-body"><code class="kb">{{ rhWhiteKeys }}</code> play the current scale</div>
+            <div class="sc-label">Solo notes (right hand, white)</div>
+            <div class="sc-body">
+              <code class="kb">Q W E R ...</code> is typical - solo notes are the keys after the
+              last chord trigger, so they move up as chords are added. This project starts solo at
+              <code class="kb">{{ split.firstSoloKey }}</code> ({{ split.firstSoloNote }}).
+            </div>
           </div>
           <div class="sc-item">
             <div class="sc-label">Right hand, black (any octave)</div>
@@ -139,23 +153,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
             </div>
           </div>
           <div class="sc-item">
-            <div class="sc-label">Lower-row aliases</div>
+            <div class="sc-label">Mode and add chord (any mode)</div>
             <div class="sc-body">
-              <code class="kb">,</code> C ·
-              <code class="kb">L</code> C# ·
-              <code class="kb">.</code> D ·
-              <code class="kb">/</code> E · same notes as Q&nbsp;W&nbsp;E
-            </div>
-          </div>
-          <div class="sc-item">
-            <div class="sc-label">Higher octave</div>
-            <div class="sc-body">
-              <code class="kb">I</code> C ·
-              <code class="kb">O</code> D ·
-              <code class="kb">P</code> E ·
-              <code class="kb">[</code> F ·
-              <code class="kb">]</code> G ·
-              <code class="kb">\</code> A · the keys right of P
+              <code class="kb">,</code> magic mode ·
+              <code class="kb">.</code> normal piano ·
+              <code class="kb">/</code> add the jammed chord
             </div>
           </div>
 

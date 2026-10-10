@@ -50,8 +50,8 @@ sound in the browser.
   one note and jam over it in key. If you know [Cthulhu](https://xferrecords.com/products/cthulhu), this is the same idea.
 - **Play from your computer keyboard** - if you do not have an external MIDI
   keyboard handy, click the on-screen keyboard and play it with your computer
-  keys: the lower row (`z x c v b n m`) triggers the left-hand chords and the
-  upper row (`q w e r t y u`) plays the solo notes.
+  keys: the first keys (`z x c v b n m` for seven chords) trigger the left-hand
+  chords and the keys after them (`q w e r t y u`) play the solo notes.
 
 ## Using the app
 
@@ -101,8 +101,10 @@ keyboard with your computer keyboard instead.
 3. The black keys `s d g h j` in that octave are the chord modifiers (`C#`,
    `D#`, `F#`, `G#`, `A#`). Hold `s` as a shift key, and use the others to
    switch scale filtering off/on or transpose the chords.
-4. Play solo notes with the upper row, `q w e r t y u`. These land in the jam
-   octave (`C4` upward by default) and are filtered into the current scale.
+4. Play solo notes with the keys after the last chord trigger, `q w e r t y u`
+   for a seven chord song. These land in the jam octave (`C4` upward by default)
+   and are filtered into the current scale. Press `,` for magic mode, `.` for
+   normal piano, or `/` to add the chord you are jamming.
 5. Press `1` `2` `3` `4` `5` at any time to switch scale1, scale2, scale3, the
    chord notes or lock the scale. These work on every page and every octave and
    do not need the keyboard to have focus. While scale filtering is on the

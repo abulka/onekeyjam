@@ -403,9 +403,30 @@ and the validation commands.
   `globals.showKeyShortcuts` via `src/lib/uiPrefs.js`) adds small coloured key
   badges on top of the on-screen keys, taken from `src/lib/midi/piano-key-map.js`.
   The mapping covers the two main octaves (`Z X C V B N M`, `Q W E R T Y U` plus
-  `2 3 5 6 7`), extends into the next octave on `I O P [ ] \` (with `9 0 - =`
-  for its black keys), and keeps lower-row aliases (`, L . /`) for the right
-  hand. The badges render even when the text labels are off.
+  `2 3 5 6 7`) and extends into the next octave on `I O P [ ] \` (with `9 0 - =`
+  for its black keys). There are no lower-row note aliases any more (one physical
+  key per pitch): `,` and `.` switch between magic and normal piano mode, and `/`
+  adds the jammed chord, in either mode. The badges render even when the text
+  labels are off.
+- **The computer-keyboard chord/solo split.** There is one model: a pitch has one
+  job. `onNoteOn()` in `src/lib/midi/wire-events.js` checks
+  `globals.chordTriggerMap` first, so a chord-trigger pitch always plays its
+  chord; every other pitch goes through `globals.scaleTriggerMap` to a solo note,
+  or is echoed raw when scale filtering is off or the map is empty. Chord
+  triggers are the first `N` white notes from the trigger octave (`N` is the grid
+  size), so the run floats up as chords are added. `buildNoteMap()` with
+  `backfill: true` starts the solo map an octave lower and drops the first
+  `N % 7` white keys, so white keys left unused below the jam octave become extra
+  low solo notes; the first solo key is therefore always the white note after the
+  last chord. The sound side is anchored at the jam octave, so a backfilled key
+  sounds in its own octave rather than an octave below. On the computer keyboard
+  this is one continuous run, `Z X C V B N M` then `Q W E R T Y U I O P [ ] \`,
+  with the chord triggers at the start and the solo notes after them. One
+  physical key per pitch is deliberate: the old `, L . /` note aliases were
+  duplicates (`L` was an accidental scale1 trigger) and were removed. A zoned
+  layout (bottom rows always chords, top rows always solo) was considered and
+  rejected because it breaks pitch-to-function: the on-screen keyboard and a
+  MIDI keyboard would no longer agree on what a pitch does.
 - The DEMO button in the shared menu bar (`src/lib/demo-project.js` plus
   `DemoIntroDialog.vue`) loads the progressions `C Major II-V-I` song, focuses the
   on-screen keyboard and shows a short welcome with a Jam! button. It waits for

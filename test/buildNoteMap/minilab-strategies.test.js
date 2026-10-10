@@ -872,28 +872,81 @@ describe('minilab one octave - buildNoteMap strategies', () => {
             // A3:     // lh trigger 6
             // B3:     // lh trigger 7
             // C4:     // lh trigger 8
-            D4: 'D#3',
-            E4: 'E3',
-            F4: 'F#3',
-            G4: 'G#3',
-            A4: 'A#3',
-            B4: 'B3',
-            C5: 'C#4', // <--- normally start here if no backfill
-            D5: 'D#4',
-            E5: 'E4',
-            F5: 'F#4',
-            G5: 'G#4',
-            A5: 'A#4',
-            B5: 'B4',
-            C6: 'C#5',
-            D6: 'D#5',
-            E6: 'E5',
-            F6: 'F#5',
-            G6: 'G#5',
-            A6: 'A#5',
-            B6: 'B5'
+            // With 8 triggers the jam octave floats up to C5, and the sound side
+            // floats with it, so the backfilled keys sound in their own octave
+            // (D4 sounds D#4, the nearest B-major note to D4) instead of an octave
+            // below.
+            D4: 'D#4',
+            E4: 'E4',
+            F4: 'F#4',
+            G4: 'G#4',
+            A4: 'A#4',
+            B4: 'B4',
+            C5: 'C#5', // <--- normally start here if no backfill
+            D5: 'D#5',
+            E5: 'E5',
+            F5: 'F#5',
+            G5: 'G#5',
+            A5: 'A#5',
+            B5: 'B5',
+            C6: 'C#6',
+            D6: 'D#6',
+            E6: 'E6',
+            F6: 'F#6',
+            G6: 'G#6',
+            A6: 'A#6',
+            B6: 'B6'
         }
         // console.log('result', result)
+        assert.deepEqual(result, expected)
+
+    });
+
+    it('CToScaleTonic G major, backfill, autodrop, 9 triggers - sound follows the jam octave', () => {
+        const numLhTriggers = 9
+        const options = {
+            strategy: 'CToScaleTonic',
+            backfill: true,
+            autoDropOctave: true,
+        }
+
+        // With 9 triggers the jam octave floats up to C5. The sound side is
+        // anchored there, and autoDropOctave brings it back down one octave (G is
+        // a late tonic). The first solo key E4 sounds B3, a few notes below
+        // itself in the same octave. Before the fix it sounded B2, a full octave
+        // lower.
+        const expected = {
+            // C3      // lh trigger 1
+            // D3      // lh trigger 2
+            // E3      // lh trigger 3
+            // F3      // lh trigger 4
+            // G3      // lh trigger 5
+            // A3      // lh trigger 6
+            // B3      // lh trigger 7
+            // C4      // lh trigger 8
+            // D4      // lh trigger 9
+            E4: 'B3', // first solo key, one octave above the pre-fix B2
+            F4: 'C4',
+            G4: 'D4',
+            A4: 'E4',
+            B4: 'F#4',
+            C5: 'G4',
+            D5: 'A4',
+            E5: 'B4',
+            F5: 'C5',
+            G5: 'D5',
+            A5: 'E5',
+            B5: 'F#5',
+            C6: 'G5',
+            D6: 'A5',
+            E6: 'B5',
+            F6: 'C6',
+            G6: 'D6',
+            A6: 'E6',
+            B6: 'F#6',
+        }
+
+        let result = buildNoteMap(gMajorScale, numLhTriggers, lhTriggerOctave, rhJamSoundOctave, options)
         assert.deepEqual(result, expected)
 
     });
@@ -903,27 +956,18 @@ describe('minilab one octave - buildNoteMap strategies', () => {
 
 /*
 
-More tests for - backfilling jam notes downwards: 
--------------------------------------------------
+Backfilling jam notes downwards
+-------------------------------
 
-If chord trigger notes don't fill up an entire octave, ideally we would
-backfill jam notes downwards to avoid wasted jam notes - below the first jam
-octave, down till the last/highest chord trigger note e.g.
+When the chord triggers do not fill up a whole octave, the extra white keys
+below the first jam note become backfilled solo notes instead of being wasted.
+The exact backfill is pinned by the tests above and by
+test/buildNoteMap/ownership-matrix.test.js.
 
-const lhTriggerOctave = 2
-const rhJamSoundOctave = 4    
-
-1. const numLhTriggers = 4 (not the full 7)
-   0.5 octave of chord triggers C2-E2, extra jam notes created backfilled from
-   C3 which plays C3. viz. F2=F2 G2=G2 A2=A2 B2=B2 then of course C3=C3
-   
-2. const numLhTriggers = 10 (not the full 14)
-   1.5 octaves of chord triggers C2-E3, extra jam notes created backfilled from
-   C4 which plays C3. viz. F3=F2 G3=G2 A3=A2 B3=B2 then of course C4=C3
-
-3. const numLhTriggers = 18 (not the full 21)
-   2.5 octaves of chord triggers C2-E4, extra jam notes created backfilled from
-   C5 which plays C3. viz. F4=F2 G4=G2 A4=A2 B4=B2 then of course C5=C3
+Historically the backfilled keys sounded an octave below the key they sat on.
+That octave drop is fixed: with backfill the first solo key now sounds in its
+own octave (its own note when the scale contains it, otherwise the nearest scale
+note in that octave). The no-backfill path keeps its old behaviour.
 
 */
 

@@ -76,11 +76,10 @@ export const NOTE_KEYS = [
     { code: 'Digit7', offset: 22, primary: true },
     { code: 'KeyU', offset: 23, primary: true },
 
-    // Lower-row aliases for the right-hand octave (kept for parity with the widget)
-    { code: 'Comma', offset: 12, primary: false },
-    { code: 'KeyL', offset: 13, primary: false },
-    { code: 'Period', offset: 14, primary: false },
-    { code: 'Slash', offset: 16, primary: false },
+    // `,` `L` `.` `/` used to be lower-row aliases for the right-hand octave.
+    // They are intentionally unbound as notes now (one physical key per pitch).
+    // Instead `,` and `.` switch mode and `/` adds the jammed chord; see
+    // scaleFilterShortcuts.js.
 
     // The octave above the right hand, on the physical keys right of P
     { code: 'KeyI', offset: 24, primary: true },

@@ -9,7 +9,7 @@ import { requestKeyboardFocus } from '@/lib/demo-project.js'
 // visible (and interactive) while the user reads the instructions.
 
 const show = ref(false)
-const intro = ref({ triggerNotes: 'C D E F', chordKeys: 'Z X C V', soloKeys: 'Q W E R T Y U', legend: [] })
+const intro = ref({ triggerNotes: 'C D E F', chordKeys: 'Z X C V', soloKeys: 'Q W E R ...', legend: [] })
 
 const route = useRoute()
 const router = useRouter()

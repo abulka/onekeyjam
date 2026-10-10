@@ -85,6 +85,15 @@ export function buildNoteMap(rhNotesScale, numLhTriggers, lhTriggerOctave, rhJam
     const jamTriggerOctave = _calcJamOctave(numLhTriggers, lhTriggerOctave)
     globals.jamTriggerOctave = jamTriggerOctave
 
+    // When backfill is on and the chords overflow the trigger octave, the jam
+    // octave floats up above the highest chord. The sound side must float with
+    // it, otherwise the backfilled solo keys sound an octave below the key they
+    // sit on. Without backfill there is no such problem, and the historical
+    // behaviour is kept (the tests for the no-backfill path pin it).
+    const soundAnchorOctave = options.backfill && Number.isFinite(jamTriggerOctave)
+        ? Math.max(rhJamSoundOctave, jamTriggerOctave)
+        : rhJamSoundOctave
+
     const allowedSoundNotes = _injectOctaves(
         allowedNotes,
         strategy,
@@ -92,7 +101,7 @@ export function buildNoteMap(rhNotesScale, numLhTriggers, lhTriggerOctave, rhJam
         // allocate extra octave below for auto drop, 
         // and one more for possible backfill
         // and one more for pentatonic scales which consume more
-        rhJamSoundOctave - 3)
+        soundAnchorOctave - 3)
 
     let mapping = {}
 
@@ -101,7 +110,7 @@ export function buildNoteMap(rhNotesScale, numLhTriggers, lhTriggerOctave, rhJam
             mapping = createMappingC4ToScaleTonic(
                 allowedSoundNotes,
                 jamTriggerOctave,
-                rhJamSoundOctave,
+                soundAnchorOctave,
                 rhNotesScale[0], // viz. scaleTonicLetter
                 numLhTriggers,
                 rhNotesScale.length,
@@ -113,7 +122,7 @@ export function buildNoteMap(rhNotesScale, numLhTriggers, lhTriggerOctave, rhJam
             mapping = createMappingC4ToC4(
                 allowedSoundNotes,
                 jamTriggerOctave,
-                rhJamSoundOctave,
+                soundAnchorOctave,
                 numLhTriggers,
                 rhNotesScale.length,
                 options,
@@ -132,7 +141,7 @@ export function buildNoteMap(rhNotesScale, numLhTriggers, lhTriggerOctave, rhJam
     return mapping
 }
 
-function createMappingC4ToScaleTonic(allowedNotes, jamTriggerOctave, rhJamSoundOctave, scaleTonic, numLhTriggers, scaleLength, options) {
+function createMappingC4ToScaleTonic(allowedNotes, jamTriggerOctave, soundAnchorOctave, scaleTonic, numLhTriggers, scaleLength, options) {
     // Allocate the allowedNotes across a mapping of trigger note -> allowed
     // note beginning with firstJamTriggerNote. First entry in allowedNotes will
     // be the firstJamSound. Don't start allocating allowedNotes till we have an
@@ -159,11 +168,11 @@ function createMappingC4ToScaleTonic(allowedNotes, jamTriggerOctave, rhJamSoundO
     let mapping = _whiteTriggerNoteMapping(jamTriggerOctave, numLhTriggers, options.backfill)
 
     if (options.autoDropOctave && ['F#', 'G', 'G#', 'A', 'A#', 'B'].includes(scaleTonic))
-        rhJamSoundOctave--
+        soundAnchorOctave--
 
     // scan forward through allowed notes till we find the first one we want
     let i = 0;
-    let startNote = `${scaleTonic}${rhJamSoundOctave}`
+    let startNote = `${scaleTonic}${soundAnchorOctave}`
     while (i < allowedNotes.length) {
         if (allowedNotes[i] != startNote)
             i++
@@ -177,7 +186,7 @@ function createMappingC4ToScaleTonic(allowedNotes, jamTriggerOctave, rhJamSoundO
     return mapping;
 }
 
-function createMappingC4ToC4(allowedNotes, jamTriggerOctave, rhJamSoundOctave, numLhTriggers, scaleLength, options) {
+function createMappingC4ToC4(allowedNotes, jamTriggerOctave, soundAnchorOctave, numLhTriggers, scaleLength, options) {
     // Allocate the allowedNotes across a mapping of trigger note -> allowed
     // note beginning with firstJamTriggerNote. First allowedNote allocated must
     // be C4 or closest note possible to C4. The idea of 'closest' could have
@@ -202,7 +211,7 @@ function createMappingC4ToC4(allowedNotes, jamTriggerOctave, rhJamSoundOctave, n
     // scan forward through allowed notes till we find the first one we want
     let i = 0;
     while (i < allowedNotes.length) {
-        if (Tonal.Note.get(allowedNotes[i]).oct < rhJamSoundOctave)
+        if (Tonal.Note.get(allowedNotes[i]).oct < soundAnchorOctave)
             i++
         else
             break

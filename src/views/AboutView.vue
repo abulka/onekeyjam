@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { globals } from '../lib/globals.js'
 import HelpArticle from '../components/help/HelpArticle.vue'
 import { extractHeadings } from '../lib/markdown.js'
+import { describeChordSoloSplit } from '../lib/midi/keyboard-split.js'
 import tutorialMarkdown from '../../doco/IMPROVISING-TUTORIAL.md?raw'
 import referenceMarkdown from '../../doco/REFERENCE.md?raw'
 
@@ -29,6 +30,15 @@ const markdownForPage = computed(() => {
     return referenceMarkdown
   return ''
 })
+
+// The live chord/solo split, so the computer-keyboard text matches the loaded
+// project instead of assuming seven chord triggers.
+const keySplit = computed(() => describeChordSoloSplit(
+  Object.keys(globals.chordTriggerMap || {}).length,
+  globals.keyboard ? globals.keyboard.lhTriggerOctave : 3,
+))
+const chordKeysText = computed(() => (keySplit.value.chordKeysPreview || 'Z X C V B N M').toLowerCase())
+const soloKeysText = computed(() => (keySplit.value.soloKeysPreview || 'Q W E R T Y U').toLowerCase())
 
 // The section list in the right-hand sidebar. Markdown pages come from the
 // same source as the rendered article, so the anchors always match; the
@@ -203,8 +213,8 @@ watch(() => globals.helpPage, async () => {
       <h2 id="getting-started" class="ui header">Getting started</h2>
       <ol class="steps">
         <li>Open the app and choose <strong>File &rarr; Open Progressions...</strong> to load a ready-made song.</li>
-        <li>Play the highlighted left-hand keys to trigger chords. On a MIDI keyboard these are the white keys in the chord trigger octave (C3 to B3 by default); on the computer keyboard they are <code>z x c v b n m</code>.</li>
-        <li>Play the white keys to the right to jam - the notes are filtered to fit the chord. On the computer keyboard that is <code>q w e r t y u</code>, starting at C4 by default.</li>
+        <li>Play the highlighted left-hand keys to trigger chords. On a MIDI keyboard these are the white keys in the chord trigger octave (C3 to B3 by default); on the computer keyboard the run starts at <code>{{ chordKeysText }}</code> and continues to the right.</li>
+        <li>Play the white keys to the right to jam - the notes are filtered to fit the chord. On the computer keyboard that is <code>{{ soloKeysText }}</code>, the keys after the last chord trigger; the start moves up as chords are added.</li>
         <li>Use the black keys to switch scale or transpose: the left hand for the modifiers, the right hand to choose the scale filter.</li>
       </ol>
       <p>
@@ -252,9 +262,10 @@ watch(() => globals.helpPage, async () => {
       <h3 id="computer-keyboard" class="ui header">Play with your computer keyboard</h3>
       <ol class="steps">
         <li>Make sure the app window has focus (click anywhere in it).</li>
-        <li>Trigger chords with the lower row, <code>z x c v b n m</code> (the white keys of the chord trigger octave).</li>
+        <li>Trigger chords with the run that starts at <code>{{ chordKeysText }}</code> (the white keys of the chord trigger octave, continuing to the right).</li>
         <li>The black keys <code>s d g h j</code> in that octave are the chord modifiers. Hold <code>s</code> as a shift key and use the others to switch scales or transpose.</li>
-        <li>Play solo notes with the upper row, <code>q w e r t y u</code>. These are filtered into the current scale.</li>
+        <li>Play solo notes with <code>{{ soloKeysText }}</code> - the keys after the last chord trigger. These are filtered into the current scale.</li>
+        <li><code>,</code> switches to magic mode, <code>.</code> switches to normal piano, and <code>/</code> adds the chord you are jamming, in either mode.</li>
       </ol>
       <p>
         The keys play whenever the app window is focused; they pause only while
@@ -428,10 +439,11 @@ watch(() => globals.helpPage, async () => {
         </li>
         <li>
           <strong>Play from your computer keyboard</strong> - make sure the app
-          window is focused, then play chords with the lower row
-          (<code>z x c v b n m</code>) and solo notes with the upper row
-          (<code>q w e r t y u</code>). The black keys are <code>s d g h j</code>
-          on the left and <code>2 3 5 6 7</code> on the right. Open
+          window is focused, then play chords with <code>{{ chordKeysText }}</code>
+          and solo notes with <code>{{ soloKeysText }}</code>. The black keys are
+          <code>s d g h j</code> on the left and <code>2 3 5 6 7</code> on the
+          right; <code>,</code> and <code>.</code> switch mode and <code>/</code>
+          adds the jammed chord. Open
           <strong>Shortcuts help</strong> above the keyboard, next to Key labels,
           for the full quick reference, including function keys and Alt shortcuts.
         </li>

@@ -293,26 +293,31 @@ the jam notes. The on-screen keyboard labels show the computer keys.
 
 | Control | MIDI keyboard | Computer keyboard | What it does |
 |---|---|---|---|
-| Chord trigger | white keys from the trigger octave upwards: C D E F G A B, then the next octave for chords 8-14, and so on | `z x c v b n m`, then `, . /` and `q w e r …` continue into higher triggers | plays the chord mapped to that white key; once a higher trigger is assigned, that key stops being a solo key |
-| Solo note | white keys from the jam octave upwards (the jam octave moves up past the triggers, so with more than seven chords soloing starts higher, e.g. on `i o p …`) | `q w e r t y u` for seven chord songs | plays a filtered note in the current scale |
+| Chord trigger | white keys from the trigger octave upwards: C D E F G A B, then the next octave for chords 8-14, and so on | `z x c v b n m` for seven chords, then `q w e r …` continue into higher triggers | plays the chord mapped to that white key; once a higher trigger is assigned, that key stops being a solo key |
+| Solo note | white keys from the jam octave upwards; the jam octave moves up past the triggers, so with more than seven chords soloing starts higher | the keys after the last chord trigger; for seven chord songs that is `q w e r t y u i o p [ ] \` | plays a filtered note in the current scale |
 | Scale filter 1 | `C#` in the jam octave and above | `1` | the primary scale for the current chord |
 | Scale filter 2 | `D#` in the jam octave and above | `2` | the first colour alternative |
 | Scale filter 3 | `F#` in the jam octave and above | `3` | the second colour alternative |
 | Notes of chord | `G#` in the jam octave and above | `4` | filters the solo to the chord's own notes |
 | Lock scale | `A#` in the jam octave and above | `5` | freezes the scale so chord changes do not move it |
+| Right-hand black notes (filtering off) | `C#` `D#` `F#` `G#` `A#` in the jam octave and above | `2 3 5 6 7`, then `9 0 - =` for the next octave | play the black note itself; only reachable while scale filtering is off |
 | Toggle Solo in key | hold `C#` (shift), press `A#` | `0` | on/off, with a toast naming the key scale |
 | Filter off | `D#` in the trigger octave | `d` | turns solo filtering off, so the keyboard is a plain piano |
 | Filter on | `F#` in the trigger octave | `g` | turns solo filtering back on |
 | Transpose down/up | `G#` / `A#` in the trigger octave | `h` / `j` | shifts the chords a semitone |
 | Shift | hold `C#` in the trigger octave | hold `s` | modifies the other left black keys |
 | All notes off | hold `C#` (shift), press `D#` | hold `s`, press `d` | stops every sounding note |
-| Add chord | hold `C#` (shift), press `F#` | hold `s`, press `g` | opens the add-chord panel for the current chord |
+| Add chord | hold `C#` (shift), press `F#` | `/`, or hold `s`, press `g` | opens the add-chord panel for the current chord |
 | Reset transpositions | hold `C#` (shift), press `G#` | hold `s`, press `h` | undoes any transposing done while playing |
+| Switch to magic mode | - | `,` | turns on one-finger chords and scale filtering |
+| Switch to normal piano | - | `.` | plays a plain keyboard, with chords and filtering off |
 
 The computer keys work whenever the app window is focused; they pause only while
 you are typing in a form field. Open **Shortcuts help** above the on-screen
-keyboard for the full list, including octave shifts. In normal piano mode
-(filtering and chord triggers off) every key plays a plain note.
+keyboard for the full list. In normal piano mode every key plays a plain note and
+the computer keyboard uses the standard Ableton/Logic layout: white keys
+`A S D F G H J K L ;`, black keys `W E T Y U O P`, and `Z` / `X` shift the
+computer keyboard down / up an octave.
 
 **App shortcuts.** `Alt+1` magic mode, `Alt+2` normal piano, `Alt+3`/`Alt+4`
 transpose down/up a semitone, `Alt+5`/`Alt+6` invert the chord voicing down/up,
@@ -320,6 +325,14 @@ and `Alt+7`/`Alt+8` move down/up the circle of fifths. Transpose and fifths
 change every chord and the sounding key; invert rotates each chord's voicing.
 Reset Transpositions undoes all three. These use `Alt`, not `Ctrl`, because
 `Ctrl`+digit switches browser tabs.
+
+**Performance and navigation keys.** Hold `F1` to audition the picked chord,
+`F2` the current left-hand chord, `F3` the next left-hand chord, and `F4` the
+previous one; `F5` adds the currently jammed chord. `Space` stops recording or
+the pattern, or starts the pattern when it has notes. `Tab` switches between the
+Edit and Perform pages, and `Shift+Tab` between the current page and Help. `Esc`
+closes the shortcuts help or the welcome message. On Mac laptops the function
+keys may need `Fn`.
 
 ### Computer keyboards: pressing several keys at once
 
@@ -346,15 +359,19 @@ If a note goes missing:
 
 The chord table's **Trigger** column shows which left-hand key plays which chord.
 On a MIDI keyboard the white trigger keys run C D E F G A B from C3 by default;
-on the computer keyboard the same keys are `z x c v b n m`. The demo welcome
-lists them too. Solo notes are the white keys to the right of the chord triggers
-(from C4 by default), which are `q w e r t y u` on the computer keyboard.
+on the computer keyboard the same keys are `z x c v b n m` for seven chords, and
+higher triggers continue on `q w e r …`. The demo welcome lists them too. Solo
+notes are the white keys to the right of the chord triggers (from C4 by default),
+which are the computer keys after the last trigger, `q w e r t y u` for a seven
+chord song. White keys below the jam octave that no chord trigger uses become
+extra low solo notes, so the first solo key is always the white note just after
+the last chord trigger.
 
 Seven chords fit comfortably in one octave, which suits computer keyboard
 playing. More chords are allowed: extra triggers continue into higher octaves
 (chords 8-14 in the next octave, and so on), the jam octave moves up to make
 room, and the solo keys shift up with it, leaving fewer keys for soloing. On
-the computer keyboard this means the lower `q` row keys become chord triggers
+the computer keyboard this means the `q` row keys become chord triggers
 once assigned, and soloing moves up to the `i o p` row and beyond. An external
 MIDI keyboard config can raise the soloing start note to make more room.
 A project remembers its grid height, so it reopens at the size it was left.

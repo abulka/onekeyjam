@@ -531,6 +531,17 @@ function _setActiveScaleFilter(scaleNotes) {
         options
     );
 
+    // Every multiple of seven chord triggers used to leave the solo map
+    // shadowed: with 7 or 14 chords the backfill deletes zero keys, so the map
+    // starts a whole octave below the first real solo note (C3-B3 at 7, C4-B4 at
+    // 14). Chords win in onNoteOn, so those entries never sound, but they
+    // mislead anything that reads the map. Remove any solo pitch that is also a
+    // chord trigger.
+    for (const note of Object.keys(globals.scaleTriggerMap)) {
+        if (note in globals.chordTriggerMap)
+            delete globals.scaleTriggerMap[note]
+    }
+
     // TODO should do broadcasting here, but enhance to allow non lh triggered scale situations too
     // reportScaleChange(scale ? scale : 'default')  // does various broadcasts
 }

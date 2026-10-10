@@ -10,6 +10,7 @@ import { Note } from '@tonaljs/tonal'
 import { globals } from './globals.js'
 import { loadProgressionProject } from './boot-project.js'
 import { labelForOffset } from './midi/piano-key-map.js'
+import { describeChordSoloSplit } from './midi/keyboard-split.js'
 
 export const DEMO_PROJECT_NAME = 'C Major II-V-I'
 
@@ -102,7 +103,20 @@ export function buildDemoIntro() {
     projectName: globals.projectLibrary.projectName || DEMO_PROJECT_NAME,
     triggerNotes: triggers.length ? triggers.join(' ') : 'C D E F',
     chordKeys: chordKeys.length ? chordKeys.join(' ') : 'Z X C V',
-    soloKeys: 'Q W E R T Y U',
+    soloKeys: describeSoloKeys(triggers.length, lhOctave),
     legend,
   }
+}
+
+/**
+ * The computer keys that play solo notes once the chord triggers are used up.
+ * Falls back to naming the first solo note when the chord count reaches past the
+ * mapped computer keyboard.
+ * @param {number} chordCount
+ * @param {number} lhOctave
+ * @returns {string}
+ */
+function describeSoloKeys(chordCount, lhOctave) {
+  const split = describeChordSoloSplit(chordCount, lhOctave)
+  return split.soloKeysPreview || split.firstSoloNote
 }
