@@ -1,6 +1,8 @@
 <script setup>
 // @ts-check
+import { onMounted, onUnmounted, ref } from 'vue'
 import * as Tonal from "@tonaljs/tonal";
+import { registerAccordion } from '@/lib/accordionState.js'
 import { globals } from "../../src/lib/globals.js"
 import { sanitiseNoteToSharp } from "../../src/lib/note-tools.js"
 import { setActiveScaleFilterToMatchChord, setActiveScaleFilter } from "../../src/lib/change-scale.js"
@@ -58,6 +60,16 @@ function replaceCurrentScaleDisabled() {
         newScale.toLowerCase() == globals.currentProjectScaleName.toLowerCase()
 }
 
+const relatedAccordion = ref(null)
+let stopRelatedAccordion = () => {}
+
+onMounted(() => {
+  if (relatedAccordion.value)
+    stopRelatedAccordion = registerAccordion(relatedAccordion.value, 'scale-picker')
+})
+
+onUnmounted(() => stopRelatedAccordion())
+
 </script>
 
 <template>
@@ -101,9 +113,9 @@ function replaceCurrentScaleDisabled() {
         </span>
     </div>
 
-    <div class="ui fluid styled accordion" style="background-color: burlywood;">
+    <div ref="relatedAccordion" class="ui fluid styled accordion" style="background-color: burlywood;">
 
-        <div class="title">
+        <div class="title" data-accordion-section="related-scales">
             <i class="dropdown icon"></i>
             Related Scales
         </div>
@@ -124,7 +136,7 @@ function replaceCurrentScaleDisabled() {
         </div>
 
 
-        <div class="title">
+        <div class="title" data-accordion-section="scale-picker-options">
             <i class="dropdown icon"></i>
             Scale Picker Options
         </div>

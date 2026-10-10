@@ -39,7 +39,7 @@ onUnmounted(() => stopAccordion())
       <div id="big-accordion-settings" class="ui fluid styled accordion" style="background-color: burlywood;"
         data-step="settings">
 
-        <div class="title">
+        <div class="title" data-accordion-section="preferences">
           <i class="dropdown icon"></i>
           Preferences
         </div>
@@ -180,7 +180,7 @@ onUnmounted(() => stopAccordion())
           </div>
         </div>
 
-        <div class="title">
+        <div class="title" data-accordion-section="midi-keyboard-config">
           <i class="dropdown icon"></i>
           MIDI Keyboard Config
         </div>
@@ -188,7 +188,7 @@ onUnmounted(() => stopAccordion())
           <MidiKeyboardsDetected />
         </div>
 
-        <div class="title">
+        <div class="title" data-accordion-section="debug">
           <i class="dropdown icon"></i>
           Debug
         </div>

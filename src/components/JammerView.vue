@@ -61,7 +61,7 @@ onUnmounted(() => {
     <div id="big-accordion" class="ui fluid styled accordion" style="background-color: burlywood;">
 
 
-      <div class="title">
+      <div class="title" data-accordion-section="edit-chords">
         <i class="dropdown icon" data-step="edit-chords"></i>
         Edit Chords
       </div>
@@ -70,7 +70,16 @@ onUnmounted(() => {
       </div>
 
 
-      <div class="title">
+      <div class="title" data-accordion-section="key-detection">
+        <i class="dropdown icon"></i>
+        Key Detection
+      </div>
+      <div class="content">
+        <KeySignature />
+      </div>
+
+
+      <div class="title" data-accordion-section="create-chord-sequence">
         <i class="dropdown icon"></i>
         Create Chord Sequence
       </div>
@@ -79,21 +88,12 @@ onUnmounted(() => {
       </div>
 
 
-      <div class="title">
+      <div class="title" data-accordion-section="edit-scales">
         <i class="dropdown icon"></i>
         Edit Scales
       </div>
       <div id="chordPicker" class="content ">
         <ScalePicker />
-      </div>
-
-
-      <div class="title">
-        <i class="dropdown icon"></i>
-        Key Detection
-      </div>
-      <div class="content">
-        <KeySignature />
       </div>
 
 
@@ -119,7 +119,7 @@ onUnmounted(() => {
 
 
 
-      <div class="title">
+      <div class="title" data-accordion-section="import-midi-file">
         <i class="dropdown icon"></i>
         Import Midi File
       </div>

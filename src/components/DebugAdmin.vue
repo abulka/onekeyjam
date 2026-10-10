@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from "vue";
+import { registerAccordion } from '@/lib/accordionState.js'
 import { globals } from '../../src/lib/globals.js'
 import { audioStatus, recoverAudio } from '../../src/lib/audio/general-midi.js'
 import { ping } from '../../src/lib/audio/general-midi-soundfont-player.js'
@@ -61,16 +62,22 @@ async function testSound() {
   }
 }
 
+const debugAccordion = ref(null)
+let stopDebugAccordion = () => {}
+
 onMounted(() => {
   wireGMSwitchUI() // no need to remove listener cos el is destroyed when component is destroyed
   refreshSoundStatus()
   soundTimer = setInterval(refreshSoundStatus, 1000)
+  if (debugAccordion.value)
+    stopDebugAccordion = registerAccordion(debugAccordion.value, 'settings-debug')
 })
 
 onUnmounted(() => {
   if (soundTimer)
     clearInterval(soundTimer)
   soundTimer = null
+  stopDebugAccordion()
 })
 
 </script>
@@ -78,10 +85,10 @@ onUnmounted(() => {
 <template>
 
   <!-- sub accordion for debug stuff -->
-  <div class="ui fluid styled accordion" style="background-color: burlywood;">
+  <div ref="debugAccordion" class="ui fluid styled accordion" style="background-color: burlywood;">
 
 
-    <div class="title">
+    <div class="title" data-accordion-section="sound">
       <i class="dropdown icon"></i>
       Sound
     </div>
@@ -109,7 +116,7 @@ onUnmounted(() => {
         Control Center, turn the volume up, and disconnect Bluetooth or AirPlay output, then try the test again.</p>
     </div>
 
-    <div class="title">
+    <div class="title" data-accordion-section="chord-trigger-map">
       <i class="dropdown icon"></i>
       Chord Trigger Map
     </div>
@@ -125,7 +132,7 @@ onUnmounted(() => {
 
 
 
-    <div class="title">
+    <div class="title" data-accordion-section="scale-trigger-map">
       <i class="dropdown icon"></i>
       Scale Trigger Map
     </div>
@@ -136,7 +143,7 @@ onUnmounted(() => {
 
 
 
-    <div class="title">
+    <div class="title" data-accordion-section="project-json">
       <i class="dropdown icon"></i>
       Project JSON
     </div>
@@ -167,7 +174,7 @@ onUnmounted(() => {
 
 
 
-    <div class="title">
+    <div class="title" data-accordion-section="debug-variables">
       <i class="dropdown icon"></i>
       Debug Variables
     </div>
@@ -231,7 +238,7 @@ onUnmounted(() => {
 
 
 
-    <div class="title">
+    <div class="title" data-accordion-section="midi">
       <i class="dropdown icon"></i>
       MIDI
     </div>
@@ -248,7 +255,7 @@ onUnmounted(() => {
       <pre class="mono-json">{{ globals.keyboard }}</pre>
     </div>
 
-    <div class="title">
+    <div class="title" data-accordion-section="volume">
       <i class="dropdown icon"></i>
       Volume
     </div>

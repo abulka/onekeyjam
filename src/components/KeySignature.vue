@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { registerAccordion } from '@/lib/accordionState.js'
 import { globals } from '../../src/lib/globals.js'
 import { keyDetection } from '../../src/lib/keyDetection';
 import { arraysAreEqual } from "../../src/lib/array-tools"
@@ -252,6 +253,16 @@ const noKeySignatureBecauseNoChords = computed({
     get: () => !globals.isProjectLoaded
 })
 
+const detailsAccordion = ref(null)
+let stopDetailsAccordion = () => {}
+
+onMounted(() => {
+  if (detailsAccordion.value)
+    stopDetailsAccordion = registerAccordion(detailsAccordion.value, 'key-detection-panels')
+})
+
+onUnmounted(() => stopDetailsAccordion())
+
 </script>
 
 <template>
@@ -369,9 +380,9 @@ const noKeySignatureBecauseNoChords = computed({
         </div>
     </div>
 
-    <div class="ui fluid styled accordion" style="background-color: burlywood;">
+    <div ref="detailsAccordion" class="ui fluid styled accordion" style="background-color: burlywood;">
 
-        <div class="title">
+        <div class="title" data-accordion-section="details">
             <i class="dropdown icon"></i>
             Details
         </div>
@@ -431,7 +442,7 @@ const noKeySignatureBecauseNoChords = computed({
 
 
 
-        <div class="title">
+        <div class="title" data-accordion-section="key-detection-options">
             <i class="dropdown icon"></i>
             Options
         </div>

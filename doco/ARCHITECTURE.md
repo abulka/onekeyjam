@@ -417,10 +417,12 @@ and the validation commands.
   `globals.showWelcomeDialog` by `src/lib/uiPrefs.js` and can be turned back on
   in the Settings view's Preferences section.
 - Fomantic accordion sections remember whether they are open through
-  `src/lib/accordionState.js`, which snapshots the `.active` classes of every
-  title (including nested accordions) and restores them when a view is shown
-  again. The state lives in memory only, so it survives page navigation but not
-  a full reload.
+  `src/lib/accordionState.js`, which snapshots the `.active` classes of each
+  accordion's direct child sections (nested accordions register separately)
+  and restores them when a view is shown again. Sections use stable
+  `data-accordion-section` slugs, so reordering the page cannot move saved
+  state onto the wrong section. The state is kept in `localStorage`, so it
+  survives project loads and browser refreshes.
 
 ## Persistence and backend
 

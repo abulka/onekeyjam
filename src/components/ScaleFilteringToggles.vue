@@ -74,7 +74,7 @@ const soloKeyName = computed(() => {
 
   <div ref="filtersAccordion" class="ui fluid styled accordion mode-filters-accordion"
     style="background-color: burlywood;">
-    <div class="title">
+    <div class="title" data-accordion-section="filters-mode">
       <i class="dropdown icon"></i>
       Filters &amp; mode
     </div>

@@ -1,6 +1,7 @@
 <script setup>
 // @ts-check
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { registerAccordion } from '@/lib/accordionState.js'
 import { globals } from "../../src/lib/globals.js"
 import { sanitiseNoteToSharp } from "../../src/lib/note-tools.js"
 import { setActiveScaleFilterToMatchChord } from "../../src/lib/change-scale.js"
@@ -109,12 +110,21 @@ function onChordTranspose(e) {
   transpose(e.detail.direction)
 }
 
+const commonAccordion = ref(null)
+const optionsAccordion = ref(null)
+let stopCommonAccordion = () => {}
+let stopOptionsAccordion = () => {}
+
 onMounted(() => {
   document.addEventListener("syncChordPickerToJamChord", onSyncChordPickerToJamChord)
   document.addEventListener('chord-play', onChordPlay)
   document.addEventListener('chord-invert', onChordInvert)
   document.addEventListener('chord-fifths', onChordFifths)
   document.addEventListener('chord-transpose', onChordTranspose)
+  if (commonAccordion.value)
+    stopCommonAccordion = registerAccordion(commonAccordion.value, 'chord-picker-common')
+  if (optionsAccordion.value)
+    stopOptionsAccordion = registerAccordion(optionsAccordion.value, 'chord-picker-options')
 })
 
 onUnmounted(() => {
@@ -123,6 +133,8 @@ onUnmounted(() => {
   document.removeEventListener('chord-invert', onChordInvert)
   document.removeEventListener('chord-fifths', onChordFifths)
   document.removeEventListener('chord-transpose', onChordTranspose)
+  stopCommonAccordion()
+  stopOptionsAccordion()
 })
 
 // chordPickerToJammed()  // populated jammed notes from initial state of chordPicker on bootup
@@ -202,9 +214,9 @@ function bypassOn(event) {
 
 
       <!-- Accordion with Common Chords -->
-      <div class="ui fluid styled accordion" style="background-color: burlywood;">
+      <div ref="commonAccordion" class="ui fluid styled accordion" style="background-color: burlywood;">
 
-        <div class="title">
+        <div class="title" data-accordion-section="common-chords">
           <i class="dropdown icon"></i>
           Common Chords
         </div>
@@ -231,7 +243,7 @@ function bypassOn(event) {
           </div> <!-- end tabs -->
         </div> <!-- content -->
 
-        <div class="title">
+        <div class="title" data-accordion-section="transpose">
           <i class="dropdown icon"></i>
           Transpose
         </div>
@@ -274,9 +286,9 @@ function bypassOn(event) {
 
 
       <!-- Accordion with Chord Options -->
-      <div class="ui fluid styled accordion" style="background-color: burlywood;">
+      <div ref="optionsAccordion" class="ui fluid styled accordion" style="background-color: burlywood;">
 
-        <div class="title">
+        <div class="title" data-accordion-section="chord-picker-options">
           <i class="dropdown icon"></i>
           Options
         </div>

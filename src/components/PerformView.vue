@@ -141,7 +141,7 @@ onUnmounted(() => {
   <div class="ui container">
     <div id="big-accordion-perform" class="ui fluid styled accordion" style="background-color: burlywood;">
 
-      <div class="title">
+      <div class="title" data-accordion-section="take">
         <i class="dropdown icon"></i>
         Take
       </div>
@@ -149,7 +149,7 @@ onUnmounted(() => {
         <TakePanel ref="recorder" />
       </div>
 
-      <div class="title">
+      <div class="title" data-accordion-section="pattern-sequencer">
         <i class="dropdown icon"></i>
         Pattern Sequencer
       </div>
@@ -157,7 +157,7 @@ onUnmounted(() => {
         <Sequencer ref="sequencer" />
       </div>
 
-      <div class="title">
+      <div class="title" data-accordion-section="chord-scale-table">
         <i class="dropdown icon"></i>
         Chord / Scale Table
       </div>
@@ -165,7 +165,7 @@ onUnmounted(() => {
         <GrandSummary />
       </div>
 
-      <div class="title">
+      <div class="title" data-accordion-section="active-chord">
         <i class="dropdown icon"></i>
         Active Chord
       </div>
@@ -173,7 +173,7 @@ onUnmounted(() => {
         <ActiveChord />
       </div>
 
-      <div class="title">
+      <div class="title" data-accordion-section="active-scale">
         <i class="dropdown icon"></i>
         Active Scale
       </div>

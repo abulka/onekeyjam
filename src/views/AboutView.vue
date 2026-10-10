@@ -284,11 +284,15 @@ watch(() => globals.helpPage, async () => {
           project, and choose the scale filters used in the right hand.
         </li>
         <li>
-          <strong>Edit Scales</strong> - define the scales and their notes.
-        </li>
-        <li>
           <strong>Key Detection</strong> - set the project key, see the detected
           key-signature candidates, and re-rank every chord scale in that key.
+        </li>
+        <li>
+          <strong>Create Chord Sequence</strong> - build a chord sequence from the
+          project chords.
+        </li>
+        <li>
+          <strong>Edit Scales</strong> - define the scales and their notes.
         </li>
         <li>
           <strong>Import MIDI File</strong> - load a MIDI file and OneKeyJam finds

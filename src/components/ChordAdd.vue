@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { globals } from '@/lib/globals.js'
+import { registerAccordion } from '@/lib/accordionState.js'
 import { chordAddToProjectExact } from "../../src/lib/chordAddToProject.js";
 import { replaceCurrentChordExact } from "../../src/lib/replaceCurrentChord";
 import { chordAddToProject } from "../../src/lib/chordAddToProject.js";
@@ -117,13 +118,19 @@ watch(
     rebuildRadioSymbols(currentChordBeingJammed, chordPickerChordName)
   })
 
+const voicingsAccordion = ref(null)
+let stopVoicingsAccordion = () => {}
+
 onMounted(() => {
   rebuildRadioSymbols(globals.currentChordBeingJammed, props.chordPickerChordName)
   document.addEventListener('chord-add', onChordAdd)
+  if (voicingsAccordion.value)
+    stopVoicingsAccordion = registerAccordion(voicingsAccordion.value, 'chord-add-voicings')
 })
 
 onUnmounted(() => {
   document.removeEventListener('chord-add', onChordAdd)
+  stopVoicingsAccordion()
 })
 
 function rebuildRadioSymbols(currentChordBeingJammed, chordPickerChordName) {
@@ -167,10 +174,10 @@ function replaceCurrentChordDisabled() {
     </span>
 
 
-    <div class="ui fluid styled accordion" style="background-color: burlywood;">
+    <div ref="voicingsAccordion" class="ui fluid styled accordion" style="background-color: burlywood;">
 
 
-      <div class="title">
+      <div class="title" data-accordion-section="voicings">
         <i class="dropdown icon"></i>
         Voicings
       </div>
@@ -206,7 +213,7 @@ function replaceCurrentChordDisabled() {
 
 
 
-      <div class="title">
+      <div class="title" data-accordion-section="edit-notes">
         <i class="dropdown icon"></i>
         Edit Notes
       </div>
