@@ -237,11 +237,13 @@ run of chords and re-ranks only that group. See `doco/MULTI-KEY.md`.
 **Phase 5b, automatic inference**, is experimental and suggestion-only:
 `suggestKeyGroups()` in `src/lib/keyGroupDetection.js` searches for the best
 partition of the arranged chords into contiguous runs, scoring coverage plus
-tonic starts, cadences and parallel sequences, with existing keys as anchors.
-Every suggested group carries alternatives and an ambiguity flag, and nothing
-is applied automatically. It only tests major and natural minor keys, so
-relative keys are ambiguous by design. The Key Groups editor also assigns keys
-per chord by hand, which is the primary path for an ambiguous reading.
+tonic starts, cadences and parallel sequences. Detection ignores existing keys
+and locks, so it always gives its own reading; locks only protect chords when
+the result is applied. Every suggested group carries alternatives, and a close
+runner-up is named with a click to switch, and nothing is applied
+automatically. It only tests major and natural minor keys, so relative keys are
+ambiguous by design. The Key Groups editor also assigns keys per chord by hand,
+which is the primary path for an ambiguous reading.
 
 ## Interaction with the other controls
 

@@ -167,4 +167,19 @@ describe('persistence round-trip', () => {
         assert.equal(reloaded.chords[1].key, undefined);
     });
 
+    it('keeps a true key lock and drops a falsy one on load', () => {
+        const project = {
+            name: 'lock round trip',
+            chords: [
+                chord({ id: 1, keyLocked: true }),
+                chord({ id: 2, chord: 'G7', chordNotes: ['G3', 'B3', 'D4', 'F4'], keyLocked: false }),
+            ],
+            options: { key: { tonic: 'C', type: 'major' } },
+        };
+        const reloaded = JSON.parse(getProjectForPersistence(project, false));
+        emergencyRepairProject(reloaded);
+        assert.equal(reloaded.chords[0].keyLocked, true);
+        assert.equal(reloaded.chords[1].keyLocked, undefined);
+    });
+
 });

@@ -98,6 +98,10 @@
           "description": "Optional section key override. When present, this chord's scales are ranked in this key instead of the project key, so a project can contain several key signature groups.",
           "$ref": "#/definitions/projectKey"
         },
+        "keyLocked": {
+          "description": "When true, key group detection and the copy-key-down action leave this chord's key alone; the chord acts as a group boundary.",
+          "type": "boolean"
+        },
         "scale1Notes": { "type": "array", "items": { "type": "string" } },
         "scale2Notes": { "type": "array", "items": { "type": "string" } },
         "scale3Notes": { "type": "array", "items": { "type": "string" } },

@@ -46,16 +46,23 @@ transposition offset is applied on top by `globals.getChordKey()` /
 
 The Edit view's Key Detection accordion has a **Key Groups** section:
 
-- It lists every grid chord in trigger order with its own key dropdown. The
-  dropdown starts on `Project key` for a fallback chord, or on the chord's
-  section key. Changing one chord calls `applyChordKeySettings()` for that chord
-  only, which splits or merges a group and re-ranks just the affected scales.
-- **↓ all** applies the row's key to that chord and the following chords, up to
-  the next chord that already has its own key. Two clicks set up
-  `Am7 Fmaj7` (A minor) and `Em7 Cmaj7` (E minor), for example.
-- **Detect key groups** runs the experimental detector (see below) and offers
-  suggestions to accept one at a time or all at once. Nothing is applied
-  without the user accepting it.
+- It lists every grid chord in trigger order with its own key dropdown and a
+  **lock** checkbox. The dropdown starts on `Project key` for a fallback chord,
+  or on the chord's section key. Changing one chord calls
+  `applyChordKeySettings()` for that chord only, which splits or merges a group
+  and re-ranks just the affected scales.
+- A **locked** chord (`chord.keyLocked = true`, persisted with the project) is
+  protected from key changes: **Apply** and **↓ all** leave it alone. Locking
+  does not influence detection itself, so locking a key (even a wrong one)
+  cannot skew the suggestion. The dropdown still edits a locked chord by hand.
+- **↓ all** applies the row's key to that chord and the following chords,
+  stopping before the first locked chord. The key can be a section key or the
+  project-key fallback (an empty selection clears back to the project key).
+- **Detect key groups** runs the experimental detector (see below) over the
+  whole grid and offers suggestions with alternatives. Locked chords inside a
+  suggestion are marked and skipped; **Apply all** overwrites every unlocked
+  chord's key with its chosen reading, and a group whose reading is the project
+  key clears those chords back to the fallback.
 
 ## Detection (experimental)
 
@@ -77,13 +84,18 @@ Each candidate run is scored by:
 - a **segment penalty** so each extra group must earn its keep, which keeps
   plain ii-V-I progressions in one key.
 
-Chords that already carry a key are **anchors**: detection never crosses them
-and only analyses the fallback runs between them. The detector still tests only
-major and natural minor keys, so relative keys tie on coverage; that is why
-every suggested group carries **alternatives** (usually the relative
-major/minor pair) and an `ambiguous` marker. The reading is always chosen by
-the user, never applied automatically. Boundaries come from the chords
-themselves, so there is no fixed window size to land a chord off.
+Detection ignores locks and existing keys completely: it always gives one
+reading for the arrangement, so a locked or previously keyed chord cannot skew
+or split the analysis. Locks and keys are applied only by the UI, which skips
+locked chords when writing the result.
+
+The detector still tests only major and natural minor keys, so relative keys
+tie on note fit (A minor and C major, for example, share the same seven notes).
+That is why every suggested group carries **alternatives** and, when the
+runner-up is within half a point, a **close call** note naming it, with a click
+to switch the reading. The reading is always chosen by the user, never applied
+automatically. Boundaries come from the chords themselves, so there is no fixed
+window size to land a chord off.
 
 ## Example library
 

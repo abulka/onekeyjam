@@ -117,6 +117,7 @@ live transposition applied on top.
 | `scale1` | `string` | no | default scale |
 | `scale2`, `scale3` | `string` | no | alternative scales |
 | `key` | `ProjectKey` | no | optional section key override; when set, this chord's scales are ranked in this key instead of the project key. See "Multi-key projects" |
+| `keyLocked` | `boolean` | no | when `true`, the copy-key-down action and the key group detector's Apply step leave this chord's key alone. The lock does not affect detection's scoring. Only `true` is stored |
 | `scale1Notes`, `scale2Notes`, `scale3Notes` | `string[]` | no | derived; stripped on save |
 | `scaleNotesOfChord` | `string[]` | no | derived; stripped on save |
 

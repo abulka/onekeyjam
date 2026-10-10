@@ -256,6 +256,26 @@ export function clearChordKey(chordConfig) {
 }
 
 /**
+ * Lock or unlock a chord's key. A locked chord is left alone by key group
+ * detection and by the copy-key-down action, and acts as a group boundary.
+ * @param {import("./typedefs").ChordConfig|undefined} chordConfig
+ * @param {boolean} locked
+ */
+export function setChordKeyLocked(chordConfig, locked) {
+    if (!chordConfig)
+        return;
+    if (locked)
+        chordConfig.keyLocked = true;
+    else
+        delete chordConfig.keyLocked;
+}
+
+/** Is this chord's key locked against detection and copy-down? */
+export function isChordKeyLocked(chordConfig) {
+    return !!(chordConfig && chordConfig.keyLocked === true);
+}
+
+/**
  * Group the arranged chords into key signature runs, in grid order. Each run is
  * `{ keyName, key, chords }`, where a chord with no key uses the project key.
  * Used by the grid badge and the key group editor. Adjacent runs with the same

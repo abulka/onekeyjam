@@ -3,11 +3,12 @@ import { computed, ref } from 'vue'
 import { globals } from '../../src/lib/globals.js'
 import { keyDetection } from '../../src/lib/keyDetection';
 import { arraysAreEqual } from "../../src/lib/array-tools"
-import { declaredProjectKey, projectKeyName, describeProjectKey, keyGroupsForProject } from '../../src/lib/projectKey.js'
+import { declaredProjectKey, projectKeyName, describeProjectKey, keyGroupsForProject, setChordKeyLocked, isChordKeyLocked } from '../../src/lib/projectKey.js'
 import { applyProjectKeySettings, applyChordKeySettings } from '../../src/lib/projectScaleSettings.js'
 import { sanitiseNoteToSharp } from '../../src/lib/note-tools.js'
 import { setChordFromSymbol } from '../../src/lib/chordPicker.js'
 import { suggestKeyGroups } from '../../src/lib/keyGroupDetection.js'
+import { copyDownTargets } from '../../src/lib/keyGroupEditing.js'
 import { getProjectChordsTriggers } from '../../src/lib/project-chord-triggers.js'
 import ComboScale from './ComboScale.vue'
 
@@ -26,6 +27,16 @@ const keyGroups = computed(() => {
     return keyGroupsForProject(globals.project, gridChords.value)
 })
 
+const distinctKeyCount = computed(() =>
+    new Set(keyGroups.value.map((group) => projectKeyName(group.key))).size)
+
+// "1 group, 1 key in use" / "2 groups, 3 keys in use".
+const keyGroupsSummary = computed(() => {
+    const groups = keyGroups.value.length
+    const keys = distinctKeyCount.value
+    return `${groups} group${groups === 1 ? '' : 's'}, ${keys} key${keys === 1 ? '' : 's'} in use`
+})
+
 // One editable row per grid chord, in trigger order. The select holds the
 // chord's own key when it has one, or empty for the project-key fallback.
 const chordRows = computed(() => {
@@ -35,11 +46,20 @@ const chordRows = computed(() => {
         chordConfig,
         chord: chordConfig.chord,
         hasOwnKey: !!chordConfig.key,
+        locked: isChordKeyLocked(chordConfig),
         selectValue: chordConfig.key
             ? `${sanitiseNoteToSharp(chordConfig.key.tonic)}|${chordConfig.key.type}`
             : '',
     }))
 })
+
+const allChordsLocked = computed(() =>
+    chordRows.value.length > 0 && chordRows.value.every((row) => row.locked))
+
+/** Lock or unlock a chord against detection and the copy-down action. */
+function toggleRowLock(row, event) {
+    setChordKeyLocked(row.chordConfig, event.target.checked)
+}
 
 const KEY_TONICS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
@@ -68,8 +88,9 @@ function setRowKey(row, value) {
 }
 
 /**
- * Apply the row's key to this chord and the following chords up to the next
- * chord that already has its own key, so a run can be assigned in one step.
+ * Apply the row's key to this chord and the following chords, stopping before
+ * the first locked chord. The key can be a section key or the project-key
+ * fallback (an empty selection clears it back to the project key).
  */
 function applyRowKeyToFollowing(row) {
     const rows = chordRows.value
@@ -77,13 +98,7 @@ function applyRowKeyToFollowing(row) {
     if (start < 0)
         return
     const key = parseKeyValue(row.selectValue)
-    const list = []
-    for (let i = start; i < rows.length; i++) {
-        if (i > start && rows[i].hasOwnKey)
-            break
-        list.push(rows[i].chordConfig)
-    }
-    applyChordKeySettings(list, key)
+    applyChordKeySettings(copyDownTargets(rows, start), key)
 }
 
 // Suggested key groups from the experimental modulation detector. Nothing is
@@ -108,32 +123,52 @@ function selectedAlternative(group) {
     return alternatives.find((alternative) => alternative.keyName === group.selectedKeyName) ?? alternatives[0]
 }
 
-function applyDetectedGroup(group) {
+/** The close runner-up, named so a close call is self-explanatory. */
+function runnerUpFor(group) {
+    if (!group.ambiguous || group.alternatives.length < 2)
+        return null
+    return group.alternatives[1]
+}
+
+function chooseAlternative(group, keyName) {
+    group.selectedKeyName = keyName
+}
+
+function lockedCountFor(group) {
+    return group.chords.filter((chord) => isChordKeyLocked(chord)).length
+}
+
+function allLockedFor(group) {
+    return group.chords.length > 0 && lockedCountFor(group) === group.chords.length
+}
+
+// Overwrite the group's unlocked chords with the chosen key. A group that
+// reads as the project key clears the chords' keys so they use the fallback.
+function applyGroupKey(group) {
     const alternative = selectedAlternative(group)
-    if (alternative && alternative.key)
-        applyChordKeySettings(group.chords, { tonic: alternative.key.tonic, type: alternative.key.type }, 'detected')
+    if (!alternative || !alternative.key)
+        return
+    const projectKey = projectKeyName(currentKey.value)
+    const unlocked = group.chords.filter((chord) => !isChordKeyLocked(chord))
+    if (unlocked.length === 0)
+        return
+    const key = alternative.keyName === projectKey
+        ? null
+        : { tonic: alternative.key.tonic, type: alternative.key.type }
+    applyChordKeySettings(unlocked, key, 'detected')
+}
+
+function applyDetectedGroup(group) {
+    applyGroupKey(group)
     detectedGroups.value = detectedGroups.value.filter((entry) => entry !== group)
 }
 
-// Apply every suggestion whose chosen key differs from the project key,
-// leaving a project-key reading as the fallback.
+// Overwrite every unlocked chord with its suggested key.
 function applyAllDetectedGroups() {
-    const projectKey = projectKeyName(currentKey.value)
-    for (const group of [...detectedGroups.value]) {
-        const alternative = selectedAlternative(group)
-        if (alternative && alternative.key && alternative.keyName !== projectKey)
-            applyChordKeySettings(group.chords, { tonic: alternative.key.tonic, type: alternative.key.type }, 'detected')
-    }
+    for (const group of [...detectedGroups.value])
+        applyGroupKey(group)
     detectedGroups.value = []
 }
-
-const hasDetectedChanges = computed(() => {
-    const projectKey = projectKeyName(currentKey.value)
-    return detectedGroups.value.some((group) => {
-        const alternative = selectedAlternative(group)
-        return alternative && alternative.keyName !== projectKey
-    })
-})
 
 const keyIsDeclared = computed(() => !!declaredProjectKey(globals.project))
 
@@ -239,6 +274,83 @@ const noKeySignatureBecauseNoChords = computed({
         </code>
     </p>
 
+    <!-- Key Groups: per-chord section keys, locks and the experimental
+         detector. At the top level so it is always visible with the rest of
+         Key Detection. -->
+    <div v-if="keyGroups.length > 0" class="key-groups-block">
+        <h4 class="key-groups-heading">
+            Key Groups
+            <span class="key-groups-count">({{ keyGroupsSummary }})</span>
+        </h4>
+        <p class="ui small text grey mb-2">
+            Each chord can carry its own section key. Chords that share an effective
+            key form a group; chords with no key of their own follow the project key.
+            Changing a chord's key re-ranks its group's scales:
+            {{ keyGroups.map((group) => projectKeyName(group.key) + ' ×' + group.chords.length).join(' · ') }}
+        </p>
+        <p class="mb-2">
+            <button class="ui mini button" @click="detectKeyGroups()"
+                title="Analyse the unlocked chords and suggest where the key changes (experimental)">Detect key groups</button>
+            <span class="ui small text grey ml-2">
+                Locked chords are boundaries. Apply all overwrites every unlocked chord's key.
+            </span>
+        </p>
+        <div v-if="detectedGroups.length > 0" class="detected-groups mb-2">
+            <p class="ui small text grey mb-1">
+                Detection scores how well each run fits a key. Relative keys such as A minor
+                and C major share the same notes, so close calls are normal. Pick the reading
+                you hear; Apply writes it to every unlocked chord.
+            </p>
+            <div v-for="(group, i) in detectedGroups" :key="i" class="detected-group-row">
+                <span class="detected-chords" :title="group.chords.map((chord) => chord.chord).join(', ')">
+                    <template v-for="(chord, ci) in group.chords" :key="ci"><i
+                        v-if="isChordKeyLocked(chord)" class="lock icon detected-locked"
+                        title="Locked: Apply will skip this chord"></i>{{ chord.chord }}<span
+                        v-if="ci < group.chords.length - 1">, </span></template>
+                </span>
+                <span class="detected-key-label">Key:</span>
+                <select v-model="group.selectedKeyName">
+                    <option v-for="alternative in alternativesFor(group)" :key="alternative.keyName"
+                        :value="alternative.keyName">{{ alternative.keyName }}</option>
+                </select>
+                <span v-if="runnerUpFor(group)" class="detected-close-call">
+                    close call —
+                    <a href="#" @click.prevent="chooseAlternative(group, runnerUpFor(group).keyName)"
+                        :title="'The top keys fit the chords equally closely. Click to use ' + runnerUpFor(group).keyName + ' instead.'">{{ runnerUpFor(group).keyName }} also fits</a>
+                </span>
+                <span v-if="lockedCountFor(group) > 0 && !allLockedFor(group)" class="ui small text grey"
+                    title="Locked chords are left alone when the suggestion is applied">
+                    {{ lockedCountFor(group) }} locked skipped
+                </span>
+                <button v-if="!allLockedFor(group)" class="ui mini basic button" @click="applyDetectedGroup(group)">Apply</button>
+                <span v-else class="ui small text grey">all locked</span>
+            </div>
+            <button class="ui mini button" @click="applyAllDetectedGroups()">Apply all changes</button>
+        </div>
+        <div v-else-if="allChordsLocked" class="ui small text grey mb-2">
+            Every chord is locked, so detection has nothing to analyse.
+        </div>
+        <div class="chord-key-list">
+            <div v-for="row in chordRows" :key="row.id" class="chord-key-row">
+                <label class="chord-key-lock"
+                    :title="row.locked ? 'Locked: detection and copy-down will not change this chord' : 'Lock this chord against detection and copy-down'">
+                    <input type="checkbox" :checked="row.locked" @change="toggleRowLock(row, $event)">
+                    <i :class="row.locked ? 'lock icon' : 'unlock icon'"></i>
+                </label>
+                <code class="chord-key-chord">{{ row.chord }}</code>
+                <select class="chord-key-select" :value="row.selectValue"
+                    :title="row.hasOwnKey ? 'This chord has its own section key' : 'This chord follows the project key'"
+                    @change="setRowKey(row, $event.target.value)">
+                    <option value="">Project key ({{ projectKeyName(currentKey) }})</option>
+                    <option v-for="option in keyOptions" :key="option.value" :value="option.value">{{ option.text }}</option>
+                </select>
+                <button class="ui mini compact button" :disabled="row.locked"
+                    title="Apply this chord's key to the following chords, stopping before a locked chord"
+                    @click="applyRowKeyToFollowing(row)">↓ all</button>
+            </div>
+        </div>
+    </div>
+
     <div class="ui fluid styled accordion" style="background-color: burlywood;">
 
         <div class="title">
@@ -335,58 +447,6 @@ const noKeySignatureBecauseNoChords = computed({
         </div>
     </div>
 
-    <div v-if="keyGroups.length > 0" class="ui fluid styled accordion" style="background-color: burlywood;">
-        <div class="title">
-            <i class="dropdown icon"></i>
-            Key Groups ({{ keyGroups.length }})
-        </div>
-        <div class="content">
-            <p class="ui small text grey mb-2">
-                Each chord can carry its own section key. Chords that share an effective
-                key form a group; chords with no key of their own follow the project key.
-                Changing a chord's key re-ranks its group's scales:
-                {{ keyGroups.map((group) => projectKeyName(group.key) + ' ×' + group.chords.length).join(' · ') }}
-            </p>
-            <p class="mb-2">
-                <button class="ui mini button" @click="detectKeyGroups()"
-                    title="Suggest key groups by analysing the arranged chords (experimental)">Detect key groups</button>
-                <span v-if="detectedGroups.length === 0" class="ui small text grey ml-2">
-                    Analyses runs of chords, anchored by any keys already set, and suggests where the key changes.
-                </span>
-            </p>
-            <div v-if="detectedGroups.length > 0" class="detected-groups mb-2">
-                <div v-for="(group, i) in detectedGroups" :key="i" class="detected-group-row">
-                    <span class="detected-chords" :title="group.chords.map((chord) => chord.chord).join(', ')">
-                        {{ group.chords.map((chord) => chord.chord).join(', ') }}
-                    </span>
-                    <select v-model="group.selectedKeyName">
-                        <option v-for="alternative in alternativesFor(group)" :key="alternative.keyName"
-                            :value="alternative.keyName">{{ alternative.keyName }}</option>
-                    </select>
-                    <span v-if="group.ambiguous" class="ui small text grey"
-                        title="The top keys fit the chords equally well; pick the reading you hear">ambiguous</span>
-                    <button v-if="selectedAlternative(group)?.keyName !== projectKeyName(currentKey)"
-                        class="ui mini basic button" @click="applyDetectedGroup(group)">Apply</button>
-                    <span v-else class="ui small text grey">project key</span>
-                </div>
-                <button v-if="hasDetectedChanges" class="ui mini button" @click="applyAllDetectedGroups()">Apply all changes</button>
-            </div>
-            <div class="chord-key-list">
-                <div v-for="row in chordRows" :key="row.id" class="chord-key-row">
-                    <code class="chord-key-chord">{{ row.chord }}</code>
-                    <select class="chord-key-select" :value="row.selectValue"
-                        :title="row.hasOwnKey ? 'This chord has its own section key' : 'This chord follows the project key'"
-                        @change="setRowKey(row, $event.target.value)">
-                        <option value="">Project key ({{ projectKeyName(currentKey) }})</option>
-                        <option v-for="option in keyOptions" :key="option.value" :value="option.value">{{ option.text }}</option>
-                    </select>
-                    <button class="ui mini compact button" title="Apply this chord's key to the following chords, up to the next chord with its own key"
-                        @click="applyRowKeyToFollowing(row)">↓ all</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- TIP: use class 'hidden' on input and attribute 'for' on label to get cursor to show when hovering over checkbox labels -->
 
 </template>
@@ -399,6 +459,36 @@ const noKeySignatureBecauseNoChords = computed({
 .key-source-badge {
     margin-left: 0.5em;
     color: #6b5a45;
+}
+
+.key-groups-block {
+    margin-top: 0.6em;
+    margin-bottom: 0.6em;
+    border-top: 1px solid #d9c9b0;
+    padding-top: 0.6em;
+}
+
+.key-groups-heading {
+    margin: 0 0 0.3em;
+    font-size: 1.05rem;
+}
+
+.key-groups-count {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: #6b5a45;
+}
+
+.chord-key-lock {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15em;
+    cursor: pointer;
+    color: #6b5a45;
+}
+
+.chord-key-lock input {
+    margin: 0;
 }
 
 .detected-groups {
@@ -420,6 +510,22 @@ const noKeySignatureBecauseNoChords = computed({
     white-space: nowrap;
     font-size: small;
     color: #6b5a45;
+}
+
+.detected-locked {
+    margin-right: 0.15em;
+    color: #8a6d1a;
+}
+
+.detected-key-label {
+    font-size: small;
+    color: #6b5a45;
+}
+
+.detected-close-call {
+    font-size: small;
+    color: #8a6d1a;
+    white-space: nowrap;
 }
 
 .chord-key-list {

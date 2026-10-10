@@ -55,19 +55,30 @@ describe('suggestKeyGroups', () => {
         assert.deepEqual(keyNames(groups), ['Ab major', 'C major', 'G major', 'E major']);
     });
 
-    it('does not cross chords that already carry their own key', () => {
-        const chordsWithAnchor = [
+    it('ignores locks and existing keys when detecting', () => {
+        // A lock (even one holding a wrong key) never splits the run or biases
+        // the reading; locks only gate the UI's Apply action.
+        const chordsWithLock = [
+            { id: 1, chord: 'Am7' },
+            { id: 2, chord: 'Fmaj7' },
+            { id: 3, chord: 'Em7', keyLocked: true, key: { tonic: 'Eb', type: 'major', source: 'user' } },
+            { id: 4, chord: 'Cmaj7' },
+        ];
+        const groups = suggestKeyGroups({ options: {} }, chordsWithLock);
+        assert.deepEqual(groups.map((group) => group.keyName), ['A minor', 'E minor']);
+        assert.deepEqual(groups.map((group) => group.chords.map((chord) => chord.id)), [[1, 2], [3, 4]]);
+    });
+
+    it('analyses a chord that already has a key', () => {
+        const keyed = [
             { id: 1, chord: 'Am7' },
             { id: 2, chord: 'Fmaj7' },
             { id: 3, chord: 'Em7', key: { tonic: 'E', type: 'minor', source: 'user' } },
             { id: 4, chord: 'Cmaj7' },
         ];
-        const groups = suggestKeyGroups({ options: {} }, chordsWithAnchor);
-        // The anchored chord splits the grid: 1-2 are analysed, 3 is left
-        // alone, and 4 is its own short run.
-        assert.deepEqual(groups.map((group) => group.chords.map((chord) => chord.id)), [[1, 2], [4]]);
-        assert.equal(groups[0].keyName, 'A minor');
-        assert.equal(groups[1].keyName, 'C major');
+        const groups = suggestKeyGroups({ options: {} }, keyed);
+        assert.deepEqual(groups.map((group) => group.keyName), ['A minor', 'E minor']);
+        assert.deepEqual(groups.map((group) => group.chords.map((chord) => chord.id)), [[1, 2], [3, 4]]);
     });
 
     it('reports an ambiguous reading when the top keys tie', () => {

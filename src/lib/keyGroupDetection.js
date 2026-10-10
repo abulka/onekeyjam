@@ -374,16 +374,14 @@ function detectRun(chords, options = {}) {
     return groups;
 }
 
-/** Does this chord carry its own section key? Those are detection anchors. */
-function hasOwnKey(chord) {
-    return !!normalizeKey(chord && chord.key);
-}
-
 /**
- * Suggest key signature groups for the arranged chords. Chords with an
- * explicit key are anchors and are never crossed; each anchor-free run is
- * partitioned independently, and every group carries alternatives so the user
- * can pick the reading. A single group means no key change was detected.
+ * Suggest key signature groups for the arranged chords. Detection always
+ * analyses the whole grid and ignores locks and existing keys: a chord's key
+ * or lock never influences the scoring, so a locked key (even a wrong one)
+ * cannot skew or split the suggestion. Locks only matter when the UI applies
+ * the result, where locked chords are skipped. Every group carries
+ * alternatives so the user can pick the reading. A single group means no key
+ * change was detected.
  * @param {Project} [project]
  * @param {ChordConfig[]} [chordConfigs] arranged chords, in order
  * @param {{minSegment?: number, segmentPenalty?: number}} [options]
@@ -392,21 +390,7 @@ function hasOwnKey(chord) {
 export function suggestKeyGroups(project, chordConfigs, options = {}) {
     void project;
     const chords = Array.isArray(chordConfigs) ? chordConfigs : [];
-    const groups = [];
-    let run = [];
-    const flush = () => {
-        if (run.length > 0)
-            groups.push(...detectRun(run, options));
-        run = [];
-    };
-    for (const chord of chords) {
-        if (hasOwnKey(chord)) {
-            flush();
-        }
-        else {
-            run.push(chord);
-        }
-    }
-    flush();
-    return groups;
+    if (chords.length === 0)
+        return [];
+    return detectRun(chords, options);
 }

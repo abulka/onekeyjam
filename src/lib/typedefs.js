@@ -43,6 +43,8 @@
  * @property {string} [scale3] alternative scale e.g. "f# minor"
  * @property {ProjectKey} [key] optional section key override; when set, this
  *   chord's scales are ranked in this key instead of the project key
+ * @property {boolean} [keyLocked] when true, key group detection and the
+ *   "copy key down" action leave this chord's key alone; it is a group boundary
  * @property {Array<string>} [scale1Notes] derived: scale1 expanded to notes sans octave
  * @property {Array<string>} [scale2Notes] derived
  * @property {Array<string>} [scale3Notes] derived

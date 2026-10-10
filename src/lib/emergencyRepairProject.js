@@ -40,17 +40,22 @@ export function emergencyRepairProject(project) {
 
 /**
  * Keep only valid optional section keys on chords. An invalid or partial key is
- * dropped, so the chord falls back to the project key rather than failing.
+ * dropped, so the chord falls back to the project key rather than failing. The
+ * optional key lock is normalised to a boolean too.
  */
 function normaliseChordKeys(project) {
     for (const chord of project.chords) {
-        if (!chord || !chord.key)
+        if (!chord)
             continue;
-        const normalized = normalizeKey(chord.key);
-        if (normalized)
-            chord.key = normalized;
-        else
-            delete chord.key;
+        if (chord.key) {
+            const normalized = normalizeKey(chord.key);
+            if (normalized)
+                chord.key = normalized;
+            else
+                delete chord.key;
+        }
+        if (chord.keyLocked !== true)
+            delete chord.keyLocked;
     }
 }
 
