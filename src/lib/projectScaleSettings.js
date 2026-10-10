@@ -1,6 +1,6 @@
 // @ts-check
 import { globals } from './globals.js';
-import { setProjectKey, setProjectColour, resolveProjectKey, setChordKey, clearChordKey } from './projectKey.js';
+import { setProjectKey, setProjectColour, resolveProjectKey, setChordKey, clearChordKey, setChordKeyLocked } from './projectKey.js';
 import { findMatchingScalesForAllProjectChords, reRankChordScales } from './findMatchingScales.js';
 import { applyKeyScale, changeScaleFilter } from './change-scale.js';
 import { clearScaleRankingCache } from './autoScale.js';
@@ -69,11 +69,15 @@ export function applyChordKeySettings(chordConfigs, key, source = 'user') {
     for (const chordConfig of list) {
         if (!chordConfig)
             continue;
+        // The grid holds clones of the project chords, so write the key to the
+        // project (the source of truth) and let the re-rank push it back onto
+        // the trigger map. Otherwise the change would be lost on save/reload.
+        const projectChord = findProjectChord(globals.project, chordConfig.id) ?? chordConfig;
         if (key)
-            setChordKey(chordConfig, key, source);
+            setChordKey(projectChord, key, source);
         else
-            clearChordKey(chordConfig);
-        reRankChordScales(globals.project, chordConfig);
+            clearChordKey(projectChord);
+        reRankChordScales(globals.project, projectChord);
     }
 
     clearScaleRankingCache();
@@ -85,4 +89,38 @@ export function applyChordKeySettings(chordConfigs, key, source = 'user') {
     else
         changeScaleFilter();
     return true;
+}
+
+/**
+ * Lock or unlock one or more chords against key changes. Writes to the project
+ * (the source of truth) as well as the passed grid entries.
+ * @param {import("./typedefs").ChordConfig|Array<import("./typedefs").ChordConfig>} chordConfigs
+ * @param {boolean} locked
+ * @returns {boolean} whether the change was applied
+ */
+export function applyChordKeyLocked(chordConfigs, locked) {
+    if (!globals.project || !chordConfigs)
+        return false;
+    const list = Array.isArray(chordConfigs) ? chordConfigs : [chordConfigs];
+    for (const chordConfig of list) {
+        if (!chordConfig)
+            continue;
+        const projectChord = findProjectChord(globals.project, chordConfig.id);
+        if (projectChord)
+            setChordKeyLocked(projectChord, locked);
+        setChordKeyLocked(chordConfig, locked);
+    }
+    return true;
+}
+
+/**
+ * Find a project chord config by id. The trigger map holds clones, so edits
+ * made through the grid must be redirected to the project entry.
+ * @param {import("./typedefs").Project} project
+ * @param {number|string} id
+ */
+function findProjectChord(project, id) {
+    return project && Array.isArray(project.chords)
+        ? project.chords.find((chordConfig) => chordConfig.id == id)
+        : undefined;
 }

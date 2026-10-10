@@ -61,8 +61,16 @@ The Edit view's Key Detection accordion has a **Key Groups** section:
 - **Detect key groups** runs the experimental detector (see below) over the
   whole grid and offers suggestions with alternatives. Locked chords inside a
   suggestion are marked and skipped; **Apply all** overwrites every unlocked
-  chord's key with its chosen reading, and a group whose reading is the project
-  key clears those chords back to the fallback.
+  chord's key with its chosen reading.
+- **Apply all** also sets the project key to the first group's reading and
+  clears that group's chords, so the first group becomes the primary key and
+  the later groups become its explicit modulations. This is the same shape the
+  generated multi-key songs use. Per-group **Apply** leaves the project key
+  alone.
+- Key groups (the per-chord `key` and `keyLocked`) live on the project, so they
+  survive a refresh (autosave) and save/export/import. The grid holds clones of
+  the project chords for performance, so edits are written to the project and
+  synced back onto the grid rather than changed on the clone only.
 
 ## Detection (experimental)
 

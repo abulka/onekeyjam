@@ -3,8 +3,8 @@ import { computed, ref } from 'vue'
 import { globals } from '../../src/lib/globals.js'
 import { keyDetection } from '../../src/lib/keyDetection';
 import { arraysAreEqual } from "../../src/lib/array-tools"
-import { declaredProjectKey, projectKeyName, describeProjectKey, keyGroupsForProject, setChordKeyLocked, isChordKeyLocked } from '../../src/lib/projectKey.js'
-import { applyProjectKeySettings, applyChordKeySettings } from '../../src/lib/projectScaleSettings.js'
+import { declaredProjectKey, projectKeyName, describeProjectKey, keyGroupsForProject, isChordKeyLocked } from '../../src/lib/projectKey.js'
+import { applyProjectKeySettings, applyChordKeySettings, applyChordKeyLocked } from '../../src/lib/projectScaleSettings.js'
 import { sanitiseNoteToSharp } from '../../src/lib/note-tools.js'
 import { setChordFromSymbol } from '../../src/lib/chordPicker.js'
 import { suggestKeyGroups } from '../../src/lib/keyGroupDetection.js'
@@ -58,7 +58,7 @@ const allChordsLocked = computed(() =>
 
 /** Lock or unlock a chord against detection and the copy-down action. */
 function toggleRowLock(row, event) {
-    setChordKeyLocked(row.chordConfig, event.target.checked)
+    applyChordKeyLocked(row.chordConfig, event.target.checked)
 }
 
 const KEY_TONICS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -144,11 +144,13 @@ function allLockedFor(group) {
 
 // Overwrite the group's unlocked chords with the chosen key. A group that
 // reads as the project key clears the chords' keys so they use the fallback.
-function applyGroupKey(group) {
+// `projectKeyNameOverride` is used by Apply all, which changes the project key
+// to the first group's reading.
+function applyGroupKey(group, projectKeyNameOverride) {
     const alternative = selectedAlternative(group)
     if (!alternative || !alternative.key)
         return
-    const projectKey = projectKeyName(currentKey.value)
+    const projectKey = projectKeyNameOverride ?? projectKeyName(currentKey.value)
     const unlocked = group.chords.filter((chord) => !isChordKeyLocked(chord))
     if (unlocked.length === 0)
         return
@@ -163,10 +165,24 @@ function applyDetectedGroup(group) {
     detectedGroups.value = detectedGroups.value.filter((entry) => entry !== group)
 }
 
-// Overwrite every unlocked chord with its suggested key.
+// Overwrite every unlocked chord with its suggested key. The first group
+// becomes the project key (like the primary key group of a multi-key song), so
+// its chords fall back to it and the header Project Key follows the music.
 function applyAllDetectedGroups() {
-    for (const group of [...detectedGroups.value])
-        applyGroupKey(group)
+    const groups = [...detectedGroups.value]
+    if (groups.length === 0)
+        return
+    const firstAlternative = selectedAlternative(groups[0])
+    const newProjectKeyName = firstAlternative?.keyName ?? projectKeyName(currentKey.value)
+    // Later groups keep their own keys, judged against the new project key.
+    for (const group of groups.slice(1))
+        applyGroupKey(group, newProjectKeyName)
+    // The first group becomes the fallback, so clear its chords' keys.
+    const firstUnlocked = groups[0].chords.filter((chord) => !isChordKeyLocked(chord))
+    if (firstUnlocked.length > 0)
+        applyChordKeySettings(firstUnlocked, null, 'detected')
+    if (firstAlternative?.key)
+        applyProjectKeySettings({ tonic: firstAlternative.key.tonic, type: firstAlternative.key.type, source: 'detected' })
     detectedGroups.value = []
 }
 
@@ -290,16 +306,18 @@ const noKeySignatureBecauseNoChords = computed({
         </p>
         <p class="mb-2">
             <button class="ui mini button" @click="detectKeyGroups()"
-                title="Analyse the unlocked chords and suggest where the key changes (experimental)">Detect key groups</button>
+                title="Analyse the chords and suggest where the key changes (experimental)">Detect key groups</button>
             <span class="ui small text grey ml-2">
-                Locked chords are boundaries. Apply all overwrites every unlocked chord's key.
+                Locked chords are skipped when applying. Apply all overwrites every unlocked
+                chord and sets the Project Key to the first group.
             </span>
         </p>
         <div v-if="detectedGroups.length > 0" class="detected-groups mb-2">
             <p class="ui small text grey mb-1">
                 Detection scores how well each run fits a key. Relative keys such as A minor
                 and C major share the same notes, so close calls are normal. Pick the reading
-                you hear; Apply writes it to every unlocked chord.
+                you hear; Apply writes it to every unlocked chord. Apply all also sets the
+                Project Key to the first group, so later groups become its modulations.
             </p>
             <div v-for="(group, i) in detectedGroups" :key="i" class="detected-group-row">
                 <span class="detected-chords" :title="group.chords.map((chord) => chord.chord).join(', ')">
@@ -328,7 +346,7 @@ const noKeySignatureBecauseNoChords = computed({
             <button class="ui mini button" @click="applyAllDetectedGroups()">Apply all changes</button>
         </div>
         <div v-else-if="allChordsLocked" class="ui small text grey mb-2">
-            Every chord is locked, so detection has nothing to analyse.
+            Every chord is locked, so applying a suggestion would not change any key.
         </div>
         <div class="chord-key-list">
             <div v-for="row in chordRows" :key="row.id" class="chord-key-row">

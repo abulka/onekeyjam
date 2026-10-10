@@ -1,8 +1,9 @@
 import assert from 'assert';
 import { globals } from '../../src/lib/globals.js';
 import { findMatchingScalesForAllProjectChords } from '../../src/lib/findMatchingScales.js';
-import { applyProjectKeySettings } from '../../src/lib/projectScaleSettings.js';
+import { applyProjectKeySettings, applyChordKeySettings, applyChordKeyLocked } from '../../src/lib/projectScaleSettings.js';
 import { toggleSoloMode } from '../../src/lib/change-scale.js';
+import { buildTriggerMap } from '../../src/lib/triggerMaps.js';
 
 /*
  * When the project key or colour changes, every chord scale is re-ranked in
@@ -98,6 +99,76 @@ describe('applyProjectKeySettings', () => {
         assert.equal(project.options.colour, 'diatonic');
         assert.equal(project.chords[0].scale1, 'D dorian'); // ii is dorian in both profiles
         assert.equal(project.chords[1].scale2 !== '', true);
+    });
+
+});
+
+describe('key group edits persist to the project', () => {
+
+    function makeGridProject() {
+        const project = makeProject();
+        project.songs = { default: { ids: [1, 2, 3], favourites: [], blacklist: [] } };
+        return project;
+    }
+
+    beforeEach(() => {
+        document.broadcastEvent = () => { };
+        globals.chordTriggerMap = {};
+        globals.currentChordTriggerNote = undefined;
+        globals.currentScaleFilter = 'scale1';
+        globals.scaleFiltering.frozen = false;
+        globals.scaleOverrideName = '';
+        globals.scaleOverrideNotes = [];
+        globals.projectKey = null;
+        globals.transpositionSemitones = 0;
+    });
+
+    it('writes a section key to the project chord, not just the grid clone', () => {
+        const project = makeGridProject();
+        globals.project = project;
+        globals.chordTriggerMap = buildTriggerMap(project.chords, project.songs.default.ids, 7);
+        const firstNote = Object.keys(globals.chordTriggerMap)[0];
+        const gridChord = globals.chordTriggerMap[firstNote];
+        // The grid holds a clone, so editing it directly would not persist.
+        assert.notStrictEqual(gridChord, project.chords[0]);
+
+        applyChordKeySettings(gridChord, { tonic: 'F', type: 'major' });
+
+        const projectChord = project.chords.find((chord) => chord.id == gridChord.id);
+        assert.deepEqual(projectChord.key, { tonic: 'F', type: 'major', source: 'user' });
+        assert.deepEqual(globals.chordTriggerMap[firstNote].key, { tonic: 'F', type: 'major', source: 'user' });
+
+        // Simulate a reload: rebuilding the grid from the project keeps the key.
+        const rebuilt = buildTriggerMap(project.chords, project.songs.default.ids, 7);
+        const rebuiltChord = Object.values(rebuilt).find((chord) => chord.id == gridChord.id);
+        assert.deepEqual(rebuiltChord?.key, { tonic: 'F', type: 'major', source: 'user' });
+    });
+
+    it('clears a section key on the project chord when the key is removed', () => {
+        const project = makeGridProject();
+        globals.project = project;
+        globals.chordTriggerMap = buildTriggerMap(project.chords, project.songs.default.ids, 7);
+        const firstNote = Object.keys(globals.chordTriggerMap)[0];
+        const gridChord = globals.chordTriggerMap[firstNote];
+
+        applyChordKeySettings(gridChord, { tonic: 'F', type: 'major' });
+        applyChordKeySettings(gridChord, null);
+
+        assert.equal(project.chords.find((chord) => chord.id == gridChord.id).key, undefined);
+        assert.equal(globals.chordTriggerMap[firstNote].key, undefined);
+    });
+
+    it('persists a key lock to the project chord', () => {
+        const project = makeGridProject();
+        globals.project = project;
+        globals.chordTriggerMap = buildTriggerMap(project.chords, project.songs.default.ids, 7);
+        const firstNote = Object.keys(globals.chordTriggerMap)[0];
+        const gridChord = globals.chordTriggerMap[firstNote];
+
+        applyChordKeyLocked(gridChord, true);
+
+        assert.equal(project.chords.find((chord) => chord.id == gridChord.id).keyLocked, true);
+        assert.equal(globals.chordTriggerMap[firstNote].keyLocked, true);
     });
 
 });

@@ -75,14 +75,23 @@ export function reRankChordScales(project, chordConfig) {
     syncTriggerMapScales(project);
 }
 
-/** @param {Project} project */
+/**
+ * Push the project's chord fields onto the matching trigger-map entries. The
+ * trigger map holds clones, so the section key and lock must be copied too, or
+ * an edit made through the grid would never reach the saved project.
+ * @param {Project} project
+ */
 function syncTriggerMapScales(project) {
     for (const triggerNote of Object.keys(globals.chordTriggerMap)) {
         const triggerConfig = globals.chordTriggerMap[triggerNote];
         const projectConfig = project.chords.find((chordConfig) => chordConfig.id == triggerConfig.id);
         if (!projectConfig)
             continue;
-        for (const field of ['scale1', 'scale2', 'scale3', 'scale1Notes', 'scale2Notes', 'scale3Notes', 'scaleNotesOfChord'])
-            triggerConfig[field] = projectConfig[field];
+        for (const field of ['scale1', 'scale2', 'scale3', 'scale1Notes', 'scale2Notes', 'scale3Notes', 'scaleNotesOfChord', 'key', 'keyLocked']) {
+            if (projectConfig[field] === undefined)
+                delete triggerConfig[field];
+            else
+                triggerConfig[field] = projectConfig[field];
+        }
     }
 }
