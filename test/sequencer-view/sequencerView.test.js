@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, sliderWheelSteps, rowSpan, rowBox, viewOffsetBounds, clampViewOffset } from '@/lib/sequencer-view.js'
+import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, panWouldMove, sliderWheelSteps, rowSpan, rowBox, viewOffsetBounds, clampViewOffset } from '@/lib/sequencer-view.js'
 
 describe('sequencer-view', () => {
     describe('clamp', () => {
@@ -127,6 +127,36 @@ describe('sequencer-view', () => {
             assert.equal(clampViewOffset(120, 8, 56, 72, 0, 127), 64)
             assert.equal(clampViewOffset(0, 8, 56, 72, 0, 127), 56)
             assert.equal(clampViewOffset(60, 8, 56, 72, 0, 127), 60)
+        })
+    })
+
+    describe('panWouldMove', () => {
+        const base = { range: 8, offset: 4, viewportPx: 400, offsetMin: 0, offsetMax: 16 }
+
+        it('is true mid-travel in either direction', () => {
+            assert.equal(panWouldMove({ ...base, deltaPx: 100 }), true)
+            assert.equal(panWouldMove({ ...base, deltaPx: -100 }), true)
+        })
+
+        it('is false when parked at the limit in that direction', () => {
+            assert.equal(panWouldMove({ ...base, offset: 0, deltaPx: -100 }), false)
+            assert.equal(panWouldMove({ ...base, offset: 16, deltaPx: 100 }), false)
+        })
+
+        it('still moves away from the limit', () => {
+            assert.equal(panWouldMove({ ...base, offset: 0, deltaPx: 100 }), true)
+        })
+
+        it('respects the inverted vertical axis', () => {
+            const vertical = { ...base, offsetMin: 56, offsetMax: 64, invert: true }
+            // Scrolling down decreases a vertical offset; parked at the bottom.
+            assert.equal(panWouldMove({ ...vertical, offset: 56, deltaPx: 100 }), false)
+            assert.equal(panWouldMove({ ...vertical, offset: 56, deltaPx: -100 }), true)
+        })
+
+        it('is false without a viewport or a delta', () => {
+            assert.equal(panWouldMove({ ...base, viewportPx: 0, deltaPx: 100 }), false)
+            assert.equal(panWouldMove({ ...base, deltaPx: 0 }), false)
         })
     })
 

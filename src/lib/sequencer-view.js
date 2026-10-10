@@ -149,6 +149,23 @@ export function clampViewOffset(offset, range, boxMin, boxMax, absMin, absMax) {
 }
 
 /**
+ * Whether panning by a pixel delta would move the offset. Used for scroll
+ * chaining: when the view is parked at its limit, wheel events fall through
+ * to the page instead of being swallowed.
+ * @param {{ range:number, offset:number, deltaPx:number, viewportPx:number, offsetMin:number, offsetMax:number, invert?:boolean }} opts
+ * @returns {boolean}
+ */
+export function panWouldMove(opts) {
+    const { range, offset, deltaPx, viewportPx, offsetMin, offsetMax, invert = false } = opts
+    if (!Number.isFinite(viewportPx) || viewportPx <= 0)
+        return false
+    if (!deltaPx)
+        return false
+    const next = panAxis({ range, offset, deltaPx, viewportPx, offsetMin, offsetMax, invert }).offset
+    return Math.abs(next - offset) > 1e-9
+}
+
+/**
  * A gentle step for the wheel over the scroll/zoom sliders: one unit per notch,
  * up to three for a large trackpad delta, and four times that with Shift held.
  * Returns the signed number of steps to apply.

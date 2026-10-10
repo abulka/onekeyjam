@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Note as TonalNote } from '@tonaljs/tonal'
 import { fitRange, filterAllowedRows } from '@/lib/sequencer-notes.js'
-import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, sliderWheelSteps, rowSpan, rowBox, viewOffsetBounds, clampViewOffset } from '@/lib/sequencer-view.js'
+import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, panWouldMove, sliderWheelSteps, rowSpan, rowBox, viewOffsetBounds, clampViewOffset } from '@/lib/sequencer-view.js'
 import { tickToX, xToTick } from '@/lib/sequencer-playhead.js'
 
 // A reusable wrapper around the g200kg <webaudio-pianoroll> custom element.
@@ -306,19 +306,20 @@ function rollGeometry() {
 // Two-finger scroll pans; Ctrl/Cmd-wheel (which is also what trackpad pinch
 // sends) zooms, holding the time/row under the pointer still. Registered in the
 // capture phase so it runs before the widget canvas's own wheel handling.
+// Plain pans hand back to the page once the view cannot move further (scroll
+// chaining); pinch zoom always stays captured so it can never zoom the page.
 function onWheel(event) {
   const geo = rollGeometry()
   if (!geo)
     return
-  event.preventDefault()
-  event.stopPropagation()
-
   const dy = normalizeWheelDelta(event.deltaY, event.deltaMode)
   const dx = normalizeWheelDelta(event.deltaX, event.deltaMode)
-  const px = event.clientX - geo.rect.left
-  const py = event.clientY - geo.rect.top
 
   if (event.ctrlKey || event.metaKey) {
+    event.preventDefault()
+    event.stopPropagation()
+    const px = event.clientX - geo.rect.left
+    const py = event.clientY - geo.rect.top
     const factor = zoomFactor(dy)
     // Anchor measured from the left of the time area and the bottom of the rows.
     const fx = clamp((px - geo.yruler - geo.kbwidth) / geo.swidth, 0, 1)
@@ -352,18 +353,34 @@ function onWheel(event) {
 
   // Shift turns a vertical wheel into horizontal (time) panning.
   const shiftPansTime = event.shiftKey && dx === 0
-  if (Math.abs(dx) > Math.abs(dy) || shiftPansTime) {
-    const deltaPx = shiftPansTime ? dy : dx
-    if (!deltaPx)
-      return
+  const pansTime = Math.abs(dx) > Math.abs(dy) || shiftPansTime
+  const deltaPx = pansTime ? (shiftPansTime ? dy : dx) : dy
+  const moves = pansTime
+    ? panWouldMove({
+      range: xrange.value, offset: xoffset.value, deltaPx,
+      viewportPx: geo.swidth, offsetMin: XOFFSET_MIN, offsetMax: xOffsetLimit.value,
+    })
+    : panWouldMove({
+      range: yrange.value, offset: yoffset.value, deltaPx,
+      viewportPx: geo.sheight, offsetMin: yOffsetLimit.value.min, offsetMax: yOffsetLimit.value.max,
+      invert: true,
+    })
+  if (!moves) {
+    // Parked at the limit: hide the event from the vendor widget (whose
+    // handler blocks scrolling unconditionally) but leave the default alone
+    // so the page scrolls.
+    event.stopPropagation()
+    return
+  }
+  event.preventDefault()
+  event.stopPropagation()
+  if (pansTime) {
     xoffset.value = panAxis({
       range: xrange.value, offset: xoffset.value, deltaPx,
       viewportPx: geo.swidth, offsetMin: XOFFSET_MIN, offsetMax: xOffsetLimit.value,
     }).offset
   }
   else {
-    if (!dy)
-      return
     yoffset.value = panAxis({
       range: yrange.value, offset: yoffset.value, deltaPx: dy,
       viewportPx: geo.sheight, offsetMin: yOffsetLimit.value.min, offsetMax: yOffsetLimit.value.max,
@@ -380,16 +397,34 @@ function onSliderWheel(event) {
   if (!steps)
     return
   const target = event.target
-  if (target === yScrollSlider.value)
-    yoffset.value = clamp(yoffset.value + steps, yOffsetLimit.value.min, yOffsetLimit.value.max)
-  else if (target === yZoomSlider.value)
-    yrange.value = clamp(yrange.value + steps, YRANGE_MIN, yRangeMax.value)
-  else if (target === xScrollSlider.value)
-    xoffset.value = clamp(xoffset.value + steps, XOFFSET_MIN, xOffsetLimit.value)
-  else if (target === xZoomSlider.value)
-    xrange.value = clamp(xrange.value + steps, XRANGE_MIN, xRangeMax.value)
-  else
+  // A tick that would not move its slider falls through to the page.
+  if (target === yScrollSlider.value) {
+    const next = clamp(yoffset.value + steps, yOffsetLimit.value.min, yOffsetLimit.value.max)
+    if (next === yoffset.value)
+      return
+    yoffset.value = next
+  }
+  else if (target === yZoomSlider.value) {
+    const next = clamp(yrange.value + steps, YRANGE_MIN, yRangeMax.value)
+    if (next === yrange.value)
+      return
+    yrange.value = next
+  }
+  else if (target === xScrollSlider.value) {
+    const next = clamp(xoffset.value + steps, XOFFSET_MIN, xOffsetLimit.value)
+    if (next === xoffset.value)
+      return
+    xoffset.value = next
+  }
+  else if (target === xZoomSlider.value) {
+    const next = clamp(xrange.value + steps, XRANGE_MIN, xRangeMax.value)
+    if (next === xrange.value)
+      return
+    xrange.value = next
+  }
+  else {
     return
+  }
   event.preventDefault()
   event.stopPropagation()
 }
