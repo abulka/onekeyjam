@@ -20,8 +20,9 @@ import { isTypingTarget } from './is-typing-target.js'
 
 /**
  * Decide what Space should do for the given transport state. Pure, so it can
- * be unit tested. Priority: stop recording first, then stop the pattern loop,
- * then pause take playback, then start the pattern when it has notes.
+ * be unit tested. Priority: stop recording first, then pause the pattern loop
+ * (keeping the playhead), then pause take playback, then play the pattern
+ * from the playhead when it has notes.
  * @param {{ isRecording: boolean, patternPlaying: boolean, takePlaying: boolean, hasPatternNotes: boolean }} state
  * @returns {TransportAction}
  */

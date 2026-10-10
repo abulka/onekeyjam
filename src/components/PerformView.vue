@@ -116,7 +116,7 @@ onUnmounted(() => {
   <PageMenubar>
     <template #actions>
       <a class="item" :class="{ disabled: !sequencer?.hasNotes }" @click="playChordSequencer()">
-        {{ sequencer?.isPlaying ? 'Stop Pattern Sequencer' : 'Play Pattern Sequencer' }}
+        {{ sequencer?.isPlaying ? 'Pause Pattern Sequencer' : 'Play Pattern Sequencer' }}
       </a>
       <a class="item" @click="toggleRecord()">{{ globals.recording.isRecording ? 'Stop Recording' : 'Record' }}</a>
       <a class="item" :class="{ disabled: globals.recording.isRecording || !globals.recording.background.enabled || !globals.recording.background.available }" @click="captureTake()">Flashback Capture</a>

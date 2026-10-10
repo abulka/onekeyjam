@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { tickToX, xToTick, isTickVisible } from '@/lib/sequencer-playhead.js'
+import { tickToX, xToTick, isTickVisible, resolveResumeTick } from '@/lib/sequencer-playhead.js'
 
 describe('sequencer-playhead', () => {
     const geo = { xoffsetTicks: 0, xrangeTicks: 64, swidth: 640, yruler: 24, kbwidth: 40 }
@@ -40,6 +40,22 @@ describe('sequencer-playhead', () => {
             assert.equal(isTickVisible(64, geo), true)
             assert.equal(isTickVisible(65, geo), false)
             assert.equal(isTickVisible(-1, geo), false)
+        })
+    })
+
+    describe('resolveResumeTick', () => {
+        it('resumes from the head mid-loop', () => {
+            assert.equal(resolveResumeTick(20, 0, 64), 20)
+        })
+
+        it('restarts at the loop start when parked at or past the end', () => {
+            assert.equal(resolveResumeTick(64, 0, 64), 0)
+            assert.equal(resolveResumeTick(80, 16, 64), 16)
+        })
+
+        it('clamps invalid positions at zero', () => {
+            assert.equal(resolveResumeTick(NaN, 0, 64), 0)
+            assert.equal(resolveResumeTick(-5, 0, 64), 0)
         })
     })
 })

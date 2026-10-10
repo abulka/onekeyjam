@@ -57,3 +57,22 @@ export function isTickVisible(tick, geo) {
   const left = geo.yruler + geo.kbwidth
   return x >= left && x <= left + geo.swidth
 }
+
+/**
+ * Where playback should start when Play is pressed with the head parked at
+ * `cursor`: the head itself, unless it sits at or past the loop end, when
+ * playback restarts at the loop start (mirroring how take playback restarts
+ * at zero when already at the end). Pure, so the transport can be tested.
+ * @param {number} cursor
+ * @param {number} loopStart
+ * @param {number} loopEnd
+ * @returns {number}
+ */
+export function resolveResumeTick(cursor, loopStart, loopEnd) {
+  const start = Number.isFinite(Number(loopStart)) ? Math.max(0, Number(loopStart)) : 0
+  const end = Number(loopEnd)
+  const pos = Number.isFinite(Number(cursor)) ? Math.max(0, Number(cursor)) : 0
+  if (Number.isFinite(end) && pos >= end - 1e-6)
+    return start
+  return pos
+}

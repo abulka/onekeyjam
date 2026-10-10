@@ -27,7 +27,7 @@ function onSequenceChange(event) {
 const sequencerButtonTitle = computed(() => {
   if (!sequencerControl.hasNotes)
     return 'This song has no pattern notes to play'
-  return sequencerControl.isPlaying ? 'Stop the pattern sequencer (Space)' : 'Play the pattern sequencer (Space)'
+  return sequencerControl.isPlaying ? 'Pause the pattern sequencer (Space)' : 'Play the pattern sequencer (Space)'
 })
 
 const recordButtonTitle = computed(() => {
@@ -337,7 +337,7 @@ onUnmounted(() => {
           </select>
           <button type="button" class="sequencer-play-toggle" :disabled="!sequencerControl.hasNotes"
             :class="{ playing: sequencerControl.isPlaying }" :title="sequencerButtonTitle" @click="sequencerControl.toggle()">
-            <i :class="sequencerControl.isPlaying ? 'stop icon' : 'play icon'"></i>
+            <i :class="sequencerControl.isPlaying ? 'pause icon' : 'play icon'"></i>
           </button>
           <button type="button" class="record-toggle" :class="{ recording: globals.recording.isRecording }"
             :title="recordButtonTitle" :aria-label="recordButtonTitle" @click="toggleTopBarRecord()">
@@ -349,7 +349,7 @@ onUnmounted(() => {
         <div v-if="sequenceOptionsList.length > 0" class="item sequencer-transport phone-transport">
           <button type="button" class="sequencer-play-toggle" :disabled="!sequencerControl.hasNotes"
             :class="{ playing: sequencerControl.isPlaying }" :title="sequencerButtonTitle" @click="sequencerControl.toggle()">
-            <i :class="sequencerControl.isPlaying ? 'stop icon' : 'play icon'"></i>
+            <i :class="sequencerControl.isPlaying ? 'pause icon' : 'play icon'"></i>
           </button>
           <button type="button" class="record-toggle" :class="{ recording: globals.recording.isRecording }"
             :title="recordButtonTitle" :aria-label="recordButtonTitle" @click="toggleTopBarRecord()">

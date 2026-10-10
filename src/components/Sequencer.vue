@@ -8,6 +8,7 @@ import { audioContext } from '@/lib/audio/general-midi.js'
 import { auditionMidiNote, auditionChord } from '@/lib/midi/audition-note.js'
 import { commitTakeEdit } from '@/lib/midi/recorder.js'
 import { patternToTakeNotes, rowToTakeNotes, scalePatternNoteLengths } from '@/lib/sequencer-notes.js'
+import { resolveResumeTick } from '@/lib/sequencer-playhead.js'
 import { triggerRowCountFor } from '@/lib/demo-pattern.js'
 import { patternOnNote, clearPatternTimers, resetLiveCounts } from '@/lib/pattern-playback.js'
 import { noteSequencerStarted, noteSequencerStopped } from '@/lib/pattern-snapshot.js'
@@ -169,21 +170,54 @@ function markSequencerClock(info) {
     noteSequencerStarted(info.startTime, info.startTick * info.tick2time)
 }
 
-function sequencerPlay(e, from = 'beginning') {
+/** Shared start: (re)start the loop from an explicit tick. */
+function beginPlayback(starttick) {
   if (audioContext && audioContext.state === 'suspended' && typeof audioContext.resume === 'function')
     audioContext.resume()
   clearTimeout(bpmRestartTimer)
   bpmRestartTimer = null
   clearPatternTimers()
   resetLiveCounts()
-  const starttick = (from == 'beginning') ? 0 : undefined
   const info = startPatternPlayback(starttick)
   isPlaying.value = true
   markSequencerClock(info)
 }
 
+function sequencerPlay(e, from = 'beginning') {
+  beginPlayback((from == 'beginning') ? 0 : undefined)
+}
+
 function sequencerResume(e) {
   sequencerPlay(e, 'current')
+}
+
+/** The loop start, where Rewind parks the playhead (tick zero when unknown). */
+function loopStartTick() {
+  if (!panel.value)
+    return 0
+  const loop = panel.value.getLoop()
+  return Math.max(0, Number(loop.start) || 0)
+}
+
+/**
+ * Rewind: stop playback and park the playhead at the loop start, mirroring
+ * the take's Rewind (which stops and returns to zero).
+ */
+function rewindPattern() {
+  if (!panel.value)
+    return
+  const start = loopStartTick()
+  if (isPlaying.value)
+    sequencerStop()
+  panel.value.setCursor(start)
+}
+
+/** Play/pause toggle: pause keeps the head; play resumes from it. */
+function togglePatternPlay() {
+  if (isPlaying.value)
+    sequencerStop()
+  else
+    playIfHasNotes()
 }
 
 // A playhead seek from the panel: move the widget cursor, restarting the loop
@@ -194,10 +228,7 @@ function onPanelSeek({ tick } = {}) {
   const position = Math.max(0, Math.round(Number(tick) || 0))
   if (isPlaying.value) {
     panel.value.stop()
-    clearPatternTimers()
-    resetLiveCounts()
-    const info = startPatternPlayback(position)
-    markSequencerClock(info)
+    beginPlayback(position)
   }
   else {
     panel.value.setCursor(position)
@@ -235,12 +266,17 @@ watch(() => globals.recording.bpm, () => {
     scheduleBpmRestart()
 })
 
-/** Play the pattern from the beginning, but only if it has any notes. */
+/**
+ * Play the pattern, but only if it has any notes. Resumes from the playhead
+ * like the take transport, restarting at the loop start when the head is
+ * already at the end.
+ */
 function playIfHasNotes() {
   refreshNoteCount()
-  if (!hasNotes.value)
+  if (!hasNotes.value || !panel.value)
     return
-  sequencerPlay(null, 'beginning')
+  const loop = panel.value.getLoop()
+  beginPlayback(resolveResumeTick(panel.value.getCursor(), loop.start, loop.end))
 }
 
 // ── Persistence (the pattern belongs to the current project) ────────────────
@@ -620,7 +656,7 @@ watch([isPlaying, hasNotes], () => {
 
 onMounted(async () => {
   registerSequencer({
-    toggle: () => { isPlaying.value ? sequencerStop() : playIfHasNotes() },
+    toggle: () => togglePatternPlay(),
     play: () => playIfHasNotes(),
     stop: () => sequencerStop(),
     selectSequence,
@@ -649,7 +685,7 @@ onUnmounted(() => {
   document.removeEventListener('recording-stopped', onRecordingStopped)
 })
 
-defineExpose({ playIfHasNotes, stop: sequencerStop, resume: sequencerResume, isPlaying, hasNotes, noteCount })
+defineExpose({ playIfHasNotes, stop: sequencerStop, resume: sequencerResume, rewind: rewindPattern, toggle: togglePatternPlay, isPlaying, hasNotes, noteCount })
 </script>
 
 <template>
@@ -679,9 +715,14 @@ defineExpose({ playIfHasNotes, stop: sequencerStop, resume: sequencerResume, isP
     />
 
     <br>
-    <button @click="sequencerPlay()" class="ui button">Play</button>
-    <button @click="sequencerStop()" class="ui button">Stop</button>
-    <button @click="sequencerResume()" class="ui button">Resume</button>
+    <button class="ui icon button" :class="{ disabled: !hasNotes }" :disabled="!hasNotes"
+      title="Rewind to loop start" @click="rewindPattern()">
+      <i class="step backward icon"></i>
+    </button>
+    <button class="ui icon button" :class="{ disabled: !hasNotes }" :disabled="!hasNotes"
+      :title="isPlaying ? 'Pause' : 'Play'" @click="togglePatternPlay()">
+      <i :class="isPlaying ? 'pause icon' : 'play icon'"></i>
+    </button>
     <button @click="fitLoopToNotes()" class="ui button">Fit loop to notes</button>
     <button @click="clearPatternAndLoop()" class="ui button">Clear pattern</button>
     <button :disabled="!canScaleLengths" title="Double every trigger note and stretch the pattern, so the progression runs slower"
