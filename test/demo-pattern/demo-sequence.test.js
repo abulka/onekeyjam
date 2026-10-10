@@ -265,7 +265,7 @@ describe('planKeyedDemoSequences', () => {
     })
 
     it('makes two rows for the same chord under two keys', () => {
-        const { rows, sequences } = planKeyedDemoSequences({
+        const { rows } = planKeyedDemoSequences({
             sequences: {
                 default: [
                     { chord: 'G7', bars: 1, key: { tonic: 'Bb', type: 'major' } },

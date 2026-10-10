@@ -20,26 +20,70 @@ const gridChords = computed(() =>
         .map((note) => globals.chordTriggerMap?.[note])
         .filter(Boolean))
 
-// Runs of grid chords that share an effective key. A run with no explicit keys
-// follows the project key; assigning a key turns the whole run into a group.
+// Runs of grid chords that share an effective key, for the summary line.
 const keyGroups = computed(() => {
     void globals.project // recompute when the project changes
-    return keyGroupsForProject(globals.project, gridChords.value).map((group) => ({
-        ...group,
-        chordNames: group.chords.map((chord) => chord.chord).join(', '),
-        hasOwnKeys: group.chords.some((chord) => chord.key),
+    return keyGroupsForProject(globals.project, gridChords.value)
+})
+
+// One editable row per grid chord, in trigger order. The select holds the
+// chord's own key when it has one, or empty for the project-key fallback.
+const chordRows = computed(() => {
+    void globals.project
+    return gridChords.value.map((chordConfig) => ({
+        id: chordConfig.id,
+        chordConfig,
+        chord: chordConfig.chord,
+        hasOwnKey: !!chordConfig.key,
+        selectValue: chordConfig.key
+            ? `${sanitiseNoteToSharp(chordConfig.key.tonic)}|${chordConfig.key.type}`
+            : '',
     }))
 })
 
-function setGroupKey(group, eventDetail) {
-    const tonic = eventDetail.tonic ? sanitiseNoteToSharp(eventDetail.tonic) : group.key?.tonic
-    const type = eventDetail.type ? eventDetail.type : group.key?.type
-    if (tonic && type)
-        applyChordKeySettings(group.chords, { tonic, type })
+const KEY_TONICS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+// 'minor' is an alias of aeolian; offer the friendly name and the common modes.
+const keyTypes = ['major', 'minor', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'locrian']
+
+const keyOptions = computed(() => {
+    const options = []
+    for (const tonic of KEY_TONICS) {
+        for (const type of keyTypes)
+            options.push({ value: `${tonic}|${type}`, text: `${tonic} ${type}` })
+    }
+    return options
+})
+
+function parseKeyValue(value) {
+    if (!value)
+        return null
+    const [tonic, type] = value.split('|')
+    return tonic && type ? { tonic, type } : null
 }
 
-function clearGroupKey(group) {
-    applyChordKeySettings(group.chords, null)
+/** Set (or clear) the key on a single chord, splitting or merging a run. */
+function setRowKey(row, value) {
+    applyChordKeySettings(row.chordConfig, parseKeyValue(value))
+}
+
+/**
+ * Apply the row's key to this chord and the following chords up to the next
+ * chord that already has its own key, so a run can be assigned in one step.
+ */
+function applyRowKeyToFollowing(row) {
+    const rows = chordRows.value
+    const start = rows.findIndex((entry) => entry.id === row.id)
+    if (start < 0)
+        return
+    const key = parseKeyValue(row.selectValue)
+    const list = []
+    for (let i = start; i < rows.length; i++) {
+        if (i > start && rows[i].hasOwnKey)
+            break
+        list.push(rows[i].chordConfig)
+    }
+    applyChordKeySettings(list, key)
 }
 
 // Suggested key groups from the experimental modulation detector. Nothing is
@@ -47,23 +91,49 @@ function clearGroupKey(group) {
 const detectedGroups = ref([])
 
 function detectKeyGroups() {
-    detectedGroups.value = suggestKeyGroups(globals.project, gridChords.value)
+    detectedGroups.value = suggestKeyGroups(globals.project, gridChords.value).map((group) => ({
+        ...group,
+        selectedKeyName: group.keyName,
+    }))
+}
+
+function alternativesFor(group) {
+    if (group.alternatives.length > 0)
+        return group.alternatives
+    return group.key ? [{ keyName: group.keyName, key: group.key }] : []
+}
+
+function selectedAlternative(group) {
+    const alternatives = alternativesFor(group)
+    return alternatives.find((alternative) => alternative.keyName === group.selectedKeyName) ?? alternatives[0]
 }
 
 function applyDetectedGroup(group) {
-    if (group.key)
-        applyChordKeySettings(group.chords, { tonic: group.key.tonic, type: group.key.type }, 'detected')
+    const alternative = selectedAlternative(group)
+    if (alternative && alternative.key)
+        applyChordKeySettings(group.chords, { tonic: alternative.key.tonic, type: alternative.key.type }, 'detected')
+    detectedGroups.value = detectedGroups.value.filter((entry) => entry !== group)
 }
 
-// Apply every suggestion whose key differs from the project key, leaving the
-// project-key run as the fallback.
+// Apply every suggestion whose chosen key differs from the project key,
+// leaving a project-key reading as the fallback.
 function applyAllDetectedGroups() {
-    for (const group of detectedGroups.value) {
-        if (group.key && group.keyName !== projectKeyName(currentKey.value))
-            applyDetectedGroup(group)
+    const projectKey = projectKeyName(currentKey.value)
+    for (const group of [...detectedGroups.value]) {
+        const alternative = selectedAlternative(group)
+        if (alternative && alternative.key && alternative.keyName !== projectKey)
+            applyChordKeySettings(group.chords, { tonic: alternative.key.tonic, type: alternative.key.type }, 'detected')
     }
     detectedGroups.value = []
 }
+
+const hasDetectedChanges = computed(() => {
+    const projectKey = projectKeyName(currentKey.value)
+    return detectedGroups.value.some((group) => {
+        const alternative = selectedAlternative(group)
+        return alternative && alternative.keyName !== projectKey
+    })
+})
 
 const keyIsDeclared = computed(() => !!declaredProjectKey(globals.project))
 
@@ -74,9 +144,6 @@ const keyDisplayName = computed(() => currentKey.value ? projectKeyName(currentK
 
 // Describes every combination of declared key, detected key and chord presence.
 const keyDescription = computed(() => describeProjectKey(globals.project))
-
-// 'minor' is an alias of aeolian; offer the friendly name and the common modes.
-const keyTypes = ['major', 'minor', 'dorian', 'phrygian', 'lydian', 'mixolydian', 'locrian']
 
 function setProjectKeyFromEvent(eventDetail) {
     const tonic = eventDetail.tonic ? sanitiseNoteToSharp(eventDetail.tonic) : currentKey.value?.tonic
@@ -275,40 +342,47 @@ const noKeySignatureBecauseNoChords = computed({
         </div>
         <div class="content">
             <p class="ui small text grey mb-2">
-                Grid chords that share a key form a key signature group. Chords with no
-                key of their own follow the project key and are shown in italics.
-                Changing a group's key re-ranks only that group's scales.
+                Each chord can carry its own section key. Chords that share an effective
+                key form a group; chords with no key of their own follow the project key.
+                Changing a chord's key re-ranks its group's scales:
+                {{ keyGroups.map((group) => projectKeyName(group.key) + ' ×' + group.chords.length).join(' · ') }}
             </p>
             <p class="mb-2">
                 <button class="ui mini button" @click="detectKeyGroups()"
                     title="Suggest key groups by analysing the arranged chords (experimental)">Detect key groups</button>
                 <span v-if="detectedGroups.length === 0" class="ui small text grey ml-2">
-                    Analyses runs of chords and suggests where the key changes.
+                    Analyses runs of chords, anchored by any keys already set, and suggests where the key changes.
                 </span>
             </p>
             <div v-if="detectedGroups.length > 0" class="detected-groups mb-2">
                 <div v-for="(group, i) in detectedGroups" :key="i" class="detected-group-row">
-                    <code>{{ group.keyName || '(uncertain)' }}</code>
-                    <span class="detected-chords">{{ group.chords.map((chord) => chord.chord).join(', ') }}</span>
-                    <button v-if="group.key && group.keyName !== projectKeyName(currentKey)"
+                    <span class="detected-chords" :title="group.chords.map((chord) => chord.chord).join(', ')">
+                        {{ group.chords.map((chord) => chord.chord).join(', ') }}
+                    </span>
+                    <select v-model="group.selectedKeyName">
+                        <option v-for="alternative in alternativesFor(group)" :key="alternative.keyName"
+                            :value="alternative.keyName">{{ alternative.keyName }}</option>
+                    </select>
+                    <span v-if="group.ambiguous" class="ui small text grey"
+                        title="The top keys fit the chords equally well; pick the reading you hear">ambiguous</span>
+                    <button v-if="selectedAlternative(group)?.keyName !== projectKeyName(currentKey)"
                         class="ui mini basic button" @click="applyDetectedGroup(group)">Apply</button>
-                    <span v-else-if="group.key" class="ui small text grey">project key</span>
+                    <span v-else class="ui small text grey">project key</span>
                 </div>
-                <button class="ui mini button" @click="applyAllDetectedGroups()">Apply all changes</button>
+                <button v-if="hasDetectedChanges" class="ui mini button" @click="applyAllDetectedGroups()">Apply all changes</button>
             </div>
-            <div v-for="(group, i) in keyGroups" :key="i" class="key-group-row">
-                <span class="key-group-combo">
-                    <ComboScale :tonic="sanitiseNoteToSharp(group.key?.tonic ?? 'C')"
-                        :scale-type="group.key?.type ?? 'major'" :scale-types="keyTypes"
-                        @set-scale="setGroupKey(group, $event)" />
-                </span>
-                <span class="key-group-chords" :title="group.chordNames">
-                    <code>{{ group.chordNames || '(no chords)' }}</code>
-                </span>
-                <span v-if="group.hasOwnKeys" class="key-group-actions">
-                    <a href="#" title="Remove the key from this group so it follows the project key"
-                        @click.prevent="clearGroupKey(group)">follow project key</a>
-                </span>
+            <div class="chord-key-list">
+                <div v-for="row in chordRows" :key="row.id" class="chord-key-row">
+                    <code class="chord-key-chord">{{ row.chord }}</code>
+                    <select class="chord-key-select" :value="row.selectValue"
+                        :title="row.hasOwnKey ? 'This chord has its own section key' : 'This chord follows the project key'"
+                        @change="setRowKey(row, $event.target.value)">
+                        <option value="">Project key ({{ projectKeyName(currentKey) }})</option>
+                        <option v-for="option in keyOptions" :key="option.value" :value="option.value">{{ option.text }}</option>
+                    </select>
+                    <button class="ui mini compact button" title="Apply this chord's key to the following chords, up to the next chord with its own key"
+                        @click="applyRowKeyToFollowing(row)">↓ all</button>
+                </div>
             </div>
         </div>
     </div>
@@ -325,13 +399,6 @@ const noKeySignatureBecauseNoChords = computed({
 .key-source-badge {
     margin-left: 0.5em;
     color: #6b5a45;
-}
-
-.key-group-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    padding: 0.15em 0;
 }
 
 .detected-groups {
@@ -355,15 +422,30 @@ const noKeySignatureBecauseNoChords = computed({
     color: #6b5a45;
 }
 
-.key-group-chords {
-    flex: 1;
+.chord-key-list {
+    max-height: 18rem;
+    overflow-y: auto;
+    border-top: 1px solid #d9c9b0;
+    padding-top: 0.3em;
+}
+
+.chord-key-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+    padding: 0.1em 0;
+}
+
+.chord-key-chord {
+    width: 7rem;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.key-group-actions a {
-    font-size: small;
-    white-space: nowrap;
+.chord-key-select {
+    flex: 1;
+    min-width: 8rem;
+    max-width: 16rem;
 }
 </style>

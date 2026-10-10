@@ -59,8 +59,21 @@ function _addIntervals(intervals) {
     }
 }
 
+// Tonal builds a large internal cache when parsing chords, so parse each
+// symbol once per session. The modulation detector ranks many overlapping
+// windows of the same chords, which would otherwise parse them thousands of
+// times.
+const chordParseCache = new Map()
+
+/** @param {string} chordString */
+function parseChord(chordString) {
+    if (!chordParseCache.has(chordString))
+        chordParseCache.set(chordString, Tonal.Chord.get(chordString))
+    return chordParseCache.get(chordString)
+}
+
 function addChordNotes(chordString) {
-    const chordObj = Tonal.Chord.get(chordString)
+    const chordObj = parseChord(chordString)
     if (chordObj.empty) {
         console.warn('Tonal could not find chord', chordString)
         return

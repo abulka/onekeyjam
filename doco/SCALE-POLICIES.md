@@ -235,10 +235,13 @@ sounding chord's key. The Edit view's **Key Groups** editor assigns a key to a
 run of chords and re-ranks only that group. See `doco/MULTI-KEY.md`.
 
 **Phase 5b, automatic inference**, is experimental and suggestion-only:
-`suggestKeyGroups()` in `src/lib/keyGroupDetection.js` scores non-overlapping
-windows of the arranged chords and offers key groups to accept by hand. It is
-never applied automatically, and it only tests major and natural minor keys, so
-relative keys are ambiguous.
+`suggestKeyGroups()` in `src/lib/keyGroupDetection.js` searches for the best
+partition of the arranged chords into contiguous runs, scoring coverage plus
+tonic starts, cadences and parallel sequences, with existing keys as anchors.
+Every suggested group carries alternatives and an ambiguity flag, and nothing
+is applied automatically. It only tests major and natural minor keys, so
+relative keys are ambiguous by design. The Key Groups editor also assigns keys
+per chord by hand, which is the primary path for an ambiguous reading.
 
 ## Interaction with the other controls
 

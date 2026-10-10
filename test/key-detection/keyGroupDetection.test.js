@@ -2,63 +2,94 @@ import assert from 'assert';
 import { suggestKeyGroups } from '../../src/lib/keyGroupDetection.js';
 
 /*
- * Experimental key group detection. It scores non-overlapping windows of the
- * arranged chords and merges runs with the same detected key. It only tests
- * major and natural minor keys, so relative keys are ambiguous; the tie-break
- * prefers the declared project key, then the window's first chord root.
+ * Experimental key group detection. It searches for the partition of the
+ * arranged chords that best explains the music as a few key groups, scoring
+ * pitch coverage plus function cues (tonic starts, V-I cadences and parallel
+ * sequences). Relative keys tie on coverage, so every group carries
+ * alternatives; anchors (chords with an explicit key) are never crossed.
  */
 
-const C_MAJOR = { options: { key: { tonic: 'C', type: 'major' } } };
+function chords(...symbols) {
+    return symbols.map((chord, index) => ({ id: index + 1, chord }));
+}
+
+function keyNames(groups) {
+    return groups.map((group) => group.keyName);
+}
 
 describe('suggestKeyGroups', () => {
 
-    it('finds two keys in a two-key etude', () => {
-        const chords = [
-            { id: 1, chord: 'Cmaj7' }, { id: 2, chord: 'Am7' },
-            { id: 3, chord: 'Dm7' }, { id: 4, chord: 'G7' },
-            { id: 5, chord: 'Ebmaj7' }, { id: 6, chord: 'Cm7' },
-            { id: 7, chord: 'Fm7' }, { id: 8, chord: 'Bb7' },
-        ];
-        const groups = suggestKeyGroups(C_MAJOR, chords);
-        assert.deepEqual(groups.map((group) => group.keyName), ['C major', 'Eb major']);
+    it('finds the two minor keys in two parallel i-VI pairs', () => {
+        const groups = suggestKeyGroups({ options: {} }, chords('Am7', 'Fmaj7', 'Em7', 'Cmaj7'));
+        assert.deepEqual(keyNames(groups), ['A minor', 'E minor']);
+        assert.deepEqual(groups[0].chords.map((chord) => chord.id), [1, 2]);
+        assert.deepEqual(groups[1].chords.map((chord) => chord.id), [3, 4]);
+        // C major covers all four chords, so it is offered as an alternative.
+        assert.ok(groups[0].alternatives.some((alternative) => alternative.keyName === 'C major'));
+    });
+
+    it('finds the two keys of a two-key etude', () => {
+        const groups = suggestKeyGroups({ options: {} }, chords('Cmaj7', 'Am7', 'Dm7', 'G7', 'Ebmaj7', 'Cm7', 'Fm7', 'Bb7'));
+        assert.deepEqual(keyNames(groups), ['C major', 'Eb major']);
         assert.deepEqual(groups[0].chords.map((chord) => chord.id), [1, 2, 3, 4]);
         assert.deepEqual(groups[1].chords.map((chord) => chord.id), [5, 6, 7, 8]);
     });
 
-    it('returns nothing for a single-key tune', () => {
-        const chords = [
-            { id: 1, chord: 'Cmaj7' }, { id: 2, chord: 'Am7' },
-            { id: 3, chord: 'Dm7' }, { id: 4, chord: 'G7' },
-            { id: 5, chord: 'Cmaj7' }, { id: 6, chord: 'Am7' },
-            { id: 7, chord: 'Dm7' }, { id: 8, chord: 'G7' },
-        ];
-        assert.deepEqual(suggestKeyGroups(C_MAJOR, chords), []);
+    it('keeps a ii-V-I in one key', () => {
+        const groups = suggestKeyGroups({ options: {} }, chords('Dm7', 'G7', 'Cmaj7', 'Cmaj7'));
+        assert.deepEqual(keyNames(groups), ['C major']);
     });
 
-    it('returns nothing for a very short tune', () => {
-        assert.deepEqual(suggestKeyGroups(C_MAJOR, [{ id: 1, chord: 'Cmaj7' }]), []);
+    it('keeps a two-bar I-vi-ii-V loop in one key', () => {
+        const groups = suggestKeyGroups({ options: {} }, chords('Cmaj7', 'Am7', 'Dm7', 'G7', 'Cmaj7', 'Am7', 'Dm7', 'G7'));
+        assert.deepEqual(keyNames(groups), ['C major']);
     });
 
-    it('finds the Ab, C, G and E areas of All the Things grid rows', () => {
-        const chords = [
-            { id: 1, chord: 'Fm7' }, { id: 2, chord: 'Bbm7' }, { id: 3, chord: 'Eb7' },
-            { id: 4, chord: 'Abmaj7' }, { id: 5, chord: 'Dbmaj7' },
-            { id: 6, chord: 'Dm7' }, { id: 7, chord: 'G7' }, { id: 8, chord: 'Cmaj7' },
-            { id: 9, chord: 'Am7' }, { id: 10, chord: 'D7' }, { id: 11, chord: 'Gmaj7' },
-            { id: 12, chord: 'F#m7b5' }, { id: 13, chord: 'B7' }, { id: 14, chord: 'Emaj7' },
+    it('finds the four key areas of All the Things grid rows', () => {
+        const groups = suggestKeyGroups({ options: {} }, chords(
+            'Fm7', 'Bbm7', 'Eb7', 'Abmaj7', 'Dbmaj7',
+            'Dm7', 'G7', 'Cmaj7',
+            'Am7', 'D7', 'Gmaj7',
+            'F#m7b5', 'B7', 'Emaj7',
+        ));
+        assert.deepEqual(keyNames(groups), ['Ab major', 'C major', 'G major', 'E major']);
+    });
+
+    it('does not cross chords that already carry their own key', () => {
+        const chordsWithAnchor = [
+            { id: 1, chord: 'Am7' },
+            { id: 2, chord: 'Fmaj7' },
+            { id: 3, chord: 'Em7', key: { tonic: 'E', type: 'minor', source: 'user' } },
+            { id: 4, chord: 'Cmaj7' },
         ];
-        const project = { options: { key: { tonic: 'Ab', type: 'major' } } };
-        const groups = suggestKeyGroups(project, chords);
-        assert.deepEqual(groups.map((group) => group.keyName), ['Ab major', 'C major', 'G major', 'E major']);
+        const groups = suggestKeyGroups({ options: {} }, chordsWithAnchor);
+        // The anchored chord splits the grid: 1-2 are analysed, 3 is left
+        // alone, and 4 is its own short run.
+        assert.deepEqual(groups.map((group) => group.chords.map((chord) => chord.id)), [[1, 2], [4]]);
+        assert.equal(groups[0].keyName, 'A minor');
+        assert.equal(groups[1].keyName, 'C major');
+    });
+
+    it('reports an ambiguous reading when the top keys tie', () => {
+        // Am7, Fmaj7, Em7 and Cmaj7 all fit C major and A minor equally.
+        const groups = suggestKeyGroups({ options: {} }, chords('Am7', 'Fmaj7', 'Em7', 'Cmaj7'));
+        assert.ok(groups[0].ambiguous);
+        assert.ok(groups[0].alternatives.length >= 2);
+    });
+
+    it('gives a single chord one group with alternatives', () => {
+        const groups = suggestKeyGroups({ options: {} }, chords('Am7'));
+        assert.equal(groups.length, 1);
+        assert.ok(groups[0].alternatives.length >= 1);
     });
 
     it('parses a suggested key into a usable project key', () => {
-        const chords = [
-            { id: 1, chord: 'Fm7' }, { id: 2, chord: 'Bbm7' }, { id: 3, chord: 'Eb7' }, { id: 4, chord: 'Abmaj7' },
-            { id: 5, chord: 'Dm7' }, { id: 6, chord: 'G7' }, { id: 7, chord: 'Cmaj7' }, { id: 8, chord: 'Cmaj7' },
-        ];
-        const groups = suggestKeyGroups({ options: { key: { tonic: 'Ab', type: 'major' } } }, chords);
-        assert.deepEqual(groups[1].key, { tonic: 'C', type: 'major', source: 'user' });
+        const groups = suggestKeyGroups({ options: {} }, chords(
+            'Fm7', 'Bbm7', 'Eb7', 'Abmaj7',
+            'Dm7', 'G7', 'Cmaj7', 'Cmaj7',
+        ));
+        const cMajor = groups.find((group) => group.keyName === 'C major');
+        assert.deepEqual(cMajor?.key, { tonic: 'C', type: 'major', source: 'user' });
     });
 
 });
