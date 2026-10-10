@@ -14,13 +14,15 @@ import { resetChordHistory } from './autoScale.js'
  */
 
 const STORAGE_KEY = 'onekeyjam.currentProject'
-const CATEGORIES = ['user', 'featured', 'classic', 'progressions', 'rock', 'multi-key']
+const CATEGORIES = ['user', 'test-songs', 'classic', 'progressions', 'rock', 'multi-key']
+/** Categories from older snapshots: 'featured' was renamed to 'test-songs'. */
+const LEGACY_CATEGORIES = ['featured']
 const SCALE_FILTERS = ['scale1', 'scale2', 'scale3', 'notesOfChord']
 
 /**
  * @typedef {object} CurrentProject
  * @property {string} name the current project name
- * @property {'user'|'featured'|'classic'|'progressions'|'rock'} category which library it came from
+ * @property {'user'|'test-songs'|'classic'|'progressions'|'rock'|'multi-key'} category which library it came from
  * @property {string} [currentChordTriggerNote] highlighted chord trigger note
  * @property {string} currentScaleFilter highlighted scale filter slot
  * @property {string} [currentChordSequenceName] which named chord sequence is shown
@@ -60,9 +62,10 @@ export function readCurrentProject(storage = defaultStorage()) {
             return null
         if (typeof data.name !== 'string')
             return null
+        const category = LEGACY_CATEGORIES.includes(data.category) ? 'test-songs' : data.category
         return {
             name: data.name,
-            category: CATEGORIES.includes(data.category) ? data.category : 'user',
+            category: CATEGORIES.includes(category) ? category : 'user',
             currentChordTriggerNote: typeof data.currentChordTriggerNote === 'string' && data.currentChordTriggerNote
                 ? data.currentChordTriggerNote
                 : undefined,
@@ -119,11 +122,12 @@ export function clearCurrentProject(storage = defaultStorage()) {
  * @returns {CurrentProject}
  */
 export function captureCurrentProject() {
+    const stored = LEGACY_CATEGORIES.includes(globals.projectLibrary.projectIsUserOrFeatured)
+        ? 'test-songs'
+        : globals.projectLibrary.projectIsUserOrFeatured
     return {
         name: globals.projectLibrary.projectName || '',
-        category: CATEGORIES.includes(globals.projectLibrary.projectIsUserOrFeatured)
-            ? globals.projectLibrary.projectIsUserOrFeatured
-            : 'user',
+        category: CATEGORIES.includes(stored) ? stored : 'user',
         currentChordTriggerNote: globals.currentChordTriggerNote,
         currentScaleFilter: globals.currentScaleFilter,
         currentChordSequenceName: globals.currentChordSequenceName,

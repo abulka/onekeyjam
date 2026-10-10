@@ -8,8 +8,8 @@ sample solos. Every control, setting and scale-policy detail lives on the
 
 ## Quick start
 
-1. Click **DEMO** in the menu bar, or load a project from the **File** menu, or
-   click **Random project**. Classic, rock and progression songs each include a
+1. Click **DEMO** in the menu bar, or load a song from the **File** menu, or
+   click **Random song**. Classic, rock and progression songs each include a
    demo loop in the pattern sequencer, so you can press play there to hear the
    song before you solo over it. The Play/Stop button in the menu bar starts
    the loop from any page without opening the panel, and the **Song sequence**
@@ -74,9 +74,9 @@ grid's bottom edge) to fit more on. The grid grows by pulling the next chords
 from the pool, so the same rows come back if you shrink it again. The Blue Bossa
 walkthrough below needs this.
 
-### C Major II-V-I (featured)
+### C Major II-V-I (progressions)
 
-Load **File -> Open Featured... -> C Major II-V-I**. Three chords plus a tritone
+Load **File -> Open Progressions... -> C Major II-V-I**. Three chords plus a tritone
 substitute on the fourth.
 
 | Chord | Filter 1 | Filter 2 | Filter 3 |
@@ -120,9 +120,9 @@ Db7:   F  Ab B  G        (the app hears the substitution)
 Cmaj7: E  B  C  E        (resolve, then rest)
 ```
 
-### C Minor II-V-I (featured)
+### C Minor II-V-I (test songs, dev only)
 
-Load **File -> Open Featured... -> C Minor II-V-I**. The darker, jazzier cousin.
+Load **File -> Open Test-songs... -> C Minor II-V-I**. The darker, jazzier cousin.
 
 | Chord | Filter 1 | Filter 2 | Filter 3 |
 |---|---|---|---|
@@ -306,9 +306,9 @@ D7:    F# C  A  D         (the V of G minor)
 Gm7:   F  D  Bb G         (home)
 ```
 
-### Key awareness demo (featured)
+### Key awareness demo (test songs, dev only)
 
-Load **File -> Open Featured... -> Key awareness demo**. This project exists to
+Load **File -> Open Test-songs... -> Key awareness demo**. This project exists to
 demonstrate the key and colour system. Its chord names tell you what to listen
 for.
 

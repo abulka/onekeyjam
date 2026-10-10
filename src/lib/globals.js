@@ -327,20 +327,22 @@ export const globals = reactive({
     },
 
     projectUrl: '',
-    projects: [],  // featured project combo entries { text, value }, populated from the manifest
+    testSongs: [],  // test-song combo entries { text, value }, populated from the manifest (dev only)
+    projects: [],  // legacy alias of testSongs, kept so old readers keep working
     classicProjects: [],  // classic project combo entries { text, value }, populated from the manifest
     progressionProjects: [],  // progressions combo entries { text, value }, populated from the manifest
     rockProjects: [],  // rock project combo entries { text, value }, populated from the manifest
     multiKeyProjects: [],  // multi-key project combo entries { text, value }, populated from the manifest
     projectLibrary: {
-        projectNames: [],  // featured project names (static library)
+        testSongNames: [],  // test-song names (static library, dev only)
+        projectNames: [],  // legacy alias of testSongNames
         classicProjectNames: [],  // classic project names (static library)
         progressionProjectNames: [],  // progressions names (static library)
         rockProjectNames: [],  // rock project names (static library)
         multiKeyProjectNames: [],  // multi-key names (static library)
         userProjectNames: [],  // locally saved project names (IndexedDB)
         projectName: '',   // current project name
-        projectIsUserOrFeatured: '',  // 'user' | 'featured' | 'classic' | 'progressions' | 'rock' | 'multi-key'
+        projectIsUserOrFeatured: '',  // 'user' | 'test-songs' | 'classic' | 'progressions' | 'rock' | 'multi-key' ('featured' still reads back as test-songs)
     },
     get isProjectLoaded() {
         // A project is loaded if the globals.chordTriggerMap becomes populated

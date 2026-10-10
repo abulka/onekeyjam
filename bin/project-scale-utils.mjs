@@ -27,7 +27,7 @@ export function chordKeyContext(project, chord) {
 
 export const root = fileURLToPath(new URL('..', import.meta.url))
 export const projectDirs = [
-    join(root, 'public/projects/featured'),
+    join(root, 'public/projects/test-songs'),
     join(root, 'public/projects/classic'),
     join(root, 'public/projects/progressions'),
     join(root, 'public/projects/rock'),

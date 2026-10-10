@@ -1,9 +1,10 @@
 <script setup>
 import { computed, nextTick, onMounted, onUnmounted, ref, useSlots } from 'vue'
 import { globals } from '@/lib/globals.js'
-import { newProject, loadUserProject, loadFeaturedProject, loadClassicProject, loadProgressionProject, loadRockProject, loadMultiKeyProject } from '@/lib/boot-project'
+import { newProject, loadUserProject, loadTestSongsProject, loadClassicProject, loadProgressionProject, loadRockProject, loadMultiKeyProject } from '@/lib/boot-project'
 import { saveProject, saveProjectAs, downloadProject, downloadMidiChords, downloadMidiChordsForChordMemoryTrigger, uploadProject } from '@/lib/projectSave.js'
 import { loadDemoProject } from '@/lib/demo-project.js'
+import { buildRandomSongPool, pickRandomSong } from '@/lib/randomSong.js'
 import { sequencerControl, sequenceOptions } from '@/lib/sequencer-control.js'
 import { toggleTopBarRecord, handleSpaceTransportKeyDown } from '@/lib/transport.js'
 import ComboProjectLibrary from '@/components/ComboProjectLibrary.vue'
@@ -108,6 +109,9 @@ async function tutorial() {
   tour.value?.startTour()
 }
 
+// The test-songs library is a dev-only playground; hide it from production builds.
+const showTestSongs = import.meta.env.DEV
+
 function reloadCurrentProject() {
   const category = globals.projectLibrary.projectIsUserOrFeatured
   if (category == 'user')
@@ -121,11 +125,11 @@ function reloadCurrentProject() {
   else if (category == 'multi-key')
     loadMultiKeyProject()
   else
-    loadFeaturedProject()
+    loadTestSongsProject()
 }
 
-function fileOpenFeatured() {
-  fileOpenComponent.value.fileOpen()
+function fileOpenTestSongs() {
+  fileOpenComponent.value?.fileOpen()
 }
 
 function fileOpenClassic() {
@@ -149,8 +153,8 @@ function fileOpenUser() {
 }
 
 /**
- * Load a random project from a static collection. Excludes the current
- * project when there is more than one choice, so the dice always moves you.
+ * Load a random song from a static collection. Excludes the current
+ * song when there is more than one choice, so the dice always moves you.
  */
 function loadRandomFrom(names, label, load) {
   if (!names || names.length === 0) {
@@ -165,26 +169,29 @@ function loadRandomFrom(names, label, load) {
 }
 
 /**
- * Load a random song from the classic and rock collections. Excludes the
- * current project when there is more than one choice, so the dice always
+ * Load a random song from the classic, rock and multi-key collections.
+ * Progressions keep their own dice, test songs are excluded, and the current
+ * song is excluded when there is more than one choice, so the dice always
  * moves you.
  */
-function loadRandomClassicProject() {
-  const classic = globals.projectLibrary.classicProjectNames ?? []
-  const rock = globals.projectLibrary.rockProjectNames ?? []
-  const all = [...classic, ...rock]
-  if (all.length === 0) {
+function loadRandomSong() {
+  const pool = buildRandomSongPool({
+    classic: globals.projectLibrary.classicProjectNames ?? [],
+    rock: globals.projectLibrary.rockProjectNames ?? [],
+    multiKey: globals.projectLibrary.multiKeyProjectNames ?? [],
+  })
+  const pick = pickRandomSong(pool, globals.projectLibrary.projectName)
+  if (!pick) {
     if (typeof $ === 'function')
-      $('body').toast({ message: 'Classic and rock projects are still loading', displayTime: 1500, class: 'brown' })
+      $('body').toast({ message: 'Classic, rock and multi-key songs are still loading', displayTime: 1500, class: 'brown' })
     return
   }
-  const current = globals.projectLibrary.projectName
-  const candidates = all.length > 1 ? all.filter(name => name !== current) : all
-  const name = candidates[Math.floor(Math.random() * candidates.length)]
-  if (rock.includes(name))
-    loadRockProject(name)
+  if (pick.category === 'rock')
+    loadRockProject(pick.name)
+  else if (pick.category === 'multi-key')
+    loadMultiKeyProject(pick.name)
   else
-    loadClassicProject(name)
+    loadClassicProject(pick.name)
 }
 
 /**
@@ -213,7 +220,8 @@ function keyDownListener(e) {
       fileOpenUser()
   }
   if (e.code === 'KeyF' && e.altKey && !e.metaKey && !e.repeat) {
-    fileOpenFeatured()
+    if (showTestSongs)
+      fileOpenTestSongs()
   }
   if (e.code === 'KeyC' && e.altKey && !e.metaKey && !e.repeat) {
     fileOpenClassic()
@@ -282,9 +290,9 @@ onUnmounted(() => {
               class="file icon"></i>
             <span class="description">alt + o</span>
             Open...</a>
-          <a class="item" @click="fileOpenFeatured()"><i class="file icon"></i>
+          <a v-if="showTestSongs" class="item" @click="fileOpenTestSongs()"><i class="file icon"></i>
             <span class="description">alt + f</span>
-            Open Featured...</a>
+            Open Test-songs...</a>
           <a class="item" @click="fileOpenClassic()"><i class="file icon"></i>
             <span class="description">alt + c</span>
             Open Classic...</a>
@@ -356,8 +364,8 @@ onUnmounted(() => {
             <i class="circle icon"></i>
           </button>
         </div>
-        <a class="item" title="Load a random song from the classic and rock collections"
-          @click="loadRandomClassicProject()">🎲 <span class="random-project-full">Random project</span><span class="random-project-short">Project</span></a>
+        <a class="item" title="Load a random song from the classic, rock and multi-key collections"
+          @click="loadRandomSong()">🎲 <span class="random-song-full">Random song</span><span class="random-song-short">Song</span></a>
         <a class="item desktop-only" title="Load a random progression from the progressions collection"
           @click="loadRandomProgressionProject()">🎲 Random progression</a>
         <a class="item desktop-only" title="Load a demo project and get started" @click="loadDemoProject()">DEMO</a>
@@ -378,7 +386,7 @@ onUnmounted(() => {
             <a class="item" @click="tutorial()">Start Tour 🧭</a>
           </div>
         </div>
-        <ComboProjectLibrary ref="fileOpenComponent" userOrFeatured="featured" />
+        <ComboProjectLibrary v-if="showTestSongs" ref="fileOpenComponent" userOrFeatured="test-songs" />
         <ComboProjectLibrary ref="fileOpenComponentClassic" userOrFeatured="classic" />
         <ComboProjectLibrary ref="fileOpenComponentProgressions" userOrFeatured="progressions" />
         <ComboProjectLibrary ref="fileOpenComponentRock" userOrFeatured="rock" />
@@ -485,9 +493,16 @@ phone-portrait widths. */
   display: none !important;
 }
 
-/* "Random project" is shortened to "Project" on phones only; the dice icon
-already conveys the randomness. */
-.random-project-short {
+/* "Random song" is shortened to "Song" on phones only; the dice icon
+already conveys the randomness. The label sits in a span (so it can swap),
+and the space before a span collapses, so the gap after the dice is an
+explicit margin matching the plain-text "Random progression" item. */
+.random-song-full,
+.random-song-short {
+  margin-left: 0.25em;
+}
+
+.random-song-short {
   display: none;
 }
 
@@ -550,11 +565,11 @@ the compact set below. */
     min-width: 0;
   }
 
-  .random-project-full {
+  .random-song-full {
     display: none;
   }
 
-  .random-project-short {
+  .random-song-short {
     display: inline;
   }
 }

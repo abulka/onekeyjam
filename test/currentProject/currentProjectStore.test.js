@@ -105,7 +105,7 @@ describe('current project store', () => {
         globals.project = emptyProject('Captured')
         globals.project.options.soloMode = 'key'
         globals.projectLibrary.projectName = 'Captured'
-        globals.projectLibrary.projectIsUserOrFeatured = 'featured'
+        globals.projectLibrary.projectIsUserOrFeatured = 'test-songs'
         globals.currentChordTriggerNote = 'E3'
         globals.currentScaleFilter = 'scale3'
         globals.currentChordSequenceName = 'medium'
@@ -128,12 +128,29 @@ describe('current project store', () => {
         assert.equal(globals.project.name, 'Captured')
         assert.equal(globals.project.options.soloMode, 'key')
         assert.equal(globals.projectLibrary.projectName, 'Captured')
-        assert.equal(globals.projectLibrary.projectIsUserOrFeatured, 'featured')
+        assert.equal(globals.projectLibrary.projectIsUserOrFeatured, 'test-songs')
         assert.equal(globals.currentChordTriggerNote, 'E3')
         assert.equal(globals.currentScaleFilter, 'scale3')
         assert.equal(globals.currentChordSequenceName, 'medium')
         assert.equal(globals.preferredChordSequenceName, 'medium')
         assert.equal(globals.maxChordConfigs, 21)
+    })
+
+    it('reads a legacy featured snapshot as test-songs', () => {
+        const storage = fakeStorage()
+        storage.setItem(STORAGE_KEY, JSON.stringify({
+            version: 1,
+            name: 'Old Song',
+            category: 'featured',
+            currentScaleFilter: 'scale1',
+            project: emptyProject('Old Song'),
+        }))
+
+        const loaded = readCurrentProject(storage)
+        assert.equal(loaded.category, 'test-songs')
+
+        assert.equal(restoreCurrentProject(storage), true)
+        assert.equal(globals.projectLibrary.projectIsUserOrFeatured, 'test-songs')
     })
 
     it('reports false when there is nothing to restore', () => {

@@ -33,7 +33,7 @@ sound in the browser.
   scale from the top-ranked alternatives for variety. Tune the pool, dwell and
   change chance, reroll, bias by your last solo note, and watch the recent
   chord-to-scale strip. See `doco/SCALE-POLICIES.md`.
-- **Key awareness demo** - a featured project that walks through a tritone
+- **Key awareness demo** - a test song that walks through a tritone
   substitute, a backdoor dominant and a borrowed bVI so you can hear the
   difference the key awareness makes.
 - **Black-key modifiers** - switch scale, transpose chords and turn filtering on
@@ -43,8 +43,8 @@ sound in the browser.
   General MIDI sounds in the browser.
 - **Projects you control** - configure chords and scales with JSON, save projects
   in your browser, and export or import them as files.
-- **Ready-made demo projects** - open a featured project and start playing
-  straight away.
+- **Ready-made songs** - open a classic, progression, rock or multi-key song
+  and start playing straight away.
 - **Import MIDI files** - load a MIDI file and OneKeyJam finds the chords inside
   it, then assigns them across the keyboard so you can trigger each chord with
   one note and jam over it in key. If you know [Cthulhu](https://xferrecords.com/products/cthulhu), this is the same idea.
@@ -55,10 +55,10 @@ sound in the browser.
 
 ## Using the app
 
-1. Open the app and choose **File -> Open Featured...**,
-   **File -> Open Classic...**, **File -> Open Progressions...**,
-   **File -> Open Rock...** or **File -> Open Multi-key...** to load a demo
-   project. The progressions library holds ii-V-I progressions in every key,
+1. Open the app and choose **File -> Open Classic...**,
+   **File -> Open Progressions...**,
+   **File -> Open Rock...** or **File -> Open Multi-key...** to load a
+   ready-made song. The progressions library holds ii-V-I progressions in every key,
    turnarounds and blues; the classic library holds jazz standard changes; the
    rock library holds rock song excerpts; the multi-key library holds songs that
    change key, so you can see the key groups and the scale suggestions follow
@@ -166,7 +166,7 @@ Then open http://localhost:8080/index.html.
 - `src/views/` - the routed pages (edit/home, perform, settings, about, research).
 - `src/components/` - the UI widgets, such as the keyboards and pickers.
 - `src/lib/` - the framework-independent domain logic and MIDI/audio plumbing.
-- `public/projects/` - featured project JSON, plus the generated classic,
+- `public/projects/` - dev-only test-song JSON, plus the generated classic,
   progressions, rock and multi-key libraries.
 - `public/keyboards/` - keyboard config JSON.
 - `bin/generate-manifests.mjs` - writes the manifests that list the static
@@ -174,7 +174,7 @@ Then open http://localhost:8080/index.html.
 - `schemas/` - JSON Schema for the static data.
 - `doco/` - architecture, data model and reference documentation.
 
-The app has no backend. Featured projects and keyboard configs are static JSON,
+The app has no backend. Static songs and keyboard configs are static JSON,
 and projects you save live in your browser via IndexedDB. You can export and
 import projects as JSON to back them up or move them between machines.
 

@@ -2,9 +2,9 @@
 
 OneKeyJam has no backend. Its "database" is:
 
-- static JSON files in `public/projects/featured/`,
+- static JSON files in `public/projects/test-songs/` (dev only),
   `public/projects/classic/`, `public/projects/progressions/`,
-  `public/projects/rock/` and `public/projects/multi-key/` (featured, classic,
+  `public/projects/rock/` and `public/projects/multi-key/` (test-song, classic,
   progressions, rock and multi-key projects), plus `public/keyboards/`
   (keyboard configs), discovered through generated manifests; and
 - user projects saved in the browser with IndexedDB.
@@ -172,7 +172,7 @@ A project can override these in `options.keyboard`.
 
 `bin/generate-manifests.mjs` scans the static folders and writes:
 
-- `public/projects/featured/featured-manifest.json`
+- `public/projects/test-songs/test-songs-manifest.json`
 - `public/projects/classic/classic-manifest.json`
 - `public/projects/progressions/progressions-manifest.json`
 - `public/projects/rock/rock-manifest.json`
@@ -186,7 +186,7 @@ are generated, so they are not validated and should not be edited by hand.
 
 | Where | What | Module |
 | --- | --- | --- |
-| `public/projects/featured/*.json` | featured projects | `src/lib/projectLibrary.js` |
+| `public/projects/test-songs/*.json` | dev-only test songs | `src/lib/projectLibrary.js` |
 | `public/projects/classic/*.json` | generated classic projects | `bin/generate-classic-projects.mjs` |
 | `public/projects/progressions/*.json` | generated progression projects | `bin/generate-progressions-projects.mjs` |
 | `public/projects/rock/*.json` | generated rock projects | `bin/generate-rock-projects.mjs` |

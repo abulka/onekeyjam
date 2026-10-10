@@ -2,7 +2,7 @@
 import { computed } from 'vue'
 import { ref } from "vue";
 import { globals } from '../../src/lib/globals.js'
-import { loadUserProject, loadFeaturedProject, loadClassicProject, loadProgressionProject, loadRockProject, loadMultiKeyProject } from '../../src/lib/boot-project'
+import { loadUserProject, loadTestSongsProject, loadClassicProject, loadProgressionProject, loadRockProject, loadMultiKeyProject } from '../../src/lib/boot-project'
 
 const modalDialogBoxDiv = ref();
 const showDescriptions = ref(false);
@@ -21,7 +21,7 @@ const options = computed({
             return globals.projectLibrary.rockProjectNames
         if (props.userOrFeatured == 'multi-key')
             return globals.projectLibrary.multiKeyProjectNames
-        return globals.projectLibrary.projectNames
+        return globals.projectLibrary.testSongNames ?? globals.projectLibrary.projectNames
     },
 })
 
@@ -37,7 +37,7 @@ const dialogBoxTitle = computed({
             return 'Rock'
         if (props.userOrFeatured == 'multi-key')
             return 'Multi-key'
-        return 'Featured'
+        return 'Test-songs'
     }
 })
 
@@ -63,7 +63,7 @@ function clickOnList(event, name) {
     else if (props.userOrFeatured == 'multi-key')
         loadMultiKeyProject(name)
     else
-        loadFeaturedProject(name)
+        loadTestSongsProject(name)
 }
 
 </script>

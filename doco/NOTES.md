@@ -21,8 +21,8 @@ should begin with `README.md`, then `ARCHITECTURE.md` and `DATA-MODEL.md`.
 
 ## Project history
 
-OneKeyJam is a fully client-side static site. It has no backend: the featured
-project library and keyboard configs are static JSON files under `public/`, and
+OneKeyJam is a fully client-side static site. It has no backend: the static
+song libraries and keyboard configs are static JSON files under `public/`, and
 projects you save are kept in your browser with IndexedDB. You can export and
 import projects as JSON files to back them up or move them between browsers.
 

@@ -202,7 +202,7 @@ watch(() => globals.helpPage, async () => {
       <!-- Getting started -->
       <h2 id="getting-started" class="ui header">Getting started</h2>
       <ol class="steps">
-        <li>Open the app and choose <strong>File &rarr; Open Featured...</strong> to load a demo project.</li>
+        <li>Open the app and choose <strong>File &rarr; Open Progressions...</strong> to load a ready-made song.</li>
         <li>Play the highlighted left-hand keys to trigger chords. On a MIDI keyboard these are the white keys in the chord trigger octave (C3 to B3 by default); on the computer keyboard they are <code>z x c v b n m</code>.</li>
         <li>Play the white keys to the right to jam - the notes are filtered to fit the chord. On the computer keyboard that is <code>q w e r t y u</code>, starting at C4 by default.</li>
         <li>Use the black keys to switch scale or transpose: the left hand for the modifiers, the right hand to choose the scale filter.</li>
@@ -366,8 +366,8 @@ watch(() => globals.helpPage, async () => {
       <h3 id="the-file-menu" class="ui header">The File menu</h3>
       <p>
         Use the <strong>File</strong> menu to open and save projects. It includes
-        <em>New</em>, <em>Open</em>, <em>Open Featured</em>, <em>Open Classic</em>,
-        <em>Open Progressions</em>, <em>Open Rock</em>, <em>Save</em>,
+        <em>New</em>, <em>Open</em>, <em>Open Classic</em>,
+        <em>Open Progressions</em>, <em>Open Rock</em>, <em>Open Multi-key</em>, <em>Save</em>,
         <em>Save As</em>, <em>Reload current Project</em>, <em>Import MIDI file</em>,
         <em>Download / Upload Project</em> (to back up or move projects between
         machines), and <em>Download MIDI Chords</em> in a couple of formats.
@@ -376,7 +376,7 @@ watch(() => globals.helpPage, async () => {
       <h3 id="quick-actions-and-helpers" class="ui header">Quick actions and helpers</h3>
       <ul class="ui list">
         <li><strong>DEMO</strong> - load the C Major II-V-I demo project, focus the keyboard and show a short getting-started guide with a <strong>Jam!</strong> button.</li>
-        <li><strong>Random project</strong> - load a random song from the Classic and Rock collections, for when you cannot decide what to play.</li>
+        <li><strong>Random song</strong> - load a random song from the Classic, Rock and Multi-key collections, for when you cannot decide what to play.</li>
         <li><strong>Random progression</strong> - load a random progression from the Progressions collection.</li>
         <li><strong>Start Tour</strong> - a guided tour of the controls on the current view.</li>
         <li>The chord and scale pickers, with search and audition buttons.</li>
@@ -419,8 +419,8 @@ watch(() => globals.helpPage, async () => {
           JSON, save projects in your browser, and export or import them as files.
         </li>
         <li>
-          <strong>Ready-made demo projects</strong> - open a featured project and
-          start playing straight away.
+          <strong>Ready-made songs</strong> - open a classic, progression, rock or
+          multi-key song and start playing straight away.
         </li>
         <li>
           <strong>Import MIDI files</strong> - load a MIDI file and OneKeyJam

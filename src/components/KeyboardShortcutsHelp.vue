@@ -22,6 +22,9 @@ function joinLabels(offsets) {
   return offsets.map(labelForOffset).join(' ')
 }
 
+// The test-songs shortcut only exists in dev builds, like its File menu entry.
+const showTestSongs = import.meta.env.DEV
+
 const lhWhiteKeys = joinLabels([0, 2, 4, 5, 7, 9, 11])
 const rhWhiteKeys = joinLabels([12, 14, 16, 17, 19, 21, 23])
 const lhCsharp = keyLabel(1)
@@ -195,7 +198,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
           <div class="sc-item"><div class="sc-body"><code class="kb">Esc</code> close this help or the welcome message</div></div>
 
           <h4>File <span class="shortcuts-muted">(main page only)</span></h4>
-          <div class="sc-item"><div class="sc-body"><code class="kb">Alt+N</code> new · <code class="kb">Alt+O</code> open · <code class="kb">Alt+S</code> save · <code class="kb">Alt+F</code> featured · <code class="kb">Alt+C</code> classic · <code class="kb">Alt+P</code> progressions · <code class="kb">Alt+R</code> rock</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">Alt+N</code> new · <code class="kb">Alt+O</code> open · <code class="kb">Alt+S</code> save · <code v-if="showTestSongs" class="kb">Alt+F</code><template v-if="showTestSongs"> test-songs · </template><code class="kb">Alt+C</code> classic · <code class="kb">Alt+P</code> progressions · <code class="kb">Alt+R</code> rock</div></div>
 
           <h4>Notes</h4>
           <ul class="shortcuts-notes">

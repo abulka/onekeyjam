@@ -13,7 +13,9 @@ import { listCustomKeyboards, fetchCustomKeyboard } from './keyboardStore.js'
  * user projects. Replaces the previous Firebase backend.
  */
 
-const FEATURED_MANIFEST = '/projects/featured/featured-manifest.json'
+const TEST_SONGS_MANIFEST = '/projects/test-songs/test-songs-manifest.json'
+// The old '/projects/featured/featured-manifest.json' location is gone; entries
+// always come from a fresh manifest fetch, so no fallback is needed.
 const CLASSIC_MANIFEST = '/projects/classic/classic-manifest.json'
 const PROGRESSIONS_MANIFEST = '/projects/progressions/progressions-manifest.json'
 const ROCK_MANIFEST = '/projects/rock/rock-manifest.json'
@@ -36,19 +38,29 @@ async function fetchManifest(url) {
     }
 }
 
-// Featured projects - the static library in public/projects/featured
+// Test songs - the static library in public/projects/test-songs, only shown in
+// dev mode. The DEMO song lives in progressions instead.
 
-export async function listFeaturedProjects() {
-    const manifest = await fetchManifest(FEATURED_MANIFEST)
+export async function listTestSongs() {
+    const manifest = await fetchManifest(TEST_SONGS_MANIFEST)
+    globals.testSongs = manifest
+    globals.projectLibrary.testSongNames = manifest.map(entry => entry.text)
+    // Legacy field names, kept so anything still reading them keeps working.
     globals.projects = manifest
-    globals.projectLibrary.projectNames = manifest.map(entry => entry.text)
+    globals.projectLibrary.projectNames = globals.projectLibrary.testSongNames
 }
 
-export async function fetchFeaturedProject(name) {
-    const entry = globals.projects.find(p => p.text === name)
-    const url = entry ? entry.value : `/projects/featured/${encodeURIComponent(name + '.json')}`
-    return fetchJson(url)
+export async function fetchTestSong(name) {
+    const entry = (globals.testSongs ?? globals.projects ?? []).find(p => p.text === name)
+    if (entry)
+        return fetchJson(entry.value)
+    return fetchJson(`/projects/test-songs/${encodeURIComponent(name + '.json')}`)
 }
+
+/** @deprecated Use listTestSongs instead. */
+export const listFeaturedProjects = listTestSongs
+/** @deprecated Use fetchTestSong instead. */
+export const fetchFeaturedProject = fetchTestSong
 
 // Classic projects - the static library in public/projects/classic (jazz songs)
 

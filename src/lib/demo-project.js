@@ -2,13 +2,13 @@
 
 /**
  * @module lib/demo-project
- * @desc The "DEMO" quick-start: loads a featured project, focuses the on-screen
+ * @desc The "DEMO" quick-start: loads a progressions project, focuses the on-screen
  * keyboard and shows a short welcome message with a Jam! button.
  */
 
 import { Note } from '@tonaljs/tonal'
 import { globals } from './globals.js'
-import { loadFeaturedProject } from './boot-project.js'
+import { loadProgressionProject } from './boot-project.js'
 import { labelForOffset } from './midi/piano-key-map.js'
 
 export const DEMO_PROJECT_NAME = 'C Major II-V-I'
@@ -39,7 +39,7 @@ function onProjectLoaded() {
 export function loadDemoProject() {
   wireProjectLoadedListener()
   pendingDemo = true
-  loadFeaturedProject(DEMO_PROJECT_NAME)
+  loadProgressionProject(DEMO_PROJECT_NAME)
   // Fallback: if the project-loaded event never arrives, still show the intro.
   setTimeout(() => {
     if (!pendingDemo)

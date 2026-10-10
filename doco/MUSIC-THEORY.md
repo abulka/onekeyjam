@@ -592,7 +592,7 @@ examples; those are listed in `bin/regenerate-project-scales.mjs`.
 The generated classic, progressions and rock libraries carry an explicit key
 and colour per entry (`bin/classic-project-definitions.mjs`,
 `bin/progressions-project-definitions.mjs`, `bin/rock-project-definitions.mjs`)
-and are regenerated key-aware by `npm run generate:libraries`. The featured projects that have a
+and are regenerated key-aware by `npm run generate:libraries`. The test songs that have a
 clear key carry one too; the rest fall back to detection at load.
 
 ## Hearing the difference
@@ -606,7 +606,7 @@ function and colour matter. Good static projects to smoke test:
 
 | Project | Chord | What to listen for |
 |---|---|---|
-| C Major II-V-I (featured) | Db7 (4th trigger) | lydian dominant, adds G natural |
+| C Major II-V-I (progressions) | Db7 (4th trigger) | lydian dominant, adds G natural |
 | Minor ii-V-i with tritone sub in C minor | Db7 | lydian dominant instead of mixolydian |
 | Blue Bossa in C minor | G7 | phrygian dominant instead of mixolydian |
 | Blue Bossa in C minor | Dbmaj7 | lydian, adds G natural |
@@ -614,9 +614,9 @@ function and colour matter. Good static projects to smoke test:
 | Andalusian cadence in A minor | E7 | phrygian dominant |
 | Summertime in A minor | E7 | phrygian dominant |
 | Stella by Starlight in Bb | Ab7 | lydian dominant, adds D natural |
-| Key awareness demo (featured) | all | walks through all of the above |
+| Key awareness demo (test songs, dev only) | all | walks through all of the above |
 
-The featured **Key awareness demo** project is built for this: it visits the
+The test-song **Key awareness demo** project is built for this: it visits the
 home chord, a colour vi chord, the diatonic ii and V, a tritone substitute, a
 backdoor dominant and a borrowed bVI, and its chord names say what to listen
 for. The demo welcome also lists each trigger key with its chord and current
@@ -626,7 +626,7 @@ scale.
 
 ### C minor ii-V-i
 
-The featured `C Minor II-V-I.json` demonstrates a correct minor ii-V-i:
+The test-song `C Minor II-V-I.json` demonstrates a correct minor ii-V-i:
 
 - Dø7 (Dm7b5), voiced F-Ab-C-D.
 - G7alt, voiced F-Ab-B-Eb (a true altered shape: b7, b9, 3, b13).

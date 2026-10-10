@@ -20,8 +20,8 @@ import { keyDetection } from "./keyDetection"
 import { resolveProjectKey } from './projectKey.js'
 import { applyProjectKeySettings } from './projectScaleSettings.js'
 import { applyProjectScaleStyle } from './scaleStyles.js'
-import { fetchFeaturedProject, fetchClassicProject, fetchProgressionProject, fetchRockProject, fetchMultiKeyProject, fetchUserProject } from './projectLibrary';
-import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listFeaturedProjects, listClassicProjects, listProgressionProjects, listRockProjects, listMultiKeyProjects, listUserProjects } from './projectLibrary';
+import { fetchTestSong, fetchClassicProject, fetchProgressionProject, fetchRockProject, fetchMultiKeyProject, fetchUserProject } from './projectLibrary';
+import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listTestSongs, listClassicProjects, listProgressionProjects, listRockProjects, listMultiKeyProjects, listUserProjects } from './projectLibrary';
 import { restoreCurrentProject, flushCurrentProject } from './currentProjectStore.js';
 import { clampBpm } from './uiPrefs.js';
 
@@ -84,16 +84,18 @@ async function setProject(url, project, currentChordTriggerNote) {
 }
 
 
-async function setFeaturedProject(name, project, currentChordTriggerNote) {
+async function setTestSongsProject(name, project, currentChordTriggerNote) {
     // Pass in a project name or a project object
     if (name)
-        project = await fetchFeaturedProject(name)
+        project = await fetchTestSong(name)
     else
         if (!project)
             throw ('No project specified')
 
-    projectChores2name(project, name, currentChordTriggerNote, 'featured');
+    projectChores2name(project, name, currentChordTriggerNote, 'test-songs');
 }
+
+
 
 async function setClassicProject(name, project, currentChordTriggerNote) {
     // Pass in a project name or a project object
@@ -152,13 +154,15 @@ async function setUserProject(name, project, currentChordTriggerNote) {
 
 
 
-export function loadFeaturedProject(name) {
+export function loadTestSongsProject(name) {
     // 1. Called by combobox select in main UI
     // 2. Called by reload current project button in main UI
     if (!name)
         name = globals.projectLibrary.projectName
-    document.broadcastEvent("switch-project", { name, category: 'featured' })
+    document.broadcastEvent("switch-project", { name, category: 'test-songs' })
 }
+/** @deprecated Use loadTestSongsProject instead (kept for old callers). */
+export const loadFeaturedProject = loadTestSongsProject
 export function loadClassicProject(name) {
     // 1. Called by the classic combobox in the File menu
     // 2. Called by reload current project button in main UI
@@ -329,8 +333,8 @@ export function wireProjectEvents() {
             )
         }
         else {
-            if (event.detail.category === 'featured')
-                await setFeaturedProject(
+            if (event.detail.category === 'test-songs' || event.detail.category === 'featured')
+                await setTestSongsProject(
                     event.detail.name,
                     event.detail.project,  // usually undefined
                     event.detail.currentChordTriggerNote,  // usually undefined
@@ -642,7 +646,7 @@ export function linkProjectToKeyboard() {
     })
 
     // This used to be done in wireGuiEvents() but that is gone now, so do here.
-    listFeaturedProjects()
+    listTestSongs()
     listClassicProjects()
     listProgressionProjects()
     listRockProjects()

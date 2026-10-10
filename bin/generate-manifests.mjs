@@ -50,7 +50,7 @@ catch it here with a clear message instead.
 */
 function assertSafeFilenames() {
     const bad = []
-    for (const dir of ['projects/featured', 'projects/classic', 'projects/progressions', 'projects/rock', 'projects/multi-key', 'keyboards']) {
+    for (const dir of ['projects/test-songs', 'projects/classic', 'projects/progressions', 'projects/rock', 'projects/multi-key', 'keyboards']) {
         const fullDir = path.join(root, 'public', dir)
         if (!fs.existsSync(fullDir))
             continue
@@ -73,7 +73,7 @@ function assertSafeFilenames() {
 
 assertSafeFilenames()
 
-const featured = makeManifest('projects/featured', '/projects/featured', { manifestFile: 'featured-manifest.json' })
+const testSongs = makeManifest('projects/test-songs', '/projects/test-songs', { manifestFile: 'test-songs-manifest.json' })
 const classic = makeManifest('projects/classic', '/projects/classic', { manifestFile: 'classic-manifest.json', useJsonName: true })
 const progressions = makeManifest('projects/progressions', '/projects/progressions', { manifestFile: 'progressions-manifest.json', useJsonName: true })
 const rock = makeManifest('projects/rock', '/projects/rock', { manifestFile: 'rock-manifest.json', useJsonName: true })
@@ -81,8 +81,8 @@ const multiKey = makeManifest('projects/multi-key', '/projects/multi-key', { man
 const keyboards = makeManifest('keyboards', '/keyboards', { useJsonName: true })
 
 fs.writeFileSync(
-    path.join(root, 'public', 'projects', 'featured', 'featured-manifest.json'),
-    JSON.stringify(featured, null, 2)
+    path.join(root, 'public', 'projects', 'test-songs', 'test-songs-manifest.json'),
+    JSON.stringify(testSongs, null, 2)
 )
 fs.writeFileSync(
     path.join(root, 'public', 'projects', 'classic', 'classic-manifest.json'),
@@ -105,4 +105,4 @@ fs.writeFileSync(
     JSON.stringify(keyboards, null, 2)
 )
 
-console.log(`Generated manifests: ${featured.length} featured projects, ${classic.length} classic projects, ${progressions.length} progressions, ${rock.length} rock projects, ${multiKey.length} multi-key projects, ${keyboards.length} keyboards`)
+console.log(`Generated manifests: ${testSongs.length} test-songs projects, ${classic.length} classic projects, ${progressions.length} progressions, ${rock.length} rock projects, ${multiKey.length} multi-key projects, ${keyboards.length} keyboards`)

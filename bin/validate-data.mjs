@@ -19,7 +19,7 @@ const targets = [
         label: 'project',
         schema: loadJson(join(root, 'schemas/project.schema.json')),
         dirs: [
-            join(root, 'public/projects/featured'),
+            join(root, 'public/projects/test-songs'),
             join(root, 'public/projects/classic'),
             join(root, 'public/projects/progressions'),
             join(root, 'public/projects/rock'),

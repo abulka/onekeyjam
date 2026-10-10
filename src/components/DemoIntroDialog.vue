@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { globals } from '@/lib/globals.js'
 import { requestKeyboardFocus } from '@/lib/demo-project.js'
 
-// The quick-start welcome shown after the DEMO button loads a featured project.
+// The quick-start welcome shown after the DEMO button loads a progressions project.
 // Rendered as a translucent panel pinned to the top-right so the main UI stays
 // visible (and interactive) while the user reads the instructions.
 
