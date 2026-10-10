@@ -430,7 +430,11 @@ The full options, presets and smoke tests are on the **Reference** page.
 Treat these as performance settings, set before you start:
 
 - **Key:** set it once per song. Change it only when the song's key changes, or
-  when you deliberately want to re-harmonise.
+  when you deliberately want to re-harmonise. When a song genuinely modulates,
+  use the **Key Groups** list in Key Detection instead: give each section its own
+  key and the solo follows the changes. The multi-key library (File -> Open
+  Multi-key...) has examples, from a two-key etude to modulating standards such
+  as All the Things You Are.
 - **Colour:** jazz for most things, diatonic for modal or simple material,
   adventurous when you want to push. It lives in the scale Options. Do not
   change it mid-solo; change it between takes if at all.

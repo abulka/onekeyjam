@@ -680,10 +680,11 @@ is the traditional jazz short-hand ("play Ab melodic minor over G7alt").
 
 ## Known limitations
 
-- The project has one key. Tunes that modulate (many standards do) get the
-  key's bias for every chord, though out-of-key chords still receive scales
-  that fit them, because chord tones and function preferences are licensed.
-  Per-section keys would be the next step.
+- The project has one base key, but a chord may carry its own **section key**,
+  so a tune that modulates can name each group and get scales ranked in the
+  right key (many standards do; the multi-key library is full of examples). The
+  Key Groups editor, the grid badges and the experimental detector are described
+  in `doco/MULTI-KEY.md`.
 - Key detection is major/minor only and is genuinely ambiguous for some
   progressions (relative major/minor, blues, modal vamps). That is why the
   detected key is a default the user can override, and why the static

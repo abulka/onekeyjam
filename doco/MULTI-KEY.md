@@ -4,9 +4,10 @@ Status: implemented (manual groups), experimental detection.
 
 A project may contain chords that belong to more than one key — for example a
 verse in A minor and a chorus in C major, or a standard that keeps modulating.
-Today OneKeyJam carries a single key per project (`options.key`), and detection,
-filtering and scale ranking all use that one key. This document describes the
-implemented extension.
+`options.key` is the project's base key (the first key group, and the fallback
+for any chord without its own key), and a chord may carry its own optional
+**section key**. Scale ranking, Solo in key and the header key all follow the
+chord that is sounding. This document describes the model.
 
 ## Model
 

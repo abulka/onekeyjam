@@ -142,4 +142,46 @@ export const MULTI_KEY_DEFINITIONS = [
         key: key('Bb', 'major'),
         tempo: 176,
     },
+    {
+        // Stella is a chain of ii-V's that never settles. Each pair is labelled
+        // with the key it resolves to, and the project key stays Bb, its home.
+        name: 'Stella by Starlight in Bb (multi-key)',
+        sequences: {
+            default: [
+                ...section(key('D', 'minor'), ['Em7b5', 'A7b9']),
+                ...section(key('Bb', 'major'), ['Cm7', 'F7']),
+                ...section(key('Eb', 'major'), ['Fm7', 'Bb7']),
+                ...section(key('Bb', 'major'), ['Ebmaj7', 'Ab7']),
+                ...section(key('Bb', 'major'), ['Bbmaj7', 'Gm7', 'Cm7', 'F7', 'Bbmaj7', 'Gm7', 'Cm7', 'F7']),
+                ...section(key('Eb', 'major'), ['Fm7', 'Bb7', 'Ebmaj7', 'Fm7', 'Bb7', 'Ebmaj7']),
+                ...section(key('F', 'minor'), ['Gm7b5', 'C7b9']),
+                ...section(key('Eb', 'major'), ['Fm7', 'Bb7', 'Ebmaj7', 'Ebmaj7']),
+            ],
+        },
+        key: key('Bb', 'major'),
+        tempo: 84,
+    },
+    {
+        // Body and Soul's A section sits in Db and dips to F minor and Eb; the
+        // bridge moves through Ab to C minor before returning.
+        name: 'Body and Soul in Db (multi-key)',
+        sequences: {
+            default: [
+                ...section(key('Db', 'major'), ['Ebm7', 'Ab7', 'Dbmaj7', 'Gbmaj7']),
+                ...section(key('F', 'minor'), ['Gm7b5', 'C7b9']),
+                ...section(key('Eb', 'major'), ['Fm7', 'Bb7']),
+                ...section(key('Db', 'major'), ['Ebm7', 'Ab7', 'Dbmaj7', 'Gbmaj7']),
+                ...section(key('F', 'minor'), ['Gm7b5', 'C7b9']),
+                ...section(key('Eb', 'major'), ['Fm7', 'Bb7']),
+                ...section(key('Db', 'major'), ['Ebm7', 'Ab7', 'Dbmaj7']),
+                ...section(key('Ab', 'major'), ['Bbm7', 'Eb7', 'Abmaj7']),
+                ...section(key('C', 'minor'), ['Dm7b5', 'G7']),
+                ...section(key('Db', 'major'), ['Ebm7', 'Ab7', 'Dbmaj7', 'Gbmaj7']),
+                ...section(key('F', 'minor'), ['Gm7b5', 'C7b9']),
+                ...section(key('Eb', 'major'), ['Fm7', 'Bb7']),
+            ],
+        },
+        key: key('Db', 'major'),
+        tempo: 66,
+    },
 ]

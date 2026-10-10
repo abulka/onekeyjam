@@ -91,6 +91,36 @@ You Are), where each chord's own scale is the point. The `1` `2` `3` shortcuts
 still switch scales temporarily even when Solo in key is on. Press `0` (or hold
 `Shift` and press the top left black key on a MIDI keyboard) to toggle it.
 
+### Multi-key songs
+
+A song can change key. Each chord or run of chords may carry its own **section
+key**, and chords that share a key form a **key group**; a chord with no key of
+its own follows the project key. In the **Key Detection** accordion on the Edit
+view, the **Key Groups** list is where you work with them:
+
+- Each grid chord has a key dropdown. Picking a key gives that chord its own
+  group and re-ranks its scale suggestions in that key; choosing **Project key**
+  clears it again.
+- **↓ all** copies a row's key to the following chords, stopping before a locked
+  chord.
+- The **lock** checkbox protects a chord: **Detect** and **↓ all** leave its key
+  alone. Locking does not change detection's own opinion, so a locked wrong key
+  cannot mislead it.
+- **Detect key groups** reads the chords and suggests where the key changes,
+  naming the closest alternatives (relative keys such as A minor and C major
+  share the same notes, so close calls are normal). **Apply all** writes the
+  chosen readings, sets the **Project Key** to the first group so the later
+  groups read as its modulations, and leaves locked chords untouched.
+
+The chord grid shows each row's key as a small badge, with a divider where the
+key changes. The **Key:** chip at the top of the page follows the chord you are
+playing, so it moves through the modulations as you jam, and **Solo in key**
+follows the same sounding key. The multi-key library (**File -> Open
+Multi-key...**) has ready-made examples: two-key and mode-shift etudes, a Giant
+Steps-style thirds cycle, and multi-key versions of All the Things You Are,
+Blue Bossa, The Girl from Ipanema, Stella by Starlight, Body and Soul and
+Rhythm Changes.
+
 ---
 
 ## Right-hand scales and filter slots

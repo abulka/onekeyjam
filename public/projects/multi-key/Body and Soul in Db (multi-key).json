@@ -1,0 +1,227 @@
+{
+  "name": "Body and Soul in Db (multi-key)",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Ebm7",
+      "chord": "Ebm7",
+      "bass": "Eb2",
+      "scale1": "Eb dorian",
+      "scale2": "Eb aeolian",
+      "scale3": "Eb minor pentatonic"
+    },
+    {
+      "id": 2,
+      "name": "Ab7",
+      "chord": "Ab7",
+      "bass": "Ab2",
+      "scale1": "Ab mixolydian",
+      "scale2": "Ab lydian dominant",
+      "scale3": "Ab mixolydian b6"
+    },
+    {
+      "id": 3,
+      "name": "Dbmaj7",
+      "chord": "Dbmaj7",
+      "bass": "Db2",
+      "scale1": "Db major",
+      "scale2": "Db lydian",
+      "scale3": "Db harmonic major"
+    },
+    {
+      "id": 4,
+      "name": "Gbmaj7",
+      "chord": "Gbmaj7",
+      "bass": "Gb2",
+      "scale1": "Gb lydian",
+      "scale2": "Gb major",
+      "scale3": "Gb harmonic major"
+    },
+    {
+      "id": 5,
+      "name": "Gm7b5",
+      "chord": "Gm7b5",
+      "bass": "G2",
+      "scale1": "G locrian #2",
+      "scale2": "G locrian",
+      "scale3": "G minor blues",
+      "key": {
+        "tonic": "F",
+        "type": "minor",
+        "source": "user"
+      }
+    },
+    {
+      "id": 6,
+      "name": "C7b9",
+      "chord": "C7b9",
+      "bass": "C2",
+      "scale1": "C phrygian dominant",
+      "scale2": "C half-whole diminished",
+      "scale3": "C altered",
+      "key": {
+        "tonic": "F",
+        "type": "minor",
+        "source": "user"
+      }
+    },
+    {
+      "id": 7,
+      "name": "Fm7",
+      "chord": "Fm7",
+      "bass": "F2",
+      "scale1": "F dorian",
+      "scale2": "F aeolian",
+      "scale3": "F minor pentatonic",
+      "key": {
+        "tonic": "Eb",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 8,
+      "name": "Bb7",
+      "chord": "Bb7",
+      "bass": "Bb2",
+      "scale1": "Bb mixolydian",
+      "scale2": "Bb lydian dominant",
+      "scale3": "Bb mixolydian b6",
+      "key": {
+        "tonic": "Eb",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 9,
+      "name": "Bbm7",
+      "chord": "Bbm7",
+      "bass": "Bb2",
+      "scale1": "Bb dorian",
+      "scale2": "Bb aeolian",
+      "scale3": "Bb minor pentatonic",
+      "key": {
+        "tonic": "Ab",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 10,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6",
+      "key": {
+        "tonic": "Ab",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 11,
+      "name": "Abmaj7",
+      "chord": "Abmaj7",
+      "bass": "Ab2",
+      "scale1": "Ab major",
+      "scale2": "Ab lydian",
+      "scale3": "Ab harmonic major",
+      "key": {
+        "tonic": "Ab",
+        "type": "major",
+        "source": "user"
+      }
+    },
+    {
+      "id": 12,
+      "name": "Dm7b5",
+      "chord": "Dm7b5",
+      "bass": "D2",
+      "scale1": "D locrian #2",
+      "scale2": "D locrian",
+      "scale3": "D minor blues",
+      "key": {
+        "tonic": "C",
+        "type": "minor",
+        "source": "user"
+      }
+    },
+    {
+      "id": 13,
+      "name": "G7",
+      "chord": "G7",
+      "bass": "G2",
+      "scale1": "G phrygian dominant",
+      "scale2": "G lydian dominant",
+      "scale3": "G mixolydian",
+      "key": {
+        "tonic": "C",
+        "type": "minor",
+        "source": "user"
+      }
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "Db",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz",
+    "scaleStyle": "follow"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13
+      ],
+      "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t66o4c1d1e1f1g1a1b1o5c1o4c1d1e1f1g1a1b1o5c1o4c1d1e1o5d1e1f1g1a1o4c1d1e1f1g1a1b1o5c1",
+      "markstart": 0,
+      "markend": 512,
+      "tempo": 66,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Excerpt (32 bars)"
+    }
+  }
+}

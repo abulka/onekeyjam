@@ -56,11 +56,13 @@ sound in the browser.
 ## Using the app
 
 1. Open the app and choose **File -> Open Featured...**,
-   **File -> Open Classic...**, **File -> Open Progressions...** or
-   **File -> Open Rock...** to load a demo project. The progressions library
-   holds ii-V-I progressions in every key, turnarounds and blues; the classic
-   library holds jazz standard changes; the rock library holds rock song
-   excerpts.
+   **File -> Open Classic...**, **File -> Open Progressions...**,
+   **File -> Open Rock...** or **File -> Open Multi-key...** to load a demo
+   project. The progressions library holds ii-V-I progressions in every key,
+   turnarounds and blues; the classic library holds jazz standard changes; the
+   rock library holds rock song excerpts; the multi-key library holds songs that
+   change key, so you can see the key groups and the scale suggestions follow
+   the modulations.
 2. Play the highlighted left-hand keys to trigger chords.
 3. Play anywhere to the right to jam - the notes are filtered to fit the chord.
 4. Press `1` `2` `3` `4` `5` from anywhere to switch scale1/scale2/scale3, the
@@ -69,7 +71,9 @@ sound in the browser.
    keys do the same on a MIDI keyboard, and transpose stays on the black keys.
 5. Set the project key in the **Key Detection** section, and use the **Solo in
    key** checkbox and **Colour** dropdown above the chord/scale grid to shape
-   the solo.
+   the solo. For a song that changes key, use the **Key Groups** list there to
+   give a section its own key, or press **Detect key groups** to have it
+   suggested.
 
 A guided tour is available from the **Start Tour** item in the menu. To build a
 project from an existing MIDI file, choose **File -> Import MIDI file...** and
@@ -154,7 +158,8 @@ Then open http://localhost:8080/index.html.
 | `npm run generate:classic` | Regenerate the classic project library, keys included. |
 | `npm run generate:progressions` | Regenerate the progressions project library, keys included. |
 | `npm run generate:rock` | Regenerate the rock project library, keys included. |
-| `npm run generate:libraries` | Regenerate the classic, progressions and rock libraries. |
+| `npm run generate:multi-key` | Regenerate the multi-key project library. |
+| `npm run generate:libraries` | Regenerate the classic, progressions, rock and multi-key libraries. |
 
 ## Project structure
 
@@ -162,7 +167,7 @@ Then open http://localhost:8080/index.html.
 - `src/components/` - the UI widgets, such as the keyboards and pickers.
 - `src/lib/` - the framework-independent domain logic and MIDI/audio plumbing.
 - `public/projects/` - featured project JSON, plus the generated classic,
-  progressions and rock libraries.
+  progressions, rock and multi-key libraries.
 - `public/keyboards/` - keyboard config JSON.
 - `bin/generate-manifests.mjs` - writes the manifests that list the static
   libraries, since static hosting cannot list a directory.
