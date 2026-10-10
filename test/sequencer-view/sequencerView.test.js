@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, sliderWheelSteps } from '@/lib/sequencer-view.js'
+import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, sliderWheelSteps, rowSpan, rowBox, viewOffsetBounds, clampViewOffset } from '@/lib/sequencer-view.js'
 
 describe('sequencer-view', () => {
     describe('clamp', () => {
@@ -83,6 +83,50 @@ describe('sequencer-view', () => {
 
         it('returns the offset unchanged for a zero-sized viewport', () => {
             assert.equal(panAxis({ range: 8, offset: 3, deltaPx: 100, viewportPx: 0, offsetMin: 0, offsetMax: 256 }).offset, 3)
+        })
+    })
+
+    describe('rowSpan', () => {
+        it('spans the finite values and ignores the rest', () => {
+            assert.deepEqual(rowSpan([60, 64, 67]), { min: 60, max: 67 })
+            assert.deepEqual(rowSpan([64, NaN, 60]), { min: 60, max: 64 })
+        })
+
+        it('is null for an empty panel', () => {
+            assert.equal(rowSpan([]), null)
+            assert.equal(rowSpan(null), null)
+        })
+    })
+
+    describe('rowBox', () => {
+        it('widens the span by the padding with an exclusive top', () => {
+            assert.deepEqual(rowBox({ min: 60, max: 67 }, 2), { min: 58, max: 70 })
+        })
+
+        it('is null without a span', () => {
+            assert.equal(rowBox(null), null)
+        })
+    })
+
+    describe('viewOffsetBounds', () => {
+        it('keeps the window inside the box', () => {
+            assert.deepEqual(viewOffsetBounds(8, 56, 72, 0, 127), { min: 56, max: 64 })
+        })
+
+        it('parks at the box start when the range covers it', () => {
+            assert.deepEqual(viewOffsetBounds(24, 56, 72, 0, 127), { min: 56, max: 56 })
+        })
+
+        it('is unbounded without a box', () => {
+            assert.deepEqual(viewOffsetBounds(8, null, null, 0, 127), { min: 0, max: 127 })
+        })
+    })
+
+    describe('clampViewOffset', () => {
+        it('pulls stray offsets back inside', () => {
+            assert.equal(clampViewOffset(120, 8, 56, 72, 0, 127), 64)
+            assert.equal(clampViewOffset(0, 8, 56, 72, 0, 127), 56)
+            assert.equal(clampViewOffset(60, 8, 56, 72, 0, 127), 60)
         })
     })
 

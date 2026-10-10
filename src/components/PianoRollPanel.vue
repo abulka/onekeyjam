@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { Note as TonalNote } from '@tonaljs/tonal'
 import { fitRange, filterAllowedRows } from '@/lib/sequencer-notes.js'
-import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, sliderWheelSteps } from '@/lib/sequencer-view.js'
+import { clamp, normalizeWheelDelta, zoomFactor, zoomAxis, panAxis, sliderWheelSteps, rowSpan, rowBox, viewOffsetBounds, clampViewOffset } from '@/lib/sequencer-view.js'
 import { tickToX, xToTick } from '@/lib/sequencer-playhead.js'
 
 // A reusable wrapper around the g200kg <webaudio-pianoroll> custom element.
@@ -19,6 +19,14 @@ const YRANGE_MIN = 3
 const YRANGE_MAX = 48
 const YOFFSET_MIN = 0
 const YOFFSET_MAX = 127
+// Exclusive top of the row space (rows run 0-127); bounds the row box.
+const ROW_TOP = 128
+// Empty timeline kept scrollable past the content so the pattern can grow.
+const X_MARGIN_BARS = 1
+// Vertical context kept around the rows that matter: the trigger rows are the
+// pattern's editable lane, so they get roomy margins; plain notes hug tighter.
+const ROW_PAD_ALLOWED = 4
+const ROW_PAD_NOTES = 1
 
 const props = defineProps({
   // 0 means "measure the container and fill it".
@@ -76,6 +84,10 @@ const yoffset = ref(props.initialYOffset)
 // Length of the notes in bars. Used to bound horizontal scrolling so it stops
 // at the end of the content instead of running into empty space.
 const contentBars = ref(0)
+// Scrollable row box (padded, exclusive top), or null when there is nothing to
+// frame and scrolling stays free. The pattern frames its trigger rows, which
+// are the editable lane; otherwise the notes themselves are framed.
+const contentRowBox = ref(null)
 
 function refreshContentBars(list) {
   const notes = list || getNotes()
@@ -86,16 +98,56 @@ function refreshContentBars(list) {
   const tb = finite(props.timebase, 1920)
   const loopBars = Math.max(Number(loop.start) || 0, Number(loop.end) || 0) / tb
   contentBars.value = Math.max(noteBars, loopBars)
+  refreshContentRows(notes)
 }
 
-// Furthest the view can scroll right, so the last note can reach the right edge.
+/** Recompute the scrollable row box from the whitelist or the notes. */
+function refreshContentRows(notes) {
+  const hasWhitelist = Array.isArray(props.allowedRows) && props.allowedRows.length > 0
+  const span = hasWhitelist
+    ? rowSpan(props.allowedRows)
+    : rowSpan((notes || getNotes()).map(note => note.n))
+  if (!span) {
+    contentRowBox.value = null
+    return
+  }
+  const box = rowBox(span, hasWhitelist ? ROW_PAD_ALLOWED : ROW_PAD_NOTES)
+  contentRowBox.value = {
+    min: clamp(box.min, YOFFSET_MIN, YOFFSET_MAX),
+    max: clamp(box.max, YOFFSET_MIN + 1, ROW_TOP),
+  }
+}
+
+// Furthest the view can scroll right, so the last note can reach the right
+// edge, plus a bar of empty timeline to grow into.
 const xScrollMax = computed(() => {
-  const extra = contentBars.value - xrange.value
+  const extra = contentBars.value + X_MARGIN_BARS - xrange.value
   return extra > 0 ? Math.ceil(extra) : 0
 })
 
 // The scroll sliders and wheel handlers all clamp horizontal scroll to this.
 const xOffsetLimit = computed(() => clamp(xScrollMax.value, XOFFSET_MIN, XOFFSET_MAX))
+
+// Widest the view may zoom out: the content plus the margin, so zooming out
+// parks at the content frame instead of showing empty space.
+const xRangeMax = computed(() => clamp(contentBars.value + X_MARGIN_BARS, XRANGE_MIN, XRANGE_MAX))
+
+// Tallest the view may zoom out: the framed rows, or free when unframed.
+const yRangeMax = computed(() => {
+  const box = contentRowBox.value
+  if (!box)
+    return YRANGE_MAX
+  return clamp(box.max - box.min, 1, YRANGE_MAX)
+})
+
+// Where the view may scroll vertically: inside the framed rows when framed.
+const yOffsetLimit = computed(() => {
+  const box = contentRowBox.value
+  const range = Number(yrange.value) || props.initialYRange
+  if (!box)
+    return { min: YOFFSET_MIN, max: YOFFSET_MAX }
+  return viewOffsetBounds(range, box.min, box.max, YOFFSET_MIN, YOFFSET_MAX)
+})
 
 const computedWidth = computed(() => {
   const raw = props.width || measuredWidth.value || props.minWidth
@@ -129,10 +181,15 @@ function applyY() {
   const el = pianoroll.value
   if (!el)
     return
-  const yr = finite(yrange.value, props.initialYRange)
+  const yr = clamp(finite(yrange.value, props.initialYRange), YRANGE_MIN, yRangeMax.value)
   const yo = Number(yoffset.value)
+  const box = contentRowBox.value
   el.yrange = Math.max(1, yr)
-  el.yoffset = Number.isFinite(yo) ? yo : props.initialYOffset
+  el.yoffset = clampViewOffset(
+    Number.isFinite(yo) ? yo : props.initialYOffset, yr,
+    box ? box.min : null, box ? box.max : null,
+    YOFFSET_MIN, YOFFSET_MAX,
+  )
 }
 
 function applyConfig() {
@@ -197,6 +254,34 @@ watch([xScrollSlider, xOffsetLimit], () => {
   applyXScrollMax()
 })
 
+// Keep the zoom slider from opening onto empty timeline past the content.
+watch([xZoomSlider, xRangeMax], () => {
+  if (xrange.value > xRangeMax.value)
+    xrange.value = Math.round(xRangeMax.value * 1000) / 1000
+  if (xZoomSlider.value)
+    xZoomSlider.value.max = Math.max(XRANGE_MIN, xRangeMax.value)
+})
+
+// Keep the vertical scroll/zoom sliders' ranges and values within the framed
+// rows, pulling the view back when the content shrinks underneath it.
+function applyYScrollMax() {
+  if (yScrollSlider.value)
+    yScrollSlider.value.max = Math.max(yOffsetLimit.value.min + 1, yOffsetLimit.value.max)
+  if (yZoomSlider.value)
+    yZoomSlider.value.max = Math.max(YRANGE_MIN, yRangeMax.value)
+}
+
+watch([yScrollSlider, yZoomSlider, yOffsetLimit, yRangeMax], () => {
+  if (yrange.value > yRangeMax.value)
+    yrange.value = Math.round(yRangeMax.value * 100) / 100
+  const { min, max } = yOffsetLimit.value
+  if (yoffset.value < min)
+    yoffset.value = min
+  else if (yoffset.value > max)
+    yoffset.value = max
+  applyYScrollMax()
+})
+
 // ── Wheel pan and zoom ─────────────────────────────────────────────────────
 
 function rollGeometry() {
@@ -239,22 +324,29 @@ function onWheel(event) {
     const fx = clamp((px - geo.yruler - geo.kbwidth) / geo.swidth, 0, 1)
     const x = zoomAxis({
       range: xrange.value, offset: xoffset.value,
-      min: XRANGE_MIN, max: XRANGE_MAX,
+      min: XRANGE_MIN, max: xRangeMax.value,
       offsetMin: XOFFSET_MIN, offsetMax: xOffsetLimit.value,
       factor, anchor: fx,
     })
-    xoffset.value = x.offset
     xrange.value = Math.round(x.range * 1000) / 1000
+    // Clamp against the fresh range (the limit ref still sees the old one).
+    const xb = viewOffsetBounds(xrange.value, 0, contentBars.value + X_MARGIN_BARS, XOFFSET_MIN, XOFFSET_MAX)
+    xoffset.value = clamp(x.offset, xb.min, xb.max)
 
     const fy = clamp((geo.sheight - (py - geo.xruler)) / geo.sheight, 0, 1)
     const y = zoomAxis({
       range: yrange.value, offset: yoffset.value,
-      min: YRANGE_MIN, max: YRANGE_MAX,
-      offsetMin: YOFFSET_MIN, offsetMax: YOFFSET_MAX,
+      min: YRANGE_MIN, max: yRangeMax.value,
+      offsetMin: yOffsetLimit.value.min, offsetMax: yOffsetLimit.value.max,
       factor, anchor: fy,
     })
-    yoffset.value = y.offset
     yrange.value = Math.round(y.range * 100) / 100
+    const box = contentRowBox.value
+    const yb = viewOffsetBounds(
+      yrange.value, box ? box.min : null, box ? box.max : null,
+      YOFFSET_MIN, YOFFSET_MAX,
+    )
+    yoffset.value = clamp(y.offset, yb.min, yb.max)
     return
   }
 
@@ -274,7 +366,7 @@ function onWheel(event) {
       return
     yoffset.value = panAxis({
       range: yrange.value, offset: yoffset.value, deltaPx: dy,
-      viewportPx: geo.sheight, offsetMin: YOFFSET_MIN, offsetMax: YOFFSET_MAX,
+      viewportPx: geo.sheight, offsetMin: yOffsetLimit.value.min, offsetMax: yOffsetLimit.value.max,
       invert: true,
     }).offset
   }
@@ -289,13 +381,13 @@ function onSliderWheel(event) {
     return
   const target = event.target
   if (target === yScrollSlider.value)
-    yoffset.value = clamp(yoffset.value + steps, YOFFSET_MIN, YOFFSET_MAX)
+    yoffset.value = clamp(yoffset.value + steps, yOffsetLimit.value.min, yOffsetLimit.value.max)
   else if (target === yZoomSlider.value)
-    yrange.value = clamp(yrange.value + steps, YRANGE_MIN, YRANGE_MAX)
+    yrange.value = clamp(yrange.value + steps, YRANGE_MIN, yRangeMax.value)
   else if (target === xScrollSlider.value)
     xoffset.value = clamp(xoffset.value + steps, XOFFSET_MIN, xOffsetLimit.value)
   else if (target === xZoomSlider.value)
-    xrange.value = clamp(xrange.value + steps, XRANGE_MIN, XRANGE_MAX)
+    xrange.value = clamp(xrange.value + steps, XRANGE_MIN, xRangeMax.value)
   else
     return
   event.preventDefault()
@@ -477,7 +569,7 @@ async function fitWidth(notes) {
     return
   const bars = Math.max(1, Math.ceil(contentBarsFor(list)))
   xoffset.value = 0
-  xrange.value = Math.min(XRANGE_MAX, bars + 1)
+  xrange.value = Math.min(xRangeMax.value, bars + 1)
   refreshContentBars(list)
 }
 
@@ -488,8 +580,13 @@ async function fitHeight(notes) {
   if (!list.length)
     return
   const range = fitRange(list)
-  yoffset.value = range.yoffset
-  yrange.value = range.yrange
+  yrange.value = Math.min(range.yrange, yRangeMax.value)
+  const box = contentRowBox.value
+  yoffset.value = clampViewOffset(
+    range.yoffset, yrange.value,
+    box ? box.min : null, box ? box.max : null,
+    YOFFSET_MIN, YOFFSET_MAX,
+  )
 }
 
 /** Frame the given notes (or the current ones) on both axes (fit all). */

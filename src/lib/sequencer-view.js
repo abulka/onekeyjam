@@ -76,6 +76,79 @@ export function panAxis(opts) {
 }
 
 /**
+ * The inclusive span of a list of row numbers, or null when there is nothing
+ * to frame (an empty panel keeps today's free scrolling).
+ * @param {Array<number>} [values]
+ * @returns {{ min:number, max:number }|null}
+ */
+export function rowSpan(values) {
+    let min = Infinity
+    let max = -Infinity
+    for (const value of values || []) {
+        const n = Number(value)
+        if (!Number.isFinite(n))
+            continue
+        if (n < min)
+            min = n
+        if (n > max)
+            max = n
+    }
+    return min === Infinity ? null : { min, max }
+}
+
+/**
+ * The scrollable box for a row span: the span widened by `pad` rows on each
+ * side. The top is exclusive (one past the highest row), matching how the
+ * view window `[offset, offset + range]` addresses rows.
+ * @param {{ min:number, max:number }|null} span
+ * @param {number} [pad]
+ * @returns {{ min:number, max:number }|null}
+ */
+export function rowBox(span, pad = 0) {
+    if (!span)
+        return null
+    const padding = Number.isFinite(pad) && pad > 0 ? pad : 0
+    return { min: Math.floor(span.min) - padding, max: Math.ceil(span.max) + 1 + padding }
+}
+
+/**
+ * The allowed scroll-offset range for a view window of `range` inside the box
+ * `[boxMin, boxMax]`, intersected with the absolute `[absMin, absMax]`. When
+ * the range covers the box, both ends park at the box start.
+ * @param {number} range
+ * @param {number|null} boxMin
+ * @param {number|null} boxMax
+ * @param {number} absMin
+ * @param {number} absMax
+ * @returns {{ min:number, max:number }}
+ */
+export function viewOffsetBounds(range, boxMin, boxMax, absMin, absMax) {
+    if (!Number.isFinite(boxMin) || !Number.isFinite(boxMax))
+        return { min: absMin, max: absMax }
+    const lo = Math.max(absMin, boxMin)
+    const hi = Math.min(absMax, boxMax - range)
+    if (hi <= lo)
+        return { min: clamp(boxMin, absMin, absMax), max: clamp(boxMin, absMin, absMax) }
+    return { min: lo, max: hi }
+}
+
+/**
+ * Clamp a scroll offset so the view window of `range` stays inside the box.
+ * A null box means unbounded (today's behaviour for empty panels).
+ * @param {number} offset
+ * @param {number} range
+ * @param {number|null} boxMin
+ * @param {number|null} boxMax
+ * @param {number} absMin
+ * @param {number} absMax
+ * @returns {number}
+ */
+export function clampViewOffset(offset, range, boxMin, boxMax, absMin, absMax) {
+    const bounds = viewOffsetBounds(range, boxMin, boxMax, absMin, absMax)
+    return clamp(offset, bounds.min, bounds.max)
+}
+
+/**
  * A gentle step for the wheel over the scroll/zoom sliders: one unit per notch,
  * up to three for a large trackpad delta, and four times that with Shift held.
  * Returns the signed number of steps to apply.
