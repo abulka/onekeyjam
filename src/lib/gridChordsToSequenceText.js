@@ -50,10 +50,26 @@ function isSamePitchClass(a, b) {
 }
 
 /**
- * The sequence-ready symbol for one grid chord, e.g. "Dm7" or "E7/D".
- * A slash bass that duplicates the chord root is omitted, because the
- * stored `bass` is often just the automatic lowest note rather than an
- * explicitly chosen slash chord.
+ * Whether the bass pitch is one of the chord's own tones (any inversion),
+ * compared by sounding pitch class so enharmonics match. Used to tell an
+ * automatic inversion bass apart from a true outside slash bass.
+ * @param {string} chord chord symbol without bass, e.g. "Dm"
+ * @param {string} bass bass pitch class, e.g. "A"
+ * @returns {boolean}
+ */
+function isChordTone(chord, bass) {
+    const chordObj = Tonal.Chord.get(chord)
+    if (chordObj.empty || !Array.isArray(chordObj.notes))
+        return false
+    return chordObj.notes.some((tone) => isSamePitchClass(tone, bass))
+}
+
+/**
+ * The sequence-ready symbol for one grid chord, e.g. "Dm" or "C/D".
+ * A slash bass that is part of the chord is omitted, because the stored
+ * `bass` is often just the automatic lowest note of a smooth inversion
+ * rather than an explicitly chosen slash chord. A bass outside the chord
+ * is kept, e.g. "C/D".
  * @param {ChordConfig} config
  * @returns {string} "" when the config has no chord name
  */
@@ -71,6 +87,8 @@ export function gridChordSymbol(config) {
     if (chordObj.empty || !chordObj.tonic)
         return `${chord}/${bass}`
     if (isSamePitchClass(chordObj.tonic, bass))
+        return chord
+    if (isChordTone(chord, bass))
         return chord
     return `${chord}/${bass}`
 }
@@ -157,7 +175,8 @@ export function orderedLiveGridChordConfigs(project = globals.project, liveMap) 
  * Space-separated chord names from the grid in trigger order, e.g.
  * "Dsus4 Dmaj7 C#m11". Uses the live sounded chords when available so the
  * text matches the grid after a transposition, and omits a slash bass that
- * merely duplicates the root. Returns "" when the grid has no named chords.
+ * is part of the chord (an automatic inversion). Returns "" when the grid
+ * has no named chords.
  * @param {Project} [project]
  * @param {Record<string, ChordConfig>} [liveMap]
  * @returns {string}

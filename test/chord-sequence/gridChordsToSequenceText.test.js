@@ -18,11 +18,11 @@ describe('gridChordsToSequenceText', () => {
 
     it('includes the slash bass when present', () => {
         const project = {
-            chords: [makeConfig(1, 'E7', 'D'), makeConfig(2, 'Am')],
+            chords: [makeConfig(1, 'C', 'D'), makeConfig(2, 'Am')],
             songs: { default: { ids: [1, 2], favourites: [], blacklist: [] } },
         };
-        assert.equal(buildChordSequenceTextFromGrid(project), 'E7/D Am');
-        assert.equal(gridChordSymbol(project.chords[0]), 'E7/D');
+        assert.equal(buildChordSequenceTextFromGrid(project), 'C/D Am');
+        assert.equal(gridChordSymbol(project.chords[0]), 'C/D');
     });
 
     it('skips missing ids and unnamed chords', () => {
@@ -48,13 +48,13 @@ describe('gridChordsToSequenceText', () => {
 
     it('generated text re-parses without errors', () => {
         const project = {
-            chords: [makeConfig(1, 'Dsus4'), makeConfig(2, 'Dmaj7'), makeConfig(3, 'E7', 'D')],
+            chords: [makeConfig(1, 'Dsus4'), makeConfig(2, 'Dmaj7'), makeConfig(3, 'C', 'D')],
             songs: { default: { ids: [1, 2, 3], favourites: [], blacklist: [] } },
         };
         const text = buildChordSequenceTextFromGrid(project);
         const { entries, errors } = parseChordSequence(text);
         assert.deepEqual(errors, []);
-        assert.deepEqual(entries.map(e => e.symbol), ['Dsus4', 'Dmaj7', 'E7/D']);
+        assert.deepEqual(entries.map(e => e.symbol), ['Dsus4', 'Dmaj7', 'C/D']);
     });
 
     it('omits a slash bass that duplicates the root', () => {
@@ -64,9 +64,42 @@ describe('gridChordsToSequenceText', () => {
         assert.equal(gridChordSymbol(makeConfig(3, 'C#m11', 'C#')), 'C#m11');
     });
 
-    it('keeps a slash bass that differs from the root', () => {
-        assert.equal(gridChordSymbol(makeConfig(9, 'Amadd9', 'C')), 'Amadd9/C');
-        assert.equal(gridChordSymbol(makeConfig(1, 'E7', 'D')), 'E7/D');
+    it('keeps a slash bass outside the chord', () => {
+        assert.equal(gridChordSymbol(makeConfig(1, 'C', 'D')), 'C/D');
+        assert.equal(gridChordSymbol(makeConfig(1, 'E7', 'A')), 'E7/A');
+        assert.equal(gridChordSymbol(makeConfig(9, 'Am', 'F#')), 'Am/F#');
+    });
+
+    it('omits a slash bass that is part of the chord (automatic inversion)', () => {
+        assert.equal(gridChordSymbol(makeConfig(1, 'Dm', 'A')), 'Dm');
+        assert.equal(gridChordSymbol(makeConfig(1, 'Em', 'G')), 'Em');
+        assert.equal(gridChordSymbol(makeConfig(1, 'Bb', 'F')), 'Bb');
+        assert.equal(gridChordSymbol(makeConfig(1, 'Eb', 'G')), 'Eb');
+        assert.equal(gridChordSymbol(makeConfig(1, 'A', 'E')), 'A');
+        assert.equal(gridChordSymbol(makeConfig(1, 'B', 'D#')), 'B');
+        assert.equal(gridChordSymbol(makeConfig(1, 'E7', 'D')), 'E7');
+        assert.equal(gridChordSymbol(makeConfig(9, 'Amadd9', 'C')), 'Amadd9');
+    });
+
+    it('normalises automatic inversions from a voiced sequence', () => {
+        const project = {
+            chords: [
+                makeConfig(1, 'Am', 'A'),
+                makeConfig(2, 'Dm', 'A'),
+                makeConfig(3, 'Em', 'G'),
+                makeConfig(4, 'Bb', 'F'),
+                makeConfig(5, 'Eb', 'G'),
+                makeConfig(6, 'F', 'F'),
+                makeConfig(7, 'E', 'E'),
+                makeConfig(8, 'A', 'E'),
+                makeConfig(9, 'B', 'D#'),
+            ],
+            songs: { default: { ids: [1, 2, 3, 4, 5, 6, 7, 8, 9], favourites: [], blacklist: [] } },
+        };
+        assert.equal(
+            buildChordSequenceTextFromGrid(project, {}),
+            'Am Dm Em Bb Eb F E A B'
+        );
     });
 
     it('treats enharmonic bass spellings as the same pitch', () => {
@@ -111,7 +144,7 @@ describe('gridChordsToSequenceText', () => {
         };
         assert.equal(
             buildChordSequenceTextFromGrid(project, {}),
-            'CMadd9 Amadd9/C Dsus4 Dmaj7 C#m11'
+            'CMadd9 Amadd9 Dsus4 Dmaj7 C#m11'
         );
     });
 
@@ -134,7 +167,7 @@ describe('gridChordsToSequenceText', () => {
             G3: makeConfig(3, 'Cm11', 'C'),
         };
         const text = buildChordSequenceTextFromGrid(project, liveMap);
-        assert.equal(text, 'BMadd9 G#madd9/B C#sus4 C#maj7 Cm11');
+        assert.equal(text, 'BMadd9 G#madd9 C#sus4 C#maj7 Cm11');
         const { errors } = parseChordSequence(text);
         assert.deepEqual(errors, []);
     });
