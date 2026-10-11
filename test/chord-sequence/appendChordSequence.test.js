@@ -21,6 +21,12 @@ function restoreGlobals(snapshot) {
 }
 
 describe('appendChordSequence', () => {
+    beforeEach(() => {
+        // Auto key detection re-ranks scales after the append, which broadcasts
+        // a scale-changed event; the real app and the other suites provide it.
+        document.broadcastEvent = () => { };
+    });
+
     it('appends three chords and extends ids and trigger map', () => {
         const snapshot = snapshotGlobals();
         try {

@@ -2,7 +2,7 @@ import { globals } from "./globals.js"
 import { appendChordConfigsToGrid } from './gridArrangement.js';
 import { fillInChordConfig, fillInChordConfig2 } from './fillInChordConfig';
 import { removeBassSlash } from './removeBassSlash.js';
-import { keyDetection } from './keyDetection';
+import { detectKeysAfterEdit } from './autoKeyDetection.js';
 import { resolveProjectKey } from './projectKey.js';
 
 export function chordAddToProject(currentRoot, currentChord, currentChordInversion, bass) {
@@ -41,7 +41,7 @@ class ChordAddToProjectBase {
         appendChordConfigsToGrid([this.chordConfig])
 
         globals.projectKey = resolveProjectKey(globals.project) ?? globals.projectKey ?? null
-        keyDetection()
+        detectKeysAfterEdit()
     }
     doFillInChordConfig() {
         // template method pattern, override this in a subclass

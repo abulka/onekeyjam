@@ -15,6 +15,8 @@ const STORAGE_KEY = 'onekeyjam.uiPrefs'
 
 export const KEYBOARD_HELP_MODES = ['off', 'black', 'white', 'all']
 export const HELP_PAGES = ['overview', 'tutorial', 'reference']
+export const KEY_DETECTION_MODES = ['auto', 'manual']
+export const KEY_DETECTION_SENSITIVITIES = ['conservative', 'balanced', 'eager']
 export const KEYBOARD_OCTAVE_MIN = 2
 export const KEYBOARD_OCTAVE_MAX = 6
 export const KEYBOARD_FIT_OCTAVES_DEFAULT = 3
@@ -85,6 +87,8 @@ export function clampFixedVelocity(value) {
  * @property {boolean} [showDeleteColumn]
  * @property {string} [helpPage]
  * @property {string} [scalePolicy]
+ * @property {string} [keyDetectionMode]
+ * @property {string} [keyDetectionSensitivity]
  * @property {boolean} [scaleAdvanced]
  * @property {boolean} [scaleHistory]
  * @property {boolean} [showScaleCellFill]
@@ -228,6 +232,10 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.helpPage = stored.helpPage
         if (stored && SCALE_POLICIES.includes(stored.scalePolicy))
             prefs.scalePolicy = stored.scalePolicy
+        if (stored && KEY_DETECTION_MODES.includes(stored.keyDetectionMode))
+            prefs.keyDetectionMode = stored.keyDetectionMode
+        if (stored && KEY_DETECTION_SENSITIVITIES.includes(stored.keyDetectionSensitivity))
+            prefs.keyDetectionSensitivity = stored.keyDetectionSensitivity
         if (stored && typeof stored.scaleAdvanced === 'boolean')
             prefs.scaleAdvanced = stored.scaleAdvanced
         if (stored && typeof stored.scaleHistory === 'boolean')
@@ -273,6 +281,8 @@ export function currentPrefs() {
         showDeleteColumn: globals.showDeleteColumn,
         helpPage: globals.helpPage,
         scalePolicy: globals.scaleFiltering.policy,
+        keyDetectionMode: globals.keyDetectionMode,
+        keyDetectionSensitivity: globals.keyDetectionSensitivity,
         scaleAdvanced: globals.showScaleAdvanced,
         scaleHistory: globals.showScaleHistory,
         showScaleCellFill: globals.showScaleCellFill,
@@ -330,6 +340,10 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.helpPage = prefs.helpPage
     if (prefs.scalePolicy)
         globals.scaleFiltering.policy = prefs.scalePolicy
+    if (prefs.keyDetectionMode)
+        globals.keyDetectionMode = prefs.keyDetectionMode
+    if (prefs.keyDetectionSensitivity)
+        globals.keyDetectionSensitivity = prefs.keyDetectionSensitivity
     if (typeof prefs.scaleAdvanced === 'boolean')
         globals.showScaleAdvanced = prefs.scaleAdvanced
     if (typeof prefs.scaleHistory === 'boolean')
@@ -368,6 +382,8 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.showDeleteColumn,
         globals.helpPage,
         globals.scaleFiltering.policy,
+        globals.keyDetectionMode,
+        globals.keyDetectionSensitivity,
         globals.showScaleAdvanced,
         globals.showScaleHistory,
         globals.showScaleCellFill,

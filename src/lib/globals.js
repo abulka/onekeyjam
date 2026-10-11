@@ -259,6 +259,13 @@ export const globals = reactive({
         fromFavouritesOnly: false,  // or from favourites
         callMusic21Server: false,
     },
+    // How keys are decided: 'auto' re-detects and applies keys after every grid
+    // edit; 'manual' leaves keys to the user. Saved in uiPrefs. See
+    // src/lib/autoKeyDetection.js and doco/MULTI-KEY.md.
+    keyDetectionMode: 'auto',
+    // How eagerly multi-key detection splits a chromatic arrangement:
+    // 'conservative', 'balanced' (default) or 'eager'. Saved in uiPrefs.
+    keyDetectionSensitivity: 'balanced',
 
     // The resolved project key { tonic, type, source }, set when a project is
     // loaded. See src/lib/projectKey.js and doco/MUSIC-THEORY.md.

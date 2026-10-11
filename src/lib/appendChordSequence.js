@@ -4,7 +4,7 @@ import { globals } from "./globals.js";
 import { numericId } from "./triggerMaps.js";
 import { appendChordConfigsToGrid } from "./gridArrangement.js";
 import { fillInChordConfig2 } from "./fillInChordConfig.js";
-import { keyDetection } from "./keyDetection.js";
+import { detectKeysAfterEdit } from "./autoKeyDetection.js";
 import { resolveProjectKey } from "./projectKey.js";
 
 /**
@@ -60,7 +60,7 @@ export function appendChordSequence(voicedEntries) {
     appendChordConfigsToGrid(newConfigs)
 
     globals.projectKey = resolveProjectKey(globals.project) ?? globals.projectKey ?? null
-    keyDetection()
+    detectKeysAfterEdit()
 
     return { addedIds, addedCount: addedIds.length }
 }

@@ -22,6 +22,13 @@ import { normalizeKey } from './projectKey.js';
 
 const DETECT_OPTIONS = { useHitWeight: true, usePenalty: true };
 
+/**
+ * Detection sensitivity levels. `conservative` keeps the historical penalty;
+ * `balanced` (the default) lowers it only for chromatic arrangements; `eager`
+ * lowers it further, finding more key changes at the risk of extra splits.
+ */
+export const SENSITIVITIES = ['conservative', 'balanced', 'eager'];
+
 /** A run that starts on its own tonic is a strong key signal. */
 const START_TONIC_BONUS = 1.0;
 /** A run that ends on its tonic is a little stronger too. */
@@ -42,6 +49,16 @@ const SEQUENCE_BONUS = 1.2;
  * through coverage, a cadence or a sequence.
  */
 const DEFAULT_SEGMENT_PENALTY = 2.8;
+/**
+ * The whole arrangement's best single-key coverage. Below this threshold the
+ * music is chromatic enough that one key cannot explain it, so the segment
+ * penalty drops to let genuine key changes surface.
+ */
+const CHROMATIC_COVERAGE_THRESHOLD = 0.6;
+/** The lower penalty used for chromatic arrangements in balanced mode. */
+const CHROMATIC_SEGMENT_PENALTY = 2.0;
+/** The lower still penalty used for chromatic arrangements in eager mode. */
+const EAGER_SEGMENT_PENALTY = 1.2;
 /** How many alternatives to carry per group. */
 const TOP_ALTERNATIVES = 3;
 /** Alternatives within this margin are reported as ambiguous. */
@@ -180,6 +197,46 @@ function candidateTieBreak(a, b, chords) {
 }
 
 /**
+ * The number of chord tones in a run, used to normalise coverage so runs of
+ * different lengths can be compared.
+ * @param {ChordConfig[]} chords
+ */
+function runNoteCount(chords) {
+    return chords.reduce((sum, chord) => sum + (chordInfoOf(chord)?.noteCount ?? 4), 0) || chords.length * 4;
+}
+
+/**
+ * The best single-key coverage of a run, normalised per chord tone. A value
+ * near 1 means one key explains the run; a low value means it is chromatic.
+ * @param {ChordConfig[]} chords
+ */
+function bestCoverage(chords) {
+    const stats = rankRun(chords);
+    if (stats.length === 0)
+        return 0;
+    return stats[0].score / runNoteCount(chords);
+}
+
+/**
+ * The segment penalty for an arrangement. A tonal arrangement keeps the
+ * conservative penalty so plain progressions stay in one key; a chromatic one
+ * gets a lower penalty so genuine key changes can surface. An explicit numeric
+ * `segmentPenalty` option always wins (used by tests and low-level callers).
+ * @param {ChordConfig[]} chords
+ * @param {{segmentPenalty?: number, sensitivity?: string}} [options]
+ */
+export function resolveSegmentPenalty(chords, options = {}) {
+    if (typeof options.segmentPenalty === 'number')
+        return options.segmentPenalty;
+    const sensitivity = SENSITIVITIES.includes(options.sensitivity) ? options.sensitivity : 'balanced';
+    if (sensitivity === 'conservative')
+        return DEFAULT_SEGMENT_PENALTY;
+    if (bestCoverage(chords) >= CHROMATIC_COVERAGE_THRESHOLD)
+        return DEFAULT_SEGMENT_PENALTY;
+    return sensitivity === 'eager' ? EAGER_SEGMENT_PENALTY : CHROMATIC_SEGMENT_PENALTY;
+}
+
+/**
  * The candidate keys for a run, best first. Coverage is normalised per chord
  * tone so runs of different lengths can be compared, then the function cues are
  * added.
@@ -190,7 +247,7 @@ function candidatesForRun(chords) {
     const stats = rankRun(chords);
     if (stats.length === 0)
         return [];
-    const noteCount = chords.reduce((sum, chord) => sum + (chordInfoOf(chord)?.noteCount ?? 4), 0) || chords.length * 4;
+    const noteCount = runNoteCount(chords);
     const candidates = [];
     for (const stat of stats) {
         if (stat.score <= 0)
@@ -273,6 +330,41 @@ function makeGroup(candidate, chords, candidates) {
         ambiguous,
         score: candidate.score,
     };
+}
+
+/**
+ * Fuse adjacent groups that resolved to the same key, so a run is never
+ * reported (or applied) as two touching sections of one key. The merged group's
+ * alternatives are recomputed over its combined chords.
+ * @param {Array<ReturnType<typeof makeGroup>>} groups
+ */
+export function mergeAdjacentGroups(groups) {
+    const merged = [];
+    for (const group of groups) {
+        const last = merged[merged.length - 1];
+        if (last && last.keyName === group.keyName)
+            last.chords = last.chords.concat(group.chords);
+        else
+            merged.push({ ...group, chords: [...group.chords] });
+    }
+    return merged.map((group) => {
+        const candidates = candidatesForRun(group.chords);
+        const chosen = candidates.find((candidate) => candidate.keyName === group.keyName)
+            ?? { keyName: group.keyName, key: group.key, score: group.score };
+        const alternatives = [chosen, ...candidates.filter((candidate) => candidate.keyName !== chosen.keyName)]
+            .slice(0, TOP_ALTERNATIVES)
+            .map((entry) => ({ keyName: entry.keyName, key: entry.key, score: entry.score }));
+        const ambiguous = alternatives.length > 1
+            && (alternatives[0].score - alternatives[1].score) < AMBIGUITY_MARGIN;
+        return {
+            keyName: chosen.keyName,
+            key: chosen.key,
+            chords: group.chords,
+            alternatives,
+            ambiguous,
+            score: chosen.score,
+        };
+    });
 }
 
 /**
@@ -381,10 +473,11 @@ function detectRun(chords, options = {}) {
  * cannot skew or split the suggestion. Locks only matter when the UI applies
  * the result, where locked chords are skipped. Every group carries
  * alternatives so the user can pick the reading. A single group means no key
- * change was detected.
+ * change was detected. The segment penalty adapts to the sensitivity: a
+ * chromatic arrangement splits more readily (see `resolveSegmentPenalty`).
  * @param {Project} [project]
  * @param {ChordConfig[]} [chordConfigs] arranged chords, in order
- * @param {{minSegment?: number, segmentPenalty?: number}} [options]
+ * @param {{minSegment?: number, segmentPenalty?: number, sensitivity?: string}} [options]
  * @returns {Array<{keyName: string, key: ProjectKey|undefined, chords: ChordConfig[], alternatives: Array<{keyName: string, key: ProjectKey, score: number}>, ambiguous: boolean, score: number}>}
  */
 export function suggestKeyGroups(project, chordConfigs, options = {}) {
@@ -392,5 +485,6 @@ export function suggestKeyGroups(project, chordConfigs, options = {}) {
     const chords = Array.isArray(chordConfigs) ? chordConfigs : [];
     if (chords.length === 0)
         return [];
-    return detectRun(chords, options);
+    const segmentPenalty = resolveSegmentPenalty(chords, options);
+    return mergeAdjacentGroups(detectRun(chords, { ...options, segmentPenalty }));
 }

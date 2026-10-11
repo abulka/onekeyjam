@@ -3,7 +3,7 @@ import { applyProjectTempo, bootProject, bootKeyboard, linkProjectToKeyboard, re
 import { bootWebMidi } from "./midi/boot-webmidi.js"
 import { bootGeneralMidi } from "./audio/general-midi.js"
 import { restoreTake } from "./midi/recorder.js"
-import { keyDetection } from "./keyDetection"
+import { detectKeysForLoad } from "./autoKeyDetection.js"
 import { initChordPlayEvents } from './midi/wire-chord-play-events';
 import { initCurrentProjectAutosave } from './currentProjectStore.js';
 import { readDisabledKeyboards } from './keyboardStore.js';
@@ -25,7 +25,7 @@ export default async function () {
         await Promise.all([bootProject(), bootKeyboard()])
 
         regen()
-        keyDetection()
+        detectKeysForLoad()
         // Apply the restored project's scale style before the keyboard is
         // linked, so the first chord already sounds with it.
         applyProjectScaleStyle()

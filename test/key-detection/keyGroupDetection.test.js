@@ -1,5 +1,5 @@
 import assert from 'assert';
-import { suggestKeyGroups } from '../../src/lib/keyGroupDetection.js';
+import { suggestKeyGroups, resolveSegmentPenalty, mergeAdjacentGroups } from '../../src/lib/keyGroupDetection.js';
 
 /*
  * Experimental key group detection. It searches for the partition of the
@@ -101,6 +101,65 @@ describe('suggestKeyGroups', () => {
         ));
         const cMajor = groups.find((group) => group.keyName === 'C major');
         assert.deepEqual(cMajor?.key, { tonic: 'C', type: 'major', source: 'user' });
+    });
+
+});
+
+describe('keyGroupDetection - sensitivity', () => {
+
+    // A chromatic progression where no single key explains more than about
+    // half the chord tones, so the adaptive penalty lets it split.
+    const chromatic = chords('Cm', 'Cm/ma7', 'C#m13', 'Bdim7', 'Gm/ma7', 'Gmaj9', 'Amaj9', 'Bmaj9', 'D#m11');
+
+    it('keeps a chromatic progression in one key when conservative', () => {
+        const groups = suggestKeyGroups({ options: {} }, chromatic, { sensitivity: 'conservative' });
+        assert.deepEqual(keyNames(groups), ['C minor']);
+    });
+
+    it('splits a chromatic progression in the balanced default', () => {
+        const groups = suggestKeyGroups({ options: {} }, chromatic);
+        assert.deepEqual(keyNames(groups), ['C minor', 'Db minor']);
+    });
+
+    it('splits a chromatic progression further when eager', () => {
+        const groups = suggestKeyGroups({ options: {} }, chromatic, { sensitivity: 'eager' });
+        assert.deepEqual(keyNames(groups), ['C minor', 'Db minor', 'G major', 'B major']);
+    });
+
+    it('keeps a plain ii-V-I whole at every sensitivity', () => {
+        const tonal = chords('Dm7', 'G7', 'Cmaj7', 'Cmaj7');
+        for (const sensitivity of ['conservative', 'balanced', 'eager'])
+            assert.deepEqual(keyNames(suggestKeyGroups({ options: {} }, tonal, { sensitivity })), ['C major']);
+    });
+
+    it('resolves the segment penalty from the sensitivity', () => {
+        assert.equal(resolveSegmentPenalty(chromatic, { sensitivity: 'conservative' }), 2.8);
+        assert.equal(resolveSegmentPenalty(chromatic, { sensitivity: 'balanced' }), 2.0);
+        assert.equal(resolveSegmentPenalty(chromatic, { sensitivity: 'eager' }), 1.2);
+        // An explicit numeric penalty always wins.
+        assert.equal(resolveSegmentPenalty(chromatic, { segmentPenalty: 5 }), 5);
+    });
+
+    it('never reports two adjacent groups in the same key', () => {
+        for (const sensitivity of ['conservative', 'balanced', 'eager']) {
+            const names = keyNames(suggestKeyGroups({ options: {} }, chords(
+                'Cmaj7', 'Am7', 'Dm7', 'G7', 'Ebmaj7', 'Cm7', 'Fm7', 'Bb7',
+            ), { sensitivity }));
+            for (let i = 1; i < names.length; i++)
+                assert.notEqual(names[i], names[i - 1]);
+        }
+    });
+
+    it('merges adjacent groups that resolved to the same key', () => {
+        const groups = [
+            { keyName: 'C major', key: { tonic: 'C', type: 'major' }, chords: [{ id: 1, chord: 'Cmaj7' }], alternatives: [], ambiguous: false, score: 1 },
+            { keyName: 'C major', key: { tonic: 'C', type: 'major' }, chords: [{ id: 2, chord: 'Am7' }], alternatives: [], ambiguous: false, score: 1 },
+            { keyName: 'G major', key: { tonic: 'G', type: 'major' }, chords: [{ id: 3, chord: 'Gmaj7' }], alternatives: [], ambiguous: false, score: 1 },
+        ];
+        const merged = mergeAdjacentGroups(groups);
+        assert.deepEqual(merged.map((group) => group.keyName), ['C major', 'G major']);
+        assert.deepEqual(merged[0].chords.map((chord) => chord.id), [1, 2]);
+        assert.ok(merged[0].alternatives.some((alternative) => alternative.keyName === 'C major'));
     });
 
 });

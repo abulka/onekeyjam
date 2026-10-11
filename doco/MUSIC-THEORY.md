@@ -90,6 +90,15 @@ project key should stay a bias. Projects that change key mid-tune still get
 correct chord-level scales for their out-of-key chords, because chord tones
 are always licensed (see below).
 
+The Key Detection section has an **Auto** and a **Manual** mode, saved as a
+global preference and defaulting to Auto. In Auto the project key (and the
+section keys, see `doco/MULTI-KEY.md`) follow the grid: the first edit after a
+song is opened re-detects them and writes the result onto the project. A
+freshly loaded song is left as authored until that first edit, and a toast
+warns when detection changes keys. In Manual the user sets the key by hand and
+detection is only a suggestion. `src/lib/autoKeyDetection.js` holds the mode
+logic.
+
 Setting the key in the UI re-ranks every chord scale automatically (see
 `src/lib/projectScaleSettings.js`), so the stored `scale1/2/3` always match
 the declared key. The same happens when the colour preference changes.

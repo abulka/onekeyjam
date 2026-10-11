@@ -69,11 +69,15 @@ sound in the browser.
    chord notes, or lock the scale. Press `0` to toggle **Solo in key** (on a
    MIDI keyboard, hold the left-hand `C#` shift and press `A#`/`Bb`). The black
    keys do the same on a MIDI keyboard, and transpose stays on the black keys.
-5. Set the project key in the **Key Detection** section, and use the **Solo in
-   key** checkbox and **Colour** dropdown above the chord/scale grid to shape
-   the solo. For a song that changes key, use the **Key Groups** list there to
-   give a section its own key, or press **Detect key groups** to have it
-   suggested.
+5. The **Key Detection** section defaults to **Auto**: the project key and any
+   section keys follow the chords as you edit the grid. Switch it to **Manual**
+   to set the project key yourself; for a song that changes key, use the **Key
+   Groups** list to give a section its own key, or press **Detect key groups**
+   to have it suggested. The **Sensitivity** selector (Conservative / Balanced
+   / Eager) controls how readily detection splits chromatic music into key
+   areas. Lock a chord to keep its key in Auto mode. Use the **Solo in key**
+   checkbox and **Colour** dropdown above the chord/scale grid to shape the
+   solo.
 
 A guided tour is available from the **Start Tour** item in the menu. To build a
 project from an existing MIDI file, choose **File -> Import MIDI file...** and

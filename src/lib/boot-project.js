@@ -16,7 +16,7 @@ import { findMatchingScalesForProject } from "./findMatchingScales"
 import { resetChordHistory } from "./autoScale.js"
 import { detectChords } from './parse-midi.js';
 import { buildProject } from './build-project.js';
-import { keyDetection } from "./keyDetection"
+import { detectKeysForLoad, detectKeysAfterEdit } from "./autoKeyDetection.js"
 import { resolveProjectKey } from './projectKey.js'
 import { applyProjectKeySettings } from './projectScaleSettings.js'
 import { applyProjectScaleStyle } from './scaleStyles.js'
@@ -56,10 +56,10 @@ export async function bootProject() {
     // Called by the initial boot in src/lib/main.js. This restores the working
     // project saved by the autosave (including unsaved edits and the grid
     // selection), or seeds an empty project when there is none. The orchestrator
-    // then calls regen(), keyDetection(), initChordPlayEvents() and
+    // then calls regen(), detectKeysForLoad(), initChordPlayEvents() and
     // linkProjectToKeyboard() (see src/lib/main.js). Subsequent project loads go
-    // through projectChores() instead, which reruns regen(), keyDetection() and
-    // linkProjectToKeyboard() but not the one-time initChordPlayEvents().
+    // through projectChores() instead, which reruns regen(), detectKeysForLoad()
+    // and linkProjectToKeyboard() but not the one-time initChordPlayEvents().
 
     if (restoreCurrentProject())
         return
@@ -208,7 +208,7 @@ export function reAllocateChords() {
         return
     dealGrid(globals.maxChordConfigs, globals.allocateFavourites)
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
-    keyDetection();
+    detectKeysAfterEdit();
     linkProjectToKeyboard();
 }
 
@@ -219,7 +219,7 @@ export function reorderGridChords(ids) {
         return
     reorderGrid(ids)
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
-    keyDetection();
+    detectKeysAfterEdit();
     linkProjectToKeyboard();
 }
 
@@ -230,7 +230,7 @@ export function resizeGridRowCount(requestedCount) {
         return globals.maxChordConfigs
     const next = resizeGrid(requestedCount)
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
-    keyDetection();
+    detectKeysAfterEdit();
     linkProjectToKeyboard();
     return next
 }
@@ -245,7 +245,7 @@ export function deleteSelectedChordConfigs() {
         return 0
     const deletedCount = deleteGridChords()
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
-    keyDetection();
+    detectKeysAfterEdit();
     linkProjectToKeyboard();
     flushCurrentProject()
     return deletedCount
@@ -430,7 +430,7 @@ function projectChores({ project, maxChordConfigs }) {
     setMaxDisplayed(project, maxChordConfigs);
     regen();
     globals.projectKey = resolveProjectKey(globals.project) ?? null;
-    keyDetection();
+    detectKeysForLoad();
     // A project remembers how its right hand should choose scales.
     applyProjectScaleStyle();
     // A stored demo tempo becomes the global BPM, so each song plays at its

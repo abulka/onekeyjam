@@ -187,6 +187,8 @@ describe('uiPrefs', () => {
             showDeleteColumn: true,
             helpPage: 'tutorial',
             scalePolicy: 'manual',
+            keyDetectionMode: 'auto',
+            keyDetectionSensitivity: 'balanced',
             scaleAdvanced: false,
             scaleHistory: false,
             showScaleCellFill: true,
@@ -456,6 +458,52 @@ describe('uiPrefs', () => {
         const storage = fakeStorage()
         writePrefs({ scalePolicy: 'follow' }, storage)
         assert.equal(readPrefs(storage).scalePolicy, 'follow')
+    })
+
+    it('reads and validates the key detection mode', () => {
+        for (const mode of ['auto', 'manual']) {
+            const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyDetectionMode: mode }) })
+            assert.equal(readPrefs(storage).keyDetectionMode, mode)
+        }
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyDetectionMode: 'nonsense' }) })
+        assert.equal(readPrefs(bad).keyDetectionMode, undefined)
+    })
+
+    it('defaults the key detection mode to auto and loads a stored mode', () => {
+        assert.equal(globals.keyDetectionMode, 'auto')
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyDetectionMode: 'manual' }) }))
+        assert.equal(globals.keyDetectionMode, 'manual')
+        assert.equal(currentPrefs().keyDetectionMode, 'manual')
+        globals.keyDetectionMode = 'auto'
+    })
+
+    it('round-trips the key detection mode', () => {
+        const storage = fakeStorage()
+        writePrefs({ keyDetectionMode: 'manual' }, storage)
+        assert.equal(readPrefs(storage).keyDetectionMode, 'manual')
+    })
+
+    it('reads and validates the key detection sensitivity', () => {
+        for (const sensitivity of ['conservative', 'balanced', 'eager']) {
+            const storage = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyDetectionSensitivity: sensitivity }) })
+            assert.equal(readPrefs(storage).keyDetectionSensitivity, sensitivity)
+        }
+        const bad = fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyDetectionSensitivity: 'nonsense' }) })
+        assert.equal(readPrefs(bad).keyDetectionSensitivity, undefined)
+    })
+
+    it('defaults the key detection sensitivity to balanced and loads a stored value', () => {
+        assert.equal(globals.keyDetectionSensitivity, 'balanced')
+        loadUiPrefs(fakeStorage({ 'onekeyjam.uiPrefs': JSON.stringify({ keyDetectionSensitivity: 'eager' }) }))
+        assert.equal(globals.keyDetectionSensitivity, 'eager')
+        assert.equal(currentPrefs().keyDetectionSensitivity, 'eager')
+        globals.keyDetectionSensitivity = 'balanced'
+    })
+
+    it('round-trips the key detection sensitivity', () => {
+        const storage = fakeStorage()
+        writePrefs({ keyDetectionSensitivity: 'eager' }, storage)
+        assert.equal(readPrefs(storage).keyDetectionSensitivity, 'eager')
     })
 
     it('reads and validates the background capture settings', () => {
