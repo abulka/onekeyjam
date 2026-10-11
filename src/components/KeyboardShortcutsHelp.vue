@@ -63,45 +63,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
             chord and the right hand is filtered to the current scale. The trigger octave and jam
             octave follow your keyboard config (C3 and C4 by default).</p>
 
-          <h4>MIDI keyboard</h4>
-          <div class="sc-item">
-            <div class="sc-label">Left hand, white keys (trigger octave)</div>
-            <div class="sc-body">trigger chords</div>
-          </div>
-          <div class="sc-item">
-            <div class="sc-label">Left hand, black keys (trigger octave)</div>
-            <div class="sc-body">
-              <code class="kb">C#</code> shift ·
-              <code class="kb">D#</code> filter OFF ·
-              <code class="kb">F#</code> filter ON ·
-              <code class="kb">G#</code> transpose down ·
-              <code class="kb">A#</code> transpose up
-            </div>
-          </div>
-          <div class="sc-item">
-            <div class="sc-label">Shift held (<code class="kb">C#</code>)</div>
-            <div class="sc-body">
-              <code class="kb">D#</code> all notes off ·
-              <code class="kb">F#</code> add chord ·
-              <code class="kb">G#</code> reset transpositions ·
-              <code class="kb">A#</code> toggle Solo in key
-            </div>
-          </div>
-          <div class="sc-item">
-            <div class="sc-label">Right hand, white keys (jam octave and up)</div>
-            <div class="sc-body">play the current scale</div>
-          </div>
-          <div class="sc-item">
-            <div class="sc-label">Right hand, black keys (any octave)</div>
-            <div class="sc-body">
-              <code class="kb">C#</code> scale1 ·
-              <code class="kb">D#</code> scale2 ·
-              <code class="kb">F#</code> scale3 ·
-              <code class="kb">G#</code> notes of chord ·
-              <code class="kb">A#</code> lock scale
-            </div>
-          </div>
-
           <h4>Computer keyboard</h4>
           <p class="shortcuts-lead">The note keys play whenever the app window is focused, and
             pause while you type in a field.</p>
@@ -112,25 +73,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
               <code class="kb">{{ split.chordKeysPreview }}</code> - the run starts at
               <code class="kb">Z</code> and continues to the right, so adding chords uses more keys.
               This project has {{ split.chordNotes.length }} chord triggers.
-            </div>
-          </div>
-          <div class="sc-item">
-            <div class="sc-label">Left hand, black</div>
-            <div class="sc-body">
-              <code class="kb">{{ lhCsharp }}</code> shift ·
-              <code class="kb">{{ lhDsharp }}</code> filter OFF ·
-              <code class="kb">{{ lhFsharp }}</code> filter ON ·
-              <code class="kb">{{ lhGsharp }}</code> transpose down ·
-              <code class="kb">{{ lhAsharp }}</code> transpose up
-            </div>
-          </div>
-          <div class="sc-item">
-            <div class="sc-label">Shift held (<code class="kb">{{ lhCsharp }}</code>)</div>
-            <div class="sc-body">
-              <code class="kb">{{ lhDsharp }}</code> all notes off ·
-              <code class="kb">{{ lhFsharp }}</code> add chord ·
-              <code class="kb">{{ lhGsharp }}</code> reset transpositions ·
-              <code class="kb">{{ lhAsharp }}</code> toggle Solo in key
             </div>
           </div>
           <div class="sc-item">
@@ -160,30 +102,66 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
               <code class="kb">/</code> add the jammed chord
             </div>
           </div>
+          <div class="sc-item">
+            <div class="sc-label">Left hand, black (less often used)</div>
+            <div class="sc-body">
+              <code class="kb">{{ lhCsharp }}</code> shift ·
+              <code class="kb">{{ lhDsharp }}</code> scale filter OFF ·
+              <code class="kb">{{ lhFsharp }}</code> scale filter ON ·
+              <code class="kb">{{ lhGsharp }}</code> transpose down ·
+              <code class="kb">{{ lhAsharp }}</code> transpose up
+            </div>
+          </div>
+          <div class="sc-item">
+            <div class="sc-label">Shift held (<code class="kb">{{ lhCsharp }}</code>, less often used)</div>
+            <div class="sc-body">
+              <code class="kb">{{ lhDsharp }}</code> all notes off ·
+              <code class="kb">{{ lhFsharp }}</code> add chord ·
+              <code class="kb">{{ lhGsharp }}</code> reset transpositions ·
+              <code class="kb">{{ lhAsharp }}</code> toggle Solo in key
+            </div>
+          </div>
 
-          <h4>Normal piano mode</h4>
-          <div class="sc-item">
-            <div class="sc-label">White notes</div>
-            <div class="sc-body">
-              <code class="kb">A</code> <code class="kb">S</code> <code class="kb">D</code>
-              <code class="kb">F</code> <code class="kb">G</code> <code class="kb">H</code>
-              <code class="kb">J</code> <code class="kb">K</code> <code class="kb">L</code>
-              <code class="kb">;</code>
+          <details class="fold-details">
+            <summary class="fold-summary">MIDI keyboard</summary>
+            <div class="sc-item">
+              <div class="sc-label">Left hand, white keys (trigger octave)</div>
+              <div class="sc-body">trigger chords</div>
             </div>
-          </div>
-          <div class="sc-item">
-            <div class="sc-label">Black notes</div>
-            <div class="sc-body">
-              <code class="kb">W</code> <code class="kb">E</code> <code class="kb">T</code>
-              <code class="kb">Y</code> <code class="kb">U</code> <code class="kb">O</code>
-              <code class="kb">P</code>
+            <div class="sc-item">
+              <div class="sc-label">Left hand, black keys (trigger octave)</div>
+              <div class="sc-body">
+                <code class="kb">C#</code> shift ·
+                <code class="kb">D#</code> scale filter OFF ·
+                <code class="kb">F#</code> scale filter ON ·
+                <code class="kb">G#</code> transpose down ·
+                <code class="kb">A#</code> transpose up
+              </div>
             </div>
-          </div>
-          <div class="sc-item">
-            <div class="sc-label">Octave</div>
-            <div class="sc-body"><code class="kb">Z</code> / <code class="kb">X</code> shift the
-              on-screen keyboard down / up</div>
-          </div>
+            <div class="sc-item">
+              <div class="sc-label">Shift held (<code class="kb">C#</code>)</div>
+              <div class="sc-body">
+                <code class="kb">D#</code> all notes off ·
+                <code class="kb">F#</code> add chord ·
+                <code class="kb">G#</code> reset transpositions ·
+                <code class="kb">A#</code> toggle Solo in key
+              </div>
+            </div>
+            <div class="sc-item">
+              <div class="sc-label">Right hand, white keys (jam octave and up)</div>
+              <div class="sc-body">play the current scale</div>
+            </div>
+            <div class="sc-item">
+              <div class="sc-label">Right hand, black keys (any octave)</div>
+              <div class="sc-body">
+                <code class="kb">C#</code> scale1 ·
+                <code class="kb">D#</code> scale2 ·
+                <code class="kb">F#</code> scale3 ·
+                <code class="kb">G#</code> notes of chord ·
+                <code class="kb">A#</code> lock scale
+              </div>
+            </div>
+          </details>
 
           <h4>Other shortcuts</h4>
           <div class="sc-item"><div class="sc-body"><code class="kb">Space</code> stop recording, stop the pattern or take playback, or play the pattern when it has notes. Pauses while you type in a field.</div></div>
@@ -192,18 +170,48 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
           <div class="sc-item"><div class="sc-body"><code class="kb">'</code> (hold) play the current left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">→</code> (hold) step to and play the next left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">←</code> (hold) step to and play the previous left-hand chord</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">Alt+1</code> magic mode · <code class="kb">Alt+2</code> normal piano</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">Alt+1</code> scale filter off · <code class="kb">Alt+2</code> scale filter on (magic mode)</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+3</code> / <code class="kb">Alt+4</code> transpose down / up a semitone</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+5</code> / <code class="kb">Alt+6</code> invert chord voicing down / up</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+7</code> / <code class="kb">Alt+8</code> circle of fifths down / up</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Esc</code> close this help or the welcome message</div></div>
+
+          <details class="fold-details">
+            <summary class="fold-summary">Normal piano mode</summary>
+            <p class="shortcuts-lead">A plain keyboard with chords and filtering
+              off. Switch with the Magic / Normal buttons, or
+              <code class="kb">,</code> for magic mode and
+              <code class="kb">.</code> for normal piano.</p>
+            <div class="sc-item">
+              <div class="sc-label">White notes</div>
+              <div class="sc-body">
+                <code class="kb">A</code> <code class="kb">S</code> <code class="kb">D</code>
+                <code class="kb">F</code> <code class="kb">G</code> <code class="kb">H</code>
+                <code class="kb">J</code> <code class="kb">K</code> <code class="kb">L</code>
+                <code class="kb">;</code>
+              </div>
+            </div>
+            <div class="sc-item">
+              <div class="sc-label">Black notes</div>
+              <div class="sc-body">
+                <code class="kb">W</code> <code class="kb">E</code> <code class="kb">T</code>
+                <code class="kb">Y</code> <code class="kb">U</code> <code class="kb">O</code>
+                <code class="kb">P</code>
+              </div>
+            </div>
+            <div class="sc-item">
+              <div class="sc-label">Octave</div>
+              <div class="sc-body"><code class="kb">Z</code> / <code class="kb">X</code> shift the
+                on-screen keyboard down / up</div>
+            </div>
+          </details>
 
           <h4>File <span class="shortcuts-muted">(main page only)</span></h4>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+N</code> new · <code class="kb">Alt+O</code> open · <code class="kb">Alt+S</code> save · <code v-if="showTestSongs" class="kb">Alt+F</code><template v-if="showTestSongs"> test-songs · </template><code class="kb">Alt+C</code> classic · <code class="kb">Alt+P</code> progressions · <code class="kb">Alt+R</code> rock</div></div>
 
           <h4>Notes</h4>
           <ul class="shortcuts-notes">
-            <li><strong>Magic mode</strong> turns one left-hand white key into a chord and filters the right hand into the current scale. <strong>Normal piano</strong> plays a plain keyboard. Switch with the Magic / Normal buttons, or <code class="kb">Alt+1</code> / <code class="kb">Alt+2</code>.</li>
+            <li><strong>Magic mode</strong> turns one left-hand white key into a chord and filters the right hand into the current scale. <strong>Normal piano</strong> plays a plain keyboard. Switch with the Magic / Normal buttons, or <code class="kb">,</code> / <code class="kb">.</code>.</li>
             <li>The number keys <code class="kb">1</code>-<code class="kb">5</code> switch scales on every octave; <code class="kb">0</code> toggles <strong>Solo in key</strong>.</li>
             <li>Many computer keyboards can only report two or three keys held at
               once (key ghosting). If a solo note drops out while you hold a chord
@@ -275,6 +283,18 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 
 .shortcuts-body h4:first-child {
   margin-top: 0;
+}
+
+.fold-details {
+  margin: 1rem 0 0.4rem;
+}
+
+.fold-summary {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #5b4326;
+  cursor: pointer;
+  list-style-position: inside;
 }
 
 .shortcuts-lead {

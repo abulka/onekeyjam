@@ -5,7 +5,7 @@ import { keyDownListener } from '@/lib/midi/livePianoKeyboardShortcuts.js'
 import { calculateRhBlackNoteModifierNotes } from '@/lib/midi/wire-events.js'
 
 /*
- * The Alt+1..8 app shortcuts (magic/normal piano, live transpose, invert and
+ * The Alt+1..8 app shortcuts (scale filter off/on, live transpose, invert and
  * circle of fifths). See src/lib/midi/livePianoKeyboardShortcuts.js.
  */
 
@@ -59,17 +59,27 @@ describe('Alt+1..8 app shortcuts', () => {
         globals.chordHistory = []
     })
 
-    it('Alt+1 is magic mode and Alt+2 is normal piano', () => {
-        globals.bypass = true
-        pressAltDigit(1)
-        assert.equal(globals.bypass, false)
+    it('Alt+1 switches the scale filter off and Alt+2 switches it on', () => {
+        const events = []
+        document.broadcastEvent = (name, detail) => { events.push({ name, detail }) }
+        globals.bypass = false  // magic mode
         assert.equal(globals.scaleFilteringEnabled, true)
-        assert.equal(globals.enableLhChordTriggers, true)
 
+        pressAltDigit(1)
+        assert.equal(globals.scaleFilteringEnabled, false)
+        assert.equal(events[events.length - 1].name, 'scale-filtering-changed')
+
+        pressAltDigit(2)
+        assert.equal(globals.scaleFilteringEnabled, true)
+        assert.equal(events[events.length - 1].name, 'scale-filtering-changed')
+    })
+
+    it('Alt+1 and Alt+2 do nothing in normal piano mode', () => {
+        globals.bypass = true  // normal piano mode
+        pressAltDigit(1)
         pressAltDigit(2)
         assert.equal(globals.bypass, true)
         assert.equal(globals.scaleFilteringEnabled, false)
-        assert.equal(globals.enableLhChordTriggers, false)
     })
 
     it('Alt+3 and Alt+4 transpose the live project down and up', () => {

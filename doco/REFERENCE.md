@@ -300,15 +300,20 @@ the jam notes. The on-screen keyboard labels show the computer keys.
 | Scale filter 3 | `F#` in the jam octave and above | `3` | the second colour alternative |
 | Notes of chord | `G#` in the jam octave and above | `4` | filters the solo to the chord's own notes |
 | Lock scale | `A#` in the jam octave and above | `5` | freezes the scale so chord changes do not move it |
-| Right-hand black notes (filtering off) | `C#` `D#` `F#` `G#` `A#` in the jam octave and above | `2 3 5 6 7`, then `9 0 - =` for the next octave | play the black note itself; only reachable while scale filtering is off |
+| Set scale filter | `C#` `D#` `F#` `G#` `A#` in the jam octave and above | `1` `2` `3` `4` `5` | picks the scale the right hand plays in; works only while scale filtering is on |
 | Toggle Solo in key | hold `C#` (shift), press `A#` | `0` | on/off, with a toast naming the key scale |
-| Filter off | `D#` in the trigger octave | `d` | turns solo filtering off, so the keyboard is a plain piano |
-| Filter on | `F#` in the trigger octave | `g` | turns solo filtering back on |
-| Transpose down/up | `G#` / `A#` in the trigger octave | `h` / `j` | shifts the chords a semitone |
+| Scale filter off | `D#` in the trigger octave | `d`, or `Alt+1` in magic mode | turns solo filtering off, so the keyboard is a plain piano |
+| Scale filter on | `F#` in the trigger octave | `g`, or `Alt+2` in magic mode | turns solo filtering back on |
+| Transpose down/up | `G#` / `A#` in the trigger octave | `h` / `j`, or `Alt+3` / `Alt+4` | shifts the chords a semitone |
+| Invert chord voicing down/up | - | `Alt+5` / `Alt+6` | rotates each chord's notes down/up |
+| Circle of fifths down/up | - | `Alt+7` / `Alt+8` | moves every chord down/up a fifth |
 | Shift | hold `C#` in the trigger octave | hold `s` | modifies the other left black keys |
 | All notes off | hold `C#` (shift), press `D#` | hold `s`, press `d` | stops every sounding note |
 | Add chord | hold `C#` (shift), press `F#` | `/`, or hold `s`, press `g` | opens the add-chord panel for the current chord |
 | Reset transpositions | hold `C#` (shift), press `G#` | hold `s`, press `h` | undoes any transposing done while playing |
+| Audition picked chord | - | hold `Backtick` (top-left key) | plays the chord loaded in the Chord Picker without adding it |
+| Replay current chord | - | hold `'` | replays the current left-hand chord (on a MIDI keyboard, replay its white trigger key) |
+| Next/previous chord | - | hold `→` / `←` | steps through the project's chords with wrap-around and plays each one (on a MIDI keyboard, play the white trigger keys directly) |
 | Switch to magic mode | - | `,` | turns on one-finger chords and scale filtering |
 | Switch to normal piano | - | `.` | plays a plain keyboard, with chords and filtering off |
 
@@ -319,17 +324,10 @@ the computer keyboard uses the standard Ableton/Logic layout: white keys
 `A S D F G H J K L ;`, black keys `W E T Y U O P`, and `Z` / `X` shift the
 computer keyboard down / up an octave.
 
-**App shortcuts.** `Alt+1` magic mode, `Alt+2` normal piano, `Alt+3`/`Alt+4`
-transpose down/up a semitone, `Alt+5`/`Alt+6` invert the chord voicing down/up,
-and `Alt+7`/`Alt+8` move down/up the circle of fifths. Transpose and fifths
-change every chord and the sounding key; invert rotates each chord's voicing.
-Reset Transpositions undoes all three. These use `Alt`, not `Ctrl`, because
-`Ctrl`+digit switches browser tabs.
+**App shortcuts.** The `Alt` shortcuts in the table use `Alt`, not `Ctrl`,
+because `Ctrl`+digit switches browser tabs.
 
-**Performance and navigation keys.** Hold `` ` `` to audition the picked chord,
-`'` for the current left-hand chord, `ArrowRight` for the next left-hand chord
-and `ArrowLeft` for the previous one; `/` adds the currently jammed chord.
-`Space` stops recording or
+**Transport and navigation keys.** `Space` stops recording or
 the pattern, or starts the pattern when it has notes. `Tab` switches between the
 Edit and Perform pages, and `Shift+Tab` between the current page and Help. `Esc`
 closes the shortcuts help or the welcome message.

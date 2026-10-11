@@ -73,7 +73,9 @@ export function keyDownListener(e) {
 
   // Alt+1..8. Handled on keydown so the modifier state is reliable, unlike
   // reading e.shiftKey on keyup. Alt is used instead of Ctrl because Ctrl+digit
-  // switches browser tabs.
+  // switches browser tabs. Alt+1 and Alt+2 switch the scale filter off and on
+  // while in magic mode (the same as the D and G keys); use , and . or the
+  // Magic / Normal buttons to switch modes.
   function handleAppShortcut(e) {
     if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)
       return false
@@ -81,8 +83,18 @@ export function keyDownListener(e) {
       return false
 
     switch (e.code) {
-      case 'Digit1': globals.bypass = false; break  // Magic mode
-      case 'Digit2': globals.bypass = true; break   // Normal piano
+      case 'Digit1':
+        if (globals.bypass)
+          return false  // scale filter shortcuts only work in magic mode
+        globals.scaleFilteringEnabled = false
+        document.broadcastEvent('scale-filtering-changed', { state: false, notes: globals.currentScaleNotes })
+        break
+      case 'Digit2':
+        if (globals.bypass)
+          return false  // scale filter shortcuts only work in magic mode
+        globals.scaleFilteringEnabled = true
+        document.broadcastEvent('scale-filtering-changed', { state: true, notes: globals.currentScaleNotes })
+        break
       case 'Digit3': transposeChordTriggerMap(-2); break
       case 'Digit4': transposeChordTriggerMap(+2); break
       case 'Digit5': invertChordTriggerMap(-1); break
