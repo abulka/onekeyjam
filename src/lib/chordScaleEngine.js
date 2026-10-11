@@ -99,7 +99,7 @@ function colourBonus(type, shape, profile) {
     const bonus = profile.colourBonuses[type] ?? 0;
     if (!bonus)
         return 0;
-    if (type === 'dorian' && !(shape.minorThird && shape.hasMinor7 && !shape.isHalfDim && !shape.isDominant))
+    if (type === 'dorian' && !(shape.minorThird && shape.hasMinor7 && !shape.isHalfDim && !shape.isDominant && !shape.hasSharpFifth))
         return 0;
     if (type === 'locrian #2' && !shape.isHalfDim)
         return 0;
@@ -561,6 +561,7 @@ function chordShape(chord) {
         hasMajor7: has(11),
         isDominant: majorThird && has(10),
         hasSharpEleven: has(6),
+        hasSharpFifth: has(8),
         isHalfDim: minorThird && has(6) && has(10),
         isDim7: minorThird && has(6) && has(9),
         isAug: majorThird && has(8),
@@ -592,6 +593,12 @@ function avoidPenalty(srel, chord, shape) {
                 penalty += shape.isMajorQuality ? (shape.isDominant ? 0 : (shape.hasSharpEleven ? 6 : 0)) : 6;
             else if (c === shape.seventh)
                 penalty += 0;
+            else if (c === 8 && shape.minorThird)
+                // The natural sixth over a raised fifth (B above the Bb/A# in
+                // Dm7#5) is a hard semitone clash. The natural fifth a semitone
+                // below the raised fifth stays legitimate, the way the b6 sits
+                // above the natural fifth in aeolian.
+                penalty += 8;
             else if (c === 6 || c === 7 || c === 8)
                 penalty += 0;
             else
@@ -613,7 +620,7 @@ function conventionBonus(type, shape) {
     if (shape.isSus && type === 'mixolydian') bonus += 3;
     if (shape.majorThird && !shape.isDominant && type === 'major') bonus += shape.hasSharpEleven ? 3 : 6;
     if (shape.majorThird && !shape.isDominant && type === 'lydian') bonus += shape.hasSharpEleven ? 6 : 3;
-    if (shape.minorThird && shape.hasMinor7 && !shape.isHalfDim && type === 'dorian') bonus += 3;
+    if (shape.minorThird && shape.hasMinor7 && !shape.isHalfDim && !shape.hasSharpFifth && type === 'dorian') bonus += 3;
     if (shape.minorThird && shape.hasMajor7 && type === 'melodic minor') bonus += 3;
     if (shape.isHalfDim && type === 'locrian #2') bonus += 3;
     if (shape.isHalfDim && type === 'locrian') bonus += 3;
@@ -825,7 +832,7 @@ export function checkScaleAgainstChord(input, scaleName, key) {
             continue;
         const related = chord.intervals.find((interval) => mod12(srel - interval) === 1)
             ?? chord.intervals.find((interval) => mod12(srel - interval) === 11);
-        if (related === undefined || !(related === 0 || related === shape.third || related === shape.seventh))
+        if (related === undefined || !(related === 0 || related === shape.third || related === shape.seventh || (related === 8 && shape.minorThird)))
             continue;
         avoid.push({ degree: srel, related, penalty });
     }

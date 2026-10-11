@@ -159,6 +159,13 @@ describe('chordScaleEngine - scale checker', () => {
         assert.deepEqual(result.missing, [10]);
     });
 
+    it('rejects dorian over an m7#5 chord because of the natural sixth', () => {
+        // B is a semitone above the chord's raised fifth (Bb/A#).
+        const result = checkScaleAgainstChord('Dm7#5', 'D dorian');
+        assert.equal(result.ok, false);
+        assert.deepEqual(result.avoid, [{ degree: 9, related: 8, penalty: 8 }]);
+    });
+
 });
 
 describe('chordScaleEngine - API shape', () => {

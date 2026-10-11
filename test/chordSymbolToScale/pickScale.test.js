@@ -177,6 +177,15 @@ describe('chordSymbolToScaleName', () => {
         assert.equal('C# harmonic minor', chordSymbolToScaleName(chord, 3))
     });
 
+    it('m7#5 chords - the raised fifth rules out dorian', () => {
+        // Dorian's natural sixth (B over the Bb/A# in Dm7#5) is a hard semitone
+        // clash, so dorian must not outrank the scales that contain the #5.
+        const chord = 'Cm7#5'
+        assert.equal('C aeolian', chordSymbolToScaleName(chord, 1))
+        assert.equal('C locrian #2', chordSymbolToScaleName(chord, 2))
+        assert.equal('C minor bebop', chordSymbolToScaleName(chord, 3))
+    });
+
     // Altered
 
     it('Altered/Augmented - C7(#9#5) chord', () => {

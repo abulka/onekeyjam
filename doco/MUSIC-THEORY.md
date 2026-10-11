@@ -262,8 +262,13 @@ not everything the textbooks list:
   against the major third).
 - A semitone below the root on dominant chords: -10, the major seventh against
   the dominant's minor seventh (B against C7, for example).
-- Semitones around the fifth are not penalised, because the b6 over a minor
-  chord (aeolian) and the #11 over a dominant (lydian dominant) are legitimate.
+- Semitones around the natural fifth are not penalised, because the b6 over a
+  minor chord (aeolian) and the #11 over a dominant (lydian dominant) are
+  legitimate. When the chord's fifth is itself raised (a #5), the natural sixth
+  a semitone above it is an avoid note: B over the Bb/A# of Dm7#5 is a hard
+  clash, and it is what keeps D dorian out of the m7#5 suggestions. The natural
+  fifth a semitone below the raised fifth stays legitimate, the way aeolian's b6
+  sits above its natural fifth.
 - Symmetric chords (dim7 and augmented) skip avoid-note penalties entirely,
   because the half-whole and whole-half diminished scales both contain notes
   that would otherwise be treated as clashes.
@@ -276,7 +281,7 @@ Small bonuses settle near-ties in favour of idiomatic defaults:
 - mixolydian on sus chords (+3)
 - major on non-dominant major-quality chords: +6 without a #11, +3 with one
 - lydian on major-quality chords: +6 with a #11, +3 without one
-- dorian on m7 (+3)
+- dorian on m7 with a natural fifth (+3); a raised fifth (m7#5) rules it out
 - melodic minor on m(maj7) (+3)
 - locrian #2 and locrian on half-diminished (+3 each)
 - diminished on dim7 (+3)
@@ -299,7 +304,8 @@ dominants, tritone substitutes and borrowed chords keep their accidentals: a
 note the chord actually sounds is always licensed. In the jazz and
 adventurous profiles the adjustments are small enough that the idiomatic
 primaries (dorian, locrian #2, lydian dominant) win outright. On top of this,
-the jazz profile adds +2 to dorian on m7 and locrian #2 on half-diminished,
+the jazz profile adds +2 to dorian on m7 with a natural fifth and locrian #2
+on half-diminished,
 and the adventurous profile adds +3 to those plus +4 to lydian on major
 chords and +6 to lydian dominant on dominants.
 
@@ -356,6 +362,7 @@ reorder when a rule changes):
 | C7alt | C altered | C whole tone | C phrygian dominant |
 | C7b9 | C phrygian dominant | C half-whole diminished | C mixolydian |
 | Cm7b5 | C locrian #2 | C locrian | C minor blues |
+| Dm7#5 | D aeolian | D locrian #2 | D minor bebop |
 | CmMaj7 | C melodic minor | C harmonic minor | C augmented |
 | Cdim7 | C diminished | C half-whole diminished | C ultralocrian |
 | Caug | C lydian augmented | C augmented | C whole tone |
@@ -374,6 +381,7 @@ below):
 | Db7 in C major | Db lydian dominant | Db mixolydian | Db mixolydian b6 |
 | Fmaj7 in C major | F lydian | F major | F harmonic major |
 | Am7 in C major | A dorian | A aeolian | A minor pentatonic |
+| Dm7#5 in C major | D aeolian | D locrian #2 | D minor bebop |
 | Cm7 in C minor | C dorian | C aeolian | C minor pentatonic |
 
 The diatonic colour flattens the m7 and most half-diminished rows (`Am7`

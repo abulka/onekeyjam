@@ -88,6 +88,21 @@ describe('chordScaleEngine - key-aware ranking', () => {
             assert.equal(chordScaleNamesFor('G7', 1, major('C', 'jazz'))[0], 'G mixolydian');
             assert.equal(chordScaleNamesFor('A7', 1, major('C', 'jazz'))[0], 'A mixolydian');
         });
+
+        it('does not promote dorian on an m7#5 chord, even when the key matches', () => {
+            // D dorian is exactly the C major key, but the chord's #5 (Bb/A#)
+            // clashes with dorian's B, so the key bonus must not lift it in.
+            const names = chordScaleNamesFor('Dm7#5', 3, major('C', 'jazz'));
+            assert.deepEqual(names, ['D aeolian', 'D locrian #2', 'D minor bebop']);
+            assert.ok(!names.includes('D dorian'), names.join(', '));
+        });
+
+        it('does not promote dorian on an m7#5 chord in any key', () => {
+            for (const key of [major('C', 'jazz'), minor('C', 'jazz'), major('G', 'jazz')]) {
+                const names = chordScaleNamesFor('Gm7#5', 3, key);
+                assert.ok(!names.includes('G dorian'), `${key.tonic}: ${names.join(', ')}`);
+            }
+        });
     });
 
     describe('adventurous profile', () => {
