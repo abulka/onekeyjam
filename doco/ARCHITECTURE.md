@@ -34,14 +34,15 @@ IndexedDB. It can be hosted as a static site (for example on Netlify).
   such as the piano keyboards, chord pickers, scale pickers and status panels.
   The Help view (`AboutView.vue`) is a two-column documentation layout: the
   article on the left and a sticky right-hand sidebar on wide screens that holds
-  the page links (Overview, Improvise, Reference) and a hierarchical
+  the page links (Overview, Improvise, Reference, Controls) and a hierarchical
   "On this page" section list. The Overview is hand-written; Improvise renders
-  `doco/IMPROVISING-TUTORIAL.md` and Reference renders `doco/REFERENCE.md`
+  `doco/IMPROVISING-TUTORIAL.md`, Reference renders `doco/REFERENCE.md` and
+  Controls renders `doco/CONTROLS.md`
   through the small renderer in `src/lib/markdown.js`
   (`src/components/help/HelpArticle.vue`). The renderer gives each heading a
   stable id and `extractHeadings()` lists them; the hand-written Overview
   headings carry their own ids, and the sidebar reads them from the rendered
-  DOM. `AboutView.vue` can therefore build the section list for all three pages,
+  DOM. `AboutView.vue` can therefore build the section list for all four pages,
   highlight the current section while scrolling and jump to a section on click.
   On narrow screens the page links move above the article and
   the section list collapses into an "On this page" dropdown. The chosen page is

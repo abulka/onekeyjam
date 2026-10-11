@@ -2,7 +2,8 @@
 
 /**
  * A small Markdown renderer for the in-app Help pages. It supports the subset
- * used by `doco/IMPROVISING-TUTORIAL.md` and `doco/REFERENCE.md`: headings,
+ * used by `doco/IMPROVISING-TUTORIAL.md`, `doco/REFERENCE.md` and
+ * `doco/CONTROLS.md`: headings,
  * paragraphs, unordered and ordered lists, bold, italic, inline code, links,
  * blockquotes, horizontal rules, fenced code blocks and GitHub-style tables.
  * Headings get stable `id`s, and `extractHeadings()` returns them so the Help

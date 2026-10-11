@@ -7,6 +7,7 @@ import { extractHeadings } from '../lib/markdown.js'
 import { describeChordSoloSplit } from '../lib/midi/keyboard-split.js'
 import tutorialMarkdown from '../../doco/IMPROVISING-TUTORIAL.md?raw'
 import referenceMarkdown from '../../doco/REFERENCE.md?raw'
+import controlsMarkdown from '../../doco/CONTROLS.md?raw'
 
 import mainView from '../../doco/images/onekeyjam-main-view.png'
 import performanceView from '../../doco/images/onekeyjam-performance-view.png'
@@ -20,6 +21,7 @@ const HELP_PAGE_LINKS = [
   { id: 'overview', label: 'Overview' },
   { id: 'tutorial', label: 'Improvise' },
   { id: 'reference', label: 'Reference' },
+  { id: 'controls', label: 'Controls' },
 ]
 
 // The markdown page currently shown, or '' for the Overview.
@@ -28,6 +30,8 @@ const markdownForPage = computed(() => {
     return tutorialMarkdown
   if (globals.helpPage === 'reference')
     return referenceMarkdown
+  if (globals.helpPage === 'controls')
+    return controlsMarkdown
   return ''
 })
 
@@ -125,7 +129,7 @@ function scrollTop() {
 }
 
 // Switch to a markdown Help page and scroll to one of its sections. Used by
-// links from the hand-written Overview into the Reference page.
+// links from the hand-written Overview into the other Help pages.
 async function goToPageSection(page, sectionId) {
   await showPage(page)
   await nextTick()
@@ -181,6 +185,10 @@ watch(() => globals.helpPage, async () => {
             <HelpArticle :markdown="referenceMarkdown" />
           </template>
 
+          <template v-else-if="globals.helpPage === 'controls'">
+            <HelpArticle :markdown="controlsMarkdown" />
+          </template>
+
           <template v-else>
 
       <!-- Hero -->
@@ -194,8 +202,9 @@ watch(() => globals.helpPage, async () => {
       <div class="ui message tutorial-callout">
         <strong>Want to improvise a whole performance?</strong>
         Start with the <a href="#" @click.prevent="globals.helpPage = 'tutorial'">Improvise</a> page
-        - a quick start and song walkthroughs with sample solos. Every control and
-        setting is explained on the <a href="#" @click.prevent="globals.helpPage = 'reference'">Reference</a> page.
+        - a quick start and song walkthroughs with sample solos. Every setting is
+        explained on the <a href="#" @click.prevent="globals.helpPage = 'reference'">Reference</a> page,
+        and every key mapping on the <a href="#" @click.prevent="globals.helpPage = 'controls'">Controls</a> page.
       </div>
 
       <!-- What it is -->
@@ -250,7 +259,7 @@ watch(() => globals.helpPage, async () => {
         held, <code>A#</code> toggles Solo in key and <code>G#</code> resets
         transpositions. The right-hand black keys (<code>C#</code>, <code>D#</code>,
         <code>F#</code>, <code>G#</code>, <code>A#</code>) pick the scale filters.
-        The <a href="#" @click.prevent="globals.helpPage = 'reference'">Reference</a>
+        The <a href="#" @click.prevent="globals.helpPage = 'controls'">Controls</a>
         page lists every mapping for MIDI and computer keyboards.
       </p>
       <p>
@@ -273,12 +282,11 @@ watch(() => globals.helpPage, async () => {
         a different project or keyboard may shift the notes that each key plays.
       </p>
       <p>
-        One thing a computer keyboard cannot do well is hold many keys at once.
-        Most models can only report two or three, so a solo note can drop out
-        when you hold a chord and add two notes. If that happens, try different
-        keys, or use a MIDI keyboard. See
-        <a href="#" @click.prevent="goToPageSection('reference', 'computer-keyboards-pressing-several-keys-at-once')">Computer
-        keyboards: pressing several keys at once</a> on the Reference page.
+        In the rare case that a solo note drops out
+        when you hold a chord and add two notes, try different
+        keys, or use a MIDI keyboard. See the
+        <a href="#" @click.prevent="goToPageSection('controls', 'appendix-limitations-of-computer-keyboard-playing')">appendix
+        on computer keyboard limitations</a> on the Controls page.
       </p>
 
       <!-- Edit view -->
@@ -505,7 +513,12 @@ watch(() => globals.helpPage, async () => {
         <li>
           <a href="https://github.com/abulka/onekeyjam/blob/main/doco/REFERENCE.md" target="_blank"
             rel="noopener">Reference</a>
-          - every control, setting and scale-policy option in detail.
+          - every setting and scale-policy option in detail.
+        </li>
+        <li>
+          <a href="https://github.com/abulka/onekeyjam/blob/main/doco/CONTROLS.md" target="_blank"
+            rel="noopener">Controls</a>
+          - every MIDI and computer-keyboard mapping in detail.
         </li>
       </ul>
 

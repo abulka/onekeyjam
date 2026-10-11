@@ -14,7 +14,7 @@ import { BACKGROUND_WINDOW_OPTIONS, BACKGROUND_SILENCE_OPTIONS } from './midi/ba
 const STORAGE_KEY = 'onekeyjam.uiPrefs'
 
 export const KEYBOARD_HELP_MODES = ['off', 'black', 'white', 'all']
-export const HELP_PAGES = ['overview', 'tutorial', 'reference']
+export const HELP_PAGES = ['overview', 'tutorial', 'reference', 'controls']
 export const KEY_DETECTION_MODES = ['auto', 'manual']
 export const KEY_DETECTION_SENSITIVITIES = ['conservative', 'balanced', 'eager']
 export const KEYBOARD_OCTAVE_MIN = 2

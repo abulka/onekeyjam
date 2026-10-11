@@ -147,7 +147,7 @@ export const globals = reactive({
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
     showFavouriteBinColumns: false,  // show the favourite and bin columns in the chord/scale table
     showDeleteColumn: false,  // show only the bin (delete) column in the chord/scale table
-    helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial' | 'reference'
+    helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial' | 'reference' | 'controls'
     debugJamChord: false,
     syncChordPickerToJamChord: true,
     syncChordPickerToCurrentTriggeredChord: true,

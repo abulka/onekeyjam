@@ -1,8 +1,9 @@
 # Improvising with OneKeyJam: quick start and song walkthroughs
 
 This page gets you playing straight away, then walks through six songs with
-sample solos. Every control, setting and scale-policy detail lives on the
-**Reference** page; you do not need any of it to start.
+sample solos. Every setting and scale-policy detail lives on the
+**Reference** page, and every key mapping lives on the **Controls** page; you
+do not need any of it to start.
 
 ---
 
@@ -30,14 +31,14 @@ sample solos. Every control, setting and scale-policy detail lives on the
    scale so chord changes do not move it. `0` (or hold `C#` and press `A#`)
    toggles Solo in key.
 
-A computer keyboard can only report a few keys held at once, so a solo note can
-drop out when you hold a chord and add two notes. If that happens, try
-different keys or use a MIDI keyboard. See the Reference page,
-**Computer keyboards: pressing several keys at once**.
+In the rare case that a solo note drops out when you hold a chord and add two
+notes, try different keys or use a MIDI keyboard. See the appendix
+**Appendix: limitations of computer keyboard playing** on the Controls page.
 
 That is the whole setup. The project key and the Scale changes style have
 sensible defaults, so you can play immediately. When you want to know what a
-control does, read the Reference page or open **Shortcuts help** above the
+setting does, read the Reference page (or the Controls page for a key mapping)
+or open **Shortcuts help** above the
 keyboard.
 
 ### The keys you need first

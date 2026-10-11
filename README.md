@@ -207,8 +207,10 @@ Other hosting options are documented in [doco/NOTES.md](doco/NOTES.md).
   works, the project key model, key-aware scoring and solo-in-key mode.
 - [doco/IMPROVISING-TUTORIAL.md](doco/IMPROVISING-TUTORIAL.md) - quick start and
   song walkthroughs with sample solos; also readable in the Help view.
-- [doco/REFERENCE.md](doco/REFERENCE.md) - every control, setting and
+- [doco/REFERENCE.md](doco/REFERENCE.md) - every setting and
   scale-policy option in detail; also readable in the Help view.
+- [doco/CONTROLS.md](doco/CONTROLS.md) - every MIDI and computer-keyboard
+  mapping in detail; also readable in the Help view.
 - [doco/NOTES.md](doco/NOTES.md) - detailed MIDI setup, usage reference,
   deployment history and development notes.
 
