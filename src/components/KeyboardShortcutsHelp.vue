@@ -171,7 +171,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
           <div class="sc-item"><div class="sc-body"><code class="kb">→</code> (hold) step to and play the next left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">←</code> (hold) step to and play the previous left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+1</code> scale filter off · <code class="kb">Alt+2</code> scale filter on (magic mode)</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">Alt+3</code> / <code class="kb">Alt+4</code> transpose down / up a semitone</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">-</code> / <code class="kb">+</code> transpose down / up a semitone · <code class="kb">Backspace</code> reset transpositions. These pause while you type in a field.</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+5</code> / <code class="kb">Alt+6</code> invert chord voicing down / up</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+7</code> / <code class="kb">Alt+8</code> circle of fifths down / up</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Esc</code> close this help or the welcome message</div></div>

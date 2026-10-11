@@ -3,15 +3,18 @@ import { NOTE_KEYS, PIANO_NOTE_KEYS, codeToLabel, getNoteKeyForCode, labelForOff
 
 describe('piano-key-map', () => {
 
-    it('gives every offset from C3 to A5 a primary key', () => {
+    it('gives every offset a primary key except the top-octave G# gap', () => {
+        // The top octave follows the piano pattern, so the G# between `]` and
+        // `\` has no computer key (like the 4 and 8 gaps below): offset 32 has
+        // no primary key while every other offset from C3 to A5 has exactly one.
         for (let offset = 0; offset <= 33; offset++) {
             const primary = NOTE_KEYS.filter(key => key.offset === offset && key.primary)
-            assert.equal(primary.length, 1, `offset ${offset} primary key count`)
+            assert.equal(primary.length, offset === 32 ? 0 : 1, `offset ${offset} primary key count`)
         }
     })
 
-    it('extends into the octave above', () => {
-        const expected = ['I', '9', 'O', '0', 'P', '[', '-', ']', '=', '\\']
+    it('extends into the octave above with piano gaps', () => {
+        const expected = ['I', '9', 'O', '0', 'P', '[', '=', ']', '', '\\']
         const actual = expected.map((_, index) => labelForOffset(index + 24))
         assert.deepEqual(actual, expected)
         assert.equal(labelForOffset(34), '')
@@ -41,6 +44,20 @@ describe('piano-key-map', () => {
         assert.equal(getNoteKeyForCode('Period'), null)
         assert.equal(getNoteKeyForCode('Slash'), null)
         assert.equal(getNoteKeyForCode('KeyL'), null)
+    })
+
+    it('leaves the piano gap keys unbound as notes', () => {
+        // Digit4 and Digit8 sit over the E-F and B-C boundaries, and Minus sits
+        // over the top-octave E-F boundary, so none of them plays a note. Minus
+        // is free for transpose down (see livePianoKeyboardShortcuts.js).
+        assert.equal(getNoteKeyForCode('Digit4'), null)
+        assert.equal(getNoteKeyForCode('Digit8'), null)
+        assert.equal(getNoteKeyForCode('Minus'), null)
+    })
+
+    it('plays the top-octave F# on the Equal key', () => {
+        assert.equal(getNoteKeyForCode('Equal', 'magic').offset, 30)
+        assert.equal(labelForOffset(30), '=')
     })
 
     it('returns null for keys that are not note keys', () => {

@@ -259,6 +259,11 @@ function onKeyDown(e) {
   if (!isPianoMode() && globals.scaleFilteringEnabled && isNumberRowCode(e.code))
     return
 
+  // Shift+= is the transpose-up shortcut (see livePianoKeyboardShortcuts.js),
+  // so it must not also sound the F# that plain = plays.
+  if (!isPianoMode() && e.shiftKey && e.code === 'Equal')
+    return
+
   const key = getNoteKeyForCode(e.code, isPianoMode() ? 'piano' : 'magic')
   if (!key || keysDown.has(e.code))
     return

@@ -314,7 +314,7 @@ and the shuffle ones are visible in the Options panel.
    draw that lands on a stored filter shows no `auto:` chip.
 7. While holding a long solo note, change chord: the reason should read
    `closest fit`, and the scale should move as little as possible.
-8. Transpose the C Major II-V-I demo up a semitone (`Alt+4`, or hold the
+8. Transpose the C Major II-V-I demo up a semitone (`+`, or hold the
    left-hand `C#` and press `A#`), then trigger the second chord: the `Key:`
    chip should read `Db major`, the chord row should show `Ab7/Eb`, and
    shuffle should offer Ab scales (Ab mixolydian, Ab lydian dominant, Ab

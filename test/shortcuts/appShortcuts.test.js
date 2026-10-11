@@ -5,8 +5,10 @@ import { keyDownListener } from '@/lib/midi/livePianoKeyboardShortcuts.js'
 import { calculateRhBlackNoteModifierNotes } from '@/lib/midi/wire-events.js'
 
 /*
- * The Alt+1..8 app shortcuts (scale filter off/on, live transpose, invert and
- * circle of fifths). See src/lib/midi/livePianoKeyboardShortcuts.js.
+ * The Alt app shortcuts (Alt+1/2 scale filter off/on, Alt+5/6 invert and
+ * Alt+7/8 circle of fifths). Semitone transposing used to live on Alt+3/Alt+4
+ * but now lives on the - / + keys instead (see transposeKeys.test.js).
+ * See src/lib/midi/livePianoKeyboardShortcuts.js.
  */
 
 function configFor(id, chord, chordNotes, scales) {
@@ -82,11 +84,8 @@ describe('Alt+1..8 app shortcuts', () => {
         assert.equal(globals.scaleFilteringEnabled, false)
     })
 
-    it('Alt+3 and Alt+4 transpose the live project down and up', () => {
+    it('Alt+3 and Alt+4 no longer transpose (transpose lives on - / + now)', () => {
         pressAltDigit(4)
-        assert.equal(globals.transpositionSemitones, 1)
-        assert.equal(chordConfig.chord, 'Dbmaj7')
-
         pressAltDigit(3)
         assert.equal(globals.transpositionSemitones, 0)
         assert.equal(chordConfig.chord, 'Cmaj7')

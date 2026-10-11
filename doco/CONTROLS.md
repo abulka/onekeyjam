@@ -23,13 +23,13 @@ the jam notes. The on-screen keyboard labels show the computer keys.
 | Toggle Solo in key | hold `C#` (shift), press `A#` | `0` | on/off, with a toast naming the key scale |
 | Scale filter off | `D#` in the trigger octave | `d`, or `Alt+1` in magic mode | turns solo filtering off, so the keyboard is a plain piano |
 | Scale filter on | `F#` in the trigger octave | `g`, or `Alt+2` in magic mode | turns solo filtering back on |
-| Transpose down/up | `G#` / `A#` in the trigger octave | `h` / `j`, or `Alt+3` / `Alt+4` | shifts the chords a semitone |
+| Transpose down/up | `G#` / `A#` in the trigger octave | `-` / `+` (easiest), or `h` / `j` | shifts the chords a semitone |
 | Invert chord voicing down/up | - | `Alt+5` / `Alt+6` | rotates each chord's notes down/up |
 | Circle of fifths down/up | - | `Alt+7` / `Alt+8` | moves every chord down/up a fifth |
 | Shift | hold `C#` in the trigger octave | hold `s` | modifies the other left black keys |
 | All notes off | hold `C#` (shift), press `D#` | hold `s`, press `d` | stops every sounding note |
 | Add chord | hold `C#` (shift), press `F#` | `/`, or hold `s`, press `g` | opens the add-chord panel for the current chord |
-| Reset transpositions | hold `C#` (shift), press `G#` | hold `s`, press `h` | undoes any transposing done while playing |
+| Reset transpositions | hold `C#` (shift), press `G#` | hold `s`, press `h`, or `Backspace` | undoes any transposing done while playing |
 | Audition picked chord | - | hold `Backtick` (top-left key) | plays the chord loaded in the Chord Picker without adding it |
 | Replay current chord | - | hold `'` | replays the current left-hand chord (on a MIDI keyboard, replay its white trigger key) |
 | Next/previous chord | - | hold `→` / `←` | steps through the project's chords with wrap-around and plays each one (on a MIDI keyboard, play the white trigger keys directly) |

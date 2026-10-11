@@ -546,7 +546,7 @@ only on a chord trigger.
 
 ### Live transposition
 
-The left-hand black keys and `Alt+3`/`Alt+4` shift every chord down or up a
+The `-` / `+` keys, or the left-hand black keys, shift every chord down or up a
 semitone mid-performance. Transposition moves the whole musical context, not
 just the notes:
 

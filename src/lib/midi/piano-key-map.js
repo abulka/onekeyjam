@@ -81,16 +81,20 @@ export const NOTE_KEYS = [
     // Instead `,` and `.` switch mode and `/` adds the jammed chord; see
     // scaleFilterShortcuts.js.
 
-    // The octave above the right hand, on the physical keys right of P
+    // The octave above the right hand, on the physical keys right of P.
+    // This follows the piano pattern like the rows below: white notes on the
+    // letter row and black notes on the digits row, with gaps where the
+    // keyboard has no black key. `-` sits over the E-F boundary (like `4` and
+    // `8` below), so it plays no note and is free for transpose down, while
+    // `=` is the F# between `[` and `]`. There is no key for the top G#.
     { code: 'KeyI', offset: 24, primary: true },
     { code: 'Digit9', offset: 25, primary: true },
     { code: 'KeyO', offset: 26, primary: true },
     { code: 'Digit0', offset: 27, primary: true },
     { code: 'KeyP', offset: 28, primary: true },
     { code: 'BracketLeft', offset: 29, primary: true },
-    { code: 'Minus', offset: 30, primary: true },
+    { code: 'Equal', offset: 30, primary: true },
     { code: 'BracketRight', offset: 31, primary: true },
-    { code: 'Equal', offset: 32, primary: true },
     { code: 'Backslash', offset: 33, primary: true },
 ]
 
