@@ -7,6 +7,9 @@ import { loadDemoProject } from '@/lib/demo-project.js'
 import { buildRandomSongPool, pickRandomSong } from '@/lib/randomSong.js'
 import { sequencerControl, sequenceOptions } from '@/lib/sequencer-control.js'
 import { toggleTopBarRecord, handleSpaceTransportKeyDown } from '@/lib/transport.js'
+import { takeDebugJson, gridChordsDebugJson, projectDebugJson } from '@/lib/debugPayloads.js'
+import { buildChordSequenceTextFromGrid } from '@/lib/gridChordsToSequenceText.js'
+import { copyTextToClipboard } from '@/lib/clipboard.js'
 import ComboProjectLibrary from '@/components/ComboProjectLibrary.vue'
 import FileImportMidiDialog from '@/components/FileImportMidiDialog.vue'
 
@@ -111,6 +114,27 @@ async function tutorial() {
 
 // The test-songs library is a dev-only playground; hide it from production builds.
 const showTestSongs = import.meta.env.DEV
+
+// The Debug menu holds the dev copy helpers, so the recorded take, the grid
+// chords and the project JSON can be copied without opening the Take section.
+// It is only shown while running the dev server.
+const showDebugMenu = import.meta.env.DEV
+
+async function copyDebug(text, label) {
+  const ok = await copyTextToClipboard(text)
+  if (typeof $ === 'function')
+    $('body').toast({ message: ok ? `${label} copied to clipboard.` : `Could not copy ${label}.`, displayTime: ok ? 3500 : 2500, class: ok ? 'teal' : 'brown' })
+}
+
+function copyGridChordsText() {
+  const text = buildChordSequenceTextFromGrid()
+  if (!text) {
+    if (typeof $ === 'function')
+      $('body').toast({ message: 'No grid chords to copy.', displayTime: 2500, class: 'brown' })
+    return
+  }
+  copyDebug(text, 'Grid chords as text')
+}
 
 function reloadCurrentProject() {
   const category = globals.projectLibrary.projectIsUserOrFeatured
@@ -333,6 +357,18 @@ onUnmounted(() => {
         <i class="dropdown icon"></i>
         <div class="menu">
           <slot name="actions" />
+        </div>
+      </div>
+
+      <div v-if="showDebugMenu" class="ui dropdown item">
+        <div class="text">Debug</div>
+        <i class="dropdown icon"></i>
+        <div class="menu">
+          <a class="item" title="Copy the chords currently on the grid as JSON" @click="copyDebug(gridChordsDebugJson(), 'Grid chords (JSON)')"><i class="copy icon"></i>Copy chords in grid (JSON)</a>
+          <a class="item" title="Copy the chords currently on the grid as plain text (same as Generate from Grid)" @click="copyGridChordsText()"><i class="copy icon"></i>Copy chords in grid as text</a>
+          <a class="item" title="Copy the whole project config as JSON" @click="copyDebug(projectDebugJson(), 'Project JSON')"><i class="copy icon"></i>Copy project JSON</a>
+          <div class="ui divider"></div>
+          <a class="item" title="Copy the whole recorded take (tempo, resolution, chord and solo notes) as JSON" @click="copyDebug(takeDebugJson(), 'Recorded sequence (JSON)')"><i class="copy icon"></i>Copy recorded sequence (JSON)</a>
         </div>
       </div>
 

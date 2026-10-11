@@ -5,8 +5,6 @@ import { globals } from '@/lib/globals.js'
 import { startRecording, stopRecording, clearTake, captureTakeFromBackground, clearFlashback } from '@/lib/midi/recorder.js'
 import { startPlayback, stopPlayback, seekPlayback, previewVisuals, takeDurationSec } from '@/lib/midi/playback.js'
 import { downloadRecording } from '@/lib/midi/export-recording.js'
-import { takeDebugJson, gridChordsDebugJson, projectDebugJson } from '@/lib/debugPayloads.js'
-import { copyTextToClipboard } from '@/lib/clipboard.js'
 import RecordingPianoRoll from './RecordingPianoRoll.vue'
 
 const rec = globals.recording
@@ -61,11 +59,6 @@ function formatWindow(sec) {
 
 function showToast(message, className) {
   $('body').toast({ message, displayTime: className === 'teal' ? 3500 : 2500, class: className })
-}
-
-async function copyDebug(text, label) {
-  const ok = await copyTextToClipboard(text)
-  showToast(ok ? `${label} copied to clipboard.` : `Could not copy ${label}.`, ok ? 'teal' : 'brown')
 }
 
 function requestCapture() {
@@ -305,17 +298,6 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture, clearFlash
       <RecordingPianoRoll />
       <details class="take-notes-debug">
         <summary>Debug: notes in the take ({{ takeNoteNames.length }})</summary>
-        <div class="take-debug-actions">
-          <button type="button" class="ui mini basic button" title="Copy the whole take (tempo, resolution, chord and solo notes) as JSON" @click="copyDebug(takeDebugJson(), 'Take sequence')">
-            <i class="copy icon"></i> Copy sequence
-          </button>
-          <button type="button" class="ui mini basic button" title="Copy the chords currently on the grid as JSON" @click="copyDebug(gridChordsDebugJson(), 'Grid chords')">
-            <i class="copy icon"></i> Copy chords in grid
-          </button>
-          <button type="button" class="ui mini basic button" title="Copy the whole project config as JSON" @click="copyDebug(projectDebugJson(), 'Project JSON')">
-            <i class="copy icon"></i> Copy project JSON
-          </button>
-        </div>
         <div class="take-notes-list" v-if="takeNoteNames.length">
           <code v-for="note in takeNoteNames" :key="note.midi">{{ note.name }} ({{ note.midi }})</code>
         </div>
@@ -367,13 +349,6 @@ defineExpose({ toggleRecord, exportTake, captureTake: requestCapture, clearFlash
   padding: 0 4px;
   background: #efe6d6;
   border-radius: 3px;
-}
-
-.take-debug-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.4rem;
 }
 
 /* Record and Capture share one row so they stay aligned with each other. */
