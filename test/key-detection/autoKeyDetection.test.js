@@ -1,7 +1,7 @@
 import assert from 'assert';
 import { globals } from '../../src/lib/globals.js';
 import { buildTriggerMap } from '../../src/lib/triggerMaps.js';
-import { detectKeysForLoad, detectKeysAfterEdit } from '../../src/lib/autoKeyDetection.js';
+import { detectKeysForLoad, detectKeysAfterEdit, describeAutoKey } from '../../src/lib/autoKeyDetection.js';
 
 /*
  * Automatic key and multi-key detection. A freshly loaded song is left as
@@ -98,8 +98,7 @@ describe('autoKeyDetection', () => {
 
 // A chromatic progression: no single key explains most of its tones, so
 // detection splits it once the sensitivity is raised. See doco/MULTI-KEY.md.
-function makeChromaticProject() {
-    return {
+function makeChromaticProject() {    return {
         name: 'chromatic',
         chords: [
             { id: 1, name: 'Cm', chord: 'Cm', chordNotes: ['C3', 'Eb3', 'G3'], scale1: '', scale2: '', scale3: '' },
@@ -116,3 +115,45 @@ function makeChromaticProject() {
         songs: { default: { ids: [1, 2, 3, 4, 5, 6, 7, 8, 9], favourites: [], blacklist: [] } },
     };
 }
+
+describe('describeAutoKey', () => {
+
+    it('reports the auto status before any chords exist', () => {
+        const description = describeAutoKey([]);
+        assert.equal(description.label, 'auto');
+        assert.ok(description.title.includes('Add chords'), description.title);
+    });
+
+    it('handles a missing group list', () => {
+        assert.equal(describeAutoKey(undefined).label, 'auto');
+    });
+
+    it('names a single key area', () => {
+        const description = describeAutoKey([
+            { keyName: 'C major', key: { tonic: 'C', type: 'major' }, chords: [] },
+        ], { tonic: 'C', type: 'major' });
+        assert.equal(description.label, 'auto · 1 key area');
+        assert.ok(description.title.includes('C major'), description.title);
+    });
+
+    it('names the project key and several areas', () => {
+        const description = describeAutoKey([
+            { keyName: 'C minor', key: { tonic: 'C', type: 'minor' }, chords: [] },
+            { keyName: 'Db minor', key: { tonic: 'Db', type: 'minor' }, chords: [] },
+        ], { tonic: 'C', type: 'minor' });
+        assert.equal(description.label, 'auto · 2 key areas');
+        assert.ok(description.title.includes('C minor'), description.title);
+        assert.ok(description.title.includes('Manual'), description.title);
+    });
+
+    it('still names a project key that matches no area', () => {
+        // A freshly loaded multi-key song keeps its authored key until the
+        // first edit, so the project key may not be one of the areas shown.
+        const description = describeAutoKey([
+            { keyName: 'D minor', key: { tonic: 'D', type: 'minor' }, chords: [] },
+        ], { tonic: 'Bb', type: 'major' });
+        assert.equal(description.label, 'auto · 1 key area');
+        assert.ok(description.title.includes('Bb major'), description.title);
+    });
+
+});

@@ -4,6 +4,7 @@ import { keyDetection } from './keyDetection.js';
 import { suggestKeyGroups } from './keyGroupDetection.js';
 import { applyDetectedGroups } from './keyGroupApply.js';
 import { getProjectChordsTriggers } from './project-chord-triggers.js';
+import { projectKeyName } from './projectKey.js';
 
 /**
  * @module lib/autoKeyDetection
@@ -60,6 +61,30 @@ function warnAutoKeysChanged() {
     catch (error) {
         // A missing jQuery toast must never break key detection.
     }
+}
+
+/**
+ * The Auto-mode badge. Auto detection owns the keys, so the manual
+ * declared-versus-detected comparison does not apply; instead this describes
+ * the auto status. The project key is shown by the panel itself, and the group
+ * whose key matches it is tagged in the summary.
+ * @param {Array<{keyName?: string, key?: import("./typedefs").ProjectKey, chords: Array<unknown>}>} [groups] effective key groups in grid order
+ * @param {import("./typedefs").ProjectKey} [projectKey] the resolved project key
+ * @returns {{label: string, title: string}}
+ */
+export function describeAutoKey(groups, projectKey) {
+    const areas = Array.isArray(groups) ? groups.length : 0;
+    if (areas === 0)
+        return {
+            label: 'auto',
+            title: 'Auto key detection is on. Add chords and the project key will be detected.',
+        };
+    const label = `auto · ${areas} key area${areas === 1 ? '' : 's'}`;
+    const name = projectKeyName(projectKey);
+    const title = name
+        ? `Auto key detection: the project key is ${name}. The key areas shown follow the grid; editing it re-detects them. Switch to Manual to set keys by hand.`
+        : 'Auto key detection: the key areas follow the grid; editing it re-detects them. Switch to Manual to set keys by hand.';
+    return { label, title };
 }
 
 /**

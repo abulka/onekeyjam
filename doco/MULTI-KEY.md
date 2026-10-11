@@ -61,7 +61,10 @@ owns the behaviour:
   when they want the detector's reading.
 
 The detected project key is saved with `source: 'detected'`, so the badge
-distinguishes an automatic key from one the user typed. The shared write path
+distinguishes an automatic key from one the user typed. In Auto mode the badge
+reports the auto status (for example "auto · 2 key areas") and names the first
+key area as the project key, rather than comparing the key with the whole-pool
+detector, which does not fit a multi-key arrangement. The shared write path
 lives in `src/lib/keyGroupApply.js`: `applyDetectedGroups()` makes the first
 group the project key and the later groups its section keys, skipping locked
 chords. Switching the panel to Auto applies the detection immediately, so the

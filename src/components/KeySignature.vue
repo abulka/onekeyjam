@@ -3,9 +3,9 @@ import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { registerAccordion } from '@/lib/accordionState.js'
 import { globals } from '../../src/lib/globals.js'
 import { keyDetection } from '../../src/lib/keyDetection';
-import { detectKeysAfterEdit } from '../../src/lib/autoKeyDetection.js';
+import { detectKeysAfterEdit, describeAutoKey } from '../../src/lib/autoKeyDetection.js';
 import { arraysAreEqual } from "../../src/lib/array-tools"
-import { declaredProjectKey, projectKeyName, describeProjectKey, keyGroupsForProject, isChordKeyLocked, keyColourHue } from '../../src/lib/projectKey.js'
+import { declaredProjectKey, projectKeyName, describeProjectKey, keyGroupsForProject, isChordKeyLocked, keyColourHue, keysMatch } from '../../src/lib/projectKey.js'
 import { applyProjectKeySettings, applyChordKeySettings, applyChordKeyLocked } from '../../src/lib/projectScaleSettings.js'
 import { alternativesFor, applyGroupKey as applyGroupKeyToChords, applyDetectedGroups } from '../../src/lib/keyGroupApply.js'
 import { sanitiseNoteToSharp } from '../../src/lib/note-tools.js'
@@ -201,8 +201,17 @@ const keyIsDeclared = computed(() => !!declaredProjectKey(globals.project))
 // is labelled as such rather than as "(set)".
 const keyDisplayName = computed(() => currentKey.value ? projectKeyName(currentKey.value) : 'C major')
 
-// Describes every combination of declared key, detected key and chord presence.
-const keyDescription = computed(() => describeProjectKey(globals.project))
+// Describes where the project key comes from. In Auto mode detection owns the
+// keys, so the status is described against the detected key areas; in Manual
+// mode it compares the declared key with the detection, as before.
+const keyDescription = computed(() => mode.value === 'auto'
+    ? describeAutoKey(keyGroups.value, currentKey.value)
+    : describeProjectKey(globals.project))
+
+/** Is this group on the project key, i.e. the fallback area? */
+function isProjectKeyGroup(group) {
+    return !!group.key && keysMatch(group.key, currentKey.value)
+}
 
 function setProjectKeyFromEvent(eventDetail) {
     const tonic = eventDetail.tonic ? sanitiseNoteToSharp(eventDetail.tonic) : currentKey.value?.tonic
@@ -308,6 +317,7 @@ onUnmounted(() => stopDetailsAccordion())
                         :title="group.chords.map((chord) => chord.chord).join(', ')">
                         <span class="kd-swatch" :style="{ background: swatchColour(group.key) }"></span>
                         {{ projectKeyName(group.key) }} ×{{ group.chords.length }}
+                        <em v-if="isProjectKeyGroup(group)" class="kd-primary-tag">project key</em>
                     </span>
                 </span>
             </p>
@@ -595,6 +605,15 @@ onUnmounted(() => stopDetailsAccordion())
     align-items: center;
     gap: 0.3em;
     white-space: nowrap;
+}
+
+.kd-primary-tag {
+    font-size: 0.75em;
+    font-style: normal;
+    color: #6b5a45;
+    border: 1px solid #b08968;
+    border-radius: 0.6em;
+    padding: 0 0.4em;
 }
 
 .kd-swatch {

@@ -163,3 +163,27 @@ describe('keyGroupDetection - sensitivity', () => {
     });
 
 });
+
+describe('keyGroupDetection - classic modulations', () => {
+
+    function groupsOf(text, options) {
+        const symbols = text.split(/\s+/).filter(Boolean);
+        return keyNames(suggestKeyGroups({ options: {} }, chords(...symbols), options));
+    }
+
+    it('finds the cycle-of-fourths key areas in the Rhythm Changes bridge', () => {
+        assert.deepEqual(groupsOf('D7 G7 C7 F7 Bb7 Eb7 Ab7 Db7'),
+            ['G major', 'F major', 'Eb major', 'Db major']);
+    });
+
+    it('finds the two key areas of Blue Bossa', () => {
+        assert.deepEqual(groupsOf('Cm7 Fm7 Dm7b5 G7 Cm7 Fm7 Dm7b5 G7 Ebm7 Ab7 Dbmaj7 Dbmaj7'),
+            ['C minor', 'Db major']);
+    });
+
+    it('finds the modulation in The Girl from Ipanema', () => {
+        assert.deepEqual(groupsOf('Fmaj7 G7 Gm7 Fmaj7 Fmaj7 G7 Gm7 Fmaj7 Gbmaj7 Ab7 Abm7 Gbmaj7 Gbmaj7 Ab7 Abm7 Gbmaj7'),
+            ['F major', 'Gb major']);
+    });
+
+});
