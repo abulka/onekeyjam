@@ -9,18 +9,66 @@ export function keyDownListener(e) {
     if (handleAppShortcut(e))
       return
 
-    if (e.key === "F1" && (!(e.ctrlKey || e.metaKey)) && !e.repeat) {
-      document.broadcastEvent("chord-play", { state: 'on' })  // get params from globals area later
+    // Chord audition and trigger shortcuts. All hold to sustain: keydown
+    // starts the sound and keyup stops it. Matched on e.code so the shortcuts
+    // do not depend on keyboard layout. Backquote and Quote are bound to
+    // nothing in either note map, and the arrows are not notes either, so
+    // these work globally without stealing piano notes.
+    //
+    // Old Fn bindings are gone: F1 opened browser help, F3 opened find, F5
+    // reloaded the page, and F4 never had a listener. Up and Down arrows are
+    // left alone so the page keeps scrolling vertically.
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey)
+      return
+    if (isTypingTarget(e.target))
+      return
+
+    switch (e.code) {
+      case 'Backquote':
+        e.preventDefault()
+        document.broadcastEvent("chord-play", { state: 'on' })  // get params from globals area later
+        break
+      case 'Quote':
+        e.preventDefault()
+        document.broadcastEvent("chord-play-lh-trigger", { state: 'on' })  // get params from globals area later
+        break
+      case 'ArrowRight':
+        if (isArrowControlTarget(e.target))
+          return
+        e.preventDefault()
+        document.broadcastEvent("chord-play-lh-trigger-next", { state: 'on' })
+        break
+      case 'ArrowLeft':
+        if (isArrowControlTarget(e.target))
+          return
+        e.preventDefault()
+        document.broadcastEvent("chord-play-lh-trigger-previous", { state: 'on' })
+        break
     }
-    if (e.key === "F2" && (!(e.ctrlKey || e.metaKey)) && !e.repeat) {
-      document.broadcastEvent("chord-play-lh-trigger", { state: 'on' })  // get params from globals area later
+  }
+
+  /**
+   * True when an arrow press belongs to a focused control that already uses
+   * arrows itself, so the global chord-step shortcut leaves it alone. This
+   * covers dropdowns, radio groups, range inputs and the chord-grid resize
+   * slider in GrandSummary.vue.
+   * @param {EventTarget|null} target
+   */
+  function isArrowControlTarget(target) {
+    if (!target || !(/** @type {HTMLElement} */ (target)).tagName)
+      return false
+    const element = /** @type {HTMLElement} */ (target)
+    const tag = element.tagName.toLowerCase()
+    if (tag === 'select' || tag === 'textarea')
+      return true
+    if (tag === 'input') {
+      const type = (element.getAttribute('type') || 'text').toLowerCase()
+      if (type === 'radio' || type === 'range')
+        return true
     }
-    if (e.key === "F3" && (!(e.ctrlKey || e.metaKey)) && !e.repeat) {
-      document.broadcastEvent("chord-play-lh-trigger-next", { state: 'on' })
-    }
-    if (e.key === "F4" && (!(e.ctrlKey || e.metaKey)) && !e.repeat) {
-      document.broadcastEvent("chord-play-lh-trigger-previous", {})
-    }
+    if (typeof element.closest === 'function' && element.closest('.grid-resize-handle, [role="slider"]'))
+      return true
+    return false
   }
 
   // Alt+1..8. Handled on keydown so the modifier state is reliable, unlike
@@ -57,17 +105,21 @@ export function keyDownListener(e) {
     //   reAllocateChords()
     // }
 
-    if (e.key === "F1" && (!(e.ctrlKey || e.metaKey))) {
-      document.broadcastEvent("chord-play", { state: 'off' })  // get params from globals area later
-    }
-    if (e.key === "F2" && (!(e.ctrlKey || e.metaKey))) {
-      document.broadcastEvent("chord-play-lh-trigger", { state: 'off' })  // get params from globals area later
-    }
-    if (e.key === "F3" && (!(e.ctrlKey || e.metaKey))) {
-      document.broadcastEvent("chord-play-lh-trigger-next", { state: 'off' })
-    }
-
-    if (e.key === "F5" && (!(e.ctrlKey || e.metaKey || e.shiftKey))) {
-      document.broadcastEvent("chord-add", {})  // get params from globals area later
+    // Matched by code alone so releasing a modifier first cannot leave a
+    // chord stuck on. The typing guard is intentionally skipped here: a hold
+    // started outside a field must still stop even if focus moved mid-hold.
+    switch (e.code) {
+      case 'Backquote':
+        document.broadcastEvent("chord-play", { state: 'off' })  // get params from globals area later
+        break
+      case 'Quote':
+        document.broadcastEvent("chord-play-lh-trigger", { state: 'off' })  // get params from globals area later
+        break
+      case 'ArrowRight':
+        document.broadcastEvent("chord-play-lh-trigger-next", { state: 'off' })
+        break
+      case 'ArrowLeft':
+        document.broadcastEvent("chord-play-lh-trigger-previous", { state: 'off' })
+        break
     }
   }

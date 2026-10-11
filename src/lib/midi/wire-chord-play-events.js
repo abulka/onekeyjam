@@ -11,22 +11,37 @@ export function initChordPlayEvents() {
     });
 
     document.addEventListener('chord-play-lh-trigger-next', function (e) {
-        if (!globals.currentChordTriggerNote)
-            return;
-        const singleNote = globals.currentChordTriggerNote;
-        fakeTrigger(singleNote, false);  // turn off old trigger note
-
-        // calc next trigger note
-        const triggerNotes = Object.keys(globals.chordTriggerMap);
-        const currentIndex = triggerNotes.indexOf(singleNote);
-        if (currentIndex == -1)
-            throw ('cannot find current trigger note?');
-        // console.log('You are at index', currentIndex)
-        const nextIndex = (currentIndex < triggerNotes.length - 1) ? currentIndex + 1 : 0;
-        const nextTriggerNote = triggerNotes[nextIndex];
-
-        fakeTrigger(nextTriggerNote, e.detail.state == 'on');
+        stepTrigger(1, e && e.detail && e.detail.state == 'on');
     });
+
+    document.addEventListener('chord-play-lh-trigger-previous', function (e) {
+        stepTrigger(-1, e && e.detail && e.detail.state == 'on');
+    });
+}
+
+/**
+ * Stop the current trigger note, pick the stepped trigger note and strike it.
+ * Step +1 moves to the next chord with wrap-around, step -1 moves to the
+ * previous chord with wrap-around. The order follows globals.chordTriggerMap,
+ * which is the project trigger order.
+ * @param {number} step +1 for next, -1 for previous
+ * @param {boolean} noteState whether to play or stop the stepped note
+ */
+function stepTrigger(step, noteState) {
+    if (!globals.currentChordTriggerNote)
+        return;
+    const singleNote = globals.currentChordTriggerNote;
+    fakeTrigger(singleNote, false);  // turn off old trigger note
+
+    const triggerNotes = Object.keys(globals.chordTriggerMap);
+    const currentIndex = triggerNotes.indexOf(singleNote);
+    if (currentIndex == -1)
+        throw ('cannot find current trigger note?');
+    // console.log('You are at index', currentIndex)
+    const steppedIndex = (currentIndex + step + triggerNotes.length) % triggerNotes.length;
+    const steppedTriggerNote = triggerNotes[steppedIndex];
+
+    fakeTrigger(steppedTriggerNote, noteState);
 }
 
 /**

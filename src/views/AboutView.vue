@@ -445,7 +445,7 @@ watch(() => globals.helpPage, async () => {
           right; <code>,</code> and <code>.</code> switch mode and <code>/</code>
           adds the jammed chord. Open
           <strong>Shortcuts help</strong> above the keyboard, next to Key labels,
-          for the full quick reference, including function keys and Alt shortcuts.
+          for the full quick reference, including chord audition keys and Alt shortcuts.
         </li>
       </ul>
 

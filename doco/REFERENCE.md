@@ -326,13 +326,13 @@ change every chord and the sounding key; invert rotates each chord's voicing.
 Reset Transpositions undoes all three. These use `Alt`, not `Ctrl`, because
 `Ctrl`+digit switches browser tabs.
 
-**Performance and navigation keys.** Hold `F1` to audition the picked chord,
-`F2` the current left-hand chord, `F3` the next left-hand chord, and `F4` the
-previous one; `F5` adds the currently jammed chord. `Space` stops recording or
+**Performance and navigation keys.** Hold `` ` `` to audition the picked chord,
+`'` for the current left-hand chord, `ArrowRight` for the next left-hand chord
+and `ArrowLeft` for the previous one; `/` adds the currently jammed chord.
+`Space` stops recording or
 the pattern, or starts the pattern when it has notes. `Tab` switches between the
 Edit and Perform pages, and `Shift+Tab` between the current page and Help. `Esc`
-closes the shortcuts help or the welcome message. On Mac laptops the function
-keys may need `Fn`.
+closes the shortcuts help or the welcome message.
 
 ### Computer keyboards: pressing several keys at once
 

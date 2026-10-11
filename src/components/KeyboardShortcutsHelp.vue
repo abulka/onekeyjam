@@ -188,11 +188,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
           <h4>Other shortcuts</h4>
           <div class="sc-item"><div class="sc-body"><code class="kb">Space</code> stop recording, stop the pattern or take playback, or play the pattern when it has notes. Pauses while you type in a field.</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Tab</code> switch between the Edit and Perform pages · <code class="kb">Shift+Tab</code> switch between the current page and Help</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">F1</code> (hold) play / audition the picked chord</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">F2</code> (hold) play the current left-hand chord</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">F3</code> (hold) step to and play the next left-hand chord</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">F4</code> previous left-hand chord</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">F5</code> add the currently jammed chord</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">`</code> (hold) play / audition the picked chord</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">'</code> (hold) play the current left-hand chord</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">→</code> (hold) step to and play the next left-hand chord</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">←</code> (hold) step to and play the previous left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+1</code> magic mode · <code class="kb">Alt+2</code> normal piano</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+3</code> / <code class="kb">Alt+4</code> transpose down / up a semitone</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+5</code> / <code class="kb">Alt+6</code> invert chord voicing down / up</div></div>
@@ -206,8 +205,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
           <ul class="shortcuts-notes">
             <li><strong>Magic mode</strong> turns one left-hand white key into a chord and filters the right hand into the current scale. <strong>Normal piano</strong> plays a plain keyboard. Switch with the Magic / Normal buttons, or <code class="kb">Alt+1</code> / <code class="kb">Alt+2</code>.</li>
             <li>The number keys <code class="kb">1</code>-<code class="kb">5</code> switch scales on every octave; <code class="kb">0</code> toggles <strong>Solo in key</strong>.</li>
-            <li>On Mac laptops the function keys may need <code class="kb">Fn</code>.</li>
-            <li><code class="kb">F5</code> reloads the page on Windows and Linux.</li>
             <li>Many computer keyboards can only report two or three keys held at
               once (key ghosting). If a solo note drops out while you hold a chord
               and play two notes, use different keys or a MIDI keyboard.</li>

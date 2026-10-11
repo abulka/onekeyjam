@@ -125,6 +125,7 @@ function onGridResizeKeyDown(event) {
   else
     return
   event.preventDefault()
+  event.stopPropagation()
   commitGridSize(next)
   releaseControlFocus(event)
 }

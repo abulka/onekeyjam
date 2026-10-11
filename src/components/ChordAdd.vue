@@ -162,7 +162,7 @@ function replaceCurrentChordDisabled() {
     <br>
 
     <!-- Add and Replace buttons -->
-    <button @click="chordAction('add', radioPicked)" class="ui small button" :disabled="!radioPicked" title="Add new chord to Project (Shortcut: F5)">Add Chord</button>
+    <button @click="chordAction('add', radioPicked)" class="ui small button" :disabled="!radioPicked" title="Add new chord to Project (Shortcut: /)">Add Chord</button>
     <span><code class="ml-1 font-semibold"> {{ removeDefaultVoicingSuffix(radioPicked) }}</code> to Project</span>
 
     <button @click="chordAction('replace', radioPicked)" v-if="areSymbols() && !globals.currentConfigEmpty()"

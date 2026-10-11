@@ -201,7 +201,7 @@ function bypassOn(event) {
             globals.chordPicker.currentChordInversion
         }})</span>
 
-        <ButtonAudition title="Audition Chord (keyboard shortcut: F1)" class="ml-3!"
+        <ButtonAudition title="Audition Chord (keyboard shortcut: `)" class="ml-3!"
           :notes="auditionInfo().defaultVoicing.notes" :bass="auditionInfo().defaultVoicing.bass" />
 
       </div>
