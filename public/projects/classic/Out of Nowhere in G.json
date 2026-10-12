@@ -1,0 +1,156 @@
+{
+  "name": "Out of Nowhere in G",
+  "chords": [
+    {
+      "id": 1,
+      "name": "Gmaj7",
+      "chord": "Gmaj7",
+      "bass": "G2",
+      "scale1": "G major",
+      "scale2": "G lydian",
+      "scale3": "G harmonic major"
+    },
+    {
+      "id": 2,
+      "name": "Bbm7",
+      "chord": "Bbm7",
+      "bass": "Bb2",
+      "scale1": "Bb dorian",
+      "scale2": "Bb aeolian",
+      "scale3": "Bb minor pentatonic"
+    },
+    {
+      "id": 3,
+      "name": "Eb7",
+      "chord": "Eb7",
+      "bass": "Eb2",
+      "scale1": "Eb mixolydian",
+      "scale2": "Eb lydian dominant",
+      "scale3": "Eb mixolydian b6"
+    },
+    {
+      "id": 4,
+      "name": "Bm7",
+      "chord": "Bm7",
+      "bass": "B2",
+      "scale1": "B dorian",
+      "scale2": "B aeolian",
+      "scale3": "B minor pentatonic"
+    },
+    {
+      "id": 5,
+      "name": "E7",
+      "chord": "E7",
+      "bass": "E2",
+      "scale1": "E mixolydian",
+      "scale2": "E lydian dominant",
+      "scale3": "E mixolydian b6"
+    },
+    {
+      "id": 6,
+      "name": "Am7",
+      "chord": "Am7",
+      "bass": "A2",
+      "scale1": "A dorian",
+      "scale2": "A aeolian",
+      "scale3": "A minor pentatonic"
+    },
+    {
+      "id": 7,
+      "name": "D7",
+      "chord": "D7",
+      "bass": "D2",
+      "scale1": "D mixolydian",
+      "scale2": "D lydian dominant",
+      "scale3": "D mixolydian b6"
+    },
+    {
+      "id": 8,
+      "name": "Bbmaj7",
+      "chord": "Bbmaj7",
+      "bass": "Bb2",
+      "scale1": "Bb lydian",
+      "scale2": "Bb major",
+      "scale3": "Bb harmonic major"
+    },
+    {
+      "id": 9,
+      "name": "Abmaj7",
+      "chord": "Abmaj7",
+      "bass": "Ab2",
+      "scale1": "Ab major",
+      "scale2": "Ab lydian",
+      "scale3": "Ab harmonic major"
+    }
+  ],
+  "options": {
+    "key": {
+      "tonic": "G",
+      "type": "major",
+      "source": "user"
+    },
+    "colour": "jazz",
+    "scaleStyle": "follow"
+  },
+  "meta": {
+    "type": "onekeyjam",
+    "version": 2,
+    "source": "https://onekeyjam.netlify.app"
+  },
+  "songs": {
+    "default": {
+      "ids": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "favourites": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "blacklist": []
+    }
+  },
+  "chordSequences": {
+    "default": {
+      "mml": "t152o4c1d1e1c1f1g1a1b1",
+      "markstart": 0,
+      "markend": 128,
+      "tempo": 152,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Excerpt (8 bars)"
+    },
+    "medium": {
+      "mml": "t152o4c1d1e1c1f1g1a1b1c1d1e1c1f1g1a1b1",
+      "markstart": 0,
+      "markend": 256,
+      "tempo": 152,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Middle section (16 bars)"
+    },
+    "full": {
+      "mml": "t152o4c1d1e1c1f1g1a1b1c1d1e1c1f1g1a1b1o5c1o4d1e1o5d1o4a1b1c1b1c1d1e1c1f1g1a1b1",
+      "markstart": 0,
+      "markend": 512,
+      "tempo": 152,
+      "enabled": false,
+      "loopManual": false,
+      "label": "Full form (32 bars)"
+    }
+  }
+}
