@@ -176,6 +176,18 @@ and the validation commands.
   syncs the allocated trigger-map entries, and refreshes the active scale.
   Chords added later are key-aware too, because `fillInChordConfig.js` and
   `expandChordConfig.js` pass the resolved key into `fillMissingScales()`.
+- The Edit view's chord rows are edited through the **Chord Inspector**
+  (`src/components/ChordInspector.vue`, with the draft logic in
+  `src/lib/chordInspector.js` and the draft in `globals.chordInspector`).
+  Selecting a grid row loads that slot as a draft: the picker combos carry its
+  identity, the notes field is Auto (derived from the identity) or Custom
+  (typed or captured), and nothing is stored until Save, with Revert reloading
+  the slot. **+ Add chord**, `/` and the MIDI Shift+F# shortcut append a row
+  (seeded from a just-played chord when there is one) and select it, so editing
+  a row can never add one. Played notes wait in a Captured chip and are applied
+  only on request. Note spellings are normalised (`normaliseNoteName`), stored
+  theoretical spellings are repaired on load by `emergencyRepairProject`, and
+  every audition derives its bass through `normaliseAuditionBass`.
 - The Edit view's dedicated **Key Detection** accordion
   (`src/components/KeySignature.vue`) owns the project key: its detection
   candidates (chords, notes and the optional music21 server) each offer "set as

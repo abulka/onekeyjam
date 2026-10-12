@@ -28,9 +28,9 @@ the jam notes. The on-screen keyboard labels show the computer keys.
 | Circle of fifths down/up | - | `Alt+7` / `Alt+8` | moves every chord down/up a fifth |
 | Shift | hold `C#` in the trigger octave | hold `s` | modifies the other left black keys |
 | All notes off | hold `C#` (shift), press `D#` | hold `s`, press `d` | stops every sounding note |
-| Add chord | hold `C#` (shift), press `F#` | `/`, or hold `s`, press `g` | opens the add-chord panel for the current chord |
+| Add chord | hold `C#` (shift), press `F#` | `/`, or hold `s`, press `g` | adds a new chord row and selects it; edit it in the inspector |
 | Reset transpositions | hold `C#` (shift), press `G#` | hold `s`, press `h`, or `Backspace` | undoes any transposing done while playing |
-| Audition picked chord | - | hold `Backtick` (top-left key) | plays the chord loaded in the Chord Picker without adding it |
+| Audition picked chord | - | hold `Backtick` (top-left key) | plays the chord currently in the Chord Inspector without adding it |
 | Replay current chord | - | hold `'` | replays the current left-hand chord (on a MIDI keyboard, replay its white trigger key) |
 | Next/previous chord | - | hold `→` / `←` | steps through the project's chords with wrap-around and plays each one (on a MIDI keyboard, play the white trigger keys directly) |
 | Switch to magic mode | - | `,` | turns on one-finger chords and scale filtering |

@@ -1,24 +1,31 @@
 import { computed } from 'vue'
 import * as Tonal from "@tonaljs/tonal";
-import { globals } from "../../src/lib/globals.js"
-import { calcAllChordSymbols } from "../../src/lib/calcAllChordSymbols";
-import { sanitiseNoteToSharp } from "../../src/lib/note-tools.js"
-import { chordPlay } from "../../src/lib/auditionNotes"
-import { setActiveScaleFilterToMatchChord } from "../../src/lib/change-scale.js"
-import { removeBassSlash } from '../../src/lib/removeBassSlash.js';
-import { chordSymbolToNotesInversion } from "../../src/lib/chordSymbolToNotes";
-import { calcChordInversionNumberAndNewBass } from "../../src/lib/chordInversion";
-import { getRandomArbitary } from "../../src/lib/util.js"
+import { globals } from "./globals.js"
+import { calcAllChordSymbols } from "./calcAllChordSymbols";
+import { normaliseNoteName } from "./note-tools.js"
+import { setFromSymbol, revertToAuto, setNotes, setBass, loadDraftFromSlot } from "./chordInspector.js"
 
-// Private
+// The Chord Picker combos list every chord type Tonal knows, filtered and
+// named for the UI.
+// @ts-ignore: some complaint about computed
+export const chordOptions = computed({
+    get: () => calcAllChordSymbols(globals.chordPicker.showAllChords, globals.chordPicker.shortChordNames),
+})
 
-function setChordRootAndBass(note) {
-    // set root and bass note of current chord in chord combo
-    let newNote = Tonal.Note.simplify(note)
-    newNote = sanitiseNoteToSharp(newNote)
-    globals.chordPicker.currentRoot = newNote
-    globals.chordPicker.currentBass = newNote
-    setActiveScaleFilterToMatchChord(globals.chordPicker.currentRoot, globals.chordPicker.currentChord)
+/**
+ * A combo option list with the current value always present. Some lists are
+ * filtered (chord types) or fixed to twelve spellings (notes), but a stored
+ * chord may use something outside them, so add it rather than showing a blank
+ * combo.
+ * @param {Array<{text: string, value: string}>} options
+ * @param {string} current the current combo value
+ * @returns {Array<{text: string, value: string}>}
+ */
+export function optionsWithCurrent(options, current) {
+    const list = Array.isArray(options) ? options : []
+    if (current && !list.some(option => option.value === current))
+        return [{ text: current, value: current }, ...list]
+    return list
 }
 
 function findChordInCombo(chordSymbolSansRoot) {
@@ -43,7 +50,7 @@ function smartFindChordTypeInCombo(chordSymbolNoRoot) {
     } catch (error) {
         if (!globals.chordPicker.showAllChords) {
             globals.chordPicker.showAllChords = true
-            // combo may need to show all chords for this to work, so retry 
+            // combo may need to show all chords for this to work, so retry
             // with showAllChords = true, this time let exception happen cos it should always be found
             currentComboIndex = findChordInCombo(chordSymbolNoRoot)
         }
@@ -53,158 +60,84 @@ function smartFindChordTypeInCombo(chordSymbolNoRoot) {
     return currentComboIndex
 }
 
-// Public
-
-// tip: by converting into a computed, need to access the value with chordOptions.value
-// @ts-ignore: some complaint about computed
-export const chordOptions = computed({
-    get: () => calcAllChordSymbols(globals.chordPicker.showAllChords, globals.chordPicker.shortChordNames),
-})
-
 export function setChordPicker(chordSymbolNoRoot, bassNote, rootNote) {
-    // sync the chord picker to the jam chord, as well as the bass and root
+    // sync the picker combos to a known chord, without touching the voicing.
     // returns true if the chord was found in the combo, false if not
     const currentComboIndex = smartFindChordTypeInCombo(chordSymbolNoRoot)
     if (currentComboIndex != -1) {
         globals.chordPicker.currentChord = chordSymbolNoRoot
         if (bassNote != undefined)
-            globals.chordPicker.currentBass = sanitiseNoteToSharp(bassNote)
+            globals.chordPicker.currentBass = normaliseNoteName(bassNote)
         if (rootNote != undefined)
-            globals.chordPicker.currentRoot = sanitiseNoteToSharp(rootNote)
+            globals.chordPicker.currentRoot = normaliseNoteName(rootNote)
     }
     globals.chordPicker.currentChordInversion = 0
     return currentComboIndex != -1
 }
 
-export function setChordSmart(chordSymbolNoRoot, rootNote, bassNote) {
-    // sets the chord and matching scale too
-    const success = setChordPicker(chordSymbolNoRoot, bassNote, rootNote)
-    if (success) {
-        chordPickerToJammed()
-        chordPlay()
-        setActiveScaleFilterToMatchChord(globals.chordPicker.currentRoot, globals.chordPicker.currentChord)
-    }
-}
-export function setChordFromSymbol(chordSymbol) {
-    const chordObj = Tonal.Chord.get(chordSymbol)
-    setChordSmart(chordObj.aliases[0], chordObj.tonic, chordObj.tonic);
-}
-
 /**
- * Does the custom voicing hold notes that did not come from the Chord Picker?
- * Such a voicing must survive picker combo edits, so the picker only writes
- * over an empty or picker-sourced voicing unless forced.
+ * Load a full chord symbol into the draft identity. Used by the "chords that
+ * fit" links and the key detection panel, so they edit what the grid shows.
+ * @param {string} chordSymbol e.g. 'Cmaj7'
  * @returns {boolean}
  */
-function hasRealCustomVoicing() {
-    const jammed = globals.currentChordBeingJammed
-    return Array.isArray(jammed.chordNotes) && jammed.chordNotes.length > 0
-        && jammed.source !== 'picker' && jammed.source !== ''
+export function setChordSmart(chordSymbol) {
+    return setFromSymbol(chordSymbol)
+}
+
+/** Alias kept for the key detection panel. */
+export function setChordFromSymbol(chordSymbol) {
+    return setFromSymbol(chordSymbol)
 }
 
 /**
- * Fill the custom working notes from the Chord Picker combos.
- * @param {boolean} [force] write even when a grid/MIDI/typed voicing is loaded
+ * Rebuild the draft voicing from the picker combos (Auto), unless a Custom
+ * voicing is loaded and `force` is not set.
+ * @param {boolean} [force]
  */
 export function chordPickerToJammed(force = false) {
-    if (!force && hasRealCustomVoicing())
+    if (!force && globals.chordInspector.voicingMode === 'custom' && globals.chordInspector.notes.length > 0)
         return
-    const [symbol] = removeBassSlash(`${globals.chordPicker.currentRoot}${globals.chordPicker.currentChord}`)
-
-    globals.currentChordBeingJammed.chordNotes = chordSymbolToNotesInversion(symbol, globals.chordPicker.currentChordInversion)
-    globals.currentChordBeingJammed.bass = globals.chordPicker.currentBass
-    globals.currentChordBeingJammed.chord = symbol
-    globals.currentChordBeingJammed.symbols = [symbol]
-    globals.currentChordBeingJammed.source = 'picker'
-    globals.currentChordBeingJammed.stale = false
-}
-
-export function chordPickerToJammedExtraPrecision(chordNotes, bass, source = 'grid') {
-    // whilst we can get most info from the chord picker, esp. the notes from the
-    // symbol doesn't give use the voicing that may be in the chord config, so use
-    // this call to use the actual chord config notes which are obviously better
-    // than the chord picker symbol guess at notes
-    globals.currentChordBeingJammed.chordNotes = chordNotes
-    globals.currentChordBeingJammed.bass = bass
-    globals.currentChordBeingJammed.source = source
+    revertToAuto()
 }
 
 /**
- * Re-read the custom working voicing from the currently triggered chord config.
- * Call this after the stored chord is edited (Add / Replace) so the working
- * notes never keep showing the defunct chord that was just overwritten.
+ * Replace the draft voicing with the exact notes of a loaded grid chord.
+ * @param {Array<string>} chordNotes
+ * @param {string} bass
+ * @param {string} [source] retained for callers that describe the origin
+ */
+export function chordPickerToJammedExtraPrecision(chordNotes, bass, source = 'grid') {
+    void source
+    if (bass != undefined)
+        setBass(bass)
+    if (Array.isArray(chordNotes) && chordNotes.length > 0)
+        setNotes(chordNotes)
+}
+
+/**
+ * Reload the draft from the currently selected grid slot. Kept for the old
+ * callers; the inspector itself reloads through loadDraftFromSlot.
  */
 export function syncCustomVoicingToCurrentChord() {
     const config = globals.currentConfigEmpty() ? null : globals.currentChordConfig()
     if (!config || !config.chord) {
-        globals.clearCurrentChordBeingJammed()
+        globals.chordInspector.notes = []
+        globals.chordInspector.voicingMode = 'auto'
         return
     }
-    const symbols = typeof config.symbols === 'string' && config.symbols.length > 0
-        ? config.symbols.split(',').map(symbol => symbol.trim()).filter(Boolean)
-        : [config.chord]
-    globals.currentChordBeingJammed.chord = config.chord
-    globals.currentChordBeingJammed.chordNotes = [...config.chordNotes]
-    globals.currentChordBeingJammed.symbols = symbols
-    globals.currentChordBeingJammed.bass = config.bass || ''
-    globals.currentChordBeingJammed.source = 'grid'
-    globals.currentChordBeingJammed.stale = false
+    loadDraftFromSlot(globals.currentChordTriggerNote)
 }
 
-// ╦┌┐┌┬  ┬┌─┐┬─┐┌─┐┬┌─┐┌┐┌┌─┐
-// ║│││└┐┌┘├┤ ├┬┘└─┐││ ││││└─┐
-// ╩┘└┘ └┘ └─┘┴└─└─┘┴└─┘┘└┘└─┘
-
-export function chordInvert(direction = 1) {
-    const { bass, inversion } = calcChordInversionNumberAndNewBass(
-        globals.chordPicker.currentRoot,
-        globals.chordPicker.currentChord,
-        globals.chordPicker.currentChordInversion,
-        globals.chordPicker.inversionChangesBass,
-        direction
-    )
-    globals.chordPicker.currentChordInversion = inversion
-    globals.chordPicker.currentBass = bass
-    chordPickerToJammed()
-    chordPlay()
-    setActiveScaleFilterToMatchChord(globals.chordPicker.currentRoot, globals.chordPicker.currentChord)
+/** Kept for compatibility with callers that checked the old custom state. */
+export function hasRealCustomVoicing() {
+    return globals.chordInspector.voicingMode === 'custom'
+        && Array.isArray(globals.chordInspector.notes)
+        && globals.chordInspector.notes.length > 0
 }
 
-export function nextChord(option) {
-    // Change to the next available chord in the combo
-    // option = 'next' or 'prev' or 'random'
-
-    let currentComboIndex = findChordInCombo(globals.chordPicker.currentChord)
-
-    if (option == 'next' && currentComboIndex < chordOptions.value.length - 1)
-        currentComboIndex++
-    else if (option == 'prev' && currentComboIndex > 0)
-        currentComboIndex--
-    else if (option == 'random')
-        currentComboIndex = getRandomArbitary(0, chordOptions.value.length)
-
-    // select it
-    globals.chordPicker.currentChord = chordOptions.value[currentComboIndex].value
-    chordPickerToJammed()
-    chordPlay()
-    setActiveScaleFilterToMatchChord(globals.chordPicker.currentRoot, globals.chordPicker.currentChord)
-
+/** Kept for older callers; Tonal chord lookup only. */
+export function chordSymbolNoRootFor(chordSymbol) {
+    const chordObj = Tonal.Chord.get(chordSymbol)
+    return chordObj.empty ? '' : chordObj.aliases[0]
 }
-
-export function circleOfFifthTranspose(direction) {
-    let newNote = Tonal.Note.transposeFifths(globals.chordPicker.currentRoot, direction)
-    // let newNote = Tonal.Note.transpose(globals.chordPicker.currentRoot, '5P') // <-- same result !
-    setChordRootAndBass(newNote)
-    chordPickerToJammed()
-    chordPlay()
-}
-
-export function transpose(amount = 1) {
-    // one semitone is a minor 2nd interval it seems viz. '2m'
-    // parameter 'amount' is a number e.g. 1 or -1
-    let newNote = Tonal.Note.transpose(globals.chordPicker.currentRoot, Tonal.Interval.fromSemitones(amount))
-    setChordRootAndBass(newNote)
-    chordPickerToJammed()
-    chordPlay()
-}
-

@@ -10,29 +10,84 @@ import { Note } from '@/lib/midi/webmidi.js'
 import { getProjectChordsTriggers } from "../../src/lib/project-chord-triggers.js"
 import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events.js"
 import { start, dragover, dragend } from '../../src/lib/drag-drop-table-rows.js'
-import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '../../src/lib/massOperationsOnChordConfigs'
 import { keyDetection } from '../../src/lib/keyDetection';
 import { projectKeyNotes, projectKeyName, projectKeyShortName, keyColourHue } from '../../src/lib/projectKey.js';
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
-import { resizeGridRowCount, deleteSelectedChordConfigs } from '@/lib/boot-project.js'
+import { resizeGridRowCount } from '@/lib/boot-project.js'
 import { clampGridRowCount } from '@/lib/maxChordConfig.js'
-import { syncPickerToCurrentChord } from '@/lib/syncPickerToCurrentChord.js'
+import { openForSlot, addRow, selectSlot, isDirty } from '@/lib/chordInspector.js'
+import { linkProjectToKeyboard } from '@/lib/boot-project.js'
+import { flushCurrentProject } from '@/lib/currentProjectStore.js'
+
+const props = defineProps({
+  // On the Perform page there is no inspector panel, so a click just selects.
+  openInspectorOnSelect: { type: Boolean, default: true },
+})
+
+/**
+ * Changing the selected row would discard an unsaved draft, so ask first.
+ * Returns true when it is safe to move on.
+ */
+function confirmDiscardIfNeeded(triggerNote) {
+  const inspector = globals.chordInspector
+  if (inspector.slotId == null || inspector.triggerNote === triggerNote || !isDirty())
+    return true
+  return confirm(`Discard the unsaved changes to ${inspector.triggerNote}?`)
+}
+
+/**
+ * Select a slot, open the inspector on it and reveal the Edit Chords section.
+ * Selecting never writes: the inspector holds a draft until Save.
+ */
+function selectAndEdit(triggerNote) {
+  if (!triggerNote)
+    return
+  selectSlot(triggerNote)
+  if (!props.openInspectorOnSelect)
+    return
+  openForSlot(triggerNote)
+  openEditChordsAccordion()
+}
+
+/** Open the accordion section that holds the inspector, if it is closed. */
+function openEditChordsAccordion() {
+  const title = document.querySelector('[data-accordion-section="edit-chords"]')
+  if (!title || typeof $ !== 'function')
+    return
+  const accordion = title.closest('.ui.accordion')
+  if (!accordion)
+    return
+  const index = Array.from(accordion.children)
+    .filter((child) => child.classList.contains('title'))
+    .indexOf(title)
+  if (index >= 0)
+    $(accordion).accordion('open', index)
+  // With a tall grid the panel can be off screen. Bring it into view so the
+  // row clicked and the editor that opened are visibly connected.
+  const rect = title.getBoundingClientRect()
+  if (rect.top < 0 || rect.top > window.innerHeight)
+    title.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+/** Add a row (seeded from a just-played chord when there is one) and edit it. */
+function onAddChord(event) {
+  if (addRow()) {
+    linkProjectToKeyboard()
+    flushCurrentProject()
+    openEditChordsAccordion()
+  }
+  releaseControlFocus(event)
+}
 
 function syncPickerAfterGridClick(triggerNote) {
-  // Clicking the grid used to only trigger the chord for audition. Copy the
-  // selected project chord into the Chord Picker as well, so the voicing list
-  // and Edit Notes follow the grid without a second click. This must work in
-  // Normal piano mode too, where onNoteOn() takes the jam path and never
-  // updates the current trigger, so select the row first and then sync.
+  // Clicking a scale-filter cell selects the row and loads the draft, so the
+  // inspector keeps following the grid. It does not open the panel.
   try {
-    if (!globals.syncChordPickerToCurrentTriggeredChord)
-      return
     if (triggerNote && triggerNote in globals.chordTriggerMap)
-      globals.currentChordTriggerNote = triggerNote
-    syncPickerToCurrentChord()
+      selectSlot(triggerNote)
   } catch (error) {
-    console.warn('Could not sync Chord Picker to grid chord', error)
+    console.warn('Could not select the grid chord', error)
   }
 }
 
@@ -127,13 +182,6 @@ function onGridResizeKeyDown(event) {
   event.preventDefault()
   event.stopPropagation()
   commitGridSize(next)
-  releaseControlFocus(event)
-}
-
-function onDeleteSelectedChords(event) {
-  if (!globals.idsToDelete.length)
-    return
-  deleteSelectedChordConfigs()
   releaseControlFocus(event)
 }
 
@@ -535,12 +583,14 @@ function scaleFilterTableClick(event) {
   const scaleFilterNote = td.getAttribute('data-scale-filter-note') // C#, D# or F#
 
   // change triggered chord
-  let simulatedEvent = {
-    note: new Note(triggerNote, { attack: globals.fixedNoteVelocity })
+  if (confirmDiscardIfNeeded(triggerNote)) {
+    let simulatedEvent = {
+      note: new Note(triggerNote, { attack: globals.fixedNoteVelocity })
+    }
+    onNoteOn(simulatedEvent)
+    onNoteOff(simulatedEvent)
+    syncPickerAfterGridClick(triggerNote)
   }
-  onNoteOn(simulatedEvent)
-  onNoteOff(simulatedEvent)
-  syncPickerAfterGridClick(triggerNote)
 
   // change scale filter
   let octave = '6'  // TODO should calculate this properly
@@ -555,13 +605,16 @@ function scaleFilterTableClick(event) {
 function generalTableClick(event) {
   const tr = event.target.closest('tr')
   const triggerNote = tr.getAttribute('data-trigger-note')
-  // change triggered chord
+  if (!confirmDiscardIfNeeded(triggerNote))
+    return
+  // Quietly change the sounding chord and scale, then select the row and open
+  // the inspector on it. Editing happens in the panel, never in the grid.
   let simulatedEvent = {
     note: new Note(triggerNote, { attack: 0.0 }) // 0 means silent - only onNoteOn() understands this convention
   }
-  onNoteOn(simulatedEvent)  
+  onNoteOn(simulatedEvent)
   onNoteOff(simulatedEvent)
-  syncPickerAfterGridClick(triggerNote)
+  selectAndEdit(triggerNote)
 }
 
 </script>
@@ -702,10 +755,6 @@ function generalTableClick(event) {
             </tbody>
           </table>
         </th>
-
-        <th v-if="globals.showFavouriteBinColumns"><button @click="markAllVisibleChordsAsFavourites(); if (globals.keySignatureDetection.fromFavouritesOnly) keyDetection()" class="circular compact mini transparent ui icon button" title="Add all to favourites"> <i class="heart icon"></i> </button></th>
-        <!-- <th><button @click="markAllVisibleChordsForBlackList()" class="circular compact mini transparent ui icon button" title="Add all to blacklist"> <i class="thumbs down icon"></i> </button></th> -->
-        <th v-if="globals.showFavouriteBinColumns || globals.showDeleteColumn"><button @click="markAllVisibleChordsForDeletion()" class="circular compact mini transparent ui icon button" title="Mark all to be deleted - then Delete selected below to apply"> <i class="trash icon"></i> </button></th>
 
       </tr>
     </thead>
@@ -862,9 +911,6 @@ function generalTableClick(event) {
           </table>
 
         </td>
-        <td v-if="globals.showFavouriteBinColumns"><input type="checkbox" v-model="info.favourite" /></td>
-        <!-- <td><input type="checkbox" v-model="info.blackListed" /></td> -->
-        <td v-if="globals.showFavouriteBinColumns || globals.showDeleteColumn"><input type="checkbox" v-model="info.todelete" /></td>
       </tr>
     </tbody>
   </table>
@@ -894,23 +940,21 @@ function generalTableClick(event) {
       <span v-else class="resize-hint">tall grid, fewer keys free for solo</span>
     </div>
   </div>
-  <div v-if="globals.isProjectLoaded && totalGridRows > 1" class="grid-delete-footer">
+  <div v-if="globals.isProjectLoaded" class="grid-actions-footer">
     <button
       type="button"
       class="ui tiny button"
-      :disabled="globals.idsToDelete.length === 0"
-      :title="globals.idsToDelete.length === 0 ? 'Tick the bin checkboxes first' : 'Delete the ticked rows'"
-      @click="onDeleteSelectedChords($event)"
+      title="Add a new chord row at the end and select it for editing. A chord played since the last action is added instead."
+      @click="onAddChord($event)"
     >
-      Delete selected ({{ globals.idsToDelete.length }})
+      + Add chord
     </button>
-    <div class="ui checkbox">
-      <input type="checkbox" id="show-delete-column-grid" v-model="globals.showDeleteColumn">
-      <label for="show-delete-column-grid">Show delete column in the chord/scale table</label>
-    </div>
+    <span class="add-hint">New rows appear at the end and open in the inspector below.</span>
   </div>
   <div v-else class="warn">
     <p>No Chords or Scales in Project yet.
+      <button type="button" class="ui tiny button" title="Add a C major row and open it in the inspector"
+        @click="onAddChord($event)">+ Add chord</button>
       <button type="button" class="demo-button" @click="loadDemoProject()">Load demo project</button>
     </p>
   </div>
@@ -1323,13 +1367,19 @@ tr.key-group-change > td {
   font-style: italic;
 }
 
-/* Final delete step and column toggle, directly under the grid resizer. */
-.grid-delete-footer {
+/* Add-row action and hint, directly under the grid resizer. */
+.grid-actions-footer {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 0.75rem 1rem;
   margin-top: 0.5rem;
+}
+
+.add-hint {
+  color: #6b5a45;
+  font-size: 0.85rem;
+  font-style: italic;
 }
 
 /* Phones keep the table shape and swipe sideways inside this frame, so the

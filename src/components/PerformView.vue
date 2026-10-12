@@ -162,7 +162,7 @@ onUnmounted(() => {
         Chord / Scale Table
       </div>
       <div class="content">
-        <GrandSummary />
+        <GrandSummary :open-inspector-on-select="false" />
       </div>
 
       <div class="title" data-accordion-section="active-chord">

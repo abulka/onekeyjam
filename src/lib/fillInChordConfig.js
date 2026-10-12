@@ -36,7 +36,9 @@ export function fillInChordConfig2(chordConfig, chordSymbolInclRoot, chordSymbol
 
     chordConfig.name = `${chordSymbolInclRoot} (user jam)`
     chordConfig.chord = chordSymbolInclRoot
-    chordConfig.chordNotes = chordNotes
+    // Always store a copy: the caller may pass the live draft array, and a
+    // stored config must never share a reference with working state.
+    chordConfig.chordNotes = [...chordNotes]
     chordConfig.symbols = chordSymbols.join(',')
 
     fillBass(bass, chordConfig);

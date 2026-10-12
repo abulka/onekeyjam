@@ -299,8 +299,9 @@ watch(() => globals.helpPage, async () => {
       <h3 id="edit-view-accordions" class="ui header">Edit view accordions</h3>
       <ul class="ui list">
         <li>
-          <strong>Edit Chords</strong> - add, edit and audition the chords in your
-          project, and choose the scale filters used in the right hand.
+          <strong>Edit Chords</strong> - the inspector for the selected grid row.
+          Click a row to load it, change its chord, play with its voicing (Auto or
+          Custom), then Save. <strong>+ Add chord</strong> creates a new row.
         </li>
         <li>
           <strong>Key Detection</strong> - set the project key, see the detected

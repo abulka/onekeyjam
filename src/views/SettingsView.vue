@@ -65,12 +65,6 @@ onUnmounted(() => stopAccordion())
             </p>
           </div>
           <div class="mt-2">
-            <label class="checkboxLabel" title="Show the favourite and bin columns in the chord/scale table. Usually only useful while importing from MIDI.">
-              <input type="checkbox" v-model="globals.showFavouriteBinColumns" />
-              Show favourite and bin columns in the chord/scale table
-            </label>
-          </div>
-          <div class="mt-2">
             <label class="checkboxLabel" title="Show a strip of the last four chord-to-scale choices above the chord/scale grid.">
               <input type="checkbox" v-model="globals.showScaleHistory" />
               Show the recent chord-to-scale history above the grid

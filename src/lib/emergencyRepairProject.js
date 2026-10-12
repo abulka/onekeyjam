@@ -1,10 +1,13 @@
 // @ts-check
+import * as Tonal from '@tonaljs/tonal';
 import { createDefaultSongs } from './song';
 import { createDefaultMetaProjectConfig } from './projectConfig';
 import { expandChordConfig } from './expandChordConfig.js';
 import { numericId, uniqueNumericIds } from './id.js';
 import { maxChordConfigs as maxChordConfigsDefault } from './globals-config.js';
 import { normalizeKey } from './projectKey.js';
+import { normaliseNoteName, createChordSymbol } from './note-tools.js';
+import { removeBassSlash } from './removeBassSlash.js';
 
 /** @typedef {import("../../src/lib/typedefs").Project} Project */
 
@@ -34,8 +37,60 @@ export function emergencyRepairProject(project) {
 
     normaliseChordIds(project);
     normaliseChordKeys(project);
+    normaliseChordSpellings(project);
     expandProjectChordConfigs(project); // in place
     repairArrangement(project);
+}
+
+/**
+ * Fold theoretical or double accidentals (E#, B#, Cb, Fb, F##, ...) into the
+ * twelve sharp spellings the app uses, so a stored E#m reads and ranks as Fm.
+ * Custom names Tonal cannot parse are left untouched, and a chord whose root is
+ * already a normal spelling is not rewritten at all.
+ */
+function normaliseChordSpellings(project) {
+    for (const chord of project.chords) {
+        if (!chord)
+            continue
+        if (chord.chord)
+            chord.chord = normaliseChordSymbol(chord.chord)
+        if (typeof chord.symbols === 'string' && chord.symbols.length > 0)
+            chord.symbols = chord.symbols
+                .split(',')
+                .map(alias => normaliseChordSymbol(alias.trim()))
+                .filter(Boolean)
+                .join(',')
+        if (chord.bass)
+            chord.bass = normaliseNoteName(chord.bass)
+        if (chord.bassNote)
+            chord.bassNote = simplifyKeep(chord.bassNote)
+        if (Array.isArray(chord.chordNotes))
+            chord.chordNotes = chord.chordNotes.map(simplifyKeep)
+    }
+}
+
+/** Simplify a note name, keeping the original if it does not parse. */
+function simplifyKeep(note) {
+    const simplified = Tonal.Note.simplify(note)
+    return simplified || note
+}
+
+/**
+ * Normalise the root and any slash bass of a stored chord symbol. Unparseable
+ * or custom symbols are returned unchanged.
+ * @param {string} symbol
+ * @returns {string}
+ */
+function normaliseChordSymbol(symbol) {
+    const [name, bass] = removeBassSlash(symbol)
+    const chordObj = Tonal.Chord.get(name)
+    if (chordObj.empty || !chordObj.tonic)
+        return symbol
+    const root = normaliseNoteName(chordObj.tonic)
+    const newName = root === chordObj.tonic
+        ? name
+        : createChordSymbol(root, chordObj.aliases[0] || 'M')
+    return bass ? `${newName}/${normaliseNoteName(bass)}` : newName
 }
 
 /**

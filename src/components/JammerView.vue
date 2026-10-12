@@ -3,7 +3,7 @@ import { onMounted, onUnmounted } from "vue";
 import { keyDownListener, keyUpListener } from "@/lib/midi/livePianoKeyboardShortcuts"
 import { registerAccordion } from "@/lib/accordionState.js"
 import GrandSummary from './GrandSummary.vue'
-import ChordPicker from './ChordPicker.vue'
+import ChordInspector from './ChordInspector.vue'
 import ChordSequenceCreator from './ChordSequenceCreator.vue'
 import ScalePicker from './ScalePicker.vue'
 import KeySignature from './KeySignature.vue'
@@ -66,7 +66,7 @@ onUnmounted(() => {
         Edit Chords
       </div>
       <div id="chordPicker" class="content">
-        <ChordPicker />
+        <ChordInspector />
       </div>
 
 

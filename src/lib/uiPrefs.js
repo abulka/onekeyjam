@@ -83,8 +83,6 @@ export function clampFixedVelocity(value) {
  * @property {number} [fixedNoteVelocity]
  * @property {boolean} [metronomeEnabled]
  * @property {boolean} [showWelcomeDialog]
- * @property {boolean} [showFavouriteBinColumns]
- * @property {boolean} [showDeleteColumn]
  * @property {string} [helpPage]
  * @property {string} [scalePolicy]
  * @property {string} [keyDetectionMode]
@@ -224,10 +222,6 @@ export function readPrefs(storage = defaultStorage()) {
             prefs.metronomeEnabled = stored.metronomeEnabled
         if (stored && typeof stored.showWelcomeDialog === 'boolean')
             prefs.showWelcomeDialog = stored.showWelcomeDialog
-        if (stored && typeof stored.showFavouriteBinColumns === 'boolean')
-            prefs.showFavouriteBinColumns = stored.showFavouriteBinColumns
-        if (stored && typeof stored.showDeleteColumn === 'boolean')
-            prefs.showDeleteColumn = stored.showDeleteColumn
         if (stored && HELP_PAGES.includes(stored.helpPage))
             prefs.helpPage = stored.helpPage
         if (stored && SCALE_POLICIES.includes(stored.scalePolicy))
@@ -277,8 +271,6 @@ export function currentPrefs() {
         fixedNoteVelocity: globals.fixedNoteVelocity,
         metronomeEnabled: globals.metronomeEnabled,
         showWelcomeDialog: globals.showWelcomeDialog,
-        showFavouriteBinColumns: globals.showFavouriteBinColumns,
-        showDeleteColumn: globals.showDeleteColumn,
         helpPage: globals.helpPage,
         scalePolicy: globals.scaleFiltering.policy,
         keyDetectionMode: globals.keyDetectionMode,
@@ -332,10 +324,6 @@ export function loadUiPrefs(storage = defaultStorage()) {
         globals.metronomeEnabled = prefs.metronomeEnabled
     if (typeof prefs.showWelcomeDialog === 'boolean')
         globals.showWelcomeDialog = prefs.showWelcomeDialog
-    if (typeof prefs.showFavouriteBinColumns === 'boolean')
-        globals.showFavouriteBinColumns = prefs.showFavouriteBinColumns
-    if (typeof prefs.showDeleteColumn === 'boolean')
-        globals.showDeleteColumn = prefs.showDeleteColumn
     if (prefs.helpPage)
         globals.helpPage = prefs.helpPage
     if (prefs.scalePolicy)
@@ -378,8 +366,6 @@ export function initUiPrefs(storage = defaultStorage()) {
         globals.fixedNoteVelocity,
         globals.metronomeEnabled,
         globals.showWelcomeDialog,
-        globals.showFavouriteBinColumns,
-        globals.showDeleteColumn,
         globals.helpPage,
         globals.scaleFiltering.policy,
         globals.keyDetectionMode,

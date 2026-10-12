@@ -16,6 +16,24 @@ import { bassWithOctFromChordNotesWithOct } from "../../src/lib/note-tools"
  */
 
 /**
+ * The bass to sound for an audition. Stored basses carry an octave ('C2') and
+ * are used as-is; a bare pitch class ('C') gets the fixed bass octave, and a
+ * missing bass falls back to the lowest chord note, matching what the grid
+ * sounds. Returns '' when there is nothing to play.
+ * @param {string} bass
+ * @param {Array<string>} notes
+ * @returns {string}
+ */
+export function normaliseAuditionBass(bass, notes) {
+    const value = typeof bass === 'string' ? bass.trim() : ''
+    if (value)
+        return /\d$/.test(value) ? value : value + bassNoteOctave
+    if (Array.isArray(notes) && notes.length > 0)
+        return bassWithOctFromChordNotesWithOct(notes)
+    return ''
+}
+
+/**
  * Plays a chord with the given notes without affecting the current chord
  * config. All notes include octaves
  *
@@ -51,8 +69,9 @@ export function auditionNotes(notes, bass, noteState = true) {
                 playChordNote(noteName, 'chord', options, globals.channel2, fakeTriggerNote, globals.pendingChordNoteOffs);
 
             // bass
-            if (bass)
-                playChordNote(bass, 'bass', options, globals.channel3, fakeTriggerNote, globals.pendingChordBassNoteOffs);
+            const bassNote = normaliseAuditionBass(bass, notes)
+            if (bassNote)
+                playChordNote(bassNote, 'bass', options, globals.channel3, fakeTriggerNote, globals.pendingChordBassNoteOffs);
         }
         finally {
             globals.recording.suppressCapture = wasSuppressed

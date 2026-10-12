@@ -118,6 +118,27 @@ export const globals = reactive({
         shortChordNames: true,
     },
 
+    // The Chord Inspector: one panel that edits the selected grid row. The
+    // draft is a copy of that row; nothing is written until Save. `notes` is
+    // the draft voicing (always a copy, never aliased to stored chords) and
+    // `voicingMode` is 'auto' (derived from the identity in chordPicker) or
+    // 'custom' (typed or captured notes). Played notes land in the Captured
+    // chip fed by currentChordBeingJammed and are only applied on request;
+    // `capturedIgnored` holds the played notes that predate this draft, so the
+    // chip only shows what was played while this row was open.
+    chordInspector: {
+        open: false,
+        mode: 'edit',        // 'edit' (a selected slot) | 'add' (a new slot)
+        slotId: null,
+        triggerNote: '',
+        voicingMode: 'auto', // 'auto' | 'custom'
+        symbol: '',          // label to store with a custom voicing
+        symbols: [],         // detected aliases for the "store as" dropdown
+        notes: [],           // draft voicing
+        baseline: null,      // snapshot for dirty check and Revert
+        capturedIgnored: [], // played notes already seen when this draft loaded
+    },
+
     get superUser() {
         // Some developer-only extras (such as config dumps) are shown only in
         // development builds. The Settings view's Debug section is always shown.
@@ -145,8 +166,6 @@ export const globals = reactive({
     showScaleHistory: false,  // show the recent chord-to-scale strip above the grid
     showScaleCellFill: false,  // fill the current scale-filter cell instead of a border only
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
-    showFavouriteBinColumns: false,  // show the favourite and bin columns in the chord/scale table
-    showDeleteColumn: false,  // show only the bin (delete) column in the chord/scale table
     helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial' | 'reference' | 'controls'
     debugJamChord: false,
     syncChordPickerToJamChord: true,

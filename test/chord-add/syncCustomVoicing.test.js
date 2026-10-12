@@ -7,7 +7,8 @@ function snapshot() {
         project: globals.project,
         chordTriggerMap: globals.chordTriggerMap,
         currentChordTriggerNote: globals.currentChordTriggerNote,
-        jammed: JSON.parse(JSON.stringify(globals.currentChordBeingJammed)),
+        chordPicker: JSON.parse(JSON.stringify(globals.chordPicker)),
+        inspector: JSON.parse(JSON.stringify(globals.chordInspector)),
     }
 }
 
@@ -15,7 +16,8 @@ function restore(previous) {
     globals.project = previous.project
     globals.chordTriggerMap = previous.chordTriggerMap
     globals.currentChordTriggerNote = previous.currentChordTriggerNote
-    globals.currentChordBeingJammed = previous.jammed
+    globals.chordPicker = previous.chordPicker
+    globals.chordInspector = previous.inspector
 }
 
 function seed(config) {
@@ -30,38 +32,33 @@ function seed(config) {
 }
 
 describe('syncCustomVoicingToCurrentChord', () => {
-    it('reloads the custom voicing from the stored chord', () => {
+    it('reloads the draft voicing from the stored chord', () => {
         const previous = snapshot()
         try {
-            // The working notes still hold the overwritten chord.
-            globals.currentChordBeingJammed.chord = 'G#7no5'
-            globals.currentChordBeingJammed.chordNotes = ['G#3', 'C4', 'F#4']
-            globals.currentChordBeingJammed.bass = 'C'
-            globals.currentChordBeingJammed.source = 'grid'
-
             seed({
                 id: 1, name: 'A (user)', chord: 'A', chordNotes: ['A3', 'C#4', 'G4'],
                 symbols: 'A, A5', bass: '', scale1: '', scale2: '', scale3: '', scaleNotesOfChord: [],
             })
+            globals.chordInspector.notes = ['G#3', 'C4', 'F#4']
+            globals.chordInspector.voicingMode = 'custom'
             syncCustomVoicingToCurrentChord()
 
-            assert.equal(globals.currentChordBeingJammed.chord, 'A')
-            assert.deepEqual(globals.currentChordBeingJammed.chordNotes, ['A3', 'C#4', 'G4'])
-            assert.deepEqual(globals.currentChordBeingJammed.symbols, ['A', 'A5'])
-            assert.equal(globals.currentChordBeingJammed.source, 'grid')
+            assert.deepEqual(globals.chordInspector.notes, ['A3', 'C#4', 'G4'])
+            assert.equal(globals.chordInspector.voicingMode, 'custom')
+            assert.deepEqual(globals.chordInspector.symbols, ['A', 'A5'])
         } finally {
             restore(previous)
         }
     })
 
-    it('clears the custom voicing when no chord is selected', () => {
+    it('clears the draft voicing when no chord is selected', () => {
         const previous = snapshot()
         try {
             seed(null)
-            globals.currentChordBeingJammed.chordNotes = ['G#3', 'C4', 'F#4']
+            globals.chordInspector.notes = ['G#3', 'C4', 'F#4']
             syncCustomVoicingToCurrentChord()
-            assert.deepEqual(globals.currentChordBeingJammed.chordNotes, [])
-            assert.equal(globals.currentChordBeingJammed.chord, '')
+            assert.deepEqual(globals.chordInspector.notes, [])
+            assert.equal(globals.chordInspector.voicingMode, 'auto')
         } finally {
             restore(previous)
         }

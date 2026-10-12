@@ -142,11 +142,9 @@ onUnmounted(() => stopRelatedAccordion())
         </div>
         <div class="content">
             <div class="row bigbottom">
-                <!-- using globals.currentChordBeingJammed.chord to get at what's in the chord picker is a bit sneaky -->
-                <p>Set Scale Picker choices to match Chord Picker chord <b>{{
-                        globals.currentChordBeingJammed.chord
-                }}</b>
-                    <i>(on the left)</i>:
+                <p>Set Scale Picker choices to match the chord in the inspector <b>{{
+                        globals.chordPicker.currentRoot + globals.chordPicker.currentChord
+                }}</b>:
                 </p>
 
                 <button @click="switchScaleFilter({ chordFrom: 'chord picker', numScales: 'top 3' })"

@@ -1,5 +1,5 @@
 import * as Tonal from "@tonaljs/tonal";
-import { sanitiseNoteToSharp, createChordSymbol } from './note-tools.js';
+import { normaliseNoteName, createChordSymbol } from './note-tools.js';
 import { chordSymbolToNotes, chordSymbolToNotesInversion } from "./chordSymbolToNotes";
 
 export function calcChordInversionNumberAndNewBass(tonic, type, inversion, inversionChangesBass = false, direction = 1) {
@@ -23,9 +23,9 @@ export function calcChordInversionNumberAndNewBass(tonic, type, inversion, inver
     if (inversionChangesBass) {
         const notes = chordSymbolToNotesInversion(chordSymbol, resultInversion)
         const firstNote = Tonal.Note.get(notes[0])
-        resultBass = sanitiseNoteToSharp(firstNote.pc)  // .letter doesn't give the accidental, .pc does
+        resultBass = normaliseNoteName(firstNote.pc)  // .letter doesn't give the accidental, .pc does
     }
     else
-        resultBass = sanitiseNoteToSharp(tonic)
+        resultBass = normaliseNoteName(tonic)
     return { bass: resultBass, inversion: resultInversion }
 }

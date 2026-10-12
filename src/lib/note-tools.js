@@ -328,6 +328,16 @@ export function sanitiseNoteToSharp(note) {
     return note  // unchanged
 }
 
+export function normaliseNoteName(note) {
+    // Fold theoretical or double accidentals into the twelve sharp names the
+    // app uses: E# -> F, B# -> C, Cb -> B, Fb -> E, F## -> G, Gbb -> F, and
+    // flat spellings such as Db -> C#. Normal names, and sharps that are
+    // already one of the twelve, are left alone. Empty input stays empty.
+    if (!note)
+        return note ?? ''
+    return sanitiseNoteToSharp(Note.simplify(note))
+}
+
 export function notesToPreferredRepresentation(notes) {
     const niceNoteNames = [ "C", "C#", "D", "Eb", "E", "F", "F#", "G", "Ab", "A", "Bb", "B" ]
     return notes.map(note => niceNoteNames.includes(Tonal.Note.get(note).name) ? note : Tonal.Note.enharmonic(note))

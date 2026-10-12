@@ -1,50 +1,19 @@
-// @ts-check
 import { globals } from "./globals.js";
-import { currentChordInfo } from "./currentChordInfo.js";
-import { setChordPicker } from "./chordPicker.js";
-import { chordPickerToJammed, chordPickerToJammedExtraPrecision } from "./chordPicker.js";
+import { loadDraftFromSlot } from "./chordInspector.js";
 
 /**
  * @module lib/syncPickerToCurrentChord
- * @desc Copy the currently triggered project chord into the Chord Picker,
- * preserving the stored voicing so the voicing list and Edit Notes update.
- *
- * This is a silent state sync: selecting a chord must not audition a
- * different voicing through the Chord Picker, because the trigger keys and
- * the grey audition buttons already play the stored voicing. The Chord Picker
- * still auditions on its own explicit edits (see ChordPicker.vue).
+ * @desc Copy the currently triggered grid slot into the Chord Inspector draft:
+ * the picker combos follow the slot's identity and the exact stored voicing is
+ * loaded as-is (Auto or Custom as appropriate).
  */
 
 /**
- * Sync the Chord Picker combos to the current triggered chord.
- * Uses the exact stored chord notes when available, so custom voicings survive.
- * @returns {boolean} true when the picker type was recognised
+ * Sync the inspector to the current triggered chord.
+ * @returns {boolean} true when a slot was loaded
  */
 export function syncPickerToCurrentChord() {
     if (globals.currentConfigEmpty())
         return false
-    const { chordSymbolNoRoot, bass, rootNote, chordNotes } = currentChordInfo()
-    // Custom or unparseable chord names have no combo entry. Still load the
-    // exact notes so the voicing and Edit Notes areas follow the grid.
-    if (!chordSymbolNoRoot || !rootNote) {
-        chordPickerToJammed(true)
-        if (Array.isArray(chordNotes) && chordNotes.length > 0)
-            chordPickerToJammedExtraPrecision(chordNotes, bass)
-        return false
-    }
-    let success = false
-    try {
-        success = setChordPicker(chordSymbolNoRoot, bass, rootNote)
-    } catch (error) {
-        console.warn("Could not match grid chord in Chord Picker", error)
-        success = false
-    }
-
-    // Selecting a grid chord is an explicit source change, so force the exact
-    // stored voicing in even when a MIDI or typed voicing was already loaded.
-    chordPickerToJammed(true)
-    if (Array.isArray(chordNotes) && chordNotes.length > 0)
-        chordPickerToJammedExtraPrecision(chordNotes, bass)
-
-    return success
+    return loadDraftFromSlot(globals.currentChordTriggerNote)
 }

@@ -73,7 +73,7 @@ const allSteps = [
   },
   {
     target: '[data-step="edit-chords"]',
-    content: 'This is where you can add chords to your project (and edit them too). If this area is closed you can open it by expanding the accordion.',
+    content: 'This is the inspector for the selected chord row. Click a row in the grid to load it here, edit it and press Save changes. Use "+ Add chord" to create a new row.',
     placement: 'bottom-start',
     // auto, auto-start, auto-end, top, top-start, top-end, bottom, bottom-start, bottom-end, right, right-start, right-end, left, left-start, left-end
   },
