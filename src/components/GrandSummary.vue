@@ -89,12 +89,6 @@ function onDeleteSelectedChords(event) {
   releaseControlFocus(event)
 }
 
-/** Show or hide the favourite and bin columns, without importing a file. */
-function toggleFavouriteBinColumns(event) {
-  globals.showFavouriteBinColumns = !globals.showFavouriteBinColumns
-  releaseControlFocus(event)
-}
-
 function syncPickerAfterGridClick(triggerNote) {
   // Clicking a scale-filter cell selects the row and loads the draft, so the
   // inspector keeps following the grid. It does not open the panel.
@@ -962,7 +956,15 @@ function generalTableClick(event) {
       <span v-else class="resize-hint">tall grid, fewer keys free for solo</span>
     </div>
   </div>
-  <div v-if="globals.isProjectLoaded && totalGridRows > 1" class="grid-delete-footer">
+  <div v-if="globals.isProjectLoaded" class="grid-footer">
+    <button
+      type="button"
+      class="ui tiny button"
+      title="Add a new chord row at the end and select it for editing. A chord played since the last action is added instead."
+      @click="onAddChord($event)"
+    >
+      + Add chord
+    </button>
     <button
       type="button"
       class="ui tiny button"
@@ -976,24 +978,6 @@ function generalTableClick(event) {
       <input type="checkbox" id="show-delete-column-grid" v-model="globals.showDeleteColumn">
       <label for="show-delete-column-grid">Show delete column in the chord/scale table</label>
     </div>
-  </div>
-  <div v-if="globals.isProjectLoaded" class="grid-actions-footer">
-    <button
-      type="button"
-      class="ui tiny button"
-      title="Add a new chord row at the end and select it for editing. A chord played since the last action is added instead."
-      @click="onAddChord($event)"
-    >
-      + Add chord
-    </button>
-    <button
-      type="button"
-      class="ui tiny button"
-      :title="globals.showFavouriteBinColumns ? 'Hide the favourite and bin columns' : 'Show the favourite and bin columns for auditioning and pruning chords'"
-      @click="toggleFavouriteBinColumns($event)"
-    >
-      {{ globals.showFavouriteBinColumns ? 'Hide heart & bin columns' : 'Show heart & bin columns' }}
-    </button>
     <span class="add-hint">New rows appear at the end and open in the inspector below.</span>
   </div>
   <div v-else class="warn">
@@ -1412,17 +1396,8 @@ tr.key-group-change > td {
   font-style: italic;
 }
 
-/* Final delete step and column toggle, directly under the grid resizer. */
-.grid-delete-footer {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem 1rem;
-  margin-top: 0.5rem;
-}
-
-/* Add-row action and hint, directly under the grid resizer. */
-.grid-actions-footer {
+/* Add, delete and column controls, directly under the grid resizer. */
+.grid-footer {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
