@@ -6,7 +6,17 @@ import { chordAddToProjectExact } from "../../src/lib/chordAddToProject.js";
 import { replaceCurrentChordExact } from "../../src/lib/replaceCurrentChord";
 import { chordAddToProject } from "../../src/lib/chordAddToProject.js";
 import { replaceCurrentChord } from "../../src/lib/replaceCurrentChord";
-import { arraysAreEqual } from "../../src/lib/array-tools"
+import { chordPickerToJammed, syncCustomVoicingToCurrentChord } from "../../src/lib/chordPicker";
+import {
+  PICKER_VOICING,
+  CUSTOM_VOICING,
+  buildVoicingChoices,
+  pickVoicingToKeep,
+  isReplaceDisabled,
+  areVoicingsTheSame,
+  nameOptionsFor,
+  voicingSourceLabel,
+} from "../../src/lib/chordAddHelpers.js"
 import ChordAddEditNotes from './ChordAddEditNotes.vue'
 import ButtonAudition from './ButtonAudition.vue'
 
@@ -19,13 +29,6 @@ const props = defineProps([
   'chord-bass',
   'audition-info',  // complex object
 ])
-
-const emit = defineEmits(['chord-picker-to-jammed'])
-
-function chordPickerToJammed() {
-    emit('chord-picker-to-jammed', {})
-}
-
 
 function areSymbols() {
   return globals.currentChordBeingJammed.symbols.length > 0;
@@ -56,6 +59,9 @@ function chordReplace() {
     props.chordInversion,
     props.chordBass
   )
+  // The stored chord changed, so reload the custom voicing from it. Otherwise
+  // the Voicings list and Edit Notes keep showing the chord just overwritten.
+  syncCustomVoicingToCurrentChord()
 }
 
 function chordReplaceNotes(symbol) {
@@ -64,32 +70,84 @@ function chordReplaceNotes(symbol) {
     globals.currentChordBeingJammed.chordNotes,
     globals.currentChordBeingJammed.symbols,
     globals.currentChordBeingJammed.bass)
+  // Reload the custom voicing from the chord that was just written, so it can
+  // never keep displaying the defunct notes that were overwritten.
+  syncCustomVoicingToCurrentChord()
 }
 
-const notesTheSame = computed({
-  get: () => {
-    const notes = props.auditionInfo.defaultVoicing.notes
+// The two voicings the user can add or replace with: the Chord Picker voicing
+// (canonical, built from the combos) and the custom voicing (the exact notes
+// from the grid, MIDI or typing). Each row shows its notes and its own audition.
+const voicingChoices = computed(() => buildVoicingChoices({
+  pickerSymbol: props.chordPickerChordName,
+  pickerNotes: props.auditionInfo.defaultVoicing.notes,
+  pickerBass: props.auditionInfo.defaultVoicing.bass,
+  customSymbol: globals.currentChordBeingJammed.chord,
+  customNotes: globals.currentChordBeingJammed.chordNotes,
+  customBass: globals.currentChordBeingJammed.bass,
+}))
 
-    // compare with notes of current jammed chord
-    const notesSame = arraysAreEqual(notes, globals.currentChordBeingJammed.chordNotes)
+const selectedVoicing = ref('')
 
-    // console.log('notesTheSame', notesSame, notes, globals.currentChordBeingJammed.chordNotes)
+const pendingChoice = computed(() =>
+  voicingChoices.value.find(choice => choice.id === selectedVoicing.value) ?? null)
 
-    return notesSame
-  }
+const pendingNotes = computed(() => pendingChoice.value?.notes ?? [])
+
+// The chord stored on the selected trigger, used to tag the matching row and
+// to explain when a Replace would change nothing.
+const storedNotes = computed(() => globals.currentLhNotes())
+const storedBass = computed(() => globals.currentBass())
+
+const canReplace = computed(() => areSymbols() && !globals.currentConfigEmpty())
+
+function isChoiceCurrent(choice) {
+  return areVoicingsTheSame(choice.notes, storedNotes.value, choice.bass, storedBass.value)
+}
+
+// True while the custom voicing is just the clicked grid chord, unedited. A
+// replace would be a no-op, so the panel opens on the Chord Picker voicing.
+const customIsUneditedGrid = computed(() => {
+  const jammed = globals.currentChordBeingJammed
+  return jammed.source === 'grid'
+    && jammed.chordNotes.length > 0
+    && areVoicingsTheSame(jammed.chordNotes, storedNotes.value, jammed.bass, storedBass.value)
 })
 
+// Names the custom notes could be stored under. Shown as a small dropdown only
+// when more than one name fits, so a chord name is never mistaken for a voicing.
+const nameOptions = computed(() => nameOptionsFor({
+  symbols: globals.currentChordBeingJammed.symbols,
+  fallbackSymbol: globals.currentChordBeingJammed.chord,
+}))
 
-function chordAction(strategy = 'add', symbol) {
-  if (symbol == '')
+const customSourceLabel = computed(() =>
+  voicingSourceLabel(globals.currentChordBeingJammed.source))
+
+watch(
+  voicingChoices,
+  (choices) => {
+    // Opening on an unedited grid chord would replace the chord with itself,
+    // so start on the Chord Picker voicing, which is a meaningful change.
+    if (customIsUneditedGrid.value && choices.some(choice => choice.id === PICKER_VOICING))
+      selectedVoicing.value = PICKER_VOICING
+    else
+      selectedVoicing.value = pickVoicingToKeep(choices, selectedVoicing.value)
+  },
+  { immediate: true })
+
+function chordAction(strategy = 'add') {
+  const choice = pendingChoice.value
+  if (!choice)
     return
-  if (symbol.includes('-default-voicing')) {
-    if (strategy == 'add')
+  if (choice.id === PICKER_VOICING) {
+    if (strategy === 'add')
       chordAdd()
     else
       chordReplace()
   }
   else {
+    const symbol = globals.currentChordBeingJammed.chord || choice.symbol
     if (strategy == 'add')
       chordAddNotes(symbol)
     else
@@ -97,32 +155,32 @@ function chordAction(strategy = 'add', symbol) {
   }
 }
 
-
-const radioSymbols = ref([])
-const radioPicked = ref('')
-
-const removeDefaultVoicingSuffix = (symbol) => {
-  return symbol.replace('-default-voicing', '')
+function onChordAdd() {
+  chordAction('add')
 }
-const lastRadioSymbol = computed(() => {
-  return radioSymbols.value.length > 0 ? radioSymbols.value[radioSymbols.value.length - 1] : ''
-})
 
-// Watch two sources because the current chord being jammed (esp. .chordNotes)
-// and the chord picker chord both change what symbols are available to add to
-// the project. This watch takes an array of refs to watch and a function to
-// call when they change.
-watch(
-  [globals.currentChordBeingJammed, () => props.chordPickerChordName],  // first param, list of what to watch
-  ([currentChordBeingJammed, chordPickerChordName]) => {  // function to call when they change, takes an array of the values of the refs
-    rebuildRadioSymbols(currentChordBeingJammed, chordPickerChordName)
+function resetCustomToPicker() {
+  // The Reset button deliberately copies the picker voicing over the custom one.
+  chordPickerToJammed(true)
+}
+
+function replaceCurrentChordDisabled() {
+  // Compare whichever voicing is picked, not always the custom notes.
+  return isReplaceDisabled({
+    choice: pendingChoice.value,
+    storedNotes: globals.currentLhNotes(),
+    storedBass: globals.currentBass(),
   })
+}
 
 const voicingsAccordion = ref(null)
 let stopVoicingsAccordion = () => {}
 
 onMounted(() => {
-  rebuildRadioSymbols(globals.currentChordBeingJammed, props.chordPickerChordName)
+  // Seed the custom voicing from the picker so the notes editor always has
+  // something to work from, even before a grid chord or MIDI note arrives.
+  if (!globals.currentChordBeingJammed.chordNotes.length)
+    chordPickerToJammed(true)
   document.addEventListener('chord-add', onChordAdd)
   if (voicingsAccordion.value)
     stopVoicingsAccordion = registerAccordion(voicingsAccordion.value, 'chord-add-voicings')
@@ -133,26 +191,6 @@ onUnmounted(() => {
   stopVoicingsAccordion()
 })
 
-function rebuildRadioSymbols(currentChordBeingJammed, chordPickerChordName) {
-  // console.log('rebuildRadioSymbols', currentChordBeingJammed, chordPickerChordName)
-
-  // Build list of symbols to show in the radio buttons
-  const defaultVoicing = !notesTheSame.value ? [`${chordPickerChordName}-default-voicing`] : []
-  radioSymbols.value = [...currentChordBeingJammed.symbols, ...defaultVoicing]
-
-  radioPicked.value = radioSymbols.value[0]
-
-}
-
-function onChordAdd() {
-  chordAction('add', radioPicked.value)
-}
-
-function replaceCurrentChordDisabled() {
-  // return globals.currentChordName() == radioPicked.value
-  return arraysAreEqual(globals.currentChordBeingJammed.chordNotes, globals.currentLhNotes())
-}
-
 </script>
 
 <template>
@@ -162,15 +200,21 @@ function replaceCurrentChordDisabled() {
     <br>
 
     <!-- Add and Replace buttons -->
-    <button @click="chordAction('add', radioPicked)" class="ui small button" :disabled="!radioPicked" title="Add new chord to Project (Shortcut: /)">Add Chord</button>
-    <span><code class="ml-1 font-semibold"> {{ removeDefaultVoicingSuffix(radioPicked) }}</code> to Project</span>
+    <button @click="chordAction('add')" class="ui small button" :disabled="!pendingChoice" title="Add new chord to Project (Shortcut: /)">Add Chord</button>
+    <span v-if="pendingChoice"><code class="ml-1 font-semibold"> {{ pendingChoice.symbol }}</code> <code class="opacity-70">[{{ pendingNotes.join(' ') }}]</code> to Project</span>
 
-    <button @click="chordAction('replace', radioPicked)" v-if="areSymbols() && !globals.currentConfigEmpty()"
-      :disabled="!radioPicked || replaceCurrentChordDisabled()" class="ui tiny brown button ml-2!" title="Replace current Project Chord">Replace</button>
-    <span v-if="areSymbols() && !globals.currentConfigEmpty()" :class="{'opacity-50' : replaceCurrentChordDisabled()}">
-      <code class="ml-1"> {{ globals.currentChordName() }}</code> with
-      <code class="ml-1 font-semibold"> {{ radioPicked }}</code>
+    <button @click="chordAction('replace')" v-if="canReplace"
+      :disabled="!pendingChoice || replaceCurrentChordDisabled()" class="ui tiny brown button ml-2!"
+      :title="replaceCurrentChordDisabled() ? 'The picked notes already match this trigger' : 'Replace this trigger chord'">Replace</button>
+    <span v-if="canReplace" :class="{'opacity-50' : replaceCurrentChordDisabled()}">
+      <code class="ml-1">{{ globals.currentChordTriggerNote || 'current' }}</code>
+      <code class="ml-1"> {{ globals.currentChordName() }} [{{ globals.currentLhNotes().join(' ') }}]</code>
+      <span class="mx-1">→</span>
+      <code v-if="pendingChoice" class="font-semibold">{{ pendingChoice.symbol }} [{{ pendingNotes.join(' ') }}]</code>
       <span v-if="props.chordInversion != 0" class="ml-1">(inv {{ props.chordInversion }})</span>
+      <span v-if="pendingChoice && replaceCurrentChordDisabled()" class="replace-nochange">
+        No change — these are already the notes on {{ globals.currentChordTriggerNote }}.
+      </span>
     </span>
 
 
@@ -182,31 +226,29 @@ function replaceCurrentChordDisabled() {
         Voicings
       </div>
       <div class="content">
-        <!-- Radio input buttons, if there are more than one symbol choices -->
-        <p class="mb-1 mt-2" title="Interpretation of Jammed/Edited Chord Notes">
-          <span v-if="radioSymbols.length > 1">Choose interpretation</span>
-          <span v-else>Interpretation</span>
-          of Chord Notes 
-          <ButtonAudition class="ml-1!" :notes="props.auditionInfo.currentChordBeingJammed.notes" :bass="props.auditionInfo.currentChordBeingJammed.bass" />
-          <code>[{{globals.currentChordBeingJammed.chordNotes.join(' ')}}]</code> 
+        <p class="mb-1 mt-2" title="Pick which set of notes Add and Replace will write into the project">
+          Notes to write:
         </p>
-        <div v-for="symbol of radioSymbols" :key="symbol" class="inline mr-4">
-
-          <p v-if="symbol.includes('-default-voicing')" class="mb-1 mt-3!" 
-          title="Default Chord Picker chord note voicing of the detected chord symbol">
-          Use default Chord Picker voicing 
-          <ButtonAudition class="ml-1!" :notes="props.auditionInfo.defaultVoicing.notes" :bass="props.auditionInfo.defaultVoicing.bass" />
-          <code>[{{props.auditionInfo.defaultVoicing.notes.join(' ')}}]</code></p>
-
-          <input type="radio" :id="symbol" :value="symbol" v-model="radioPicked" :disabled="radioSymbols.length == 1">
-          <label :for="symbol" class="ml-1">{{ removeDefaultVoicingSuffix(symbol) }}</label>
-
+        <div v-for="choice of voicingChoices" :key="choice.id" class="voicing-row">
+          <input type="radio" :id="'voicing-' + choice.id" :value="choice.id" v-model="selectedVoicing"
+            :disabled="voicingChoices.length == 1">
+          <label :for="'voicing-' + choice.id" class="ml-1">
+            {{ choice.label }}
+            <span v-if="choice.id === CUSTOM_VOICING && customSourceLabel" class="voicing-source">{{ customSourceLabel }}</span>
+            <span v-if="isChoiceCurrent(choice)" class="voicing-current">current chord</span>
+          </label>
+          <ButtonAudition class="ml-1!" :notes="choice.notes" :bass="choice.bass" />
+          <code>[{{ choice.notes.join(' ') }}]</code>
+          <span v-if="choice.id === CUSTOM_VOICING && choice.bass" class="voicing-bass">bass {{ choice.bass }}</span>
+          <label v-if="choice.id === CUSTOM_VOICING && nameOptions.length > 1" class="voicing-name ml-2">
+            store as
+            <select v-model="globals.currentChordBeingJammed.chord">
+              <option v-for="name in nameOptions" :key="name" :value="name">{{ name }}</option>
+            </select>
+          </label>
         </div>
-        <!-- Show dimmed default voicing area if it wasn't already shown - so that UI doesn't jump around -->
-        <div v-if="!lastRadioSymbol.includes('-default-voicing')" class="inline mr-4">
-          <p class="mb-1 mt-3! opacity-50">The default Chord Picker voicing is <code>[{{props.auditionInfo.defaultVoicing.notes.join(' ')}}]</code>:</p>
-          <input type="radio" :disabled="true">
-          <label class="ml-1 opacity-50">{{ removeDefaultVoicingSuffix(lastRadioSymbol) }}</label>
+        <div v-if="voicingChoices.length === 1" class="voicing-note opacity-70">
+          The custom voicing is the same as the Chord Picker voicing. Edit the notes below to make it different.
         </div>
       </div>
 
@@ -219,10 +261,10 @@ function replaceCurrentChordDisabled() {
       </div>
       <div class="content">
         <div class="row">
-          <ChordAddEditNotes 
-            :chord-picker-chord-name="props.chordPickerChordName" 
+          <ChordAddEditNotes
+            :chord-picker-chord-name="props.chordPickerChordName"
             :audition-info="props.auditionInfo"
-            @reset-to-default-notes="chordPickerToJammed()" />
+            @reset-to-picker-voicing="resetCustomToPicker" />
         </div>
       </div>
 
@@ -237,4 +279,53 @@ function replaceCurrentChordDisabled() {
 </template>
 
 <style scoped>
+.voicing-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.voicing-source {
+  margin-left: 0.35rem;
+  padding: 0 0.35rem;
+  border-radius: 3px;
+  background: #efe6d6;
+  color: #6b5a45;
+  font-size: 0.75rem;
+  font-style: italic;
+}
+
+.voicing-current {
+  margin-left: 0.35rem;
+  padding: 0 0.35rem;
+  border-radius: 3px;
+  background: #d8f0d8;
+  color: #256b25;
+  border: 1px solid #a8d8a8;
+  font-size: 0.72rem;
+  font-weight: bold;
+}
+
+.voicing-bass {
+  margin-left: 0.4rem;
+  color: #6b5a45;
+  font-size: 0.8rem;
+}
+
+.replace-nochange {
+  margin-left: 0.5rem;
+  color: #8a6d3b;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.voicing-name {
+  color: #6b5a45;
+}
+
+.voicing-note {
+  margin-top: 0.25rem;
+  font-size: 0.85rem;
+}
 </style>

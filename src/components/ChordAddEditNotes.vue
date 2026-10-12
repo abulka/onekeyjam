@@ -2,34 +2,38 @@
 import { computed } from 'vue'
 import * as Tonal from "@tonaljs/tonal";
 import { globals } from '@/lib/globals.js'
-import { detectChordsBeingPlayed } from "../../src/lib/detectChordsBeingPlayed";
+import { setChordNotesDirectly } from "../../src/lib/detectChordsBeingPlayed";
 import { stringify } from '../../src/lib/prettyjson.js'
 import { bassNoteOctave } from '@/lib/settings.js'
+import { parseNoteInput } from '@/lib/note-tools.js'
 import { describeTriggerChord } from '@/lib/describeTriggerChord.js'
+import { voicingSourceLabel } from '@/lib/chordAddHelpers.js'
 import ButtonAudition from './ButtonAudition.vue'
 
 const props = defineProps([
     'chord-picker-chord-name',
     'audition-info',  // complex object
 ])
-const emit = defineEmits(['reset-to-default-notes'])
+const emit = defineEmits(['reset-to-picker-voicing'])
 
 
 const detectedChordNotes = computed({
     get: () => globals.currentChordBeingJammed.chordNotes.join(' '),
     set: (v) => {
-        // console.log('detectedChordNotes set', v);
-        let newNotes = v.split(' ')
-        newNotes = newNotes.filter(n => {
-            const noteObj = Tonal.Note.get(n)
-            return !noteObj.empty && noteObj.oct && (noteObj.oct >= 0 && noteObj.oct <= 6)
-        })
-        newNotes = newNotes.map(n => Tonal.Note.get(n).name)  // convert to uppercase
-
-        // set and also rebuild the buttons in add detected chord area
-        detectChordsBeingPlayed(newNotes)  // rather than globals.currentChordBeingJammed.chordNotes = newNotes
+        // Lenient parse: octaves are optional and inherited from the previous
+        // note, so 'C E G' works as well as 'C4 E4 G4'.
+        const newNotes = parseNoteInput(v)
+        if (newNotes.length === 0)
+            return
+        // Store and name the notes in one step. This does not wait for the
+        // live MIDI detector and never refuses the notes, so pressing ENTER
+        // always updates the working voicing.
+        setChordNotesDirectly(newNotes)
     }
 })
+
+const customSourceLabel = computed(() =>
+    voicingSourceLabel(globals.currentChordBeingJammed.source))
 
 const detectedBassNote = computed({
     get: () => globals.currentChordBeingJammed.bass,
@@ -45,13 +49,15 @@ const detectedBassNote = computed({
             // console.log('detectedBassNote', newNote, 'BAD')
             globals.currentChordBeingJammed.bass = ''
         }
+        // The bass was edited by hand, so the picker must not overwrite it.
+        globals.currentChordBeingJammed.source = 'typed'
         // TODO should emit an event to update the bass combo box
     }
 })
 
 function resetToDefaultChordPickerChord() {
     // set Notes to the chord in the chord picker combo box
-    emit('reset-to-default-notes')
+    emit('reset-to-picker-voicing')
 }
 
 const debug = computed({
@@ -78,7 +84,11 @@ const currentTrigger = computed(() => {
          changed the re-render will not happen -->
 
     <div class="row mb-4">
-        <p>Edit notes and hit ENTER to update the chord picker above.</p>
+        <p class="w-full">
+            Edit the <b>Custom voicing</b> notes here, then press ENTER to apply.
+            <span v-if="customSourceLabel">These notes are currently <b>{{ customSourceLabel }}</b>.</span>
+            They become the Custom voicing you can Add or Replace with above.
+        </p>
         <span>Chord Notes</span>
         <input type="text" v-model.lazy="detectedChordNotes" :key="detectedChordNotes" placeholder="notes e.g. C3 E3 G3" class="ml-1 w-60" />
         <span class="ml-2">Bass</span>
@@ -95,7 +105,9 @@ const currentTrigger = computed(() => {
 
     </div>
     <div class="row">
-        <span class="mr-4">Reset notes to the default voicing of chord picker chord <code class="ml-1">{{ chordPickerChordName }}</code></span>
+        <span class="mr-4">Reset these notes to the Chord Picker voicing
+            <code class="ml-1">{{ chordPickerChordName }}</code>
+            <code class="ml-1">[{{ props.auditionInfo.defaultVoicing.notes.join(' ') }}]</code></span>
         <button @click="resetToDefaultChordPickerChord()" class="ui tiny button">Reset</button>
     </div>
 

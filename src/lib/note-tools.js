@@ -165,6 +165,30 @@ export function sortNotesNoOctave(notes) {
     return result
 }
 
+export function parseNoteInput(text, defaultOctave = chordOctave) {
+    // Parse a space or comma separated note string into notes with octaves.
+    // Notes without an octave inherit the previous note's octave, or the
+    // default when they come first, so 'C E G' becomes ['C3','E3','G3'] and
+    // 'C4 E G' becomes ['C4','E4','G4']. Unparseable tokens are skipped.
+    const tokens = String(text ?? '').split(/[\s,]+/).filter(Boolean)
+    const notes = []
+    let lastOctave = defaultOctave
+    for (const token of tokens) {
+        const parsed = Note.get(token)
+        if (parsed.empty || !parsed.pc)
+            continue
+        const octave = parsed.oct ?? lastOctave
+        if (octave < 0 || octave > 8)
+            continue
+        const withOctave = Note.get(`${parsed.pc}${octave}`)
+        if (withOctave.empty)
+            continue
+        notes.push(withOctave.name)
+        lastOctave = octave
+    }
+    return notes
+}
+
 export function sortChordConfigs(chordConfigs) {  // array of chord configs
     // Sort the chord configs array by chordConfig.name (which contains string chordSymbols)
 

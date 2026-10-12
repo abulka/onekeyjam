@@ -322,6 +322,11 @@ export const globals = reactive({
         type: '',       // first chordSymbol in chordSymbols sans root, sans bass e.g. 'maj7'
         tonic: '',      // first chordSymbol root note, if any e.g. 'C'
         stale: true,    // last chord detection failed, so chord is not currently indicative of a user jam chord 
+        // Where the custom voicing came from: 'grid' (clicked a grid chord),
+        // 'midi' (played), 'typed' (edited notes) or 'picker' (from the Chord
+        // Picker). The picker only overwrites the custom voicing when it is
+        // empty or already picker-sourced, so a loaded voicing survives combo edits.
+        source: '',
     },
     clearCurrentChordBeingJammed() {
         this.currentChordBeingJammed.chord = ''
@@ -331,6 +336,7 @@ export const globals = reactive({
 
         this.currentChordBeingJammed.type = ''
         this.currentChordBeingJammed.tonic = ''
+        this.currentChordBeingJammed.source = ''
     },
 
     projectUrl: '',

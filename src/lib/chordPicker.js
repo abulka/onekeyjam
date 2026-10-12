@@ -90,23 +90,65 @@ export function setChordFromSymbol(chordSymbol) {
     setChordSmart(chordObj.aliases[0], chordObj.tonic, chordObj.tonic);
 }
 
-export function chordPickerToJammed() {
+/**
+ * Does the custom voicing hold notes that did not come from the Chord Picker?
+ * Such a voicing must survive picker combo edits, so the picker only writes
+ * over an empty or picker-sourced voicing unless forced.
+ * @returns {boolean}
+ */
+function hasRealCustomVoicing() {
+    const jammed = globals.currentChordBeingJammed
+    return Array.isArray(jammed.chordNotes) && jammed.chordNotes.length > 0
+        && jammed.source !== 'picker' && jammed.source !== ''
+}
+
+/**
+ * Fill the custom working notes from the Chord Picker combos.
+ * @param {boolean} [force] write even when a grid/MIDI/typed voicing is loaded
+ */
+export function chordPickerToJammed(force = false) {
+    if (!force && hasRealCustomVoicing())
+        return
     const [symbol] = removeBassSlash(`${globals.chordPicker.currentRoot}${globals.chordPicker.currentChord}`)
 
     globals.currentChordBeingJammed.chordNotes = chordSymbolToNotesInversion(symbol, globals.chordPicker.currentChordInversion)
     globals.currentChordBeingJammed.bass = globals.chordPicker.currentBass
     globals.currentChordBeingJammed.chord = symbol
     globals.currentChordBeingJammed.symbols = [symbol]
+    globals.currentChordBeingJammed.source = 'picker'
     globals.currentChordBeingJammed.stale = false
 }
 
-export function chordPickerToJammedExtraPrecision(chordNotes, bass) {
+export function chordPickerToJammedExtraPrecision(chordNotes, bass, source = 'grid') {
     // whilst we can get most info from the chord picker, esp. the notes from the
     // symbol doesn't give use the voicing that may be in the chord config, so use
     // this call to use the actual chord config notes which are obviously better
     // than the chord picker symbol guess at notes
     globals.currentChordBeingJammed.chordNotes = chordNotes
     globals.currentChordBeingJammed.bass = bass
+    globals.currentChordBeingJammed.source = source
+}
+
+/**
+ * Re-read the custom working voicing from the currently triggered chord config.
+ * Call this after the stored chord is edited (Add / Replace) so the working
+ * notes never keep showing the defunct chord that was just overwritten.
+ */
+export function syncCustomVoicingToCurrentChord() {
+    const config = globals.currentConfigEmpty() ? null : globals.currentChordConfig()
+    if (!config || !config.chord) {
+        globals.clearCurrentChordBeingJammed()
+        return
+    }
+    const symbols = typeof config.symbols === 'string' && config.symbols.length > 0
+        ? config.symbols.split(',').map(symbol => symbol.trim()).filter(Boolean)
+        : [config.chord]
+    globals.currentChordBeingJammed.chord = config.chord
+    globals.currentChordBeingJammed.chordNotes = [...config.chordNotes]
+    globals.currentChordBeingJammed.symbols = symbols
+    globals.currentChordBeingJammed.bass = config.bass || ''
+    globals.currentChordBeingJammed.source = 'grid'
+    globals.currentChordBeingJammed.stale = false
 }
 
 // ╦┌┐┌┬  ┬┌─┐┬─┐┌─┐┬┌─┐┌┐┌┌─┐

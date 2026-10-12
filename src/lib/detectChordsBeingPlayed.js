@@ -24,6 +24,47 @@ export function detectChordsBeingPlayed(notes) {
     }
 }
 
+/**
+ * Set the working chord notes from a direct one-shot source, such as the Edit
+ * Notes field. Unlike detectChordsBeingPlayed this does not wait for the notes
+ * to stabilise and never refuses them: the notes are stored as given and then
+ * named. A set Tonal cannot name keeps its current chord symbol and bass, so
+ * custom voicings like `G#7no5 [F#4 C5]` can still be added.
+ * @param {Array<string>} notes notes with octaves
+ */
+export function setChordNotesDirectly(notes) {
+    const jammed = globals.currentChordBeingJammed
+    const newNotes = Array.isArray(notes) ? [...notes] : []
+    if (newNotes.length === 0)
+        return
+
+    jammed.chordNotes = newNotes
+    jammed.source = 'typed'
+
+    const detectedChordSymbols = Tonal.Chord.detect(newNotes)
+    if (detectedChordSymbols.length === 0) {
+        // Keep the existing name; the exact notes are what matter.
+        jammed.stale = true
+        return
+    }
+    const chordSymbol = detectedChordSymbols[0]
+    const [symbol, detectedBass] = removeBassSlash(chordSymbol)
+    const chordObj = Tonal.Chord.get(symbol)
+    if (chordObj.empty) {
+        jammed.stale = true
+        return
+    }
+    jammed.symbols = detectedChordSymbols
+    jammed.chord = chordObj.symbol
+    jammed.tonic = chordObj.tonic
+    jammed.type = chordObj.aliases[0]
+    jammed.bass = detectedBass
+    jammed.stale = false
+
+    if (globals.syncChordPickerToJamChord)
+        document.broadcastEvent("syncChordPickerToJamChord", { chordInfo: jammed })
+}
+
 
 // Private
 
@@ -77,6 +118,7 @@ function doDetect(currentNotes, retainLastDetectionResult=true) {
         globals.currentChordBeingJammed.tonic = chordObj.tonic;
         globals.currentChordBeingJammed.type = chordObj.aliases[0]; // no root, no bass
         globals.currentChordBeingJammed.bass = bass;
+        globals.currentChordBeingJammed.source = 'midi'
         globals.currentChordBeingJammed.stale = false
 
         if (globals.syncChordPickerToJamChord)
@@ -84,8 +126,10 @@ function doDetect(currentNotes, retainLastDetectionResult=true) {
     }
     else {
         // Even though notes weren't detected, still save them just in case user wants to add them to project anyway
-        if (currentNotes.length > 1)
+        if (currentNotes.length > 1) {
             globals.currentChordBeingJammed.chordNotes = currentNotes;
+            globals.currentChordBeingJammed.source = 'midi'
+        }
         
         globals.currentChordBeingJammed.stale = true
 

@@ -27,7 +27,7 @@ export function syncPickerToCurrentChord() {
     // Custom or unparseable chord names have no combo entry. Still load the
     // exact notes so the voicing and Edit Notes areas follow the grid.
     if (!chordSymbolNoRoot || !rootNote) {
-        chordPickerToJammed()
+        chordPickerToJammed(true)
         if (Array.isArray(chordNotes) && chordNotes.length > 0)
             chordPickerToJammedExtraPrecision(chordNotes, bass)
         return false
@@ -40,7 +40,9 @@ export function syncPickerToCurrentChord() {
         success = false
     }
 
-    chordPickerToJammed()
+    // Selecting a grid chord is an explicit source change, so force the exact
+    // stored voicing in even when a MIDI or typed voicing was already loaded.
+    chordPickerToJammed(true)
     if (Array.isArray(chordNotes) && chordNotes.length > 0)
         chordPickerToJammedExtraPrecision(chordNotes, bass)
 

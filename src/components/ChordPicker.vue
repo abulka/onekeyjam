@@ -201,8 +201,9 @@ function bypassOn(event) {
             globals.chordPicker.currentChordInversion
         }})</span>
 
-        <ButtonAudition title="Audition Chord (keyboard shortcut: `)" class="ml-3!"
+        <ButtonAudition title="Play the Chord Picker voicing (root position). Keyboard shortcut: `" class="ml-3!"
           :notes="auditionInfo().defaultVoicing.notes" :bass="auditionInfo().defaultVoicing.bass" />
+        <code class="ml-1">[{{ auditionInfo().defaultVoicing.notes.join(' ') }}]</code>
 
       </div>
 
@@ -210,7 +211,7 @@ function bypassOn(event) {
       <ChordAdd :chord-picker-chord-name="globals.chordPicker.currentRoot + globals.chordPicker.currentChord"
         :chord-tonic="globals.chordPicker.currentRoot" :chord-type="globals.chordPicker.currentChord"
         :chord-inversion="globals.chordPicker.currentChordInversion" :chord-bass="globals.chordPicker.currentBass"
-        :audition-info="auditionInfo()" @chord-picker-to-jammed="chordPickerToJammed()" />
+        :audition-info="auditionInfo()" />
 
 
       <!-- Accordion with Common Chords -->
