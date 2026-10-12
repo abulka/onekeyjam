@@ -9,7 +9,7 @@ import { wireQwertyKeyState } from "./midi/qwertyKeyState.js"
 import { wireScaleFilterShortcuts } from "./midi/scaleFilterShortcuts.js"
 import { emergencyRepairProject } from './emergencyRepairProject.js';
 import { verifyTriggerMap, dealArrangement } from './triggerMaps';
-import { dealGrid, reorderGrid, resizeGrid, rebuildTriggerMap } from './gridArrangement.js';
+import { dealGrid, reorderGrid, resizeGrid, deleteGridChords, rebuildTriggerMap } from './gridArrangement.js';
 import { openJsonUrl } from "./util.js";
 import { setMaxDisplayed, applyUserGridRowCount } from './maxChordConfig'
 import { findMatchingScalesForProject } from "./findMatchingScales"
@@ -22,7 +22,7 @@ import { applyProjectKeySettings } from './projectScaleSettings.js'
 import { applyProjectScaleStyle } from './scaleStyles.js'
 import { fetchTestSong, fetchClassicProject, fetchProgressionProject, fetchRockProject, fetchMultiKeyProject, fetchUserProject } from './projectLibrary';
 import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listTestSongs, listClassicProjects, listProgressionProjects, listRockProjects, listMultiKeyProjects, listUserProjects } from './projectLibrary';
-import { restoreCurrentProject } from './currentProjectStore.js';
+import { restoreCurrentProject, flushCurrentProject } from './currentProjectStore.js';
 import { clampBpm } from './uiPrefs.js';
 
 /** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
@@ -235,6 +235,22 @@ export function resizeGridRowCount(requestedCount) {
     return next
 }
 
+export function deleteSelectedChordConfigs() {
+    // Delete the grid rows ticked in the bin column, then shrink the grid to
+    // match. The autosave is flushed so a quick reload cannot restore the
+    // pre-delete snapshot.
+    if (!globals.project || !Array.isArray(globals.project.chords))
+        return 0
+    if (!Array.isArray(globals.idsToDelete) || globals.idsToDelete.length === 0)
+        return 0
+    const deletedCount = deleteGridChords()
+    globals.projectKey = resolveProjectKey(globals.project) ?? null;
+    detectKeysAfterEdit();
+    linkProjectToKeyboard();
+    flushCurrentProject()
+    return deletedCount
+}
+
 export function reAllocateScales(simple = true) {
     // 5. only called from the buttons 'Find Matching Scales' and
     // 'Fill with Key Signature'. The project key (declared or detected) is
@@ -272,6 +288,10 @@ export function parseMidiAndAllocateChords(midi, fileName) {
     let project = buildProject(chords);
 
     project.name = `Imported ${fileName}`;
+
+    // The imported pool is curated by hearting keepers and binning rejects, so
+    // reveal those columns straight away.
+    globals.showFavouriteBinColumns = true
 
     // Seed the grid with an initial hand drawn from the imported pool. This is
     // the sampling workflow's entry point; the exact hand is saved with the

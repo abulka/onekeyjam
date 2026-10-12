@@ -58,6 +58,13 @@ onMounted(() => {
       </div>
     </div>
 
+    <div class="row mt-4">
+      <div class="ui checkbox">
+        <input type="checkbox" v-model="globals.showFavouriteBinColumns">
+        <label>Show favourite and bin columns in the chord/scale table</label>
+      </div>
+    </div>
+
     <h5>Number of Chords to display</h5>
     <div class="row">
       <ReallocatePanel />

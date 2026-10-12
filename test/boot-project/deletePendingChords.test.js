@@ -1,6 +1,10 @@
 import assert from 'assert'
 import { globals } from '@/lib/globals.js'
-import { deletePendingChordConfigs } from '@/lib/massOperationsOnChordConfigs.js'
+import {
+    deletePendingChordConfigs,
+    markAllVisibleChordsAsFavourites,
+    markAllVisibleChordsForDeletion,
+} from '@/lib/massOperationsOnChordConfigs.js'
 
 function seedProject() {
     globals.project = {
@@ -47,6 +51,44 @@ describe('deletePendingChordConfigs', () => {
         deletePendingChordConfigs()
         assert.deepEqual(globals.project.chords, [])
         assert.deepEqual(globals.project.songs.default.ids, [])
+        assert.deepEqual(globals.idsToDelete, [])
+    })
+})
+
+describe('mark all visible chords', () => {
+    let previousProject
+    let previousIdsToDelete
+    let previousTriggerMap
+
+    beforeEach(() => {
+        previousProject = globals.project
+        previousIdsToDelete = globals.idsToDelete
+        previousTriggerMap = globals.chordTriggerMap
+        seedProject()
+        globals.chordTriggerMap = {
+            C3: { id: 0 },
+            D3: { id: 1 },
+            E3: { id: 2 },
+        }
+    })
+
+    afterEach(() => {
+        globals.project = previousProject
+        globals.idsToDelete = previousIdsToDelete
+        globals.chordTriggerMap = previousTriggerMap
+    })
+
+    it('favourites every visible row, and clears them when all are on', () => {
+        markAllVisibleChordsAsFavourites()
+        assert.deepEqual(globals.project.songs.default.favourites, [0, 1, 2])
+        markAllVisibleChordsAsFavourites()
+        assert.deepEqual(globals.project.songs.default.favourites, [])
+    })
+
+    it('marks every visible row for deletion, and clears them when all are on', () => {
+        markAllVisibleChordsForDeletion()
+        assert.deepEqual(globals.idsToDelete, [0, 1, 2])
+        markAllVisibleChordsForDeletion()
         assert.deepEqual(globals.idsToDelete, [])
     })
 })

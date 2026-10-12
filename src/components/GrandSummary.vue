@@ -14,11 +14,12 @@ import { keyDetection } from '../../src/lib/keyDetection';
 import { projectKeyNotes, projectKeyName, projectKeyShortName, keyColourHue } from '../../src/lib/projectKey.js';
 import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
-import { resizeGridRowCount } from '@/lib/boot-project.js'
+import { resizeGridRowCount, deleteSelectedChordConfigs } from '@/lib/boot-project.js'
 import { clampGridRowCount } from '@/lib/maxChordConfig.js'
 import { openForSlot, addRow, selectSlot, isDirty } from '@/lib/chordInspector.js'
 import { linkProjectToKeyboard } from '@/lib/boot-project.js'
 import { flushCurrentProject } from '@/lib/currentProjectStore.js'
+import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '@/lib/massOperationsOnChordConfigs'
 
 const props = defineProps({
   // On the Perform page there is no inspector panel, so a click just selects.
@@ -77,6 +78,20 @@ function onAddChord(event) {
     flushCurrentProject()
     openEditChordsAccordion()
   }
+  releaseControlFocus(event)
+}
+
+/** Apply the bin: delete every row ticked for deletion. */
+function onDeleteSelectedChords(event) {
+  if (!globals.idsToDelete.length)
+    return
+  deleteSelectedChordConfigs()
+  releaseControlFocus(event)
+}
+
+/** Show or hide the favourite and bin columns, without importing a file. */
+function toggleFavouriteBinColumns(event) {
+  globals.showFavouriteBinColumns = !globals.showFavouriteBinColumns
   releaseControlFocus(event)
 }
 
@@ -756,6 +771,10 @@ function generalTableClick(event) {
           </table>
         </th>
 
+        <th v-if="globals.showFavouriteBinColumns"><button @click="markAllVisibleChordsAsFavourites(); if (globals.keySignatureDetection.fromFavouritesOnly) keyDetection()" class="circular compact mini transparent ui icon button" title="Add all to favourites"> <i class="heart icon"></i> </button></th>
+        <!-- <th><button @click="markAllVisibleChordsForBlackList()" class="circular compact mini transparent ui icon button" title="Add all to blacklist"> <i class="thumbs down icon"></i> </button></th> -->
+        <th v-if="globals.showFavouriteBinColumns || globals.showDeleteColumn"><button @click="markAllVisibleChordsForDeletion()" class="circular compact mini transparent ui icon button" title="Mark all to be deleted - then Delete selected below to apply"> <i class="trash icon"></i> </button></th>
+
       </tr>
     </thead>
     <tbody>
@@ -911,6 +930,9 @@ function generalTableClick(event) {
           </table>
 
         </td>
+        <td v-if="globals.showFavouriteBinColumns"><input type="checkbox" v-model="info.favourite" /></td>
+        <!-- <td><input type="checkbox" v-model="info.blackListed" /></td> -->
+        <td v-if="globals.showFavouriteBinColumns || globals.showDeleteColumn"><input type="checkbox" v-model="info.todelete" /></td>
       </tr>
     </tbody>
   </table>
@@ -940,6 +962,21 @@ function generalTableClick(event) {
       <span v-else class="resize-hint">tall grid, fewer keys free for solo</span>
     </div>
   </div>
+  <div v-if="globals.isProjectLoaded && totalGridRows > 1" class="grid-delete-footer">
+    <button
+      type="button"
+      class="ui tiny button"
+      :disabled="globals.idsToDelete.length === 0"
+      :title="globals.idsToDelete.length === 0 ? 'Tick the bin checkboxes first' : 'Delete the ticked rows'"
+      @click="onDeleteSelectedChords($event)"
+    >
+      Delete selected ({{ globals.idsToDelete.length }})
+    </button>
+    <div class="ui checkbox">
+      <input type="checkbox" id="show-delete-column-grid" v-model="globals.showDeleteColumn">
+      <label for="show-delete-column-grid">Show delete column in the chord/scale table</label>
+    </div>
+  </div>
   <div v-if="globals.isProjectLoaded" class="grid-actions-footer">
     <button
       type="button"
@@ -948,6 +985,14 @@ function generalTableClick(event) {
       @click="onAddChord($event)"
     >
       + Add chord
+    </button>
+    <button
+      type="button"
+      class="ui tiny button"
+      :title="globals.showFavouriteBinColumns ? 'Hide the favourite and bin columns' : 'Show the favourite and bin columns for auditioning and pruning chords'"
+      @click="toggleFavouriteBinColumns($event)"
+    >
+      {{ globals.showFavouriteBinColumns ? 'Hide heart & bin columns' : 'Show heart & bin columns' }}
     </button>
     <span class="add-hint">New rows appear at the end and open in the inspector below.</span>
   </div>
@@ -1365,6 +1410,15 @@ tr.key-group-change > td {
 .grid-resize-handle .resize-hint {
   color: #6b5a45;
   font-style: italic;
+}
+
+/* Final delete step and column toggle, directly under the grid resizer. */
+.grid-delete-footer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  margin-top: 0.5rem;
 }
 
 /* Add-row action and hint, directly under the grid resizer. */

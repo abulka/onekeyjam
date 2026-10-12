@@ -232,7 +232,12 @@ watch(() => globals.helpPage, async () => {
         <strong>Jam!</strong> button. A guided tour is available from the
         <strong>Start Tour</strong> item in the menu. To build a project from an
         existing song, choose <strong>File &rarr; Import MIDI file...</strong> and
-        OneKeyJam will detect the chords and lay them out on the keyboard.
+        OneKeyJam will detect the chords and lay them out on the keyboard. The
+        import switches on the favourite and bin columns so you can audition
+        each chord, heart the keepers and tick the rejects, press
+        <strong>Delete selected</strong>, then <strong>Deal new chords</strong>
+        for a fresh batch. Use <strong>Show heart &amp; bin columns</strong> under
+        the grid to bring them back later.
       </p>
 
       <figure>

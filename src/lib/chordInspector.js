@@ -13,6 +13,7 @@ import { replaceCurrentChord, replaceCurrentChordExact } from './replaceCurrentC
 import { deleteGridChords } from './gridArrangement.js'
 import { resolveProjectKey } from './projectKey.js'
 import { detectKeysAfterEdit } from './autoKeyDetection.js'
+import { keyDetection } from './keyDetection.js'
 
 /**
  * @module lib/chordInspector
@@ -391,6 +392,10 @@ export function toggleFavourite() {
     song.favourites.splice(index, 1)
   else
     song.favourites.push(id)
+  // Key detection can be set to look only at favourites, so a change here may
+  // change the detected key.
+  if (globals.keySignatureDetection?.fromFavouritesOnly)
+    keyDetection()
   return true
 }
 

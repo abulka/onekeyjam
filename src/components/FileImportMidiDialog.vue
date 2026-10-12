@@ -81,6 +81,11 @@ defineExpose({
                 <label for="cb1">Import unrecognised chords</label>
             </div>
 
+            <div class="ui checkbox mt-2">
+                <input type="checkbox" id="cb2" v-model="globals.showFavouriteBinColumns">
+                <label for="cb2">Show favourite and bin columns in the chord/scale table</label>
+            </div>
+
         </div>
 
         <div class="mt-8">
