@@ -168,8 +168,6 @@ export const globals = reactive({
     showWelcomeDialog: true,  // show the welcome message when a demo project is loaded
     helpPage: 'overview',  // which Help page is open: 'overview' | 'tutorial' | 'reference' | 'controls'
     debugJamChord: false,
-    syncChordPickerToJamChord: true,
-    syncChordPickerToCurrentTriggeredChord: true,
     enableLhChordTriggers: true,
 
     // Global repair of held right-hand solo notes when a chord trigger changes
