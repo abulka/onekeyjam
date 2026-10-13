@@ -242,13 +242,7 @@ export function openForSlot(triggerNote = globals.currentChordTriggerNote) {
   globals.currentChordTriggerNote = triggerNote
   const ok = loadDraftFromSlot(triggerNote)
   inspector().open = true
-  inspector().mode = 'edit'
   return ok
-}
-
-/** Close the panel. The draft is kept so re-opening shows the same slot. */
-export function closeInspector() {
-  inspector().open = false
 }
 
 /**
@@ -274,7 +268,6 @@ export function isDraftConsistentWithProject() {
 export function resetInspector() {
   const ins = inspector()
   ins.open = false
-  ins.mode = 'edit'
   ins.slotId = null
   ins.triggerNote = ''
   ins.voicingMode = 'auto'
@@ -415,13 +408,6 @@ export function renameDraft(root, quality) {
   // The name belongs to the chord, so the custom row's label follows it too.
   ins.customSymbol = symbol
   ins.customSymbols = [symbol]
-}
-
-/** Invert the draft voicing, keeping the identity. */
-export function setInversion(inversion) {
-  globals.chordPicker.currentChordInversion = inversion
-  clearPlayedVoicing()
-  applyAuto()
 }
 
 /**
@@ -572,14 +558,6 @@ export function previewAutoVoicing() {
     ),
     bass: globals.chordPicker.currentBass || '',
   }
-}
-
-/** True when the draft is currently showing the kept played voicing. */
-export function isUsingPlayedVoicing() {
-  const ins = inspector()
-  if (!hasPlayedVoicing() || ins.voicingMode !== 'custom')
-    return false
-  return arraysAreEqual(ins.notes, ins.playedNotes ?? [])
 }
 
 /**

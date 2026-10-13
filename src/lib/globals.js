@@ -134,12 +134,11 @@ export const globals = reactive({
     // notes auto-apply.
     chordInspector: {
         open: false,
-        mode: 'edit',        // 'edit' (a selected slot) | 'add' (a new slot)
         slotId: null,
         triggerNote: '',
         voicingMode: 'auto', // 'auto' | 'custom'
         symbol: '',          // label to store with a custom voicing
-        symbols: [],         // detected aliases for the "store as" dropdown
+        symbols: [],         // detected aliases stored with a custom voicing
         notes: [],           // draft voicing
         baseline: null,      // snapshot for dirty check and Revert
         capturedIgnored: [], // played notes already seen when this draft loaded

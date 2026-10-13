@@ -69,7 +69,7 @@ onUnmounted(() => {
           Bass
         </div>
         <div class="row">
-          <p class="boldy">{{ currentChordConfig.bass }} </p>
+          <p class="boldy">{{ globals.currentBass() }} </p>
         </div>
       </div>
 

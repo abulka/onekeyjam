@@ -119,7 +119,11 @@ const selectedBass = computed({
 // on blur or Enter it is parsed in full.
 const notesText = ref('')
 const notesFocused = ref(false)
-const bassTokenError = ref('')
+// A slash token typed in the notes field is reported beside that field; a
+// mistyped bass in the Bass field is reported beside its own field. Two refs
+// keep the two messages from clearing each other.
+const notesBassError = ref('')
+const bassFieldError = ref('')
 watch(
   () => globals.chordInspector.customNotes,
   (notes) => {
@@ -131,11 +135,11 @@ watch(
 
 function applyNotes() {
   if (notesText.value === globals.chordInspector.customNotes.join(' ')) {
-    bassTokenError.value = ''
+    notesBassError.value = ''
     return
   }
   const { invalidBass } = applyNotesEntry(notesText.value)
-  bassTokenError.value = invalidBass
+  notesBassError.value = invalidBass
 }
 
 /** Leaving the field applies the notes and shows them in their stored form. */
@@ -145,7 +149,7 @@ function onNotesBlur() {
   if (notesText.value.trim() === '') {
     discardCustom()
     notesText.value = ''
-    bassTokenError.value = ''
+    notesBassError.value = ''
     return
   }
   applyNotes()
@@ -167,19 +171,19 @@ watch(
 
 function onBassInput() {
   const ok = applyBassEntry(bassText.value)
-  bassTokenError.value = ok ? '' : bassText.value
+  bassFieldError.value = ok ? '' : bassText.value
 }
 
 function onBassBlur() {
   bassFocused.value = false
   const ok = applyBassEntry(bassText.value)
   if (ok) {
-    bassTokenError.value = ''
+    bassFieldError.value = ''
     bassText.value = globals.chordPicker.currentBass || ''
   }
   else {
     // Keep the unreadable text so it can be fixed, with the hint visible.
-    bassTokenError.value = bassText.value
+    bassFieldError.value = bassText.value
   }
 }
 
@@ -660,12 +664,14 @@ onUnmounted(() => {
         @focus="onCustomFocus" @blur="onNotesBlur"
         title="These exact notes are the custom voicing. Add a slash bass like 'C3 E3 G3 /E'. Press Enter to save or add the chord."
         placeholder="e.g. C3 E3 G3" class="notes-input" />
+      <span v-if="notesBassError" class="field-hint bass-error">Can't read the slash bass "{{ notesBassError }}".</span>
       <label class="field bass-field">/ Bass
         <input type="text" v-model="bassText" @input="onBassInput"
           @focus="bassFocused = true" @blur="onBassBlur"
           title="Optional slash bass for this chord, e.g. E. Same value as the / Bass picker above; blank means the low root is derived."
           placeholder="(none)" class="bass-input" />
       </label>
+      <span v-if="bassFieldError" class="field-hint bass-error">Can't read "{{ bassFieldError }}" — use a note like E or Eb.</span>
       <ButtonAudition :notes="customNotes" :bass="picker.currentBass"
         :title="`Hear the custom voicing: ${customNotes.join(' ') || '(no notes)'}`" />
       <button v-if="canCapturePlayed" type="button" class="ui tiny button"
@@ -675,7 +681,6 @@ onUnmounted(() => {
         @focus="onHoverPlayed(true)" @blur="onHoverPlayed(false)">Capture played notes</button>
       <span v-if="canCapturePlayed" class="field-hint">Played: {{ played.notes.join(' ') }}</span>
     </div>
-    <p v-if="bassTokenError" class="row-hint bass-error">Can't read the bass "{{ bassTokenError }}" — use a note like E or Eb.</p>
 
     <!-- With no row there is nothing to save, so only Add is offered -->
     <div class="inspector-row actions-row">
