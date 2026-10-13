@@ -7,8 +7,7 @@ import { resetInspector, autoNotesFor } from '@/lib/chordInspector.js'
 import { auditionNotes } from '@/lib/auditionNotes'
 import ChordInspector from '@/components/ChordInspector.vue'
 
-// Record what each audition control actually asks to play, so no speaker can
-// silently point at the wrong voicing.
+// Record what each audition control actually asks to play.
 vi.mock('@/lib/auditionNotes', async (importOriginal) => {
     const actual = await importOriginal()
     return { ...actual, auditionNotes: vi.fn() }
@@ -84,35 +83,48 @@ describe('ChordInspector audition wiring', () => {
         globals.currentChordBeingJammed.source = saved.jammed.source
     })
 
-    it('plays the normalised voicing from the chord row and the custom voicing from the notes row', async () => {
+    it('each row speaker plays its own voicing, whichever radio is selected', async () => {
         installFmaj9Row()
         const wrapper = mount(ChordInspector, { attachTo: document.body })
         try {
             await nextTick()
             await nextTick()
 
-            const expectedAutoNotes = autoNotesFor(
+            const expectedAuto = autoNotesFor(
                 globals.chordPicker.currentRoot,
                 globals.chordPicker.currentChord,
                 0,
             )
             const customNotes = ['C3', 'E3', 'G3', 'A3', 'F3']
 
-            // Chord-row speaker: the normalised voicing.
+            // Custom is selected on load; both speakers still target their own row.
             auditionNotes.mockClear()
             await buttonByTitle(wrapper, 'Hear the normalised voicing').trigger('mouseenter')
-            assert.deepEqual(notesOfLastAudition(), expectedAutoNotes, 'chord-row speaker plays the normalised voicing')
-
-            // Notes-row speaker: the custom voicing.
+            assert.deepEqual(notesOfLastAudition(), expectedAuto, 'normalised speaker plays the normalised voicing')
             auditionNotes.mockClear()
             await buttonByTitle(wrapper, 'Hear the custom voicing').trigger('mouseenter')
-            assert.deepEqual(notesOfLastAudition(), customNotes, 'notes-row speaker plays the custom voicing')
+            assert.deepEqual(notesOfLastAudition(), customNotes, 'custom speaker plays the custom voicing')
 
-            // Use normalised voicing link hover: the normalised voicing.
+            // Switch to Normalised: the speakers keep their own targets.
+            await wrapper.find('.voicing-row input[value="normalised"]').setValue(true)
+            await nextTick()
             auditionNotes.mockClear()
-            const link = wrapper.findAll('button').find(button => button.text().startsWith('Use normalised voicing'))
-            await link.trigger('mouseenter')
-            assert.deepEqual(notesOfLastAudition(), expectedAutoNotes, 'switch link auditions the normalised voicing')
+            await buttonByTitle(wrapper, 'Hear the custom voicing').trigger('mouseenter')
+            assert.deepEqual(notesOfLastAudition(), customNotes, 'custom speaker unchanged by the radio')
+            auditionNotes.mockClear()
+            await buttonByTitle(wrapper, 'Hear the normalised voicing').trigger('mouseenter')
+            assert.deepEqual(notesOfLastAudition(), expectedAuto, 'normalised speaker unchanged by the radio')
+
+            // A played voicing that differs offers Capture, which auditions it.
+            globals.chordInspector.playedNotes = ['D4', 'F4', 'B4', 'C5']
+            globals.chordInspector.playedChord = 'Bdim'
+            globals.chordInspector.playedBass = 'D'
+            await nextTick()
+            const capture = wrapper.findAll('button').find(button => button.text().includes('Capture played notes'))
+            assert.ok(capture, 'Capture button appears for differing played notes')
+            auditionNotes.mockClear()
+            await capture.trigger('mouseenter')
+            assert.deepEqual(notesOfLastAudition(), ['D4', 'F4', 'B4', 'C5'], 'Capture auditions the played notes')
         }
         finally {
             wrapper.unmount()

@@ -99,7 +99,7 @@ describe('ChordInspector project replacement and Enter', () => {
             await nextTick()
 
             const buttons = wrapper.findAll('button').map((button) => button.text())
-            assert.ok(!buttons.some((text) => text.includes('Save changes')), 'Save changes is gone')
+            assert.ok(!buttons.includes('Save'), 'Save is gone with no row')
             const add = wrapper.findAll('button').find((button) => button.text().includes('Add as new chord'))
             assert.ok(add, 'Add as new chord is offered')
             assert.ok('disabled' in add.attributes(), 'Add is disabled while nothing is playable')

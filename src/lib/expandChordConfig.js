@@ -109,7 +109,12 @@ export function expandChordConfig(config) {
     if (bassObj.oct === undefined)
         bassObj = Tonal.Note.get(`${bassObj.pc}${bassNoteOctave}`)
 
+    // `bassNote` is the note that sounds; `bass` is the user's explicit choice.
+    // A derived bass (from the voicing or the lowest note) fills `bassNote`
+    // only, so the editor's Bass field stays blank until the user picks one.
+    // The grid and the chord readouts show `bassNote`.
     config.bassNote = bassObj.name
-    config.bass = bassObj.pc
+    if (config.bass)
+        config.bass = bassObj.pc
 }
 

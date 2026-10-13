@@ -189,6 +189,33 @@ export function parseNoteInput(text, defaultOctave = chordOctave) {
     return notes
 }
 
+/**
+ * Parse a notes entry that may carry a slash bass, e.g. 'C3 E3 G3 /E' or
+ * 'E3 G3 C4 /E2'. Everything after the first slash is the bass; a note is
+ * required, an octave is optional. Unreadable bass tokens are reported so the
+ * UI can say so instead of dropping them silently.
+ * @param {string} text
+ * @param {number} [defaultOctave]
+ * @returns {{ notes: string[], bass: string, invalidBass: string }}
+ */
+export function parseNotesWithBass(text, defaultOctave = chordOctave) {
+    const raw = String(text ?? '')
+    const slashIndex = raw.indexOf('/')
+    const notesPart = slashIndex === -1 ? raw : raw.slice(0, slashIndex)
+    const bassPart = slashIndex === -1 ? '' : raw.slice(slashIndex + 1).trim()
+    const notes = parseNoteInput(notesPart, defaultOctave)
+    let bass = ''
+    let invalidBass = ''
+    if (slashIndex !== -1 && bassPart) {
+        const parsed = Note.get(bassPart)
+        if (parsed.empty || !parsed.pc)
+            invalidBass = bassPart
+        else
+            bass = parsed.pc
+    }
+    return { notes, bass, invalidBass }
+}
+
 export function sortChordConfigs(chordConfigs) {  // array of chord configs
     // Sort the chord configs array by chordConfig.name (which contains string chordSymbols)
 

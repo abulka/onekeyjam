@@ -20,7 +20,8 @@ describe('expandChordConfig', () => {
         // console.log('chordConfig', chordConfig)
         assert.deepEqual(chordConfig.chordNotes, ['C3', 'E3', 'G3'])
         assert.equal(chordConfig.scale1Notes.length, 7)
-        assert.equal(chordConfig.bass, 'C')
+        // A derived bass fills bassNote only; the Bass field stays blank.
+        assert.ok(!chordConfig.bass)
         assert.equal(chordConfig.bassNote, 'C2')
     });
 
@@ -71,7 +72,8 @@ describe('expandChordConfig - .chord missing', () => {
 
         // we expect this
         assert.deepEqual(chordConfig.chordNotes, ['C3', 'E3', 'G3'])
-        assert.equal(chordConfig.bass, 'C')
+        // Derived bass: bassNote sounds, bass (the explicit field) stays blank.
+        assert.ok(!chordConfig.bass)
         assert.equal(chordConfig.bassNote, 'C2')
         
         // but now we expect more...

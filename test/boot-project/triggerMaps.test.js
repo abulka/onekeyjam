@@ -48,7 +48,8 @@ describe('trigger maps - simple', () => {
         assert.equal(chordConfig.id, 1);
         assert.equal(chordConfig.chord, 'G7inversion2');  // custom chord
         assert.deepEqual(chordConfig.chordNotes, ['D3', 'F3', 'G3', 'B3']);
-        assert.equal(chordConfig.bass, 'D');
+        // Derived bass fills bassNote only; the explicit Bass field stays blank.
+        assert.ok(!chordConfig.bass);
         assert.equal(chordConfig.bassNote, "D2");
         assert.equal(chordConfig.scale1, "g mixolydian");
         assert.equal(chordConfig.scale2, "G lydian dominant");
@@ -108,7 +109,8 @@ describe('trigger maps - smart', () => {
 
         const chordConfig = chordTriggerMap['C3']
         assert.deepEqual(chordConfig.chordNotes, ['A3', 'C4', 'F4']);
-        assert.equal(chordConfig.bass, 'A');
+        // Derived bass fills bassNote only; the explicit Bass field stays blank.
+        assert.ok(!chordConfig.bass);
         assert.equal(chordConfig.bassNote, "A2");
         assert.equal(chordConfig.scale1, "A harmonic minor");
         assert.equal(chordConfig.scale2, "A aeolian");  // auto-filled with the best scale not already chosen

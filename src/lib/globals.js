@@ -112,6 +112,10 @@ export const globals = reactive({
         currentRoot: 'C',
         currentChord: 'M',
         currentBass: '',
+        // True while the bass is still automatic (no stored or picked bass), so
+        // typing notes with a slash bass can fill it. Any explicit pick or typed
+        // bass clears it. See chordInspector.js.
+        bassAuto: true,
         currentChordInversion: 0,
         inversionChangesBass: true,
         showAllChords: false,
@@ -139,10 +143,17 @@ export const globals = reactive({
         notes: [],           // draft voicing
         baseline: null,      // snapshot for dirty check and Revert
         capturedIgnored: [], // played notes already seen when this draft loaded
-        playedNotes: [],     // last played voicing for this draft, for toggling
+        playedNotes: [],     // last played voicing for this draft, for capture
         playedBass: '',      // bass of the last played voicing
         playedChord: '',     // detected chord label of the last played voicing
         playedSymbols: [],   // detected aliases of the last played voicing
+        // The custom voicing is kept alongside the normalised one, so
+        // switching between them never overwrites either. `notes` and
+        // `voicingMode` above are the active voicing; these hold the custom
+        // row. See chordInspector.js.
+        customNotes: [],
+        customSymbol: '',
+        customSymbols: [],
     },
 
     get superUser() {
@@ -545,7 +556,10 @@ export const globals = reactive({
     },
 
     currentBass() {
-        return this.currentChordConfig().bass
+        // The sounding bass: an explicit Bass picker value, or the derived
+        // bassNote when the user left the field blank.
+        const config = this.currentChordConfig()
+        return config.bass || config.bassNote
     },
 
     currentConfigEmpty() {

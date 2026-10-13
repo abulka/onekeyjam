@@ -4,7 +4,7 @@ import { globals } from '@/lib/globals.js'
 import { registerAccordion } from '@/lib/accordionState.js'
 import { noteOptions } from '@/lib/note-tools.js'
 import { chordOptions, optionsWithCurrent } from '@/lib/chordPicker.js'
-import { nameOptionsFor } from '@/lib/chordAddHelpers.js'
+import { arraysAreEqual } from '@/lib/array-tools.js'
 import {
   isDirty,
   saveDraft,
@@ -18,16 +18,21 @@ import {
   toggleFavourite,
   isFavourite,
   setIdentity,
+  renameDraft,
   setBass,
-  setNotesFromText,
-  revertToAuto,
+  applyNotesEntry,
+  applyBassEntry,
+  headerSymbol,
+  chooseCustom,
+  chooseNormalised,
+  discardCustom,
+  normalisedVoicingNotes,
   useCapturedNotes,
   capturedInfo,
   autoApplyCaptured,
   hasPlayedVoicing,
   playedVoicingInfo,
   previewAutoVoicing,
-  isUsingPlayedVoicing,
   hasPendingChord,
   canAddRow,
   resolveEnterAction,
@@ -35,7 +40,6 @@ import {
   fifthDraft,
   invertDraft,
   stepChord,
-  autoSymbolFor,
   autoNotesFor,
   previewTranspose,
   previewFifth,
@@ -82,30 +86,42 @@ const favourite = computed(() => {
   return isFavourite()
 })
 
-// The draft identity, bound to the picker combos. Changing root or quality is
-// a different chord, so the voicing and the bass reset to the new root (see
-// chordInspector.js).
+// The chord pickers are always "what this chord is called". In Custom mode
+// they rename the chord only; in Normalised mode they also generate the notes.
+const customActive = computed(() => globals.chordInspector.voicingMode === 'custom')
+
 const selectedRoot = computed({
   get: () => picker.value.currentRoot,
-  set: (value) => setIdentity(value, picker.value.currentChord),
+  set: (value) => {
+    if (customActive.value)
+      renameDraft(value, picker.value.currentChord)
+    else
+      setIdentity(value, picker.value.currentChord)
+  },
 })
 const selectedChord = computed({
   get: () => picker.value.currentChord,
-  set: (value) => setIdentity(picker.value.currentRoot, value),
+  set: (value) => {
+    if (customActive.value)
+      renameDraft(picker.value.currentRoot, value)
+    else
+      setIdentity(picker.value.currentRoot, value)
+  },
 })
 const selectedBass = computed({
   get: () => picker.value.currentBass,
   set: (value) => setBass(value),
 })
 
-// The draft's notes field. It mirrors the draft and flips to Custom as soon
-// as it is edited; "Use normalised voicing" rebuilds the normalised voicing.
-// While the field has focus the draft follows the typing but the text is not
-// reformatted under the cursor; on blur or Enter it is parsed in full.
+// The custom row's notes field. It mirrors the stored custom voicing and flips
+// the radio to Custom as soon as it is edited. While the field has focus the
+// draft follows the typing but the text is not reformatted under the cursor;
+// on blur or Enter it is parsed in full.
 const notesText = ref('')
 const notesFocused = ref(false)
+const bassTokenError = ref('')
 watch(
-  () => globals.chordInspector.notes,
+  () => globals.chordInspector.customNotes,
   (notes) => {
     if (notesFocused.value)
       return
@@ -114,42 +130,79 @@ watch(
   { immediate: true })
 
 function applyNotes() {
-  if (notesText.value === globals.chordInspector.notes.join(' '))
+  if (notesText.value === globals.chordInspector.customNotes.join(' ')) {
+    bassTokenError.value = ''
     return
-  setNotesFromText(notesText.value)
+  }
+  const { invalidBass } = applyNotesEntry(notesText.value)
+  bassTokenError.value = invalidBass
 }
 
 /** Leaving the field applies the notes and shows them in their stored form. */
 function onNotesBlur() {
   notesFocused.value = false
+  // Clearing the field throws the custom voicing away and returns to Normalised.
+  if (notesText.value.trim() === '') {
+    discardCustom()
+    notesText.value = ''
+    bassTokenError.value = ''
+    return
+  }
   applyNotes()
-  notesText.value = globals.chordInspector.notes.join(' ')
+  notesText.value = globals.chordInspector.customNotes.join(' ')
 }
 
-const previewSymbol = computed(() =>
-  globals.chordInspector.voicingMode === 'custom' && globals.chordInspector.symbol
-    ? globals.chordInspector.symbol
-    : autoSymbolFor(picker.value.currentRoot, picker.value.currentChord))
+// The custom row's slash bass. It is the same value as the chord-row picker,
+// so the two stay in sync. Blank is allowed; the grid derives a low root later.
+const bassText = ref('')
+const bassFocused = ref(false)
+watch(
+  () => globals.chordPicker.currentBass,
+  (bass) => {
+    if (bassFocused.value)
+      return
+    bassText.value = bass || ''
+  },
+  { immediate: true })
 
-const previewNotes = computed(() => globals.chordInspector.notes.join(' '))
+function onBassInput() {
+  const ok = applyBassEntry(bassText.value)
+  bassTokenError.value = ok ? '' : bassText.value
+}
 
-// The stored-name choices for a Custom voicing. Shown only when there is more
-// than one plausible name, so a name is never mistaken for a voicing.
-const nameOptions = computed(() => nameOptionsFor({
-  symbols: globals.chordInspector.symbols,
-  fallbackSymbol: globals.chordInspector.symbol,
-}))
+function onBassBlur() {
+  bassFocused.value = false
+  const ok = applyBassEntry(bassText.value)
+  if (ok) {
+    bassTokenError.value = ''
+    bassText.value = globals.chordPicker.currentBass || ''
+  }
+  else {
+    // Keep the unreadable text so it can be fixed, with the hint visible.
+    bassTokenError.value = bassText.value
+  }
+}
 
-// Played notes auto-update the draft to the detected chord. The captured
-// value is only the fresh arrival; the played value is the kept alternative
-// for toggling against the normalised voicing until Save or Add.
+const previewSymbol = computed(() => headerSymbol())
+
+// Two voicings, both kept: the normalised row is computed from the pickers,
+// the custom row is stored. The radio picks which one Save uses.
+const normalisedNotes = computed(() => normalisedVoicingNotes())
+const customNotes = computed(() => globals.chordInspector.customNotes)
+
+// Played notes auto-update the draft to the detected chord and stay available
+// as a source for the custom voicing.
 const captured = computed(() => capturedInfo())
 const hasPlayed = computed(() => hasPlayedVoicing())
 const played = computed(() => playedVoicingInfo())
-const autoPreview = computed(() => previewAutoVoicing())
-const usingPlayed = computed(() => isUsingPlayedVoicing())
 const hasPending = computed(() => hasPendingChord())
 const canAdd = computed(() => canAddRow())
+
+// The Capture button appears only while the played notes differ from the
+// custom row.
+const canCapturePlayed = computed(() =>
+  hasPlayed.value
+  && !arraysAreEqual(played.value.notes, globals.chordInspector.customNotes))
 
 // ┌─┐┌─┐┌┬┐┬┌─┐┌┐┌┌─┐
 // ├─┤│ │ │ ││ ││││└─┐
@@ -220,12 +273,23 @@ function onToggleFavourite() {
   toggleFavourite()
 }
 
-function onUseCaptured() {
-  useCapturedNotes()
+/** Pick a radio row: it decides what Save stores. Neither row overwrites the other. */
+function onChooseNormalised() {
+  chooseNormalised()
 }
 
-function onRevertAuto() {
-  revertToAuto()
+function onChooseCustom() {
+  chooseCustom()
+}
+
+/** Focus keeps the field free-form: the text is only reformatted on blur or Enter. */
+function onCustomFocus() {
+  notesFocused.value = true
+}
+
+/** Make the notes just played the custom voicing. */
+function onCapturePlayed() {
+  useCapturedNotes()
 }
 
 /**
@@ -323,13 +387,7 @@ function auditionPreview(preview, state) {
   refreshAudioHint()
 }
 
-// Hovering Use normalised voicing hears the normalised voicing without
-// applying it, so the two voicings can be compared before choosing. Hovering
-// Use as custom voicing hears the played notes the same way.
-function onHoverAuto(state) {
-  auditionPreview(autoPreview.value, state)
-}
-
+// Hovering Capture played notes hears the played notes without applying them.
 function onHoverPlayed(state) {
   auditionPreview(played.value, state)
 }
@@ -541,18 +599,16 @@ onUnmounted(() => {
 
 <template>
   <div class="chord-inspector" @keydown="onKeydown">
-    <!-- Title: always says which slot is being edited, or the pending chord -->
+    <!-- Title: the selected row or the pending chord -->
     <div class="inspector-header">
       <span class="inspector-title">
         <template v-if="inspector.slotId != null">
           <span class="row-id">Row #{{ inspector.slotId }}</span>
           <span class="chord-name">{{ previewSymbol }}</span>
-          <span class="chord-notes">[{{ previewNotes }}]</span>
         </template>
         <template v-else-if="hasPending">
           <span class="row-id">New chord</span>
           <span class="chord-name">{{ previewSymbol }}</span>
-          <span class="chord-notes">[{{ previewNotes }}]</span>
         </template>
         <template v-else>
           No chord selected
@@ -562,8 +618,8 @@ onUnmounted(() => {
       <span v-if="flashMessage" class="saved-flash">{{ flashMessage }}</span>
     </div>
 
-    <!-- Identity: the normalised voicing source. Changing root/quality
-         rebuilds the normalised voicing from these combos. -->
+    <!-- The chord pickers are the name. In Normalised mode they also generate
+         that row's notes; in Custom mode they only rename the chord. -->
     <div class="inspector-row identity-row">
       <label class="field">Root
         <select v-model="selectedRoot">
@@ -581,73 +637,51 @@ onUnmounted(() => {
         </select>
       </label>
       <span v-if="picker.currentChordInversion" class="inv-tag">inv {{ picker.currentChordInversion }}</span>
-      <ButtonAudition :notes="autoPreview.notes" :bass="autoPreview.bass"
-        :title="`Hear the normalised voicing: ${autoPreview.notes.join(' ') || '(no notes)'} — built from the chord name above`" />
-      <span class="field-hint">Normalised voicing, built from the chord name.</span>
       <span v-if="audioLocked" class="field-hint">Sound is off after refresh. Click or press any key once, then hover again.</span>
     </div>
 
-    <!-- One notes field, Normalised or Custom. In Custom mode these exact
-         notes are the voicing that sounds; the link switches back to the
-         normalised voicing. -->
-    <div class="inspector-row notes-row">
-      <label class="field notes-field">Notes
-        <input type="text" v-model="notesText" @input="applyNotes"
-          @focus="notesFocused = true" @blur="onNotesBlur"
-          title="Press Enter to save or add the chord."
-          placeholder="e.g. C3 E3 G3" class="notes-input" />
+    <!-- Two voicings, both kept. The radio picks which one Save stores and
+         each row has its own speaker, so both can be heard without switching. -->
+    <div class="inspector-row voicing-row">
+      <label class="radio-label" title="Save the generated voicing built from the chord name">
+        <input type="radio" name="voicing" value="normalised" :checked="!customActive" @change="onChooseNormalised" />
+        Normalised
       </label>
-      <span class="voicing-tag" :class="inspector.voicingMode === 'auto' ? 'tag-auto' : 'tag-custom'">
-        {{ inspector.voicingMode === 'auto' ? 'Normalised' : 'Custom' }}
-      </span>
-      <ButtonAudition v-if="inspector.voicingMode === 'custom'" :notes="inspector.notes" :bass="picker.currentBass"
-        :title="`Hear the custom voicing: ${inspector.notes.join(' ')}`" />
-      <button v-if="inspector.voicingMode === 'custom'" type="button" class="link-button"
-        title="Hover to hear the normalised voicing, click to switch the draft back to it"
-        @click="onRevertAuto"
-        @mouseenter="onHoverAuto(true)" @mouseleave="onHoverAuto(false)"
-        @focus="onHoverAuto(true)" @blur="onHoverAuto(false)">Use normalised voicing ({{ autoPreview.notes.join(' ') }})</button>
-      <label v-if="inspector.voicingMode === 'custom' && nameOptions.length > 1" class="field">store as
-        <select v-model="inspector.symbol">
-          <option v-for="name in nameOptions" :key="name" :value="name">{{ name }}</option>
-        </select>
-      </label>
+      <code class="voicing-notes">{{ normalisedNotes.join(' ') }}</code>
+      <ButtonAudition :notes="normalisedNotes" :bass="picker.currentBass"
+        :title="`Hear the normalised voicing: ${normalisedNotes.join(' ')}`" />
     </div>
-    <p class="row-hint">
-      <template v-if="inspector.voicingMode === 'auto'">Normalised: the notes are built from the chord name above.</template>
-      <template v-else>Custom: these exact notes are what sounds. Use normalised voicing switches back.</template>
-    </p>
-
-    <!-- Played notes are kept as a source for the custom voicing -->
-    <div v-if="hasPlayed" class="inspector-row captured-row">
-      <span class="captured-label" title="The exact notes just played. They can become the custom voicing for this chord.">Played</span>
-      <code>{{ played.chord || 'played' }}</code>
-      <code>[{{ played.notes.join(' ') }}]</code>
-      <ButtonAudition :notes="played.notes" :bass="played.bass"
-        :title="`Hear the played notes: ${played.notes.join(' ')}`" />
-      <button type="button" class="ui tiny button" :disabled="usingPlayed"
-        title="Hover to hear the played notes, click to make them the custom voicing"
-        @click="onUseCaptured"
+    <div class="inspector-row voicing-row">
+      <label class="radio-label" title="Save your own voicing, typed here or played">
+        <input type="radio" name="voicing" value="custom" :checked="customActive" @change="onChooseCustom" />
+        Custom
+      </label>
+      <input type="text" v-model="notesText" @input="applyNotes"
+        @focus="onCustomFocus" @blur="onNotesBlur"
+        title="These exact notes are the custom voicing. Add a slash bass like 'C3 E3 G3 /E'. Press Enter to save or add the chord."
+        placeholder="e.g. C3 E3 G3" class="notes-input" />
+      <label class="field bass-field">/ Bass
+        <input type="text" v-model="bassText" @input="onBassInput"
+          @focus="bassFocused = true" @blur="onBassBlur"
+          title="Optional slash bass for this chord, e.g. E. Same value as the / Bass picker above; blank means the low root is derived."
+          placeholder="(none)" class="bass-input" />
+      </label>
+      <ButtonAudition :notes="customNotes" :bass="picker.currentBass"
+        :title="`Hear the custom voicing: ${customNotes.join(' ') || '(no notes)'}`" />
+      <button v-if="canCapturePlayed" type="button" class="ui tiny button"
+        title="Make the notes you just played the custom voicing"
+        @click="onCapturePlayed"
         @mouseenter="onHoverPlayed(true)" @mouseleave="onHoverPlayed(false)"
-        @focus="onHoverPlayed(true)" @blur="onHoverPlayed(false)">Use as custom voicing</button>
-      <span class="field-hint">{{ usingPlayed ? 'These played notes are the custom voicing. Use normalised voicing to switch back.' : 'Use these played notes as the custom voicing.' }}</span>
+        @focus="onHoverPlayed(true)" @blur="onHoverPlayed(false)">Capture played notes</button>
+      <span v-if="canCapturePlayed" class="field-hint">Played: {{ played.notes.join(' ') }}</span>
     </div>
-
-    <!-- Fresh capture when no row is open or auto-apply did not run: kept so Add row can still seed from playing -->
-    <div v-else-if="captured.available" class="inspector-row captured-row">
-      <span class="captured-label" title="Notes played just now. They are not applied until you ask.">Captured</span>
-      <code>{{ captured.chord }}</code>
-      <code>[{{ captured.notes.join(' ') }}]</code>
-      <ButtonAudition :notes="captured.notes" :bass="captured.bass"
-        :title="`Hear the captured notes: ${captured.notes.join(' ')}`" />
-      <button type="button" class="ui tiny button" @click="onUseCaptured">Use these notes</button>
-    </div>
+    <p v-if="bassTokenError" class="row-hint bass-error">Can't read the bass "{{ bassTokenError }}" — use a note like E or Eb.</p>
 
     <!-- With no row there is nothing to save, so only Add is offered -->
     <div class="inspector-row actions-row">
       <template v-if="inspector.slotId != null">
         <button type="button" class="ui small primary button" :disabled="!dirty"
-          title="Save changes to this row (Enter)" @click="onSave">Save changes</button>
+          title="Save changes to this row (Enter)" @click="onSave">Save</button>
         <button type="button" class="ui small primary button" :disabled="!canAdd"
           title="Add the current chord as a new row" @click="onAdd">Add as new chord</button>
         <button type="button" class="ui small button" :disabled="!dirty" title="Discard the draft (Esc)"
@@ -720,7 +754,7 @@ onUnmounted(() => {
           <button type="button" class="ui tiny button" title="Hover to hear the root position, click to load it into the draft"
             @click="invertDraft(0)" @mouseenter="onHoverInvert(0, true)" @mouseleave="onHoverInvert(0, false)" @focus="onHoverInvert(0, true)" @blur="onHoverInvert(0, false)">Reset inversion</button>
         </div>
-        <p class="row-hint">Transposing or inverting changes the chord, so the voicing returns to Normalised.</p>
+        <p class="row-hint">Transposing renames the chord; inverting changes the Normalised voicing.</p>
       </div>
 
       <div class="title" data-accordion-section="inspector-options">
@@ -808,6 +842,14 @@ onUnmounted(() => {
   max-width: 70vw;
 }
 
+.bass-input {
+  width: 4.5rem;
+}
+
+.bass-error {
+  color: #a12a2a;
+}
+
 .field-hint,
 .row-hint {
   color: #6b5a45;
@@ -828,42 +870,24 @@ onUnmounted(() => {
   font-size: 0.75rem;
 }
 
-/* Auto/Custom is a status label, not a control: plain small caps, no box. */
-.voicing-tag {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+/* The two voicing radios: one row each, read-only normalised text and an
+editable custom field. */
+.voicing-row {
+  padding: 0.15rem 0;
 }
 
-.tag-auto {
-  color: #8a7a63;
-}
-
-.tag-custom {
-  color: #2f4fa8;
-}
-
-.link-button {
-  padding: 0;
-  border: none;
-  background: none;
-  color: #2f4fa8;
-  text-decoration: underline;
+.radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 6.5rem;
+  font-weight: 600;
   cursor: pointer;
-  font-size: 0.85rem;
 }
 
-.captured-row {
-  padding: 0.35rem 0.6rem;
-  border: 1px dashed #b9a98e;
-  border-radius: 6px;
-  background: #efe3cf;
-}
-
-.captured-label {
-  font-weight: bold;
-  color: #6b5a45;
+.voicing-notes {
+  color: #5a3d1a;
+  font-size: 0.9rem;
 }
 
 .actions-row {

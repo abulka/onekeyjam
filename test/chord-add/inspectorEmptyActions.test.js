@@ -62,7 +62,7 @@ describe('ChordInspector empty-project actions', () => {
         try {
             const buttons = wrapper.findAll('button').map((button) => button.text())
             assert.ok(buttons.some((text) => text.includes('Add as new chord')), 'Add as new chord is shown')
-            assert.ok(!buttons.some((text) => text.includes('Save changes')), 'Save changes is hidden with no slot')
+            assert.ok(!buttons.includes('Save'), 'Save is hidden with no slot')
             assert.ok(wrapper.text().includes('No chord selected'), 'header shows no selection')
         }
         finally {

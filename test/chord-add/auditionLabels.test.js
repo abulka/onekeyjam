@@ -35,7 +35,7 @@ function installFmaj9Row() {
     resetInspector()
 }
 
-function buttonByTitle(wrapper, prefix) {
+function speaker(wrapper, prefix) {
     return wrapper.findAll('button').find(button => (button.attributes('title') || '').startsWith(prefix))
 }
 
@@ -68,42 +68,38 @@ describe('ChordInspector audition labels', () => {
         globals.currentChordBeingJammed.source = saved.jammed.source
     })
 
-    it('names the normalised speaker, the custom speaker and the switch link', async () => {
+    it('names both speakers and keeps the old mode clutter out', async () => {
         installFmaj9Row()
         const wrapper = mount(ChordInspector, { attachTo: document.body })
         try {
             await nextTick()
             await nextTick()
 
-            // The panel opened on the custom Fmaj9 row.
-            assert.equal(globals.chordInspector.voicingMode, 'custom')
-            assert.deepEqual(globals.chordInspector.notes, ['C3', 'E3', 'G3', 'A3', 'F3'])
-
-            const expectedAutoNotes = autoNotesFor(
+            const expectedAuto = autoNotesFor(
                 globals.chordPicker.currentRoot,
                 globals.chordPicker.currentChord,
                 0,
             )
-            assert.notDeepEqual(expectedAutoNotes, ['C3', 'E3', 'G3', 'A3', 'F3'], 'normalised voicing differs from the draft')
-
-            // The chord-row speaker plays the normalised voicing.
-            const normalisedSpeaker = buttonByTitle(wrapper, 'Hear the normalised voicing')
+            const normalisedSpeaker = speaker(wrapper, 'Hear the normalised voicing')
+            const customSpeaker = speaker(wrapper, 'Hear the custom voicing')
             assert.ok(normalisedSpeaker, 'normalised speaker exists')
-            assert.match(normalisedSpeaker.attributes('title'), new RegExp(expectedAutoNotes.join(' ')))
-
-            // The notes-row speaker plays the custom voicing.
-            const customSpeaker = buttonByTitle(wrapper, 'Hear the custom voicing')
             assert.ok(customSpeaker, 'custom speaker exists')
-            assert.match(customSpeaker.attributes('title'), /C3 E3 G3 A3 F3/)
+            assert.equal(normalisedSpeaker.attributes('title'), `Hear the normalised voicing: ${expectedAuto.join(' ')}`)
+            assert.equal(customSpeaker.attributes('title'), 'Hear the custom voicing: C3 E3 G3 A3 F3')
 
-            // The switch link names the normalised voicing it will use.
-            const link = wrapper.findAll('button').find(button => button.text().startsWith('Use normalised voicing'))
-            assert.ok(link, 'switch link exists')
-            assert.equal(link.text(), `Use normalised voicing (${expectedAutoNotes.join(' ')})`)
+            // Radio labels rather than tags or chips.
+            const labels = wrapper.findAll('.radio-label').map(label => label.text())
+            assert.deepEqual(labels, ['Normalised', 'Custom'])
+            assert.ok(!wrapper.find('.mode-chip').exists(), 'no header chip')
+            assert.ok(!wrapper.find('.voicing-tag').exists(), 'no mode tag')
+            assert.ok(!wrapper.text().includes('store as'), 'no store-as dropdown')
 
-            // The tag now says Normalised, not Auto.
-            assert.ok(wrapper.text().includes('Normalised'), 'normalised wording is used')
-            assert.ok(!wrapper.text().includes('Revert to auto'), 'old wording is gone')
+            // Both speakers stay after switching, so the other voicing is
+            // always audible without switching.
+            await wrapper.find('.voicing-row input[value="normalised"]').setValue(true)
+            await nextTick()
+            assert.equal(speaker(wrapper, 'Hear the normalised voicing').attributes('title'), `Hear the normalised voicing: ${expectedAuto.join(' ')}`)
+            assert.equal(speaker(wrapper, 'Hear the custom voicing').attributes('title'), 'Hear the custom voicing: C3 E3 G3 A3 F3')
         }
         finally {
             wrapper.unmount()

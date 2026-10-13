@@ -3,7 +3,7 @@ import * as Tonal from '@tonaljs/tonal'
 import { globals } from './globals.js'
 import { arraysAreEqual } from './array-tools.js'
 import { bassPitchClass } from './chordAddHelpers.js'
-import { createChordSymbol, normaliseNoteName, parseNoteInput, sortNotes } from './note-tools.js'
+import { createChordSymbol, normaliseNoteName, parseNotesWithBass, sortNotes } from './note-tools.js'
 import { chordSymbolToNotesInversion } from './chordSymbolToNotes.js'
 import { removeBassSlash } from './removeBassSlash.js'
 import { calcAllChordSymbols } from './calcAllChordSymbols.js'
@@ -101,6 +101,34 @@ function clearPlayedVoicing() {
   ins.playedSymbols = []
 }
 
+/** Forget the custom voicing row (the normalised row is computed). */
+function clearCustomVoicing() {
+  const ins = inspector()
+  ins.customNotes = []
+  ins.customSymbol = ''
+  ins.customSymbols = []
+}
+
+/**
+ * Reset the bass to automatic (blank). Called whenever the chord identity is
+ * replaced (a played chord, a Root/Chord change, transpose, step, a chord
+ * link, or a new project), so a slash from the previous chord cannot linger.
+ * Note edits and voicing switches keep the bass.
+ */
+function resetBassToAuto() {
+  globals.chordPicker.currentBass = ''
+  globals.chordPicker.bassAuto = true
+}
+
+/** The notes the normalised row shows for the current pickers. */
+export function normalisedVoicingNotes() {
+  return autoNotesFor(
+    globals.chordPicker.currentRoot,
+    globals.chordPicker.currentChord,
+    globals.chordPicker.currentChordInversion,
+  )
+}
+
 /** Remember the exact played notes as the toggle alternative. */
 function rememberPlayedVoicing(captured) {
   const ins = inspector()
@@ -163,6 +191,7 @@ export function loadDraftFromSlot(triggerNote = globals.currentChordTriggerNote)
       ? [...globals.currentChordBeingJammed.chordNotes]
       : []
     clearPlayedVoicing()
+    clearCustomVoicing()
     return false
   }
   const root = chordRootFromSymbol(config.chord)
@@ -170,15 +199,29 @@ export function loadDraftFromSlot(triggerNote = globals.currentChordTriggerNote)
   globals.chordPicker.currentRoot = root
   globals.chordPicker.currentChord = quality
   globals.chordPicker.currentBass = config.bass ? normaliseNoteName(config.bass) : ''
+  // A stored bass is the user's choice; a blank one stays automatic, so typing
+  // notes with a slash can still fill it.
+  globals.chordPicker.bassAuto = !config.bass
   globals.chordPicker.currentChordInversion = 0
 
   const derived = autoNotesFor(root, quality, 0)
   const notes = Array.isArray(config.chordNotes) ? [...config.chordNotes] : []
+  const isCustom = notes.length > 0 && !arraysAreEqual(notes, derived)
   const ins = inspector()
   ins.notes = notes
-  ins.voicingMode = notes.length > 0 && !arraysAreEqual(notes, derived) ? 'custom' : 'auto'
+  ins.voicingMode = isCustom ? 'custom' : 'auto'
   ins.symbol = config.chord ?? ''
   ins.symbols = splitSymbols(config.symbols, config.chord)
+  // A stored custom voicing fills the custom row; a normalised one leaves it
+  // empty so the two rows start clean.
+  if (isCustom) {
+    ins.customNotes = [...notes]
+    ins.customSymbol = config.chord ?? ''
+    ins.customSymbols = splitSymbols(config.symbols, config.chord)
+  }
+  else {
+    clearCustomVoicing()
+  }
   ins.slotId = config.id ?? null
   ins.triggerNote = triggerNote ?? ''
   // A chord played before this row was selected belongs to the previous
@@ -242,7 +285,9 @@ export function resetInspector() {
   ins.capturedIgnored = Array.isArray(globals.currentChordBeingJammed.chordNotes)
     ? [...globals.currentChordBeingJammed.chordNotes]
     : []
+  resetBassToAuto()
   clearPlayedVoicing()
+  clearCustomVoicing()
 }
 
 /** Load a chord symbol straight into the draft identity (Auto voicing). */
@@ -251,32 +296,125 @@ export function setFromSymbol(symbol) {
   if (chordObj.empty)
     return false
   globals.chordPicker.currentRoot = normaliseNoteName(chordObj.tonic)
-  globals.chordPicker.currentBass = normaliseNoteName(chordObj.tonic)
   globals.chordPicker.currentChord = chordObj.aliases[0] || 'M'
   globals.chordPicker.currentChordInversion = 0
+  resetBassToAuto()
   clearPlayedVoicing()
   applyAuto()
   return true
 }
 
 /**
- * Change the chord identity (root and quality); the voicing resets to Auto.
- * The bass follows the new root, so selecting a different chord type never
- * leaves an unrelated bass note underneath (the old bug where only changing
- * the root moved the bass).
+ * Change the chord identity (root and quality); the voicing resets to Auto and
+ * any lingering slash bass is cleared, since the bass belongs to the chord.
  */
 export function setIdentity(root, quality) {
   globals.chordPicker.currentRoot = root
   globals.chordPicker.currentChord = quality
   globals.chordPicker.currentChordInversion = 0
-  globals.chordPicker.currentBass = normaliseNoteName(root)
+  resetBassToAuto()
   clearPlayedVoicing()
   applyAuto()
 }
 
-/** Change only the bass. The voicing (and its Auto/Custom state) is untouched. */
+/**
+ * Change the bass (the picker, the custom-row field or a typed '/bass' token).
+ * A value set here is the user's explicit choice, so detected slash basses no
+ * longer overwrite it.
+ */
 export function setBass(bass) {
   globals.chordPicker.currentBass = bass ? normaliseNoteName(bass) : ''
+  globals.chordPicker.bassAuto = false
+}
+
+/**
+ * Set the bass from the custom-row field. Returns false when the text is not
+ * a note, so the field can show a hint instead of silently clearing.
+ * @returns {boolean}
+ */
+export function applyBassEntry(text) {
+  const value = String(text ?? '').trim()
+  if (!value) {
+    setBass('')
+    return true
+  }
+  const parsed = Tonal.Note.get(value)
+  if (parsed.empty || !parsed.pc)
+    return false
+  setBass(parsed.pc)
+  return true
+}
+
+/** A header label with the slash bass, e.g. 'CM/G'. Omits a root bass. */
+export function headerSymbol() {
+  const ins = inspector()
+  const root = globals.chordPicker.currentRoot
+  const symbol = ins.voicingMode === 'custom' && ins.symbol
+    ? ins.symbol
+    : autoSymbolFor(root, globals.chordPicker.currentChord)
+  const bassPc = normaliseNoteName(bassPitchClass(globals.chordPicker.currentBass))
+  const rootPc = normaliseNoteName(root)
+  if (bassPc && rootPc && bassPc !== rootPc)
+    return `${symbol}/${bassPc}`
+  return symbol
+}
+
+/**
+ * Select the custom voicing row. If there is no custom voicing yet, the
+ * current normalised notes become its starting point so it can be tweaked.
+ * The normalised row is never touched.
+ */
+export function chooseCustom() {
+  const ins = inspector()
+  if (!Array.isArray(ins.customNotes) || ins.customNotes.length === 0) {
+    ins.customNotes = [...ins.notes]
+    ins.customSymbol = ins.symbol
+    ins.customSymbols = [...ins.symbols]
+  }
+  ins.notes = [...ins.customNotes]
+  ins.symbol = ins.customSymbol
+  ins.symbols = [...ins.customSymbols]
+  ins.voicingMode = 'custom'
+  return true
+}
+
+/**
+ * Select the normalised voicing row: regenerate its notes from the pickers.
+ * The custom row is kept as it is, so switching back and forth never loses
+ * either voicing.
+ */
+export function chooseNormalised() {
+  applyAuto()
+  return true
+}
+
+/**
+ * Throw the custom voicing away and go back to the normalised row. Used when
+ * the custom notes field is cleared.
+ */
+export function discardCustom() {
+  clearCustomVoicing()
+  applyAuto()
+  return true
+}
+
+/**
+ * Rename the chord while keeping a Custom voicing: the pickers are the label
+ * only and never touch the notes or the Bass field.
+ */
+export function renameDraft(root, quality) {
+  globals.chordPicker.currentRoot = root
+  globals.chordPicker.currentChord = quality
+  globals.chordPicker.currentChordInversion = 0
+  // The name changed, so a slash from the old chord is cleared.
+  resetBassToAuto()
+  const ins = inspector()
+  const symbol = autoSymbolFor(root, quality)
+  ins.symbol = symbol
+  ins.symbols = [symbol]
+  // The name belongs to the chord, so the custom row's label follows it too.
+  ins.customSymbol = symbol
+  ins.customSymbols = [symbol]
 }
 
 /** Invert the draft voicing, keeping the identity. */
@@ -294,17 +432,21 @@ export function setInversion(inversion) {
 function applySymbolToIdentity(symbol) {
   if (!symbol)
     return
-  const [plain, bass] = removeBassSlash(symbol)
+  const [plain] = removeBassSlash(symbol)
   const chordObj = Tonal.Chord.get(plain)
   if (chordObj.empty)
     return
-  globals.chordPicker.currentRoot = normaliseNoteName(chordObj.tonic)
-  globals.chordPicker.currentChord = chordObj.aliases[0] || 'M'
+  const previousRoot = globals.chordPicker.currentRoot
+  const previousQuality = globals.chordPicker.currentChord
+  const root = normaliseNoteName(chordObj.tonic)
+  const quality = chordObj.aliases[0] || 'M'
+  // A different chord clears a lingering slash bass; retyping the same chord
+  // keeps it (an explicit bass should survive note edits).
+  if (root !== previousRoot || quality !== previousQuality)
+    resetBassToAuto()
+  globals.chordPicker.currentRoot = root
+  globals.chordPicker.currentChord = quality
   globals.chordPicker.currentChordInversion = 0
-  // The bass follows the new chord: an explicit slash bass when the symbol
-  // carries one, otherwise the new root. Without this a typed chord kept the
-  // previous bass and sounded with an unrelated low note.
-  globals.chordPicker.currentBass = normaliseNoteName(bass || chordObj.tonic)
 }
 
 /** Store exact notes as a Custom voicing and re-name them on the picker. */
@@ -318,27 +460,57 @@ export function setNotes(notes) {
   // draft directly and keeps the alternative.
   clearPlayedVoicing()
   ins.voicingMode = 'custom'
+  // The typed notes are the custom row, and the active voicing is custom.
+  ins.customNotes = [...ins.notes]
   const detected = Tonal.Chord.detect(ins.notes)
   if (detected.length > 0) {
+    // The name is plain; a detected slash bass fills the shared Bass field
+    // while it is still automatic (see applyDetectedBass).
+    const [plain] = removeBassSlash(detected[0])
     ins.symbols = detected
-    ins.symbol = detected[0]
-    // The picker follows the notes: root, quality, bass and inversion all
-    // update so the combos never disagree with what sounds.
+    ins.symbol = plain
+    ins.customSymbols = [...detected]
+    ins.customSymbol = plain
+    // The picker follows the notes: root, quality and inversion all update so
+    // the combos never disagree with what sounds.
     applySymbolToIdentity(detected[0])
+    applyDetectedBass(removeBassSlash(detected[0])[1])
   }
   else {
-    // No name for these notes: the identity stays as it is, but the bass must
-    // follow the voicing or it would sound an unrelated low note.
-    globals.chordPicker.currentBass = lowestNotePitchClass(ins.notes)
+    ins.customSymbol = ins.symbol
+    ins.customSymbols = [...ins.symbols]
+    applyDetectedBass('')
   }
 }
 
-/** The pitch class of the lowest note of a voicing, e.g. ['E3','C4'] -> 'E'. */
-function lowestNotePitchClass(notes) {
-  if (!Array.isArray(notes) || notes.length === 0)
-    return ''
-  const sorted = sortNotes([...notes])
-  return normaliseNoteName(bassPitchClass(sorted[0]))
+/**
+ * Keep the Bass field following the typed notes while it is automatic: a
+ * detected slash bass is applied, and losing the slash clears it again. A bass
+ * the user picked or typed is left alone.
+ */
+function applyDetectedBass(bass) {
+  if (!globals.chordPicker.bassAuto)
+    return
+  globals.chordPicker.currentBass = bass ? normaliseNoteName(bass) : ''
+}
+
+/**
+ * Apply a typed notes entry, including an optional '/bass' token.
+ * @returns {{ recognised: boolean, invalidBass: string }}
+ */
+export function applyNotesEntry(text) {
+  const { notes, bass, invalidBass } = parseNotesWithBass(text)
+  let recognised = false
+  if (notes.length > 0) {
+    // Fold theoretical spellings so typing E# G# B# stores F Ab C and names
+    // the chord Fm. Normal spellings, including flats such as Eb, are left.
+    setNotes(notes.map(note => Tonal.Note.simplify(note)))
+    recognised = true
+  }
+  // An explicit '/bass' token wins over any detected slash bass.
+  if (bass)
+    setBass(bass)
+  return { recognised, invalidBass }
 }
 
 /**
@@ -346,13 +518,7 @@ function lowestNotePitchClass(notes) {
  * @returns {boolean} whether any notes were recognised
  */
 export function setNotesFromText(text) {
-  const notes = parseNoteInput(text)
-  if (notes.length === 0)
-    return false
-  // Fold theoretical spellings so typing E# G# B# stores F Ab C and names the
-  // chord Fm. Normal spellings, including flats such as Eb, are left as typed.
-  setNotes(notes.map(note => Tonal.Note.simplify(note)))
-  return true
+  return applyNotesEntry(text).recognised
 }
 
 /** The last played chord, before it auto-applies to the draft. */
@@ -462,12 +628,12 @@ export function canAddRow() {
 }
 
 /**
- * Apply a fresh capture immediately: the picker follows the detected chord
- * and the draft starts on its normalised voicing, while the exact played
- * notes are kept for toggling. Undetectable notes keep the picker and load
- * as Custom. Runs both while editing a row and when no rows exist yet, so a
- * new project gets a pending draft at once; otherwise the capture stays
- * available for Add row.
+ * Apply a fresh capture immediately: the pickers follow the detected chord.
+ * If the played notes are the normalised voicing for that chord, Normalised is
+ * selected; otherwise the played notes become the custom voicing and Custom is
+ * selected. Undetectable notes always load as Custom. Runs both while editing a
+ * row and when no rows exist yet, so a new project gets a pending draft at
+ * once; otherwise the capture stays available for Add row.
  */
 export function autoApplyCaptured() {
   const captured = capturedInfo()
@@ -475,50 +641,63 @@ export function autoApplyCaptured() {
     return false
   const ins = inspector()
   rememberPlayedVoicing(captured)
+  // A freshly played chord is a new chord, so a slash from the previous one is
+  // cleared. The grid derives the low root later (played chords do not fill it).
+  resetBassToAuto()
 
   const [plain] = removeBassSlash(captured.chord || captured.symbols?.[0] || '')
   const chordObj = plain ? Tonal.Chord.get(plain) : null
   if (captured.chord && chordObj && !chordObj.empty) {
     applySymbolToIdentity(captured.chord)
-    // A played slash bass wins; otherwise applySymbolToIdentity already set
-    // the new root, so no stale bass can survive.
-    if (captured.bass)
-      globals.chordPicker.currentBass = normaliseNoteName(captured.bass)
-    applyAuto()
-  }
-  else {
-    ins.notes = sortNotes([...captured.notes])
-    ins.voicingMode = 'custom'
-    // The bass follows the lowest played note, so an unnamed voicing still
-    // sounds as played instead of keeping the previous chord's bass.
-    globals.chordPicker.currentBass = lowestNotePitchClass(ins.notes)
-    if (captured.chord) {
-      ins.symbol = captured.chord
-      ins.symbols = captured.symbols.length > 0 ? [...captured.symbols] : ins.symbols
+    const playedNotes = sortNotes([...captured.notes])
+    const normalisedNotes = sortNotes(normalisedVoicingNotes())
+    if (arraysAreEqual(playedNotes, normalisedNotes)) {
+      // The played chord already is the normalised voicing: select it.
+      applyAuto()
+    }
+    else {
+      // Otherwise the played notes are the custom voicing.
+      setPlayedAsCustom(captured, playedNotes)
     }
   }
+  else {
+    setPlayedAsCustom(captured, sortNotes([...captured.notes]))
+  }
 
-  // Consumed: the watcher sees no fresh capture, but the played toggle stays.
+  // Consumed: the watcher sees no fresh capture, but the played notes stay
+  // available for the Capture button.
   ins.capturedIgnored = [...captured.notes]
   return true
 }
 
+/** Fill the custom row from a capture and select it. */
+function setPlayedAsCustom(captured, notes) {
+  const ins = inspector()
+  const [plain] = removeBassSlash(captured.chord || captured.symbols?.[0] || '')
+  ins.customNotes = [...notes]
+  ins.customSymbol = plain || ins.symbol
+  ins.customSymbols = captured.symbols.length > 0 ? [...captured.symbols] : [...ins.symbols]
+  ins.notes = [...notes]
+  ins.symbol = ins.customSymbol
+  ins.symbols = [...ins.customSymbols]
+  ins.voicingMode = 'custom'
+}
+
 /**
- * Switch the draft to the played voicing. Works both for a fresh capture
- * and for the kept alternative after auto-apply, so the two voicings can be
- * compared back and forth until Save.
+ * Capture the played notes into the custom voicing row and select it. Works
+ * for a fresh capture and for the kept played notes after auto-apply, so the
+ * played voicing can be restored after editing the custom row. The Bass field
+ * is the user's own and is never set here.
  */
 export function useCapturedNotes() {
   const ins = inspector()
   const fresh = capturedInfo()
   let notes = []
-  let bass = ''
   let chord = ''
   let symbols = []
   if (fresh.available) {
     rememberPlayedVoicing(fresh)
     notes = sortNotes([...fresh.notes])
-    bass = fresh.bass || ''
     chord = fresh.chord || ''
     symbols = [...fresh.symbols]
     ins.capturedIgnored = [...fresh.notes]
@@ -526,31 +705,30 @@ export function useCapturedNotes() {
   else if (hasPlayedVoicing()) {
     const played = playedVoicingInfo()
     notes = [...played.notes]
-    bass = played.bass || ''
     chord = played.chord || ''
     symbols = [...played.symbols]
   }
   else {
     return false
   }
+  const [plain] = removeBassSlash(chord)
+  ins.customNotes = [...notes]
+  ins.customSymbol = plain || ins.symbol
+  ins.customSymbols = symbols.length > 0 ? [...symbols] : [...ins.symbols]
   ins.notes = [...notes]
+  ins.symbol = ins.customSymbol
+  ins.symbols = [...ins.customSymbols]
   ins.voicingMode = 'custom'
-  ins.symbol = chord || ins.symbol
-  ins.symbols = symbols.length > 0 ? [...symbols] : ins.symbols
   if (chord)
     applySymbolToIdentity(chord)
-  if (bass)
-    globals.chordPicker.currentBass = normaliseNoteName(bass)
   return true
 }
 
 /**
- * Rebuild the normalised voicing from the current identity and reset the bass
- * to the chord root, so the Auto voicing is fully normalised. The played
- * alternative keeps its own bass, so the two can be compared until Save.
+ * Rebuild the normalised voicing from the current identity. The Bass field is
+ * the user's own and is left alone. The custom row is not touched.
  */
 export function revertToAuto() {
-  globals.chordPicker.currentBass = normaliseNoteName(globals.chordPicker.currentRoot)
   applyAuto()
 }
 
@@ -559,7 +737,9 @@ export function saveDraft() {
   const ins = inspector()
   if (!globals.isProjectLoaded || ins.slotId == null)
     return false
-  if (ins.voicingMode === 'auto') {
+  // A selected but empty custom row falls back to the normalised voicing, so
+  // an empty voicing can never be stored.
+  if (ins.voicingMode === 'auto' || ins.notes.length === 0) {
     replaceCurrentChord(
       globals.chordPicker.currentRoot,
       globals.chordPicker.currentChord,
@@ -702,23 +882,33 @@ export function deleteDraft() {
   return true
 }
 
-/** Move the draft root by semitones, keeping the quality. Resets to Auto. */
+/** Move the draft root by semitones, keeping the quality. Custom renames only. */
 export function transposeDraft(semitones) {
   const newRoot = normaliseNoteName(
     Tonal.Note.transpose(globals.chordPicker.currentRoot, Tonal.Interval.fromSemitones(semitones)))
-  setIdentity(newRoot, globals.chordPicker.currentChord)
+  if (inspector().voicingMode === 'custom')
+    renameDraft(newRoot, globals.chordPicker.currentChord)
+  else
+    setIdentity(newRoot, globals.chordPicker.currentChord)
 }
 
-/** Move the draft root by fifths, keeping the quality. Resets to Auto. */
+/** Move the draft root by fifths, keeping the quality. Custom renames only. */
 export function fifthDraft(direction) {
   const newRoot = normaliseNoteName(
     Tonal.Note.transposeFifths(globals.chordPicker.currentRoot, direction))
-  setIdentity(newRoot, globals.chordPicker.currentChord)
+  if (inspector().voicingMode === 'custom')
+    renameDraft(newRoot, globals.chordPicker.currentChord)
+  else
+    setIdentity(newRoot, globals.chordPicker.currentChord)
 }
 
-/** Invert the draft voicing up or down. */
+/**
+ * Invert the normalised voicing up or down. The Bass field is the user's own
+ * and is left alone; on save the derived bass is the voicing's lowest note.
+ * With Custom selected only the normalised row changes, so nothing is lost.
+ */
 export function invertDraft(direction) {
-  const { bass, inversion } = calcChordInversionNumberAndNewBass(
+  const { inversion } = calcChordInversionNumberAndNewBass(
     globals.chordPicker.currentRoot,
     globals.chordPicker.currentChord,
     globals.chordPicker.currentChordInversion,
@@ -726,8 +916,9 @@ export function invertDraft(direction) {
     direction,
   )
   globals.chordPicker.currentChordInversion = inversion
-  globals.chordPicker.currentBass = bass
   clearPlayedVoicing()
+  if (inspector().voicingMode === 'custom')
+    return
   applyAuto()
 }
 
@@ -745,7 +936,10 @@ export function stepChord(direction) {
     index = (index - 1 + options.length) % options.length
   else if (direction === 'random')
     index = Math.floor(Math.random() * options.length)
-  setIdentity(globals.chordPicker.currentRoot, options[index].value)
+  if (inspector().voicingMode === 'custom')
+    renameDraft(globals.chordPicker.currentRoot, options[index].value)
+  else
+    setIdentity(globals.chordPicker.currentRoot, options[index].value)
 }
 
 /**
