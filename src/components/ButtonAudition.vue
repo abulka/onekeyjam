@@ -1,6 +1,7 @@
 <script setup>
 import { auditionNotes } from '../../src/lib/auditionNotes'
 import { forgetHover, rememberHover } from '@/lib/auditionHover.js'
+import { ensureAudioReady } from '@/lib/audio/general-midi.js'
 
 defineProps(['notes', 'bass'])
 
@@ -16,7 +17,14 @@ There are three ways to play the notes in a chord:
 Here we support 3.  
 */
 
-function auditionMouseDown(notes, bass, state) {
+function auditionPress(notes, bass) {
+    // A click is a decisive gesture, so waking audio here is allowed. Hover
+    // never wakes because each attempt logs a browser warning while suspended.
+    try { ensureAudioReady() } catch { /* audio not booted yet */ }
+    auditionHover(notes, bass, true)
+}
+
+function auditionHover(notes, bass, state) {
     // Play notes without changing the current chord config.
     // An empty note list (for example before anything has been jammed) is a
     // silent no-op so hovering or clicking never throws.
@@ -42,14 +50,14 @@ function auditionMouseDown(notes, bass, state) {
 
 <template>
     <button class="grey ui circular compact icon button"
-        @mousedown="auditionMouseDown(notes, bass, true)"
-        @mouseenter="auditionMouseDown(notes, bass, true)"
-        @touchstart.prevent="auditionMouseDown(notes, bass, true)"
+        @mousedown="auditionPress(notes, bass)"
+        @mouseenter="auditionHover(notes, bass, true)"
+        @touchstart.prevent="auditionPress(notes, bass)"
 
-        @mouseleave="auditionMouseDown(notes, bass, false)"
-        @mouseup="auditionMouseDown(notes, bass, false)"
-        @touchend.prevent="auditionMouseDown(notes, bass, false)"
-        @touchcancel="auditionMouseDown(notes, bass, false)"
+        @mouseleave="auditionHover(notes, bass, false)"
+        @mouseup="auditionHover(notes, bass, false)"
+        @touchend.prevent="auditionHover(notes, bass, false)"
+        @touchcancel.prevent="auditionHover(notes, bass, false)"
         >
         <i class="volume up icon"></i>
     </button>

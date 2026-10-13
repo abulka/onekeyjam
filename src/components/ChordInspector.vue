@@ -10,6 +10,8 @@ import {
   saveDraft,
   revertDraft,
   openForSlot,
+  resetInspector,
+  isDraftConsistentWithProject,
   addRow,
   duplicateDraft,
   deleteDraft,
@@ -21,6 +23,14 @@ import {
   revertToAuto,
   useCapturedNotes,
   capturedInfo,
+  autoApplyCaptured,
+  hasPlayedVoicing,
+  playedVoicingInfo,
+  previewAutoVoicing,
+  isUsingPlayedVoicing,
+  hasPendingChord,
+  canAddRow,
+  resolveEnterAction,
   transposeDraft,
   fifthDraft,
   invertDraft,
@@ -32,6 +42,7 @@ import {
   previewInvert,
   previewStep,
 } from '@/lib/chordInspector.js'
+import { isTypingTarget } from '@/lib/is-typing-target.js'
 import { linkProjectToKeyboard } from '@/lib/boot-project.js'
 import { flushCurrentProject } from '@/lib/currentProjectStore.js'
 import { auditionNotes } from '@/lib/auditionNotes.js'
@@ -131,8 +142,23 @@ const nameOptions = computed(() => nameOptionsFor({
   fallbackSymbol: globals.chordInspector.symbol,
 }))
 
-// Played notes wait here until the user asks for them.
+// Played notes auto-update the draft to the detected chord. The captured
+// value is only the fresh arrival; the played value is the kept alternative
+// for toggling against the normalised voicing until Save or Add.
 const captured = computed(() => capturedInfo())
+const hasPlayed = computed(() => hasPlayedVoicing())
+const played = computed(() => playedVoicingInfo())
+const autoPreview = computed(() => previewAutoVoicing())
+const usingPlayed = computed(() => isUsingPlayedVoicing())
+const hasPending = computed(() => hasPendingChord())
+const canAdd = computed(() => canAddRow())
+// What the main audition button plays: the draft when it holds notes,
+// otherwise the normalised picker voicing so empty pending still sounds.
+const auditionDraftNotes = computed(() => {
+  if (Array.isArray(inspector.value.notes) && inspector.value.notes.length > 0)
+    return inspector.value.notes
+  return autoPreview.value.notes ?? []
+})
 
 // ┌─┐┌─┐┌┬┐┬┌─┐┌┐┌┌─┐
 // ├─┤│ │ │ ││ ││││└─┐
@@ -148,10 +174,24 @@ function afterWrite() {
     })
 }
 
+/**
+ * Return focus to the page after a row action. A button left focused would
+ * swallow the next Enter press and repeat its own action (the old bug where
+ * Enter after Add made another row instead of saving the played chord).
+ */
+function blurActionButton() {
+  if (typeof document === 'undefined')
+    return
+  const el = document.activeElement
+  if (el && typeof el.blur === 'function' && el.tagName === 'BUTTON')
+    el.blur()
+}
+
 function onSave() {
   applyNotes()
   if (saveDraft()) {
     afterWrite()
+    blurActionButton()
     flash('Chord saved')
   }
 }
@@ -161,13 +201,21 @@ function onRevert() {
 }
 
 function onAdd() {
-  if (addRow())
+  applyNotes()
+  if (addRow()) {
     afterWrite()
+    blurActionButton()
+    notesFocused.value = false
+    notesText.value = globals.chordInspector.notes.join(' ')
+    flash('Chord added')
+  }
 }
 
 function onDuplicate() {
-  if (duplicateDraft())
+  if (duplicateDraft()) {
     afterWrite()
+    blurActionButton()
+  }
 }
 
 function onDelete() {
@@ -183,6 +231,10 @@ function onToggleFavourite() {
 
 function onUseCaptured() {
   useCapturedNotes()
+}
+
+function onRevertAuto() {
+  revertToAuto()
 }
 
 /**
@@ -202,14 +254,16 @@ function onChordPlay(event) {
     refreshAudioHint()
     return
   }
-  const notes = globals.chordInspector.notes
-  if (!Array.isArray(notes) || notes.length === 0)
+  const draftNotes = Array.isArray(globals.chordInspector.notes) && globals.chordInspector.notes.length > 0
+    ? globals.chordInspector.notes
+    : previewAutoVoicing().notes
+  if (!Array.isArray(draftNotes) || draftNotes.length === 0)
     return
   // Key hold is a decisive gesture, so waking here is allowed. Hover paths
   // never wake because each attempt logs a browser warning while suspended.
   try { ensureAudioReady() } catch { /* audio not booted yet */ }
   stopAuditionChord()
-  auditionNotes(notes, globals.chordPicker.currentBass, true)
+  auditionNotes(draftNotes, globals.chordPicker.currentBass, true)
   refreshAudioHint()
 }
 
@@ -275,6 +329,17 @@ function auditionPreview(preview, state) {
   refreshAudioHint()
 }
 
+// Hovering Revert to auto hears the normalised voicing without applying it,
+// so the two voicings can be compared before choosing. Hovering Use played
+// voicing hears the exact played notes the same way.
+function onHoverAuto(state) {
+  auditionPreview(autoPreview.value, state)
+}
+
+function onHoverPlayed(state) {
+  auditionPreview(played.value, state)
+}
+
 function onHoverTranspose(semitones, state) {
   auditionPreview(previewTranspose(semitones), state)
 }
@@ -323,20 +388,63 @@ function flash(message) {
   flashTimer = setTimeout(() => { flashMessage.value = '' }, 1800)
 }
 
-// Enter applies the typed notes to the draft (so the picker and Auto/Custom
-// state update); the project is only changed by an explicit Save changes.
-// Escape reverts the whole draft.
+// Escape reverts the whole draft. Enter is handled globally so it works even
+// when focus is on the piano or body, not just inside the panel.
 function onKeydown(event) {
-  if (event.key === 'Enter') {
-    const el = event.target
-    if (el && el.tagName === 'INPUT') {
-      event.preventDefault()
-      applyNotes()
-    }
-  }
-  else if (event.key === 'Escape' && globals.chordInspector.open) {
+  if (event.key === 'Escape' && globals.chordInspector.open) {
     event.preventDefault()
     onRevert()
+  }
+}
+
+// Enter commits the edit: it saves a dirty row, or adds a pending chord when
+// there is no row yet. It never duplicates a clean row. Buttons in the Save
+// row keep native Enter so there is no double activation. Text areas keep
+// Enter for new lines. Typing in other text fields or picks outside Edit
+// Chords never triggers a commit.
+function onGlobalEnter(event) {
+  if (event.key !== 'Enter' || event.repeat)
+    return
+  if (event.ctrlKey || event.metaKey || event.altKey)
+    return
+  const el = event.target
+  const tag = el?.tagName
+  if (tag === 'TEXTAREA')
+    return
+  if (el?.isContentEditable)
+    return
+  // Save, Add and Revert activate natively when focused; anything else
+  // focused still commits instead of clicking that control.
+  if (tag === 'BUTTON' && typeof el?.closest === 'function' && el.closest('.actions-row') != null)
+    return
+  const inInspector = typeof el?.closest === 'function' && el.closest('.chord-inspector') != null
+  if (!inInspector) {
+    if (isTypingTarget(el))
+      return
+    if (tag === 'SELECT' || tag === 'A')
+      return
+    if (typeof document !== 'undefined' && document.querySelector?.('.ui.modal.visible'))
+      return
+  }
+  event.preventDefault()
+  applyNotes()
+  // A chord detected just before Enter may not have reached the draft yet
+  // (the watcher runs async), so apply it first: highlight, play, Enter then
+  // updates the highlighted row instead of adding a duplicate.
+  autoApplyCaptured()
+  const action = resolveEnterAction()
+  if (action === 'save') {
+    onSave()
+    notesFocused.value = false
+    notesText.value = globals.chordInspector.notes.join(' ')
+    if (el && typeof el.blur === 'function' && el.tagName === 'INPUT')
+      el.blur()
+    return
+  }
+  if (action === 'add') {
+    onAdd()
+    if (el && typeof el.blur === 'function' && el.tagName === 'INPUT')
+      el.blur()
   }
 }
 
@@ -354,16 +462,16 @@ onMounted(() => {
   // "create a row", the same as the + Add chord button.
   document.addEventListener('chord-add', onAdd)
   document.addEventListener('chord-play', onChordPlay)
+  window.addEventListener('keydown', onGlobalEnter)
   refreshAudioHint()
   window.addEventListener('pointerdown', onAudioUnlockEvent)
   window.addEventListener('keydown', onAudioUnlockEvent)
   window.addEventListener('click', onAudioUnlockEvent)
 })
 
-// Show the highlighted slot as soon as a project is loaded, and whenever the
-// project changes. Never throw away an unsaved edit afterwards.
-watch(() => globals.isProjectLoaded, (loaded) => {
-  if (!loaded)
+/** Open the selected trigger, or the first row, when the grid has rows. */
+function openCurrentOrFirstSlot() {
+  if (!globals.isProjectLoaded)
     return
   const map = globals.chordTriggerMap ?? {}
   const note = globals.currentChordTriggerNote in map
@@ -371,7 +479,38 @@ watch(() => globals.isProjectLoaded, (loaded) => {
     : Object.keys(map)[0]
   if (note)
     openForSlot(note)
+}
+
+// A replaced project object (New, project switch, boot restore) ends the old
+// draft: reset it, then open the current or first slot when the grid has rows.
+// Watching the reference only fires on project replacement; ordinary edits
+// mutate the project in place and must not disturb the draft. The old project's
+// row id and baseline must never linger, or an empty new project would still
+// show Save changes next to Add as new chord.
+//
+// The first run happens at mount and must not throw away a valid draft (a
+// pending played chord survives a trip to the Perform page). There it only
+// repairs a draft left over from a project replaced while this panel was away.
+watch(() => globals.project, (project, previous) => {
+  if (previous !== undefined) {
+    resetInspector()
+    openCurrentOrFirstSlot()
+    return
+  }
+  if (!isDraftConsistentWithProject())
+    resetInspector()
+  if (globals.chordInspector.slotId == null && !hasPendingChord())
+    openCurrentOrFirstSlot()
 }, { immediate: true })
+
+// The trigger map is rebuilt separately after a project load, so it can be
+// empty at the moment the project object changes (boot restore). Open the
+// first slot when the grid becomes available.
+watch(() => globals.isProjectLoaded, (loaded) => {
+  if (!loaded)
+    return
+  openCurrentOrFirstSlot()
+})
 
 // Follow the grid as the trigger moves, but never throw away an unsaved edit.
 watch(() => globals.currentChordTriggerNote, (note) => {
@@ -382,11 +521,22 @@ watch(() => globals.currentChordTriggerNote, (note) => {
   openForSlot(note)
 })
 
+// Playing notes updates the draft immediately, both while editing a row and
+// when no rows exist yet. The picker follows the detected chord and the exact
+// notes stay available as the played voicing. The draft replaces any unsaved
+// edit by design.
+watch(captured, (cap) => {
+  if (!cap?.available)
+    return
+  autoApplyCaptured()
+})
+
 onUnmounted(() => {
   stopBrowseAccordion()
   stopTransposeAccordion()
   document.removeEventListener('chord-add', onAdd)
   document.removeEventListener('chord-play', onChordPlay)
+  window.removeEventListener('keydown', onGlobalEnter)
   window.removeEventListener('pointerdown', onAudioUnlockEvent)
   window.removeEventListener('keydown', onAudioUnlockEvent)
   window.removeEventListener('click', onAudioUnlockEvent)
@@ -397,11 +547,16 @@ onUnmounted(() => {
 
 <template>
   <div class="chord-inspector" @keydown="onKeydown">
-    <!-- Title: always says which slot is being edited -->
+    <!-- Title: always says which slot is being edited, or the pending chord -->
     <div class="inspector-header">
       <span class="inspector-title">
         <template v-if="inspector.slotId != null">
           <span class="row-id">Row #{{ inspector.slotId }}</span>
+          <span class="chord-name">{{ previewSymbol }}</span>
+          <span class="chord-notes">[{{ previewNotes }}]</span>
+        </template>
+        <template v-else-if="hasPending">
+          <span class="row-id">New chord</span>
           <span class="chord-name">{{ previewSymbol }}</span>
           <span class="chord-notes">[{{ previewNotes }}]</span>
         </template>
@@ -431,8 +586,8 @@ onUnmounted(() => {
         </select>
       </label>
       <span v-if="picker.currentChordInversion" class="inv-tag">inv {{ picker.currentChordInversion }}</span>
-      <ButtonAudition :notes="inspector.notes" :bass="picker.currentBass" />
-      <span class="field-hint">Plays what will be saved.</span>
+      <ButtonAudition :notes="auditionDraftNotes" :bass="picker.currentBass" />
+      <span class="field-hint">Plays what will be saved or added.</span>
       <span v-if="audioLocked" class="field-hint">Sound is off after refresh. Click or press any key once, then hover again.</span>
     </div>
 
@@ -441,15 +596,18 @@ onUnmounted(() => {
       <label class="field notes-field">Notes
         <input type="text" v-model="notesText" @input="applyNotes"
           @focus="notesFocused = true" @blur="onNotesBlur"
-          title="Press Enter to update the chord picker. Save changes writes it to the row."
+          title="Press Enter to save or add the chord."
           placeholder="e.g. C3 E3 G3" class="notes-input" />
       </label>
       <span class="voicing-tag" :class="inspector.voicingMode === 'auto' ? 'tag-auto' : 'tag-custom'">
         {{ inspector.voicingMode === 'auto' ? 'Auto' : 'Custom' }}
       </span>
       <button v-if="inspector.voicingMode === 'custom'" type="button" class="link-button"
-        title="Rebuild the normalised voicing from the chord name"
-        @click="revertToAuto">Revert to auto</button>
+        title="Hover to hear the normalised voicing, click to use it. The played voicing stays available below."
+        @click="onRevertAuto"
+        @mouseenter="onHoverAuto(true)" @mouseleave="onHoverAuto(false)"
+        @focus="onHoverAuto(true)" @blur="onHoverAuto(false)">Revert to auto</button>
+      <ButtonAudition v-if="inspector.voicingMode === 'custom'" :notes="autoPreview.notes" :bass="autoPreview.bass" />
       <label v-if="inspector.voicingMode === 'custom' && nameOptions.length > 1" class="field">store as
         <select v-model="inspector.symbol">
           <option v-for="name in nameOptions" :key="name" :value="name">{{ name }}</option>
@@ -461,8 +619,22 @@ onUnmounted(() => {
       <template v-else>Custom: these exact notes are what sounds. The chord name above still labels the row.</template>
     </p>
 
-    <!-- Captured: notes played on a MIDI or computer keyboard, applied only on request -->
-    <div v-if="captured.available" class="inspector-row captured-row">
+    <!-- Played voicing: the exact notes just played, kept for toggling against Auto until Save -->
+    <div v-if="hasPlayed" class="inspector-row captured-row">
+      <span class="captured-label" title="The exact notes just played. The draft above starts on the normalised voicing for the same chord.">Played</span>
+      <code>{{ played.chord || 'played' }}</code>
+      <code>[{{ played.notes.join(' ') }}]</code>
+      <ButtonAudition :notes="played.notes" :bass="played.bass" />
+      <button type="button" class="ui tiny button" :disabled="usingPlayed"
+        title="Hover to hear the played voicing, click to use it instead of the normalised voicing. Revert to auto switches back."
+        @click="onUseCaptured"
+        @mouseenter="onHoverPlayed(true)" @mouseleave="onHoverPlayed(false)"
+        @focus="onHoverPlayed(true)" @blur="onHoverPlayed(false)">Use played voicing</button>
+      <span class="field-hint">{{ usingPlayed ? 'Using the played voicing. Revert to auto to compare the normalised version.' : 'Draft is showing the normalised voicing. Use played for your exact notes.' }}</span>
+    </div>
+
+    <!-- Fresh capture when no row is open or auto-apply did not run: kept so Add row can still seed from playing -->
+    <div v-else-if="captured.available" class="inspector-row captured-row">
       <span class="captured-label" title="Notes played just now. They are not applied until you ask.">Captured</span>
       <code>{{ captured.chord }}</code>
       <code>[{{ captured.notes.join(' ') }}]</code>
@@ -470,21 +642,29 @@ onUnmounted(() => {
       <button type="button" class="ui tiny button" @click="onUseCaptured">Use these notes</button>
     </div>
 
-    <!-- Save / Revert, then the row actions -->
+    <!-- With no row there is nothing to save, so only Add is offered -->
     <div class="inspector-row actions-row">
-      <button type="button" class="ui small primary button" :disabled="!dirty || inspector.slotId == null"
-        title="Save changes to this row" @click="onSave">Save changes</button>
-      <button type="button" class="ui small button" :disabled="!dirty" title="Discard the draft (Esc)"
-        @click="onRevert">Revert</button>
-      <span class="actions-divider"></span>
-      <button type="button" class="ui tiny button" title="Add a copy of this chord as a new row"
-        :disabled="inspector.slotId == null" @click="onDuplicate">Duplicate</button>
-      <button type="button" class="ui tiny button" :title="favourite ? 'Remove from favourites' : 'Mark as a favourite'"
-        :disabled="inspector.slotId == null" @click="onToggleFavourite">
-        {{ favourite ? '★ Favourite' : '☆ Favourite' }}
-      </button>
-      <button type="button" class="ui tiny button" title="Delete this row"
-        :disabled="inspector.slotId == null" @click="onDelete">Delete</button>
+      <template v-if="inspector.slotId != null">
+        <button type="button" class="ui small primary button" :disabled="!dirty"
+          title="Save changes to this row (Enter)" @click="onSave">Save changes</button>
+        <button type="button" class="ui small primary button" :disabled="!canAdd"
+          title="Add the current chord as a new row" @click="onAdd">Add as new chord</button>
+        <button type="button" class="ui small button" :disabled="!dirty" title="Discard the draft (Esc)"
+          @click="onRevert">Revert</button>
+        <span class="actions-divider"></span>
+        <button type="button" class="ui tiny button" title="Add a copy of this chord as a new row"
+          @click="onDuplicate">Duplicate</button>
+        <button type="button" class="ui tiny button" :title="favourite ? 'Remove from favourites' : 'Mark as a favourite'"
+          @click="onToggleFavourite">
+          {{ favourite ? '★ Favourite' : '☆ Favourite' }}
+        </button>
+        <button type="button" class="ui tiny button" title="Delete this row"
+          @click="onDelete">Delete</button>
+      </template>
+      <template v-else>
+        <button type="button" class="ui small primary button" :disabled="!canAdd"
+          title="Add the current chord as a new row (Enter)" @click="onAdd">Add as new chord</button>
+      </template>
     </div>
 
     <!-- Browse: a catalogue for dialling up a chord, never the target -->

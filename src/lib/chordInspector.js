@@ -18,16 +18,25 @@ import { keyDetection } from './keyDetection.js'
 /**
  * @module lib/chordInspector
  * @desc The one Chord Inspector. The picker combos, the notes field, the
- * captured chip and the row actions all operate on a single draft that mirrors
- * the selected grid slot. Nothing is stored until `saveDraft`; `revertDraft`
- * reloads the slot. `addRow` appends a new slot and selects it, so "Add" is
- * just "create a row, then edit it".
+ * played voicing switch and the row actions all operate on a single draft.
+ * When a grid slot is selected the draft mirrors it and Save writes back.
+ * When the project has no rows yet, playing still builds a pending new-chord
+ * draft so the picker follows what was played and Add creates the first row.
+ * Nothing is stored until `saveDraft` or `addRow`; `revertDraft` reloads the
+ * slot. `addRow` appends a new slot and selects it, so "Add" is just "create
+ * a row, then edit it".
+ *
+ * Playing notes auto-updates the draft identity to the detected chord and
+ * keeps the exact played notes as the played alternative. The draft starts
+ * on the normalised (Auto) voicing so the picker and the header always
+ * agree; `useCapturedNotes` switches to the played voicing and `revertToAuto`
+ * switches back, and both stay available until save, add, a new capture, or
+ * a row change.
  *
  * The draft's identity lives in `globals.chordPicker` (root, quality, bass,
  * inversion), as the Chord Picker already did. The draft's notes live in
  * `globals.chordInspector.notes`, which is kept separate from
- * `globals.currentChordBeingJammed` so a played chord can never silently
- * overwrite an edit; it only reaches the draft through `useCapturedNotes`.
+ * `globals.currentChordBeingJammed` so only fresh played notes auto-apply.
  */
 
 /** The draft state object. */
@@ -83,6 +92,24 @@ function snapshot() {
   }
 }
 
+/** Forget the played alternative, for example after a manual edit or row change. */
+function clearPlayedVoicing() {
+  const ins = inspector()
+  ins.playedNotes = []
+  ins.playedBass = ''
+  ins.playedChord = ''
+  ins.playedSymbols = []
+}
+
+/** Remember the exact played notes as the toggle alternative. */
+function rememberPlayedVoicing(captured) {
+  const ins = inspector()
+  ins.playedNotes = sortNotes([...captured.notes])
+  ins.playedBass = captured.bass ? normaliseNoteName(captured.bass) : ''
+  ins.playedChord = captured.chord || captured.symbols?.[0] || ''
+  ins.playedSymbols = Array.isArray(captured.symbols) ? [...captured.symbols] : []
+}
+
 /**
  * Rebuild the draft voicing from its identity and mark it Auto. This is what
  * changing root, quality or inversion does, so a custom voicing never lingers
@@ -125,6 +152,17 @@ export function loadDraftFromSlot(triggerNote = globals.currentChordTriggerNote)
     inspector().slotId = null
     inspector().triggerNote = ''
     inspector().baseline = null
+    // No slot means no stale draft: clear notes and the played alternative,
+    // and treat anything already played as seen so a new project does not
+    // inherit a previous context.
+    inspector().notes = []
+    inspector().voicingMode = 'auto'
+    inspector().symbol = ''
+    inspector().symbols = []
+    inspector().capturedIgnored = Array.isArray(globals.currentChordBeingJammed.chordNotes)
+      ? [...globals.currentChordBeingJammed.chordNotes]
+      : []
+    clearPlayedVoicing()
     return false
   }
   const root = chordRootFromSymbol(config.chord)
@@ -144,11 +182,12 @@ export function loadDraftFromSlot(triggerNote = globals.currentChordTriggerNote)
   ins.slotId = config.id ?? null
   ins.triggerNote = triggerNote ?? ''
   // A chord played before this row was selected belongs to the previous
-  // context, so it is not offered as Captured. Only what is played from now on
-  // shows in the chip.
+  // context, so it never auto-applies. Only what is played from now on
+  // updates the draft. Changing rows also forgets the played alternative.
   ins.capturedIgnored = Array.isArray(globals.currentChordBeingJammed.chordNotes)
     ? [...globals.currentChordBeingJammed.chordNotes]
     : []
+  clearPlayedVoicing()
   ins.baseline = snapshot()
   return true
 }
@@ -169,6 +208,43 @@ export function closeInspector() {
   inspector().open = false
 }
 
+/**
+ * True when the draft still belongs to the current project: a draft with no
+ * slot (nothing or a pending chord) is always consistent, and a slot is only
+ * consistent while a row with that id exists. Used on mount to repair state
+ * left over from a project that was replaced while the panel was away.
+ */
+export function isDraftConsistentWithProject() {
+  const ins = inspector()
+  if (ins.slotId == null)
+    return true
+  const configs = Object.values(globals.chordTriggerMap ?? {})
+  return configs.some(config => config.id === ins.slotId)
+}
+
+/**
+ * Forget the whole draft. Called when the project is replaced (New, project
+ * switch, boot restore) so a row id and baseline from the old project can
+ * never linger: a new empty project must offer only Add, never Save.
+ * Anything already played is treated as seen so it cannot auto-apply here.
+ */
+export function resetInspector() {
+  const ins = inspector()
+  ins.open = false
+  ins.mode = 'edit'
+  ins.slotId = null
+  ins.triggerNote = ''
+  ins.voicingMode = 'auto'
+  ins.symbol = ''
+  ins.symbols = []
+  ins.notes = []
+  ins.baseline = null
+  ins.capturedIgnored = Array.isArray(globals.currentChordBeingJammed.chordNotes)
+    ? [...globals.currentChordBeingJammed.chordNotes]
+    : []
+  clearPlayedVoicing()
+}
+
 /** Load a chord symbol straight into the draft identity (Auto voicing). */
 export function setFromSymbol(symbol) {
   const chordObj = Tonal.Chord.get(symbol ?? '')
@@ -178,6 +254,7 @@ export function setFromSymbol(symbol) {
   globals.chordPicker.currentBass = normaliseNoteName(chordObj.tonic)
   globals.chordPicker.currentChord = chordObj.aliases[0] || 'M'
   globals.chordPicker.currentChordInversion = 0
+  clearPlayedVoicing()
   applyAuto()
   return true
 }
@@ -187,6 +264,7 @@ export function setIdentity(root, quality) {
   globals.chordPicker.currentRoot = root
   globals.chordPicker.currentChord = quality
   globals.chordPicker.currentChordInversion = 0
+  clearPlayedVoicing()
   applyAuto()
 }
 
@@ -198,6 +276,7 @@ export function setBass(bass) {
 /** Invert the draft voicing, keeping the identity. */
 export function setInversion(inversion) {
   globals.chordPicker.currentChordInversion = inversion
+  clearPlayedVoicing()
   applyAuto()
 }
 
@@ -226,6 +305,10 @@ export function setNotes(notes) {
   ins.notes = Array.isArray(notes) ? [...notes] : []
   if (ins.notes.length === 0)
     return
+  // Manual typing moves on from any played alternative, so the toggle no
+  // longer offers stale notes. Switching via useCapturedNotes assigns the
+  // draft directly and keeps the alternative.
+  clearPlayedVoicing()
   ins.voicingMode = 'custom'
   const detected = Tonal.Chord.detect(ins.notes)
   if (detected.length > 0) {
@@ -251,7 +334,7 @@ export function setNotesFromText(text) {
   return true
 }
 
-/** The last played chord, offered as the Captured chip. */
+/** The last played chord, before it auto-applies to the draft. */
 export function capturedInfo() {
   const played = globals.currentChordBeingJammed
   const notes = Array.isArray(played.chordNotes) ? played.chordNotes : []
@@ -272,28 +355,180 @@ export function capturedInfo() {
   }
 }
 
+/** True when a played voicing is kept for toggling against Auto. */
+export function hasPlayedVoicing() {
+  const ins = inspector()
+  return Array.isArray(ins.playedNotes) && ins.playedNotes.length > 0
+}
+
+/** The kept played voicing, or an unavailable placeholder. */
+export function playedVoicingInfo() {
+  const ins = inspector()
+  if (!hasPlayedVoicing())
+    return { available: false, chord: '', symbols: [], notes: [], bass: '' }
+  return {
+    available: true,
+    chord: ins.playedChord || ins.playedSymbols?.[0] || '',
+    symbols: Array.isArray(ins.playedSymbols) ? [...ins.playedSymbols] : [],
+    notes: [...ins.playedNotes],
+    bass: ins.playedBass || '',
+  }
+}
+
+/** The normalised voicing for the current identity, for hover previews. */
+export function previewAutoVoicing() {
+  return {
+    notes: autoNotesFor(
+      globals.chordPicker.currentRoot,
+      globals.chordPicker.currentChord,
+      globals.chordPicker.currentChordInversion,
+    ),
+    bass: globals.chordPicker.currentBass || '',
+  }
+}
+
+/** True when the draft is currently showing the kept played voicing. */
+export function isUsingPlayedVoicing() {
+  const ins = inspector()
+  if (!hasPlayedVoicing() || ins.voicingMode !== 'custom')
+    return false
+  return arraysAreEqual(ins.notes, ins.playedNotes ?? [])
+}
+
 /**
- * Copy the captured (played) notes into the draft as a Custom voicing. Played
- * notes never reach the draft on their own.
+ * True when there is a pending new chord without a slot: played notes were
+ * kept or the draft holds notes while no row is selected. Used for the
+ * header and for enabling Add in an empty project.
  */
-export function useCapturedNotes() {
+export function hasPendingChord() {
+  const ins = inspector()
+  if (ins.slotId != null)
+    return false
+  if (hasPlayedVoicing())
+    return true
+  return Array.isArray(ins.notes) && ins.notes.length > 0
+}
+
+/**
+ * What Enter should do: 'save' when a dirty row is open, 'add' when there is
+ * no row but something playable is waiting, otherwise 'none' so Enter never
+ * duplicates a clean row or fires with nothing to commit.
+ * @returns {'save' | 'add' | 'none'}
+ */
+export function resolveEnterAction() {
+  const ins = inspector()
+  if (ins.slotId != null && isDirty())
+    return 'save'
+  if (ins.slotId == null && canAddRow())
+    return 'add'
+  return 'none'
+}
+
+/**
+ * True when Add as new chord can create a row: the draft holds playable
+ * notes, a played alternative is kept, or a fresh capture is waiting. Works
+ * both with no slots yet and while editing a row.
+ */
+export function canAddRow() {
+  if (!globals.project || !Array.isArray(globals.project.chords))
+    return false
+  const ins = inspector()
+  if (Array.isArray(ins.notes) && ins.notes.length > 0)
+    return true
+  if (hasPlayedVoicing())
+    return true
+  return capturedInfo().available
+}
+
+/**
+ * Apply a fresh capture immediately: the picker follows the detected chord
+ * and the draft starts on its normalised voicing, while the exact played
+ * notes are kept for toggling. Undetectable notes keep the picker and load
+ * as Custom. Runs both while editing a row and when no rows exist yet, so a
+ * new project gets a pending draft at once; otherwise the capture stays
+ * available for Add row.
+ */
+export function autoApplyCaptured() {
   const captured = capturedInfo()
   if (!captured.available)
     return false
   const ins = inspector()
-  ins.notes = sortNotes([...captured.notes])
-  ins.voicingMode = 'custom'
-  ins.symbol = captured.chord || ins.symbol
-  ins.symbols = captured.symbols.length > 0 ? captured.symbols : ins.symbols
-  applySymbolToIdentity(captured.chord)
-  if (captured.bass)
-    globals.chordPicker.currentBass = normaliseNoteName(captured.bass)
-  // Applied: hide the chip so it does not offer the same notes again.
+  rememberPlayedVoicing(captured)
+
+  const [plain] = removeBassSlash(captured.chord || captured.symbols?.[0] || '')
+  const chordObj = plain ? Tonal.Chord.get(plain) : null
+  if (captured.chord && chordObj && !chordObj.empty) {
+    applySymbolToIdentity(captured.chord)
+    if (captured.bass)
+      globals.chordPicker.currentBass = normaliseNoteName(captured.bass)
+    else if (!globals.chordPicker.currentBass)
+      globals.chordPicker.currentBass = globals.chordPicker.currentRoot
+    else {
+      // A new chord should not inherit the previous row's bass unless it is
+      // an explicit slash bass, so follow the new root.
+      globals.chordPicker.currentBass = globals.chordPicker.currentRoot
+    }
+    applyAuto()
+  }
+  else {
+    ins.notes = sortNotes([...captured.notes])
+    ins.voicingMode = 'custom'
+    if (captured.chord) {
+      ins.symbol = captured.chord
+      ins.symbols = captured.symbols.length > 0 ? [...captured.symbols] : ins.symbols
+    }
+  }
+
+  // Consumed: the watcher sees no fresh capture, but the played toggle stays.
   ins.capturedIgnored = [...captured.notes]
   return true
 }
 
-/** Rebuild the normalised voicing from the current identity. */
+/**
+ * Switch the draft to the played voicing. Works both for a fresh capture
+ * and for the kept alternative after auto-apply, so the two voicings can be
+ * compared back and forth until Save.
+ */
+export function useCapturedNotes() {
+  const ins = inspector()
+  const fresh = capturedInfo()
+  let notes = []
+  let bass = ''
+  let chord = ''
+  let symbols = []
+  if (fresh.available) {
+    rememberPlayedVoicing(fresh)
+    notes = sortNotes([...fresh.notes])
+    bass = fresh.bass || ''
+    chord = fresh.chord || ''
+    symbols = [...fresh.symbols]
+    ins.capturedIgnored = [...fresh.notes]
+  }
+  else if (hasPlayedVoicing()) {
+    const played = playedVoicingInfo()
+    notes = [...played.notes]
+    bass = played.bass || ''
+    chord = played.chord || ''
+    symbols = [...played.symbols]
+  }
+  else {
+    return false
+  }
+  ins.notes = [...notes]
+  ins.voicingMode = 'custom'
+  ins.symbol = chord || ins.symbol
+  ins.symbols = symbols.length > 0 ? [...symbols] : ins.symbols
+  if (chord)
+    applySymbolToIdentity(chord)
+  if (bass)
+    globals.chordPicker.currentBass = normaliseNoteName(bass)
+  return true
+}
+
+/**
+ * Rebuild the normalised voicing from the current identity. The played
+ * alternative is kept, so this and Use played voicing toggle until Save.
+ */
 export function revertToAuto() {
   applyAuto()
 }
@@ -355,21 +590,19 @@ export function duplicateDraft() {
 }
 
 /**
- * Add a new row from whatever is latest. A chord played since the last action
- * wins, otherwise the chord currently shown in the editor is copied, otherwise
- * a plain C major row is created; either way the new row is selected so the
- * inspector can edit it. Opening the new row overwrites the draft by design.
+ * Add a new row from the current draft choice. When a played alternative is
+ * kept or the draft holds notes, the visible choice wins: Auto saves the
+ * normalised chord, Played saves your exact notes. Otherwise a fresh capture
+ * is saved exactly, otherwise a plain C major row is created; either way the
+ * new row is selected so the inspector can edit it. Opening the new row
+ * overwrites the draft by design.
  */
 export function addRow() {
   if (!globals.project || !Array.isArray(globals.project.chords))
     return false
-  const captured = capturedInfo()
-  if (captured.available) {
-    const symbol = captured.chord || captured.symbols[0] || 'C'
-    chordAddToProjectExact(symbol, [...captured.notes], [...captured.symbols], captured.bass)
-  }
-  else if (Array.isArray(inspector().notes) && inspector().notes.length > 0) {
-    const ins = inspector()
+  const ins = inspector()
+  const hasDraftNotes = Array.isArray(ins.notes) && ins.notes.length > 0
+  if (hasPlayedVoicing() || hasDraftNotes) {
     if (ins.voicingMode === 'auto') {
       chordAddToProject(
         globals.chordPicker.currentRoot,
@@ -382,10 +615,15 @@ export function addRow() {
       const symbol = ins.symbol || autoSymbolFor(globals.chordPicker.currentRoot, globals.chordPicker.currentChord)
       chordAddToProjectExact(symbol, [...ins.notes], [...ins.symbols], globals.chordPicker.currentBass)
     }
+    return selectNewestSlot() ?? false
   }
-  else {
-    chordAddToProject('C', 'M', 0, 'C')
+  const captured = capturedInfo()
+  if (captured.available) {
+    const symbol = captured.chord || captured.symbols[0] || 'C'
+    chordAddToProjectExact(symbol, [...captured.notes], [...captured.symbols], captured.bass)
+    return selectNewestSlot() ?? false
   }
+  chordAddToProject('C', 'M', 0, 'C')
   return selectNewestSlot() ?? false
 }
 
@@ -432,6 +670,11 @@ export function deleteDraft() {
     inspector().open = false
     inspector().slotId = null
     inspector().triggerNote = ''
+    inspector().notes = []
+    inspector().voicingMode = 'auto'
+    inspector().symbol = ''
+    inspector().symbols = []
+    clearPlayedVoicing()
     return true
   }
   openForSlot(triggerNotes[0])
@@ -465,6 +708,7 @@ export function invertDraft(direction) {
   )
   globals.chordPicker.currentChordInversion = inversion
   globals.chordPicker.currentBass = bass
+  clearPlayedVoicing()
   applyAuto()
 }
 

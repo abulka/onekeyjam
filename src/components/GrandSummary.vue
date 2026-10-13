@@ -16,7 +16,7 @@ import { loadDemoProject } from '@/lib/demo-project.js'
 import ButtonAudition from '@/components/ButtonAudition.vue'
 import { resizeGridRowCount, deleteSelectedChordConfigs } from '@/lib/boot-project.js'
 import { clampGridRowCount } from '@/lib/maxChordConfig.js'
-import { openForSlot, addRow, selectSlot, isDirty } from '@/lib/chordInspector.js'
+import { openForSlot, addRow, selectSlot } from '@/lib/chordInspector.js'
 import { linkProjectToKeyboard } from '@/lib/boot-project.js'
 import { flushCurrentProject } from '@/lib/currentProjectStore.js'
 import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '@/lib/massOperationsOnChordConfigs'
@@ -27,19 +27,9 @@ const props = defineProps({
 })
 
 /**
- * Changing the selected row would discard an unsaved draft, so ask first.
- * Returns true when it is safe to move on.
- */
-function confirmDiscardIfNeeded(triggerNote) {
-  const inspector = globals.chordInspector
-  if (inspector.slotId == null || inspector.triggerNote === triggerNote || !isDirty())
-    return true
-  return confirm(`Discard the unsaved changes to row #${inspector.slotId}?`)
-}
-
-/**
  * Select a slot, open the inspector on it and reveal the Edit Chords section.
- * Selecting never writes: the inspector holds a draft until Save.
+ * Selecting never writes: the inspector holds a draft until Save. Clicking
+ * another row switches silently; the previous draft is replaced.
  */
 function selectAndEdit(triggerNote) {
   if (!triggerNote)
@@ -91,7 +81,8 @@ function onDeleteSelectedChords(event) {
 
 function syncPickerAfterGridClick(triggerNote) {
   // Clicking a scale-filter cell selects the row and loads the draft, so the
-  // inspector keeps following the grid. It does not open the panel.
+  // inspector keeps following the grid. It does not open the panel, and it
+  // switches silently like a row click.
   try {
     if (triggerNote && triggerNote in globals.chordTriggerMap)
       selectSlot(triggerNote)
@@ -604,7 +595,7 @@ function scaleFilterTableClick(event) {
   const scaleFilterNote = td.getAttribute('data-scale-filter-note') // C#, D# or F#
 
   // change triggered chord
-  if (confirmDiscardIfNeeded(triggerNote)) {
+  {
     let simulatedEvent = {
       note: new Note(triggerNote, { attack: globals.fixedNoteVelocity })
     }
@@ -626,10 +617,9 @@ function scaleFilterTableClick(event) {
 function generalTableClick(event) {
   const tr = event.target.closest('tr')
   const triggerNote = tr.getAttribute('data-trigger-note')
-  if (!confirmDiscardIfNeeded(triggerNote))
-    return
   // Quietly change the sounding chord and scale, then select the row and open
   // the inspector on it. Editing happens in the panel, never in the grid.
+  // Switching rows replaces any unsaved draft silently (no confirm prompt).
   let simulatedEvent = {
     note: new Note(triggerNote, { attack: 0.0 }) // 0 means silent - only onNoteOn() understands this convention
   }
@@ -845,7 +835,9 @@ function generalTableClick(event) {
           {{ info.symbols }}
         </td> -->
         <td>
-          <ButtonAudition :notes="info.lhChordNotesData" :bass="info.bassData" />
+          <!-- The speaker only auditions: stop the click reaching the row, or
+          auditioning a row would also select it and replace the draft. -->
+          <span @click.stop><ButtonAudition :notes="info.lhChordNotesData" :bass="info.bassData" /></span>
           <span class="ml-1">{{ info.lhChordNotes }}</span>
         </td>
         <td><span>{{ info.bassData }}</span></td>

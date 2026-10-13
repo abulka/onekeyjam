@@ -118,14 +118,16 @@ export const globals = reactive({
         shortChordNames: true,
     },
 
-    // The Chord Inspector: one panel that edits the selected grid row. The
-    // draft is a copy of that row; nothing is written until Save. `notes` is
-    // the draft voicing (always a copy, never aliased to stored chords) and
+    // The Chord Inspector: one panel that edits the selected grid row, or builds
+    // a pending new chord when no rows exist yet. The draft is a copy of that
+    // row, or the pending chord; nothing is written until Save or Add. `notes`
+    // is the draft voicing (always a copy, never aliased to stored chords) and
     // `voicingMode` is 'auto' (derived from the identity in chordPicker) or
-    // 'custom' (typed or captured notes). Played notes land in the Captured
-    // chip fed by currentChordBeingJammed and are only applied on request;
-    // `capturedIgnored` holds the played notes that predate this draft, so the
-    // chip only shows what was played while this row was open.
+    // 'custom' (typed or captured notes). Played notes auto-update the picker
+    // to the detected chord and are kept as the played alternative, so the
+    // draft can switch back and forth between played and normalised voicings;
+    // `capturedIgnored` holds the played notes already seen, so only fresh
+    // notes auto-apply.
     chordInspector: {
         open: false,
         mode: 'edit',        // 'edit' (a selected slot) | 'add' (a new slot)
@@ -137,6 +139,10 @@ export const globals = reactive({
         notes: [],           // draft voicing
         baseline: null,      // snapshot for dirty check and Revert
         capturedIgnored: [], // played notes already seen when this draft loaded
+        playedNotes: [],     // last played voicing for this draft, for toggling
+        playedBass: '',      // bass of the last played voicing
+        playedChord: '',     // detected chord label of the last played voicing
+        playedSymbols: [],   // detected aliases of the last played voicing
     },
 
     get superUser() {
