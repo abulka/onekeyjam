@@ -298,8 +298,10 @@ export function setFromSymbol(symbol) {
 }
 
 /**
- * Change the chord identity (root and quality); the voicing resets to Auto and
- * any lingering slash bass is cleared, since the bass belongs to the chord.
+ * Change the chord identity (root and quality). This is a different chord, so
+ * the voicing resets to Normalised, any lingering slash bass is cleared (the
+ * bass belongs to the chord) and the custom voicing for the old chord is
+ * dropped: it no longer belongs to this chord.
  */
 export function setIdentity(root, quality) {
   globals.chordPicker.currentRoot = root
@@ -307,6 +309,7 @@ export function setIdentity(root, quality) {
   globals.chordPicker.currentChordInversion = 0
   resetBassToAuto()
   clearPlayedVoicing()
+  clearCustomVoicing()
   applyAuto()
 }
 
@@ -389,25 +392,6 @@ export function discardCustom() {
   clearCustomVoicing()
   applyAuto()
   return true
-}
-
-/**
- * Rename the chord while keeping a Custom voicing: the pickers are the label
- * only and never touch the notes or the Bass field.
- */
-export function renameDraft(root, quality) {
-  globals.chordPicker.currentRoot = root
-  globals.chordPicker.currentChord = quality
-  globals.chordPicker.currentChordInversion = 0
-  // The name changed, so a slash from the old chord is cleared.
-  resetBassToAuto()
-  const ins = inspector()
-  const symbol = autoSymbolFor(root, quality)
-  ins.symbol = symbol
-  ins.symbols = [symbol]
-  // The name belongs to the chord, so the custom row's label follows it too.
-  ins.customSymbol = symbol
-  ins.customSymbols = [symbol]
 }
 
 /**
@@ -860,24 +844,18 @@ export function deleteDraft() {
   return true
 }
 
-/** Move the draft root by semitones, keeping the quality. Custom renames only. */
+/** Move the draft root by semitones, keeping the quality. A new root is a new chord. */
 export function transposeDraft(semitones) {
   const newRoot = normaliseNoteName(
     Tonal.Note.transpose(globals.chordPicker.currentRoot, Tonal.Interval.fromSemitones(semitones)))
-  if (inspector().voicingMode === 'custom')
-    renameDraft(newRoot, globals.chordPicker.currentChord)
-  else
-    setIdentity(newRoot, globals.chordPicker.currentChord)
+  setIdentity(newRoot, globals.chordPicker.currentChord)
 }
 
-/** Move the draft root by fifths, keeping the quality. Custom renames only. */
+/** Move the draft root by fifths, keeping the quality. A new root is a new chord. */
 export function fifthDraft(direction) {
   const newRoot = normaliseNoteName(
     Tonal.Note.transposeFifths(globals.chordPicker.currentRoot, direction))
-  if (inspector().voicingMode === 'custom')
-    renameDraft(newRoot, globals.chordPicker.currentChord)
-  else
-    setIdentity(newRoot, globals.chordPicker.currentChord)
+  setIdentity(newRoot, globals.chordPicker.currentChord)
 }
 
 /**
@@ -914,10 +892,7 @@ export function stepChord(direction) {
     index = (index - 1 + options.length) % options.length
   else if (direction === 'random')
     index = Math.floor(Math.random() * options.length)
-  if (inspector().voicingMode === 'custom')
-    renameDraft(globals.chordPicker.currentRoot, options[index].value)
-  else
-    setIdentity(globals.chordPicker.currentRoot, options[index].value)
+  setIdentity(globals.chordPicker.currentRoot, options[index].value)
 }
 
 /**

@@ -11,7 +11,6 @@ import {
     setNotesFromText,
     setBass,
     setIdentity,
-    renameDraft,
     chooseCustom,
     transposeDraft,
     headerSymbol,
@@ -110,8 +109,8 @@ describe('a played or replaced chord clears the bass', () => {
 
         setBass('F')
         chooseCustom()
-        renameDraft('A', 'm')
-        assert.equal(globals.chordPicker.currentBass, '', 'a rename clears the bass')
+        setIdentity('A', 'm')
+        assert.equal(globals.chordPicker.currentBass, '', 'an identity change from Custom clears the bass')
 
         setBass('F')
         transposeDraft(1)

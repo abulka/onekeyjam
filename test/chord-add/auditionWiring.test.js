@@ -160,20 +160,20 @@ describe('ChordInspector audition wiring', () => {
         }
     })
 
-    it('auditions the active voicing when a picker combo changes', async () => {
+    it('auditions the new chord when a picker combo changes', async () => {
         installFmaj9Row()
         const wrapper = mount(ChordInspector, { attachTo: document.body })
         try {
             await nextTick()
             await nextTick()
-            // The Fmaj9 row is custom, so the draft voicing is its custom notes.
-            const customNotes = ['C3', 'E3', 'G3', 'A3', 'F3']
-
             const selects = wrapper.findAll('.identity-row select')
+
             auditionNotes.mockClear()
             await selects[0].setValue('G')
             await nextTick()
-            assert.deepEqual(notesOfLastAudition(), customNotes, 'root change auditions the active custom voicing')
+            const expectedAfterRoot = autoNotesFor(globals.chordPicker.currentRoot, globals.chordPicker.currentChord, 0)
+            assert.deepEqual(notesOfLastAudition(), expectedAfterRoot, 'root change plays the new normalised chord')
+            assert.deepEqual(globals.chordInspector.customNotes, [], 'the old custom voicing is dropped')
 
             const chordSelect = selects[1]
             const otherChord = chordSelect.findAll('option')
@@ -182,7 +182,8 @@ describe('ChordInspector audition wiring', () => {
             auditionNotes.mockClear()
             await chordSelect.setValue(otherChord)
             await nextTick()
-            assert.deepEqual(notesOfLastAudition(), customNotes, 'chord change auditions the active custom voicing')
+            const expectedAfterChord = autoNotesFor(globals.chordPicker.currentRoot, globals.chordPicker.currentChord, 0)
+            assert.deepEqual(notesOfLastAudition(), expectedAfterChord, 'chord change plays the new normalised chord')
 
             auditionNotes.mockClear()
             await selects[2].setValue('G')

@@ -158,7 +158,7 @@ describe('ChordInspector two-voicing radios', () => {
         }
     })
 
-    it('picking a different chord regenerates only the normalised row', async () => {
+    it('picking a different chord resets the normalised row and drops the old custom voicing', async () => {
         installFmaj9Row()
         const wrapper = mount(ChordInspector, { attachTo: document.body })
         try {
@@ -171,7 +171,8 @@ describe('ChordInspector two-voicing radios', () => {
             await nextTick()
             const expectedAuto = autoNotesFor(globals.chordPicker.currentRoot, globals.chordPicker.currentChord, 0)
             assert.equal(normalisedText(wrapper), expectedAuto.join(' '), 'normalised row follows the picker')
-            assert.deepEqual(globals.chordInspector.customNotes, ['C3', 'E3', 'G3', 'A3', 'F3'], 'custom row untouched')
+            assert.deepEqual(globals.chordInspector.customNotes, [], 'the old custom voicing is dropped')
+            assert.equal(globals.chordInspector.voicingMode, 'auto', 'Normalised stays selected')
         }
         finally {
             wrapper.unmount()

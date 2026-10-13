@@ -18,7 +18,6 @@ import {
   toggleFavourite,
   isFavourite,
   setIdentity,
-  renameDraft,
   setBass,
   applyNotesEntry,
   applyBassEntry,
@@ -86,27 +85,24 @@ const favourite = computed(() => {
   return isFavourite()
 })
 
-// The chord pickers are always "what this chord is called". In Custom mode
-// they rename the chord only; in Normalised mode they also generate the notes.
+// The chord pickers are always "what this chord is called". Changing root or
+// quality is a different chord, so the voicing resets to Normalised and any
+// custom voicing for the old chord is dropped. Typing notes still makes a
+// custom voicing: that path names the pickers from the notes, it does not
+// come through here.
 const customActive = computed(() => globals.chordInspector.voicingMode === 'custom')
 
 const selectedRoot = computed({
   get: () => picker.value.currentRoot,
   set: (value) => {
-    if (customActive.value)
-      renameDraft(value, picker.value.currentChord)
-    else
-      setIdentity(value, picker.value.currentChord)
+    setIdentity(value, picker.value.currentChord)
     startDraftAudition()
   },
 })
 const selectedChord = computed({
   get: () => picker.value.currentChord,
   set: (value) => {
-    if (customActive.value)
-      renameDraft(picker.value.currentRoot, value)
-    else
-      setIdentity(picker.value.currentRoot, value)
+    setIdentity(picker.value.currentRoot, value)
     startDraftAudition()
   },
 })
@@ -652,8 +648,8 @@ onUnmounted(() => {
       <span v-if="flashMessage" class="saved-flash">{{ flashMessage }}</span>
     </div>
 
-    <!-- The chord pickers are the name. In Normalised mode they also generate
-         that row's notes; in Custom mode they only rename the chord. -->
+    <!-- The chord pickers are the name, and changing it is a new chord: the
+         voicing resets to Normalised and the old custom voicing is dropped. -->
     <div class="inspector-row identity-row">
       <label class="field">Root
         <select v-model="selectedRoot">
@@ -789,7 +785,7 @@ onUnmounted(() => {
           <button type="button" class="ui tiny button" title="Hover to hear the root position, click to load it into the draft"
             @click="invertDraft(0)" @mouseenter="onHoverInvert(0, true)" @mouseleave="onHoverInvert(0, false)" @focus="onHoverInvert(0, true)" @blur="onHoverInvert(0, false)">Reset inversion</button>
         </div>
-        <p class="row-hint">Transposing renames the chord; inverting changes the Normalised voicing.</p>
+        <p class="row-hint">Transposing is a new chord; inverting changes the Normalised voicing.</p>
       </div>
 
       <div class="title" data-accordion-section="inspector-options">
