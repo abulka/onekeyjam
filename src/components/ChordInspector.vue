@@ -83,13 +83,11 @@ const favourite = computed(() => {
 })
 
 // The draft identity, bound to the picker combos. Changing root or quality is
-// a different chord, so the voicing becomes Auto again (see chordInspector.js).
+// a different chord, so the voicing and the bass reset to the new root (see
+// chordInspector.js).
 const selectedRoot = computed({
   get: () => picker.value.currentRoot,
-  set: (value) => {
-    globals.chordPicker.currentBass = value
-    setIdentity(value, picker.value.currentChord)
-  },
+  set: (value) => setIdentity(value, picker.value.currentChord),
 })
 const selectedChord = computed({
   get: () => picker.value.currentChord,
@@ -308,7 +306,10 @@ function onBrowseSelect(detail) {
   if (!root)
     return
   setIdentity(root, chordSymbolNoRoot)
-  if (typeof bassNote === 'string')
+  // Only override the bass when the browse chord carries one. The browse
+  // library passes an empty string for plain chords, which must not wipe the
+  // root bass that setIdentity just applied.
+  if (bassNote)
     setBass(bassNote)
 }
 

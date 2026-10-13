@@ -259,11 +259,17 @@ export function setFromSymbol(symbol) {
   return true
 }
 
-/** Change the chord identity (root and quality); the voicing resets to Auto. */
+/**
+ * Change the chord identity (root and quality); the voicing resets to Auto.
+ * The bass follows the new root, so selecting a different chord type never
+ * leaves an unrelated bass note underneath (the old bug where only changing
+ * the root moved the bass).
+ */
 export function setIdentity(root, quality) {
   globals.chordPicker.currentRoot = root
   globals.chordPicker.currentChord = quality
   globals.chordPicker.currentChordInversion = 0
+  globals.chordPicker.currentBass = normaliseNoteName(root)
   clearPlayedVoicing()
   applyAuto()
 }
@@ -295,8 +301,10 @@ function applySymbolToIdentity(symbol) {
   globals.chordPicker.currentRoot = normaliseNoteName(chordObj.tonic)
   globals.chordPicker.currentChord = chordObj.aliases[0] || 'M'
   globals.chordPicker.currentChordInversion = 0
-  if (bass)
-    globals.chordPicker.currentBass = normaliseNoteName(bass)
+  // The bass follows the new chord: an explicit slash bass when the symbol
+  // carries one, otherwise the new root. Without this a typed chord kept the
+  // previous bass and sounded with an unrelated low note.
+  globals.chordPicker.currentBass = normaliseNoteName(bass || chordObj.tonic)
 }
 
 /** Store exact notes as a Custom voicing and re-name them on the picker. */
@@ -318,6 +326,19 @@ export function setNotes(notes) {
     // update so the combos never disagree with what sounds.
     applySymbolToIdentity(detected[0])
   }
+  else {
+    // No name for these notes: the identity stays as it is, but the bass must
+    // follow the voicing or it would sound an unrelated low note.
+    globals.chordPicker.currentBass = lowestNotePitchClass(ins.notes)
+  }
+}
+
+/** The pitch class of the lowest note of a voicing, e.g. ['E3','C4'] -> 'E'. */
+function lowestNotePitchClass(notes) {
+  if (!Array.isArray(notes) || notes.length === 0)
+    return ''
+  const sorted = sortNotes([...notes])
+  return normaliseNoteName(bassPitchClass(sorted[0]))
 }
 
 /**
@@ -459,20 +480,18 @@ export function autoApplyCaptured() {
   const chordObj = plain ? Tonal.Chord.get(plain) : null
   if (captured.chord && chordObj && !chordObj.empty) {
     applySymbolToIdentity(captured.chord)
+    // A played slash bass wins; otherwise applySymbolToIdentity already set
+    // the new root, so no stale bass can survive.
     if (captured.bass)
       globals.chordPicker.currentBass = normaliseNoteName(captured.bass)
-    else if (!globals.chordPicker.currentBass)
-      globals.chordPicker.currentBass = globals.chordPicker.currentRoot
-    else {
-      // A new chord should not inherit the previous row's bass unless it is
-      // an explicit slash bass, so follow the new root.
-      globals.chordPicker.currentBass = globals.chordPicker.currentRoot
-    }
     applyAuto()
   }
   else {
     ins.notes = sortNotes([...captured.notes])
     ins.voicingMode = 'custom'
+    // The bass follows the lowest played note, so an unnamed voicing still
+    // sounds as played instead of keeping the previous chord's bass.
+    globals.chordPicker.currentBass = lowestNotePitchClass(ins.notes)
     if (captured.chord) {
       ins.symbol = captured.chord
       ins.symbols = captured.symbols.length > 0 ? [...captured.symbols] : ins.symbols
@@ -526,10 +545,12 @@ export function useCapturedNotes() {
 }
 
 /**
- * Rebuild the normalised voicing from the current identity. The played
- * alternative is kept, so this and Use played voicing toggle until Save.
+ * Rebuild the normalised voicing from the current identity and reset the bass
+ * to the chord root, so the Auto voicing is fully normalised. The played
+ * alternative keeps its own bass, so the two can be compared until Save.
  */
 export function revertToAuto() {
+  globals.chordPicker.currentBass = normaliseNoteName(globals.chordPicker.currentRoot)
   applyAuto()
 }
 
@@ -685,7 +706,6 @@ export function deleteDraft() {
 export function transposeDraft(semitones) {
   const newRoot = normaliseNoteName(
     Tonal.Note.transpose(globals.chordPicker.currentRoot, Tonal.Interval.fromSemitones(semitones)))
-  globals.chordPicker.currentBass = newRoot
   setIdentity(newRoot, globals.chordPicker.currentChord)
 }
 
@@ -693,7 +713,6 @@ export function transposeDraft(semitones) {
 export function fifthDraft(direction) {
   const newRoot = normaliseNoteName(
     Tonal.Note.transposeFifths(globals.chordPicker.currentRoot, direction))
-  globals.chordPicker.currentBass = newRoot
   setIdentity(newRoot, globals.chordPicker.currentChord)
 }
 
@@ -726,7 +745,6 @@ export function stepChord(direction) {
     index = (index - 1 + options.length) % options.length
   else if (direction === 'random')
     index = Math.floor(Math.random() * options.length)
-  globals.chordPicker.currentBass = globals.chordPicker.currentRoot
   setIdentity(globals.chordPicker.currentRoot, options[index].value)
 }
 

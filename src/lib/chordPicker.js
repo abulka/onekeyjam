@@ -109,10 +109,12 @@ export function chordPickerToJammed(force = false) {
  */
 export function chordPickerToJammedExtraPrecision(chordNotes, bass, source = 'grid') {
     void source
-    if (bass != undefined)
-        setBass(bass)
+    // Notes first: setNotes renames the chord and sets a bass from it, so an
+    // explicit bass must be applied afterwards to win.
     if (Array.isArray(chordNotes) && chordNotes.length > 0)
         setNotes(chordNotes)
+    if (bass != undefined)
+        setBass(bass)
 }
 
 /**
