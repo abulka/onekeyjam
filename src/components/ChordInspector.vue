@@ -161,8 +161,6 @@ function onRevert() {
 }
 
 function onAdd() {
-  if (isDirty() && !confirm('Discard the unsaved changes and add a new chord?'))
-    return
   if (addRow())
     afterWrite()
 }
@@ -173,7 +171,7 @@ function onDuplicate() {
 }
 
 function onDelete() {
-  if (!confirm(`Delete the chord on ${globals.chordInspector.triggerNote}?`))
+  if (!confirm(`Delete row #${globals.chordInspector.slotId}?`))
     return
   if (deleteDraft())
     afterWrite()
@@ -403,9 +401,9 @@ onUnmounted(() => {
     <div class="inspector-header">
       <span class="inspector-title">
         <template v-if="inspector.slotId != null">
-          Edit slot <b>{{ inspector.triggerNote }}</b>
-          <code class="ml-2">{{ previewSymbol }}</code>
-          <code class="ml-1">[{{ previewNotes }}]</code>
+          <span class="row-id">Row #{{ inspector.slotId }}</span>
+          <span class="chord-name">{{ previewSymbol }}</span>
+          <span class="chord-notes">[{{ previewNotes }}]</span>
         </template>
         <template v-else>
           No chord selected
@@ -577,6 +575,26 @@ onUnmounted(() => {
 
 .inspector-title {
   font-size: 1.05rem;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.row-id {
+  color: #8a7a63;
+  font-size: 0.8rem;
+  font-weight: normal;
+}
+
+.chord-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.chord-notes {
+  color: #6b5a45;
+  font-size: 0.9rem;
+  font-family: monospace;
 }
 
 .dirty-dot {

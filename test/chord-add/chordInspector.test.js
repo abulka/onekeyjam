@@ -227,6 +227,19 @@ describe('chordInspector draft', () => {
         assert.equal(globals.currentChordTriggerNote, trigger)
     })
 
+    it('seeds Add chord from the editor draft when nothing was played', () => {
+        const project = makeProject()
+        install(project)
+        openForSlot('C3')
+        setIdentity('G', '7')
+        const rowCountBefore = project.chords.length
+        const trigger = addRow()
+        assert.equal(project.chords.length, rowCountBefore + 1)
+        const added = project.chords[project.chords.length - 1]
+        assert.equal(added.chord, 'G7')
+        assert.equal(globals.chordInspector.triggerNote, trigger)
+    })
+
     it('duplicates the selected slot as a new row', () => {
         const project = makeProject()
         install(project)

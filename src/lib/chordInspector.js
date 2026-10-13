@@ -355,9 +355,10 @@ export function duplicateDraft() {
 }
 
 /**
- * Add a new row. A chord played since the last action is seeded straight in,
- * otherwise a plain C major row is created; either way the new row is selected
- * so the inspector can edit it.
+ * Add a new row from whatever is latest. A chord played since the last action
+ * wins, otherwise the chord currently shown in the editor is copied, otherwise
+ * a plain C major row is created; either way the new row is selected so the
+ * inspector can edit it. Opening the new row overwrites the draft by design.
  */
 export function addRow() {
   if (!globals.project || !Array.isArray(globals.project.chords))
@@ -366,6 +367,21 @@ export function addRow() {
   if (captured.available) {
     const symbol = captured.chord || captured.symbols[0] || 'C'
     chordAddToProjectExact(symbol, [...captured.notes], [...captured.symbols], captured.bass)
+  }
+  else if (Array.isArray(inspector().notes) && inspector().notes.length > 0) {
+    const ins = inspector()
+    if (ins.voicingMode === 'auto') {
+      chordAddToProject(
+        globals.chordPicker.currentRoot,
+        globals.chordPicker.currentChord,
+        globals.chordPicker.currentChordInversion,
+        globals.chordPicker.currentBass,
+      )
+    }
+    else {
+      const symbol = ins.symbol || autoSymbolFor(globals.chordPicker.currentRoot, globals.chordPicker.currentChord)
+      chordAddToProjectExact(symbol, [...ins.notes], [...ins.symbols], globals.chordPicker.currentBass)
+    }
   }
   else {
     chordAddToProject('C', 'M', 0, 'C')

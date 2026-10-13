@@ -34,7 +34,7 @@ function confirmDiscardIfNeeded(triggerNote) {
   const inspector = globals.chordInspector
   if (inspector.slotId == null || inspector.triggerNote === triggerNote || !isDirty())
     return true
-  return confirm(`Discard the unsaved changes to ${inspector.triggerNote}?`)
+  return confirm(`Discard the unsaved changes to row #${inspector.slotId}?`)
 }
 
 /**
@@ -978,11 +978,15 @@ function generalTableClick(event) {
     <button
       type="button"
       class="ui tiny button"
-      title="Add a new chord row at the end and select it for editing. A chord played since the last action is added instead."
+      title="Add a new row from the chord shown in the editor (/). A chord played since the last action is added instead."
       @click="onAddChord($event)"
     >
-      + Add chord
+      + Add chord (/)
     </button>
+    <span class="audition-current" title="Hear the chord shown in the editor (hold `). Hover also plays. Leaving stops. Never changes the draft.">
+      <ButtonAudition :notes="globals.chordInspector.notes" :bass="globals.chordPicker.currentBass" />
+      <span class="audition-label">Audition current chord (&#96;)</span>
+    </span>
     <button
       type="button"
       class="ui tiny button"
@@ -1000,8 +1004,8 @@ function generalTableClick(event) {
   </div>
   <div v-else class="warn">
     <p>No Chords or Scales in Project yet.
-      <button type="button" class="ui tiny button" title="Add a C major row and open it in the inspector"
-        @click="onAddChord($event)">+ Add chord</button>
+      <button type="button" class="ui tiny button" title="Add a C major row and open it in the inspector (/)"
+        @click="onAddChord($event)">+ Add chord (/)</button>
       <button type="button" class="demo-button" @click="loadDemoProject()">Load demo project</button>
     </p>
   </div>
@@ -1465,6 +1469,17 @@ tr.key-group-change > td {
   color: #6b5a45;
   font-size: 0.85rem;
   font-style: italic;
+}
+
+.audition-current {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.audition-label {
+  color: #6b5a45;
+  font-size: 0.85rem;
 }
 
 /* Phones keep the table shape and swipe sideways inside this frame, so the
