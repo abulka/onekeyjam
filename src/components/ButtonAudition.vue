@@ -3,7 +3,7 @@ import { auditionNotes } from '../../src/lib/auditionNotes'
 import { forgetHover, rememberHover } from '@/lib/auditionHover.js'
 import { ensureAudioReady } from '@/lib/audio/general-midi.js'
 
-defineProps(['notes', 'bass'])
+defineProps(['notes', 'bass', 'title'])
 
 /*
 There are three ways to play the notes in a chord:
@@ -49,7 +49,7 @@ function auditionHover(notes, bass, state) {
 </script>
 
 <template>
-    <button class="grey ui circular compact icon button"
+    <button class="grey ui circular compact icon button" :title="title"
         @mousedown="auditionPress(notes, bass)"
         @mouseenter="auditionHover(notes, bass, true)"
         @touchstart.prevent="auditionPress(notes, bass)"

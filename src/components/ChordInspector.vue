@@ -98,8 +98,8 @@ const selectedBass = computed({
   set: (value) => setBass(value),
 })
 
-// The voicing is one notes field. It mirrors the draft and flips to Custom as
-// soon as it is edited; "Revert to auto" rebuilds the normalised voicing.
+// The draft's notes field. It mirrors the draft and flips to Custom as soon
+// as it is edited; "Use normalised voicing" rebuilds the normalised voicing.
 // While the field has focus the draft follows the typing but the text is not
 // reformatted under the cursor; on blur or Enter it is parsed in full.
 const notesText = ref('')
@@ -150,13 +150,6 @@ const autoPreview = computed(() => previewAutoVoicing())
 const usingPlayed = computed(() => isUsingPlayedVoicing())
 const hasPending = computed(() => hasPendingChord())
 const canAdd = computed(() => canAddRow())
-// What the main audition button plays: the draft when it holds notes,
-// otherwise the normalised picker voicing so empty pending still sounds.
-const auditionDraftNotes = computed(() => {
-  if (Array.isArray(inspector.value.notes) && inspector.value.notes.length > 0)
-    return inspector.value.notes
-  return autoPreview.value.notes ?? []
-})
 
 // ┌─┐┌─┐┌┬┐┬┌─┐┌┐┌┌─┐
 // ├─┤│ │ │ ││ ││││└─┐
@@ -330,9 +323,9 @@ function auditionPreview(preview, state) {
   refreshAudioHint()
 }
 
-// Hovering Revert to auto hears the normalised voicing without applying it,
-// so the two voicings can be compared before choosing. Hovering Use played
-// voicing hears the exact played notes the same way.
+// Hovering Use normalised voicing hears the normalised voicing without
+// applying it, so the two voicings can be compared before choosing. Hovering
+// Use as custom voicing hears the played notes the same way.
 function onHoverAuto(state) {
   auditionPreview(autoPreview.value, state)
 }
@@ -569,7 +562,8 @@ onUnmounted(() => {
       <span v-if="flashMessage" class="saved-flash">{{ flashMessage }}</span>
     </div>
 
-    <!-- Identity: always visible. Changing root/quality resets the voicing to Auto. -->
+    <!-- Identity: the normalised voicing source. Changing root/quality
+         rebuilds the normalised voicing from these combos. -->
     <div class="inspector-row identity-row">
       <label class="field">Root
         <select v-model="selectedRoot">
@@ -587,12 +581,15 @@ onUnmounted(() => {
         </select>
       </label>
       <span v-if="picker.currentChordInversion" class="inv-tag">inv {{ picker.currentChordInversion }}</span>
-      <ButtonAudition :notes="auditionDraftNotes" :bass="picker.currentBass" />
-      <span class="field-hint">Plays what will be saved or added.</span>
+      <ButtonAudition :notes="autoPreview.notes" :bass="autoPreview.bass"
+        :title="`Hear the normalised voicing: ${autoPreview.notes.join(' ') || '(no notes)'} — built from the chord name above`" />
+      <span class="field-hint">Normalised voicing, built from the chord name.</span>
       <span v-if="audioLocked" class="field-hint">Sound is off after refresh. Click or press any key once, then hover again.</span>
     </div>
 
-    <!-- One notes field, Auto or Custom -->
+    <!-- One notes field, Normalised or Custom. In Custom mode these exact
+         notes are the voicing that sounds; the link switches back to the
+         normalised voicing. -->
     <div class="inspector-row notes-row">
       <label class="field notes-field">Notes
         <input type="text" v-model="notesText" @input="applyNotes"
@@ -601,14 +598,15 @@ onUnmounted(() => {
           placeholder="e.g. C3 E3 G3" class="notes-input" />
       </label>
       <span class="voicing-tag" :class="inspector.voicingMode === 'auto' ? 'tag-auto' : 'tag-custom'">
-        {{ inspector.voicingMode === 'auto' ? 'Auto' : 'Custom' }}
+        {{ inspector.voicingMode === 'auto' ? 'Normalised' : 'Custom' }}
       </span>
+      <ButtonAudition v-if="inspector.voicingMode === 'custom'" :notes="inspector.notes" :bass="picker.currentBass"
+        :title="`Hear the custom voicing: ${inspector.notes.join(' ')}`" />
       <button v-if="inspector.voicingMode === 'custom'" type="button" class="link-button"
-        title="Hover to hear the normalised voicing, click to use it. The played voicing stays available below."
+        title="Hover to hear the normalised voicing, click to switch the draft back to it"
         @click="onRevertAuto"
         @mouseenter="onHoverAuto(true)" @mouseleave="onHoverAuto(false)"
-        @focus="onHoverAuto(true)" @blur="onHoverAuto(false)">Revert to auto</button>
-      <ButtonAudition v-if="inspector.voicingMode === 'custom'" :notes="autoPreview.notes" :bass="autoPreview.bass" />
+        @focus="onHoverAuto(true)" @blur="onHoverAuto(false)">Use normalised voicing ({{ autoPreview.notes.join(' ') }})</button>
       <label v-if="inspector.voicingMode === 'custom' && nameOptions.length > 1" class="field">store as
         <select v-model="inspector.symbol">
           <option v-for="name in nameOptions" :key="name" :value="name">{{ name }}</option>
@@ -616,22 +614,23 @@ onUnmounted(() => {
       </label>
     </div>
     <p class="row-hint">
-      <template v-if="inspector.voicingMode === 'auto'">Auto: the notes are built from the chord name above.</template>
-      <template v-else>Custom: these exact notes are what sounds. The chord name above still labels the row.</template>
+      <template v-if="inspector.voicingMode === 'auto'">Normalised: the notes are built from the chord name above.</template>
+      <template v-else>Custom: these exact notes are what sounds. Use normalised voicing switches back.</template>
     </p>
 
-    <!-- Played voicing: the exact notes just played, kept for toggling against Auto until Save -->
+    <!-- Played notes are kept as a source for the custom voicing -->
     <div v-if="hasPlayed" class="inspector-row captured-row">
-      <span class="captured-label" title="The exact notes just played. The draft above starts on the normalised voicing for the same chord.">Played</span>
+      <span class="captured-label" title="The exact notes just played. They can become the custom voicing for this chord.">Played</span>
       <code>{{ played.chord || 'played' }}</code>
       <code>[{{ played.notes.join(' ') }}]</code>
-      <ButtonAudition :notes="played.notes" :bass="played.bass" />
+      <ButtonAudition :notes="played.notes" :bass="played.bass"
+        :title="`Hear the played notes: ${played.notes.join(' ')}`" />
       <button type="button" class="ui tiny button" :disabled="usingPlayed"
-        title="Hover to hear the played voicing, click to use it instead of the normalised voicing. Revert to auto switches back."
+        title="Hover to hear the played notes, click to make them the custom voicing"
         @click="onUseCaptured"
         @mouseenter="onHoverPlayed(true)" @mouseleave="onHoverPlayed(false)"
-        @focus="onHoverPlayed(true)" @blur="onHoverPlayed(false)">Use played voicing</button>
-      <span class="field-hint">{{ usingPlayed ? 'Using the played voicing. Revert to auto to compare the normalised version.' : 'Draft is showing the normalised voicing. Use played for your exact notes.' }}</span>
+        @focus="onHoverPlayed(true)" @blur="onHoverPlayed(false)">Use as custom voicing</button>
+      <span class="field-hint">{{ usingPlayed ? 'These played notes are the custom voicing. Use normalised voicing to switch back.' : 'Use these played notes as the custom voicing.' }}</span>
     </div>
 
     <!-- Fresh capture when no row is open or auto-apply did not run: kept so Add row can still seed from playing -->
@@ -639,7 +638,8 @@ onUnmounted(() => {
       <span class="captured-label" title="Notes played just now. They are not applied until you ask.">Captured</span>
       <code>{{ captured.chord }}</code>
       <code>[{{ captured.notes.join(' ') }}]</code>
-      <ButtonAudition :notes="captured.notes" :bass="captured.bass" />
+      <ButtonAudition :notes="captured.notes" :bass="captured.bass"
+        :title="`Hear the captured notes: ${captured.notes.join(' ')}`" />
       <button type="button" class="ui tiny button" @click="onUseCaptured">Use these notes</button>
     </div>
 
@@ -720,7 +720,7 @@ onUnmounted(() => {
           <button type="button" class="ui tiny button" title="Hover to hear the root position, click to load it into the draft"
             @click="invertDraft(0)" @mouseenter="onHoverInvert(0, true)" @mouseleave="onHoverInvert(0, false)" @focus="onHoverInvert(0, true)" @blur="onHoverInvert(0, false)">Reset inversion</button>
         </div>
-        <p class="row-hint">Transposing or inverting changes the chord, so the voicing returns to Auto.</p>
+        <p class="row-hint">Transposing or inverting changes the chord, so the voicing returns to Normalised.</p>
       </div>
 
       <div class="title" data-accordion-section="inspector-options">

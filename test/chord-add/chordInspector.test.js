@@ -88,7 +88,7 @@ describe('chordInspector draft', () => {
         assert.equal(isDirty(), false)
     })
 
-    it('flips to Custom when the notes change and back with Revert to auto', () => {
+    it('flips to Custom when the notes change and back with the normalised voicing', () => {
         install(makeProject())
         loadDraftFromSlot('C3')
         setNotes(['C3', 'F3', 'Bb3'])
@@ -96,7 +96,7 @@ describe('chordInspector draft', () => {
         assert.deepEqual(globals.chordInspector.notes, ['C3', 'F3', 'Bb3'])
         assert.equal(isDirty(), true)
 
-        // The picker follows typed notes, so Revert to auto rebuilds the
+        // The picker follows typed notes, so switching back rebuilds the
         // normalised voicing of the chord those notes spell.
         const expectedAuto = autoNotesFor(
             globals.chordPicker.currentRoot,
