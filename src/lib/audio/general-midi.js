@@ -68,7 +68,23 @@ export async function recoverAudio(ctx = audioContext) {
     return ctx.state === 'running'
 }
 
-/** Wake on the first tap and whenever the page returns to the foreground. */
+/**
+ * True while sound is still locked after a refresh. Reads state only and
+ * never calls resume, so hovering cannot spam the console with rejected
+ * resume attempts. Hover is not a valid gesture for unlocking.
+ */
+export function isAudioLocked() {
+    try {
+        if (!audioContext)
+            return true
+        return audioContext.state === 'suspended'
+    }
+    catch {
+        return false
+    }
+}
+
+/** Wake on decisive gestures only, never on hover. Hover alone cannot unlock. */
 function installAudioUnlock() {
     if (unlockInstalled)
         return
@@ -79,6 +95,10 @@ function installAudioUnlock() {
     window.addEventListener('pointerdown', wake)
     window.addEventListener('touchend', wake)
     window.addEventListener('click', wake)
+    // Backquote and other keyboard auditions are valid gestures too. Without
+    // this the first key-held preview after a refresh wakes slowly, so hover
+    // keeps sounding silent until a click happens.
+    window.addEventListener('keydown', wake)
     // Returning from lock, backgrounding or another app's audio can leave
     // iOS silent even while reporting running. A short absence only needs a
     // resume; a longer one gets the full suspend/resume restart.
@@ -122,11 +142,10 @@ export function stopGmNote(noteOffInfo) {
 export function playGmNote(allowedNote, noteOffInfo, options) {
     if (!audioContext)
         return
-    // Fire-and-forget: the current tap may still be silent if the context was
-    // suspended, but waking here means the next tap sounds without needing to
-    // press play elsewhere first.
-    if (audioContext.state === 'suspended')
-        ensureAudioReady()
+    // Never resume here. Resume only happens on decisive gestures via
+    // installAudioUnlock (pointer, click, key). Resuming on every note while
+    // suspended logs one browser warning per note and floods the console
+    // after a refresh when hovering across chords.
     let octave;
     let noteName;
     if (!options)

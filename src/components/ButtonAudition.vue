@@ -1,5 +1,6 @@
 <script setup>
 import { auditionNotes } from '../../src/lib/auditionNotes'
+import { forgetHover, rememberHover } from '@/lib/auditionHover.js'
 
 defineProps(['notes', 'bass'])
 
@@ -19,10 +20,21 @@ function auditionMouseDown(notes, bass, state) {
     // Play notes without changing the current chord config.
     // An empty note list (for example before anything has been jammed) is a
     // silent no-op so hovering or clicking never throws.
-    if (Array.isArray(notes) && notes.length > 0)
+    // Hover is remembered globally so releasing backquote can hand sound back
+    // to grid, inspector, or browse previews alike.
+    if (Array.isArray(notes) && notes.length > 0) {
+        if (state)
+            rememberHover(notes, bass)
+        else
+            forgetHover(notes)
         auditionNotes(notes, bass, state)
+    }
     else if (state) {
         // Note-off is still safe to send so a stuck preview cannot ring.
+        auditionNotes([], bass, false)
+    }
+    else {
+        forgetHover()
         auditionNotes([], bass, false)
     }
 }

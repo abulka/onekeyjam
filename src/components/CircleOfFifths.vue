@@ -1,10 +1,24 @@
 <script setup>
+import { ref } from 'vue'
 import ButtonChord from "./ButtonChord.vue"
 
-const emit = defineEmits(['chord-from-event'])
+const emit = defineEmits(['chord-from-event', 'chord-select-event'])
 
 function chordFromEvent($event) {
     emit('chord-from-event', {subevent:$event})
+}
+
+function chordSelectEvent($event) {
+    emit('chord-select-event', {subevent:$event})
+}
+
+// Vue-controlled tabs replace the Fomantic tab module, which never
+// initialised reliably inside the accordion. The names match the old
+// data-tab values so styles keep working.
+const activeTab = ref('major')
+
+function selectTab(name) {
+    activeTab.value = name
 }
 
 </script>
@@ -13,191 +27,193 @@ function chordFromEvent($event) {
 
     <p>Moving clockwise around the circle, we get ascending 5ths aka. descending 4ths. Anti-clockwise we get descending 5ths aka. ascending 4ths.</p>
 
+    <p class="hint">Hover to hear, click to load into Edit Chords.</p>
+
     <!-- tab header -->
     <div class="ui top attached tabular menu" style="background-color: burlywood;">
-    <a class="item active" data-tab="major">Major</a>
-    <a class="item" data-tab="minor">Minor</a>
-    <a class="item " data-tab="major7">Major 7</a>
-    <a class="item " data-tab="minor7">Minor 7</a>
-    <a class="item" data-tab="reference">Reference</a>
+    <a class="item" :class="{ active: activeTab === 'major' }" data-tab="major" @click.prevent="selectTab('major')">Major</a>
+    <a class="item" :class="{ active: activeTab === 'minor' }" data-tab="minor" @click.prevent="selectTab('minor')">Minor</a>
+    <a class="item" :class="{ active: activeTab === 'major7' }" data-tab="major7" @click.prevent="selectTab('major7')">Major 7</a>
+    <a class="item" :class="{ active: activeTab === 'minor7' }" data-tab="minor7" @click.prevent="selectTab('minor7')">Minor 7</a>
+    <a class="item" :class="{ active: activeTab === 'reference' }" data-tab="reference" @click.prevent="selectTab('reference')">Reference</a>
     </div>
 
-    <div class="ui bottom attached tab segment active" data-tab="major" style="background-color: burlywood;">
+    <div class="ui bottom attached tab segment" :class="{ active: activeTab === 'major' }" v-show="activeTab === 'major'" data-tab="major" style="background-color: burlywood;">
   
         <ul class='circle-container'>
             <li>
-                <ButtonChord root="A" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="A" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="E" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="E" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="B" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="B" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="F#" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="F#" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Db" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Db" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Ab" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Ab" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Eb" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Eb" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Bb" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Bb" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="F" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="F" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="C" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="C" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="G" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="G" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="D" symbol="M" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="D" symbol="M" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
         </ul>
 
     </div>
 
-    <div class="ui bottom attached tab segment" data-tab="minor" style="background-color: burlywood;">
+    <div class="ui bottom attached tab segment" :class="{ active: activeTab === 'minor' }" v-show="activeTab === 'minor'" data-tab="minor" style="background-color: burlywood;">
 
         <ul class='circle-container'>
             <li>
-                <ButtonChord root="F#" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="F#" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="C#" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="C#" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="G#" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="G#" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Eb" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Eb" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Bb" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Bb" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="F" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="F" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="C" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="C" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="G" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="G" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="D" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="D" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="A" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="A" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="E" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="E" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="B" symbol="m" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="B" symbol="m" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
         </ul>
 
     </div>
 
-    <div class="ui bottom attached tab segment " data-tab="major7" style="background-color: burlywood;">
+    <div class="ui bottom attached tab segment" :class="{ active: activeTab === 'major7' }" v-show="activeTab === 'major7'" data-tab="major7" style="background-color: burlywood;">
   
         <!-- Must use maj7 not M7 even though both are valid tonal chord symbols, because the 
         chord picker input widget values only use the first symbol only and do not match all possibilities -->
         <ul class='circle-container'>
             <li>
-                <ButtonChord root="A" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="A" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="E" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="E" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="B" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="B" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="F#" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="F#" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Db" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Db" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Ab" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Ab" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Eb" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Eb" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Bb" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Bb" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="F" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="F" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="C" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="C" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="G" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="G" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="D" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="D" symbol="maj7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
         </ul>
 
     </div>
 
-    <div class="ui bottom attached tab segment" data-tab="minor7" style="background-color: burlywood;">
+    <div class="ui bottom attached tab segment" :class="{ active: activeTab === 'minor7' }" v-show="activeTab === 'minor7'" data-tab="minor7" style="background-color: burlywood;">
 
         <ul class='circle-container'>
             <li>
-                <ButtonChord root="F#" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="F#" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="C#" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="C#" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="G#" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="G#" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Eb" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Eb" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="Bb" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="Bb" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="F" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="F" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="C" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="C" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="G" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="G" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="D" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="D" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="A" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="A" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="E" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="E" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
             <li>
-                <ButtonChord root="B" symbol="m7" bass="" @chord-event="chordFromEvent($event)" />
+                <ButtonChord root="B" symbol="m7" bass="" @chord-event="chordFromEvent($event)" @chord-select="chordSelectEvent($event)" />
             </li>
         </ul>
 
     </div>
 
 
-    <div class="ui bottom attached tab segment" data-tab="reference" style="background-color: burlywood;">
+    <div class="ui bottom attached tab segment" :class="{ active: activeTab === 'reference' }" v-show="activeTab === 'reference'" data-tab="reference" style="background-color: burlywood;">
         <img width=500 src="/images/Circle_of_fifths_deluxe_4.svg" alt="Circle of Fifths"/>
         <p>
         See <a href="https://en.wikipedia.org/wiki/Circle_of_fifths" target="_blank">wikipedia article</a> explaining the Circle of Fifths. 
@@ -275,6 +291,12 @@ function chordFromEvent($event) {
 
 .ui.tabular.menu .active.item {
     background: #e0e1e2;
+}
+
+.hint {
+  color: #6b5a45;
+  font-size: 0.8rem;
+  font-style: italic;
 }
 
 </style>

@@ -26,10 +26,18 @@ import {
   invertDraft,
   stepChord,
   autoSymbolFor,
+  autoNotesFor,
+  previewTranspose,
+  previewFifth,
+  previewInvert,
+  previewStep,
 } from '@/lib/chordInspector.js'
 import { linkProjectToKeyboard } from '@/lib/boot-project.js'
 import { flushCurrentProject } from '@/lib/currentProjectStore.js'
 import { auditionNotes } from '@/lib/auditionNotes.js'
+import { stopAuditionChord } from '@/lib/midi/audition-note.js'
+import { ensureAudioReady, isAudioLocked } from '@/lib/audio/general-midi.js'
+import { forgetHover, getHoveredPreview, rememberHover } from '@/lib/auditionHover.js'
 import ButtonAudition from './ButtonAudition.vue'
 import CommonChords from './CommonChords.vue'
 import CircleOfFifths from './CircleOfFifths.vue'
@@ -182,23 +190,130 @@ function onUseCaptured() {
 /**
  * Backquote holds to audition the draft (the chord that would be saved).
  * auditionNotes() fills in the bass octave, so the raw picker bass is passed.
+ * Releasing hands sound back to any preview still hovered, whether it is a
+ * browse chord, a transpose preview, or a grid speaker button.
  */
 function onChordPlay(event) {
   const state = event?.detail?.state !== 'off'
+  if (!state) {
+    auditionNotes([], '', false)
+    // Pointer never left, so resume whatever preview is still hovered.
+    const hovered = getHoveredPreview()
+    if (hovered && Array.isArray(hovered.notes) && hovered.notes.length > 0)
+      auditionNotes(hovered.notes, hovered.bass || '', true)
+    refreshAudioHint()
+    return
+  }
   const notes = globals.chordInspector.notes
   if (!Array.isArray(notes) || notes.length === 0)
     return
-  auditionNotes(notes, globals.chordPicker.currentBass, state)
+  // Key hold is a decisive gesture, so waking here is allowed. Hover paths
+  // never wake because each attempt logs a browser warning while suspended.
+  try { ensureAudioReady() } catch { /* audio not booted yet */ }
+  stopAuditionChord()
+  auditionNotes(notes, globals.chordPicker.currentBass, true)
+  refreshAudioHint()
 }
 
-function onChordFromEvent(detail) {
+// Hovering a browse chord only previews it. The draft stays clean until
+// the chord is clicked. auditionNotes() fills in the bass octave, so the
+// raw bass is passed through.
+function onBrowseAudition(detail) {
+  if (!detail)
+    return
   const { chordSymbolNoRoot, rootNote, bassNote, state } = detail
-  if (!state)
+  if (!chordSymbolNoRoot)
     return
   const root = rootNote || globals.chordPicker.currentRoot
+  if (!root)
+    return
+  const notes = autoNotesFor(root, chordSymbolNoRoot, 0)
+  if (!Array.isArray(notes) || notes.length === 0)
+    return
+  if (!state) {
+    forgetHover(notes)
+    auditionNotes([], '', false)
+    return
+  }
+  rememberHover(notes, bassNote || '')
+  // Never wake audio from hover. Hover is not a valid unlock gesture and each
+  // attempt logs a warning while suspended.
+  stopAuditionChord()
+  auditionNotes(notes, bassNote || '', true)
+  refreshAudioHint()
+}
+
+// Clicking a browse chord loads it into the draft as an unsaved change.
+// Save changes still writes it to the grid row. Silent: no sound here,
+// hover already previewed it.
+function onBrowseSelect(detail) {
+  if (!detail)
+    return
+  const { chordSymbolNoRoot, rootNote, bassNote } = detail
+  if (!chordSymbolNoRoot)
+    return
+  const root = rootNote || globals.chordPicker.currentRoot
+  if (!root)
+    return
   setIdentity(root, chordSymbolNoRoot)
-  if (bassNote)
+  if (typeof bassNote === 'string')
     setBass(bassNote)
+}
+
+// Transpose & invert: hovering previews the result, clicking applies it to
+// the draft (still unsaved until Save changes).
+function auditionPreview(preview, state) {
+  if (!state) {
+    forgetHover(preview?.notes)
+    auditionNotes([], '', false)
+    return
+  }
+  if (!preview || !Array.isArray(preview.notes) || preview.notes.length === 0)
+    return
+  rememberHover(preview.notes, preview.bass || '')
+  // Never wake audio from hover, same reason as browse preview above.
+  stopAuditionChord()
+  auditionNotes(preview.notes, preview.bass || '', true)
+  refreshAudioHint()
+}
+
+function onHoverTranspose(semitones, state) {
+  auditionPreview(previewTranspose(semitones), state)
+}
+
+function onHoverFifth(direction, state) {
+  auditionPreview(previewFifth(direction), state)
+}
+
+function onHoverInvert(direction, state) {
+  auditionPreview(previewInvert(direction), state)
+}
+
+function onHoverStep(direction, state) {
+  auditionPreview(previewStep(direction), state)
+}
+
+// Vue-controlled tabs for the Browse section. Replaces the Fomantic tab
+// module, which never switched reliably inside the accordion.
+const browseTab = ref('inspector-common')
+
+// Browsers start sound suspended after a refresh until a click or key press.
+// Hover alone cannot unlock it, so the first hover stays silent. Show a hint
+// until the context runs.
+const audioLocked = ref(false)
+
+function refreshAudioHint() {
+  try {
+    // Silent read only. Never resume here or hovering floods the console.
+    audioLocked.value = isAudioLocked()
+  }
+  catch {
+    audioLocked.value = false
+  }
+}
+
+function onAudioUnlockEvent() {
+  refreshAudioHint()
 }
 
 const flashMessage = ref('')
@@ -241,6 +356,10 @@ onMounted(() => {
   // "create a row", the same as the + Add chord button.
   document.addEventListener('chord-add', onAdd)
   document.addEventListener('chord-play', onChordPlay)
+  refreshAudioHint()
+  window.addEventListener('pointerdown', onAudioUnlockEvent)
+  window.addEventListener('keydown', onAudioUnlockEvent)
+  window.addEventListener('click', onAudioUnlockEvent)
 })
 
 // Show the highlighted slot as soon as a project is loaded, and whenever the
@@ -270,6 +389,9 @@ onUnmounted(() => {
   stopTransposeAccordion()
   document.removeEventListener('chord-add', onAdd)
   document.removeEventListener('chord-play', onChordPlay)
+  window.removeEventListener('pointerdown', onAudioUnlockEvent)
+  window.removeEventListener('keydown', onAudioUnlockEvent)
+  window.removeEventListener('click', onAudioUnlockEvent)
   if (flashTimer)
     clearTimeout(flashTimer)
 })
@@ -313,6 +435,7 @@ onUnmounted(() => {
       <span v-if="picker.currentChordInversion" class="inv-tag">inv {{ picker.currentChordInversion }}</span>
       <ButtonAudition :notes="inspector.notes" :bass="picker.currentBass" />
       <span class="field-hint">Plays what will be saved.</span>
+      <span v-if="audioLocked" class="field-hint">Sound is off after refresh. Click or press any key once, then hover again.</span>
     </div>
 
     <!-- One notes field, Auto or Custom -->
@@ -373,15 +496,16 @@ onUnmounted(() => {
         Browse chords
       </div>
       <div class="content">
+        <p class="row-hint">Hover to hear a chord. Click loads it into Edit Chords above (unsaved until Save changes).</p>
         <div class="ui top attached tabular menu" style="background-color: burlywood;">
-          <a class="item active" data-tab="inspector-common">Common Chords</a>
-          <a class="item" data-tab="inspector-fifths">Circle of Fifths</a>
+          <a class="item" :class="{ active: browseTab === 'inspector-common' }" data-tab="inspector-common" @click.prevent="browseTab = 'inspector-common'">Common Chords</a>
+          <a class="item" :class="{ active: browseTab === 'inspector-fifths' }" data-tab="inspector-fifths" @click.prevent="browseTab = 'inspector-fifths'">Circle of Fifths</a>
         </div>
-        <div class="ui bottom attached tab segment active" data-tab="inspector-common" style="background-color: burlywood;">
-          <CommonChords @chord-from-event="onChordFromEvent($event.subevent)" />
+        <div class="ui bottom attached tab segment" :class="{ active: browseTab === 'inspector-common' }" v-show="browseTab === 'inspector-common'" data-tab="inspector-common" style="background-color: burlywood;">
+          <CommonChords @chord-from-event="onBrowseAudition($event.subevent)" @chord-select-event="onBrowseSelect($event.subevent)" />
         </div>
-        <div class="ui bottom attached tab segment" data-tab="inspector-fifths" style="background-color: burlywood;">
-          <CircleOfFifths @chord-from-event="onChordFromEvent($event.subevent)" />
+        <div class="ui bottom attached tab segment" :class="{ active: browseTab === 'inspector-fifths' }" v-show="browseTab === 'inspector-fifths'" data-tab="inspector-fifths" style="background-color: burlywood;">
+          <CircleOfFifths @chord-from-event="onBrowseAudition($event.subevent)" @chord-select-event="onBrowseSelect($event.subevent)" />
         </div>
       </div>
 
@@ -390,25 +514,32 @@ onUnmounted(() => {
         Transpose &amp; invert
       </div>
       <div class="content">
+        <p class="row-hint">Hover to hear the result. Click applies it to Edit Chords above (unsaved until Save changes).</p>
         <div class="inspector-row">
-          <button type="button" class="ui tiny button" @click="stepChord('prev')">Previous chord</button>
-          <button type="button" class="ui tiny button" @click="stepChord('next')">Next chord</button>
-          <button type="button" class="ui tiny button" @click="stepChord('random')">Random 🎲</button>
+          <button type="button" class="ui tiny button" title="Hover to hear the previous chord type, click to load it into the draft"
+            @click="stepChord('prev')" @mouseenter="onHoverStep('prev', true)" @mouseleave="onHoverStep('prev', false)" @focus="onHoverStep('prev', true)" @blur="onHoverStep('prev', false)">Previous chord</button>
+          <button type="button" class="ui tiny button" title="Hover to hear the next chord type, click to load it into the draft"
+            @click="stepChord('next')" @mouseenter="onHoverStep('next', true)" @mouseleave="onHoverStep('next', false)" @focus="onHoverStep('next', true)" @blur="onHoverStep('next', false)">Next chord</button>
+          <button type="button" class="ui tiny button" title="Pick a random chord type into the draft"
+            @click="stepChord('random')">Random 🎲</button>
         </div>
         <div class="inspector-row">
-          <button type="button" class="ui tiny button" title="Transpose one semitone down"
-            @click="transposeDraft(-1)">1 <i class="caret down icon"></i></button>
-          <button type="button" class="ui tiny button" title="Transpose one semitone up"
-            @click="transposeDraft(1)">1 <i class="caret up icon"></i></button>
-          <button type="button" class="ui tiny button" title="Transpose a fifth down (circle of fifths)"
-            @click="fifthDraft(-1)">5th <i class="caret down icon"></i></button>
-          <button type="button" class="ui tiny button" title="Transpose a fifth up (circle of fifths)"
-            @click="fifthDraft(1)">5th <i class="caret up icon"></i></button>
+          <button type="button" class="ui tiny button" title="Hover to hear one semitone down, click to load it into the draft"
+            @click="transposeDraft(-1)" @mouseenter="onHoverTranspose(-1, true)" @mouseleave="onHoverTranspose(-1, false)" @focus="onHoverTranspose(-1, true)" @blur="onHoverTranspose(-1, false)">1 <i class="caret down icon"></i></button>
+          <button type="button" class="ui tiny button" title="Hover to hear one semitone up, click to load it into the draft"
+            @click="transposeDraft(1)" @mouseenter="onHoverTranspose(1, true)" @mouseleave="onHoverTranspose(1, false)" @focus="onHoverTranspose(1, true)" @blur="onHoverTranspose(1, false)">1 <i class="caret up icon"></i></button>
+          <button type="button" class="ui tiny button" title="Hover to hear a fifth down (circle of fifths), click to load it into the draft"
+            @click="fifthDraft(-1)" @mouseenter="onHoverFifth(-1, true)" @mouseleave="onHoverFifth(-1, false)" @focus="onHoverFifth(-1, true)" @blur="onHoverFifth(-1, false)">5th <i class="caret down icon"></i></button>
+          <button type="button" class="ui tiny button" title="Hover to hear a fifth up (circle of fifths), click to load it into the draft"
+            @click="fifthDraft(1)" @mouseenter="onHoverFifth(1, true)" @mouseleave="onHoverFifth(1, false)" @focus="onHoverFifth(1, true)" @blur="onHoverFifth(1, false)">5th <i class="caret up icon"></i></button>
         </div>
         <div class="inspector-row">
-          <button type="button" class="ui tiny button" @click="invertDraft(-1)">Invert <i class="caret left icon"></i></button>
-          <button type="button" class="ui tiny button" @click="invertDraft(1)">Invert <i class="caret right icon"></i></button>
-          <button type="button" class="ui tiny button" @click="invertDraft(0)">Reset inversion</button>
+          <button type="button" class="ui tiny button" title="Hover to hear the inversion down, click to load it into the draft"
+            @click="invertDraft(-1)" @mouseenter="onHoverInvert(-1, true)" @mouseleave="onHoverInvert(-1, false)" @focus="onHoverInvert(-1, true)" @blur="onHoverInvert(-1, false)">Invert <i class="caret left icon"></i></button>
+          <button type="button" class="ui tiny button" title="Hover to hear the inversion up, click to load it into the draft"
+            @click="invertDraft(1)" @mouseenter="onHoverInvert(1, true)" @mouseleave="onHoverInvert(1, false)" @focus="onHoverInvert(1, true)" @blur="onHoverInvert(1, false)">Invert <i class="caret right icon"></i></button>
+          <button type="button" class="ui tiny button" title="Hover to hear the root position, click to load it into the draft"
+            @click="invertDraft(0)" @mouseenter="onHoverInvert(0, true)" @mouseleave="onHoverInvert(0, false)" @focus="onHoverInvert(0, true)" @blur="onHoverInvert(0, false)">Reset inversion</button>
         </div>
         <p class="row-hint">Transposing or inverting changes the chord, so the voicing returns to Auto.</p>
       </div>
@@ -551,5 +682,9 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+.ui.tabular.menu .active.item {
+  background: #e0e1e2;
 }
 </style>

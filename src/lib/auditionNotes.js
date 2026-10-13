@@ -54,6 +54,10 @@ export function auditionNotes(notes, bass, noteState = true) {
     }
 
     if (noteState) {
+        // Never resume audio here. Hover is not a valid unlock gesture and
+        // each resume attempt while suspended logs a browser warning, so
+        // hovering across chords after a refresh floods the console. Unlock
+        // happens only on decisive gestures via installAudioUnlock.
         // An audition is a preview, not a performance, so it must never reach
         // the live take or the hidden background buffer. Without this the grey
         // audition buttons and the Chord Picker's chordPlay() would record

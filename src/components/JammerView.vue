@@ -28,7 +28,8 @@ onMounted(() => {
     .dropdown({ action: 'select' })  // select means activates menu but does not change current text
   $("#big-accordion .ui.dropdown.chordpicker")
     .dropdown({ fullTextSearch: true, ignoreCase: false, ignoreSearchCase: false })
-  $("#big-accordion .tabular.menu .item").tab()
+  // Browse chords and Circle of Fifths tabs are Vue-controlled (see
+  // ChordInspector and CircleOfFifths), so no Fomantic .tab() init here.
 
 });
 

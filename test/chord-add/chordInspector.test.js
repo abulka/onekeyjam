@@ -21,6 +21,10 @@ import {
     autoNotesFor,
     fifthDraft,
     transposeDraft,
+    previewTranspose,
+    previewFifth,
+    previewInvert,
+    previewStep,
 } from '@/lib/chordInspector.js'
 
 function makeProject() {
@@ -278,5 +282,44 @@ describe('chordInspector draft', () => {
         // A fresh play while the row is open is offered.
         globals.currentChordBeingJammed.chordNotes = ['E4', 'G4', 'B4']
         assert.equal(capturedInfo().available, true)
+    })
+
+    it('previews a transpose without dirtying the draft', () => {
+        install(makeProject())
+        openForSlot('C3')
+        assert.equal(isDirty(), false)
+        const before = {
+            root: globals.chordPicker.currentRoot,
+            quality: globals.chordPicker.currentChord,
+            notes: [...globals.chordInspector.notes],
+        }
+        const preview = previewTranspose(1)
+        assert.deepEqual(preview.notes, autoNotesFor('C#', before.quality, 0))
+        assert.equal(preview.bass, 'C#')
+        assert.equal(globals.chordPicker.currentRoot, before.root)
+        assert.deepEqual(globals.chordInspector.notes, before.notes)
+        assert.equal(isDirty(), false)
+    })
+
+    it('previews a fifth and an inversion without dirtying the draft', () => {
+        install(makeProject())
+        openForSlot('C3')
+        const fifth = previewFifth(1)
+        assert.deepEqual(fifth.notes, autoNotesFor('G', globals.chordPicker.currentChord, 0))
+        assert.equal(isDirty(), false)
+
+        const inversion = previewInvert(1)
+        assert.ok(Array.isArray(inversion.notes) && inversion.notes.length > 0)
+        assert.equal(isDirty(), false)
+        assert.equal(globals.chordPicker.currentChordInversion, 0)
+    })
+
+    it('previews a quality step without dirtying the draft', () => {
+        install(makeProject())
+        openForSlot('C3')
+        const preview = previewStep('next')
+        assert.ok(preview && Array.isArray(preview.notes) && preview.notes.length > 0)
+        assert.equal(isDirty(), false)
+        assert.equal(previewStep('random'), null)
     })
 })

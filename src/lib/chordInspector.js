@@ -470,6 +470,68 @@ export function stepChord(direction) {
   setIdentity(globals.chordPicker.currentRoot, options[index].value)
 }
 
+/**
+ * Preview what a Transpose & invert button would sound like, without touching
+ * the draft. Returns the Auto voicing notes and bass for the prospective
+ * chord, so hovering can audition it. The draft stays clean until click.
+ * @returns {{ notes: string[], bass: string }}
+ */
+export function previewTranspose(semitones) {
+  const root = globals.chordPicker.currentRoot
+  const quality = globals.chordPicker.currentChord
+  const newRoot = normaliseNoteName(
+    Tonal.Note.transpose(root, Tonal.Interval.fromSemitones(semitones)))
+  return { notes: autoNotesFor(newRoot, quality, 0), bass: newRoot }
+}
+
+/** Preview a fifth move without touching the draft. */
+export function previewFifth(direction) {
+  const root = globals.chordPicker.currentRoot
+  const quality = globals.chordPicker.currentChord
+  const newRoot = normaliseNoteName(
+    Tonal.Note.transposeFifths(root, direction))
+  return { notes: autoNotesFor(newRoot, quality, 0), bass: newRoot }
+}
+
+/** Preview an inversion without touching the draft. */
+export function previewInvert(direction) {
+  const root = globals.chordPicker.currentRoot
+  const quality = globals.chordPicker.currentChord
+  const { bass, inversion } = calcChordInversionNumberAndNewBass(
+    root,
+    quality,
+    globals.chordPicker.currentChordInversion,
+    globals.chordPicker.inversionChangesBass,
+    direction,
+  )
+  return { notes: autoNotesFor(root, quality, inversion), bass }
+}
+
+/**
+ * Preview stepping the chord quality without touching the draft.
+ * Returns null for 'random' (no stable preview) or an empty catalogue.
+ * @returns {{ notes: string[], bass: string, quality: string } | null}
+ */
+export function previewStep(direction) {
+  if (direction === 'random')
+    return null
+  const options = calcAllChordSymbols(globals.chordPicker.showAllChords, globals.chordPicker.shortChordNames)
+  if (options.length === 0)
+    return null
+  const root = globals.chordPicker.currentRoot
+  let index = options.findIndex(option => option.value === globals.chordPicker.currentChord)
+  if (index < 0)
+    index = 0
+  if (direction === 'next')
+    index = (index + 1) % options.length
+  else if (direction === 'prev')
+    index = (index - 1 + options.length) % options.length
+  else
+    return null
+  const quality = options[index].value
+  return { notes: autoNotesFor(root, quality, 0), bass: root, quality }
+}
+
 /** Select a slot without opening the panel (used from the grid). */
 export function selectSlot(triggerNote) {
   if (!triggerNote || !(triggerNote in (globals.chordTriggerMap ?? {})))

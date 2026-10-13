@@ -1,6 +1,7 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { globals } from '@/lib/globals.js'
+import { isAudioLocked } from '@/lib/audio/general-midi.js'
 import DetectedChord from './DetectedChord.vue'
 import DetectedChordDebug from './DetectedChordDebug.vue'
 import JamNote from './JamNote.vue'
@@ -26,6 +27,33 @@ const isLiveSounding = computed(() => {
     return true
   const jammed = globals.currentChordBeingJammed
   return !!(jammed && jammed.chord && !jammed.stale)
+})
+
+// Browsers keep sound suspended after a refresh until a click or key press.
+// Hover cannot unlock it. Show one always visible hint until sound runs.
+// Reads state only, never resumes, so hovering cannot spam the console.
+const audioLocked = ref(false)
+
+function refreshAudioLocked() {
+  try {
+    audioLocked.value = isAudioLocked()
+  }
+  catch {
+    audioLocked.value = false
+  }
+}
+
+onMounted(() => {
+  refreshAudioLocked()
+  window.addEventListener('pointerdown', refreshAudioLocked)
+  window.addEventListener('keydown', refreshAudioLocked)
+  window.addEventListener('click', refreshAudioLocked)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('pointerdown', refreshAudioLocked)
+  window.removeEventListener('keydown', refreshAudioLocked)
+  window.removeEventListener('click', refreshAudioLocked)
 })
 
 </script>
@@ -70,6 +98,9 @@ const isLiveSounding = computed(() => {
 
             </div>
 
+            <div v-if="audioLocked" class="audio-locked-hint" title="Browsers keep sound off after a refresh until you click or press a key. Hover alone cannot start it.">
+              Sound is off. Click or press any key once, then hover to audition.
+            </div>
             <div class="status-live" :class="{ 'hide-when-idle': !isLiveSounding }">
                 <!-- wrap each in an extra div so flex layout affects these divs and not the divs inside each component -->
                 <div>
@@ -155,6 +186,15 @@ const isLiveSounding = computed(() => {
 
 .status-live :deep(p) {
     margin: 0;
+}
+
+.audio-locked-hint {
+    margin-top: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 6px;
+    background: #fff3cd;
+    color: #664d03;
+    font-size: 0.85rem;
 }
 
 div.wrapper {

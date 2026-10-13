@@ -30,7 +30,7 @@ the jam notes. The on-screen keyboard labels show the computer keys.
 | All notes off | hold `C#` (shift), press `D#` | hold `s`, press `d` | stops every sounding note |
 | Add chord | hold `C#` (shift), press `F#` | `/`, or hold `s`, press `g` | adds a new chord row and selects it; edit it in the inspector |
 | Reset transpositions | hold `C#` (shift), press `G#` | hold `s`, press `h`, or `Backspace` | undoes any transposing done while playing |
-| Audition picked chord | - | hold `Backtick` (top-left key) | plays the chord currently in the Chord Inspector without adding it |
+| Audition picked chord | - | hold `` ` `` (top-left key) | plays the chord currently in the Chord Inspector without adding it; releasing it hands sound back to any preview still hovered (see below) |
 | Replay current chord | - | hold `'` | replays the current left-hand chord (on a MIDI keyboard, replay its white trigger key) |
 | Next/previous chord | - | hold `→` / `←` | steps through the project's chords with wrap-around and plays each one (on a MIDI keyboard, play the white trigger keys directly) |
 | Switch to magic mode | - | `,` | turns on one-finger chords and scale filtering |
@@ -50,6 +50,38 @@ because `Ctrl`+digit switches browser tabs.
 the pattern, or starts the pattern when it has notes. `Tab` switches between the
 Edit and Perform pages, and `Shift+Tab` between the current page and Help. `Esc`
 closes the shortcuts help or the welcome message.
+
+---
+
+## Browser sound unlock
+
+Browsers start built-in sound suspended after a page load or refresh. They only
+allow sound after a decisive gesture: a click, tap, or key press. Hovering
+alone can never unlock it.
+
+This means the first hover after a refresh stays silent. The status area shows
+a notice until sound runs: click or press any key once, then hover again.
+Triggering a chord always counts as a gesture, so it wakes sound. Holding
+Backquote also counts, although its first press can still be silent while
+waking. Once unlocked, hover audition works until the next reload. Hover paths
+never attempt to unlock, so hovering while locked stays silent without filling
+the console with warnings.
+
+## Auditioning: hover vs click, and Backquote resume
+
+Audition previews never change your work. They play without touching the draft,
+the grid, the take, or Flashback Capture.
+
+- Hover a browse chord, a Transpose and invert button, or a grid speaker button
+  to hear it. Moving away stops it. The Edit Chords draft stays clean.
+- Click a browse chord, or a Transpose and invert button, to load that chord
+  into Edit Chords as an unsaved change. The row in the chord grid only changes
+  when you press Save changes. Clicking itself plays no sound; hover already
+  previewed it.
+- Hold Backquote (```) to hear the draft chord that Save would write. Release
+  stops the draft. If the pointer is still over a browse chord, a transpose
+  preview, or a grid speaker button, that preview resumes at once. Moving away
+  first means nothing resumes.
 
 ---
 
