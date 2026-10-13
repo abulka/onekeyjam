@@ -43,6 +43,35 @@ function installFmaj9Row() {
     resetInspector()
 }
 
+function installMajorRow() {
+    const config = {
+        id: 1,
+        name: '',
+        chord: 'C',
+        chordNotes: ['C3', 'E3', 'G3'],
+        symbols: 'C',
+        bass: '',
+        scale1: '',
+        scale2: '',
+        scale3: '',
+        scaleNotesOfChord: [],
+    }
+    globals.project = {
+        name: 'Audition wiring test',
+        chords: [config],
+        options: {},
+        songs: { default: { ids: [1], favourites: [], blacklist: [] } },
+    }
+    globals.chordTriggerMap = { C3: config }
+    globals.currentChordTriggerNote = 'C3'
+    globals.currentChordBeingJammed.chord = ''
+    globals.currentChordBeingJammed.chordNotes = []
+    globals.currentChordBeingJammed.symbols = []
+    globals.currentChordBeingJammed.bass = ''
+    globals.currentChordBeingJammed.source = ''
+    resetInspector()
+}
+
 function buttonByTitle(wrapper, prefix) {
     return wrapper.findAll('button').find(button => (button.attributes('title') || '').startsWith(prefix))
 }
@@ -125,6 +154,81 @@ describe('ChordInspector audition wiring', () => {
             auditionNotes.mockClear()
             await capture.trigger('mouseenter')
             assert.deepEqual(notesOfLastAudition(), ['D4', 'F4', 'B4', 'C5'], 'Capture auditions the played notes')
+        }
+        finally {
+            wrapper.unmount()
+        }
+    })
+
+    it('auditions the active voicing when a picker combo changes', async () => {
+        installFmaj9Row()
+        const wrapper = mount(ChordInspector, { attachTo: document.body })
+        try {
+            await nextTick()
+            await nextTick()
+            // The Fmaj9 row is custom, so the draft voicing is its custom notes.
+            const customNotes = ['C3', 'E3', 'G3', 'A3', 'F3']
+
+            const selects = wrapper.findAll('.identity-row select')
+            auditionNotes.mockClear()
+            await selects[0].setValue('G')
+            await nextTick()
+            assert.deepEqual(notesOfLastAudition(), customNotes, 'root change auditions the active custom voicing')
+
+            const chordSelect = selects[1]
+            const otherChord = chordSelect.findAll('option')
+                .map(option => option.element.value)
+                .find(value => value !== globals.chordPicker.currentChord)
+            auditionNotes.mockClear()
+            await chordSelect.setValue(otherChord)
+            await nextTick()
+            assert.deepEqual(notesOfLastAudition(), customNotes, 'chord change auditions the active custom voicing')
+
+            auditionNotes.mockClear()
+            await selects[2].setValue('G')
+            await nextTick()
+            assert.ok(auditionNotes.mock.calls.length > 0, 'bass change auditions the chord')
+        }
+        finally {
+            wrapper.unmount()
+        }
+    })
+
+    it('plays the typed notes, not the normalised voicing, when note entry renames the chord', async () => {
+        installMajorRow()
+        const wrapper = mount(ChordInspector, { attachTo: document.body })
+        try {
+            await nextTick()
+            await nextTick()
+            assert.equal(globals.chordInspector.voicingMode, 'auto', 'starts on the normalised C major row')
+
+            // C E A is detected as Am, so the picker changes. The typed notes
+            // are the custom voicing and are what should sound.
+            auditionNotes.mockClear()
+            await wrapper.find('.notes-input').setValue('C3 E3 A3')
+            await nextTick()
+            assert.equal(globals.chordPicker.currentRoot, 'A', 'note entry renamed the chord')
+            assert.deepEqual(notesOfLastAudition(), ['C3', 'E3', 'A3'], 'the typed notes play, not the normalised Am')
+        }
+        finally {
+            wrapper.unmount()
+        }
+    })
+
+    it('auditions when the Random chord button changes the picker', async () => {
+        installMajorRow()
+        const wrapper = mount(ChordInspector, { attachTo: document.body })
+        try {
+            await nextTick()
+            await nextTick()
+            const random = wrapper.findAll('button').find(button => button.text().includes('Random'))
+            assert.ok(random, 'Random button exists')
+
+            auditionNotes.mockClear()
+            await random.trigger('click')
+            await nextTick()
+            assert.ok(auditionNotes.mock.calls.length > 0, 'Random auditions the chord it picked')
+            assert.ok(notesOfLastAudition().length > 0, 'a chord actually sounds')
         }
         finally {
             wrapper.unmount()

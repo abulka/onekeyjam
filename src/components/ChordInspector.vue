@@ -97,6 +97,7 @@ const selectedRoot = computed({
       renameDraft(value, picker.value.currentChord)
     else
       setIdentity(value, picker.value.currentChord)
+    startDraftAudition()
   },
 })
 const selectedChord = computed({
@@ -106,11 +107,15 @@ const selectedChord = computed({
       renameDraft(picker.value.currentRoot, value)
     else
       setIdentity(picker.value.currentRoot, value)
+    startDraftAudition()
   },
 })
 const selectedBass = computed({
   get: () => picker.value.currentBass,
-  set: (value) => setBass(value),
+  set: (value) => {
+    setBass(value)
+    startDraftAudition()
+  },
 })
 
 // The custom row's notes field. It mirrors the stored custom voicing and flips
@@ -138,8 +143,15 @@ function applyNotes() {
     notesBassError.value = ''
     return
   }
+  const rootBefore = globals.chordPicker.currentRoot
+  const chordBefore = globals.chordPicker.currentChord
   const { invalidBass } = applyNotesEntry(notesText.value)
   notesBassError.value = invalidBass
+  // Typing notes that rename the chord should be heard at once. The typed
+  // notes are the custom voicing, so that is what plays, not the normalised
+  // voicing the picker would generate.
+  if (globals.chordPicker.currentRoot !== rootBefore || globals.chordPicker.currentChord !== chordBefore)
+    startDraftAudition()
 }
 
 /** Leaving the field applies the notes and shows them in their stored form. */
@@ -277,6 +289,15 @@ function onToggleFavourite() {
   toggleFavourite()
 }
 
+/**
+ * Step the chord type (previous, next or random) and play the result. The
+ * click changes the pickers, so it should be heard like a combo change.
+ */
+function onStepChord(direction) {
+  stepChord(direction)
+  startDraftAudition()
+}
+
 /** Pick a radio row: it decides what Save stores. Neither row overwrites the other. */
 function onChooseNormalised() {
   chooseNormalised()
@@ -297,6 +318,25 @@ function onCapturePlayed() {
 }
 
 /**
+ * Play the active draft voicing: the notes that would be saved. Used by the
+ * backquote hold and whenever the chord pickers change or typed notes rename
+ * the chord, so the result is heard without reaching for a speaker. A picker
+ * click or keystroke is a decisive gesture, so waking audio here is allowed
+ * (hover paths never wake because each attempt logs a warning while suspended).
+ */
+function startDraftAudition() {
+  const draftNotes = Array.isArray(globals.chordInspector.notes) && globals.chordInspector.notes.length > 0
+    ? globals.chordInspector.notes
+    : previewAutoVoicing().notes
+  if (!Array.isArray(draftNotes) || draftNotes.length === 0)
+    return
+  try { ensureAudioReady() } catch { /* audio not booted yet */ }
+  stopAuditionChord()
+  auditionNotes(draftNotes, globals.chordPicker.currentBass, true)
+  refreshAudioHint()
+}
+
+/**
  * Backquote holds to audition the draft (the chord that would be saved).
  * auditionNotes() fills in the bass octave, so the raw picker bass is passed.
  * Releasing hands sound back to any preview still hovered, whether it is a
@@ -313,17 +353,7 @@ function onChordPlay(event) {
     refreshAudioHint()
     return
   }
-  const draftNotes = Array.isArray(globals.chordInspector.notes) && globals.chordInspector.notes.length > 0
-    ? globals.chordInspector.notes
-    : previewAutoVoicing().notes
-  if (!Array.isArray(draftNotes) || draftNotes.length === 0)
-    return
-  // Key hold is a decisive gesture, so waking here is allowed. Hover paths
-  // never wake because each attempt logs a browser warning while suspended.
-  try { ensureAudioReady() } catch { /* audio not booted yet */ }
-  stopAuditionChord()
-  auditionNotes(draftNotes, globals.chordPicker.currentBass, true)
-  refreshAudioHint()
+  startDraftAudition()
 }
 
 // Hovering a browse chord only previews it. The draft stays clean until
@@ -735,11 +765,11 @@ onUnmounted(() => {
         <p class="row-hint">Hover to hear the result. Click applies it to Edit Chords above (unsaved until Save changes).</p>
         <div class="inspector-row">
           <button type="button" class="ui tiny button" title="Hover to hear the previous chord type, click to load it into the draft"
-            @click="stepChord('prev')" @mouseenter="onHoverStep('prev', true)" @mouseleave="onHoverStep('prev', false)" @focus="onHoverStep('prev', true)" @blur="onHoverStep('prev', false)">Previous chord</button>
+            @click="onStepChord('prev')" @mouseenter="onHoverStep('prev', true)" @mouseleave="onHoverStep('prev', false)" @focus="onHoverStep('prev', true)" @blur="onHoverStep('prev', false)">Previous chord</button>
           <button type="button" class="ui tiny button" title="Hover to hear the next chord type, click to load it into the draft"
-            @click="stepChord('next')" @mouseenter="onHoverStep('next', true)" @mouseleave="onHoverStep('next', false)" @focus="onHoverStep('next', true)" @blur="onHoverStep('next', false)">Next chord</button>
+            @click="onStepChord('next')" @mouseenter="onHoverStep('next', true)" @mouseleave="onHoverStep('next', false)" @focus="onHoverStep('next', true)" @blur="onHoverStep('next', false)">Next chord</button>
           <button type="button" class="ui tiny button" title="Pick a random chord type into the draft"
-            @click="stepChord('random')">Random 🎲</button>
+            @click="onStepChord('random')">Random 🎲</button>
         </div>
         <div class="inspector-row">
           <button type="button" class="ui tiny button" title="Hover to hear one semitone down, click to load it into the draft"
