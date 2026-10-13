@@ -199,6 +199,18 @@ const soloInKey = computed({
   set: (value) => setSoloMode(value ? 'key' : 'chord'),
 })
 
+// The key the right hand is pinned to while Solo in key is on.
+const soloKeyName = computed(() => {
+  const key = globals.getActiveKey()
+  return key ? projectKeyName(key) : ''
+})
+
+/** Leave Solo in key from the pill above the grid, then resume playing. */
+function turnOffSoloInKey(event) {
+  soloInKey.value = false
+  releaseControlFocus(event)
+}
+
 const colours = PROJECT_COLOURS
 
 // Changing the colour re-ranks every chord scale in the new profile.
@@ -655,6 +667,12 @@ function generalTableClick(event) {
       :title="globals.scaleFiltering.autoReason || 'The live scale chosen by the follow or shuffle policy'">
       auto: {{ globals.scaleFiltering.autoScaleName }}
     </span>
+    <span v-if="soloInKey" class="solo-key-pill"
+      title="Solo in key: the right hand stays on the project key scale while the chords change, so the per-chord scale filters are paused (which is why the grid stays dim).">
+      <b>Solo in key</b>
+      <span v-if="soloKeyName">· {{ soloKeyName }}</span>
+      <button type="button" class="solo-key-off" @click="turnOffSoloInKey($event)">Turn off</button>
+    </span>
   </div>
 
   <!-- the complete scale mechanism, and fine tuning for the follow/shuffle modes -->
@@ -1075,6 +1093,37 @@ table.scale-filters td {
   color: #6b5a45;
   font-size: 0.85rem;
   font-style: italic;
+}
+
+/* Solo in key pill: sits after the Options button and is pushed to the right
+   edge, so it lines up with the right-hand side of the grid. */
+.solo-key-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: auto;
+  padding: 0.1rem 0.55rem;
+  border: 1px solid #2f4fa8;
+  border-radius: 999px;
+  background: #4a6fd4;
+  color: #fff;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.solo-key-off {
+  padding: 0.02rem 0.45rem;
+  border: 1px solid #fff;
+  border-radius: 999px;
+  background: #fff;
+  color: #2f4fa8;
+  font-size: 0.7rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.solo-key-off:hover {
+  background: #dce4f7;
 }
 
 /* A control showing "Custom" after hand-tuning in Options. */
