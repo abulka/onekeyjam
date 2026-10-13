@@ -1096,29 +1096,36 @@ table.scale-filters td {
 }
 
 /* Solo in key pill: sits after the Options button and is pushed to the right
-   edge, so it lines up with the right-hand side of the grid. */
+   edge, so it lines up with the right-hand side of the grid. Its height is
+   pinned to the row's other controls so showing it never nudges the grid. */
 .solo-key-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   margin-left: auto;
-  padding: 0.1rem 0.55rem;
+  height: 20px;
+  box-sizing: border-box;
+  padding: 0 0.5rem;
   border: 1px solid #2f4fa8;
   border-radius: 999px;
   background: #4a6fd4;
   color: #fff;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
+  line-height: 1;
   white-space: nowrap;
 }
 
 .solo-key-off {
-  padding: 0.02rem 0.45rem;
+  height: 15px;
+  box-sizing: border-box;
+  padding: 0 0.4rem;
   border: 1px solid #fff;
   border-radius: 999px;
   background: #fff;
   color: #2f4fa8;
-  font-size: 0.7rem;
+  font-size: 0.68rem;
   font-weight: bold;
+  line-height: 13px;
   cursor: pointer;
 }
 
