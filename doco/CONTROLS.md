@@ -108,6 +108,12 @@ Perform page, which has no inspector.
 Revert, and then closes the panel. The row stays selected, so opening it again
 shows the saved chord.
 
+**Delete** asks in place rather than in a browser dialog: a small card appears
+above the button naming the chord and its id, with a red Delete and a Keep.
+Only the card's Delete removes the row. It closes on Keep, on Escape, on a click
+away, or on its own after a few seconds. After the delete the next row is
+selected, or the row before it when the deleted row was the last one.
+
 ---
 
 ## Trigger keys and solo keys

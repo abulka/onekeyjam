@@ -309,7 +309,8 @@ watch(() => globals.helpPage, async () => {
           Hover a row's chord cell and click the pencil that appears at the top
           right to load it here, change its chord, play with its voicing (Auto or
           Custom), then Save. Revert discards the draft; Cancel discards it and
-          closes the panel. <strong>+ Add chord</strong> creates a new row.
+          closes the panel; Delete asks in place before removing the row.
+          <strong>+ Add chord</strong> creates a new row.
         </li>
         <li>
           <strong>Key Detection</strong> - set the project key, see the detected

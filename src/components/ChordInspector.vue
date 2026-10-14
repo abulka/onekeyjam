@@ -331,11 +331,36 @@ function onDuplicate() {
   }
 }
 
-function onDelete() {
-  if (!confirm(`Delete row #${globals.chordInspector.slotId}?`))
-    return
-  if (deleteDraft())
+/**
+ * Delete asks in place: the first click opens a small confirmation above the
+ * button, and only its own Delete removes the row. The browser confirm() it
+ * replaces blocked the page and looked nothing like the rest of the app.
+ */
+function askDelete() {
+  showDeleteConfirm.value = true
+  clearDeleteConfirmTimer()
+  deleteConfirmTimer = setTimeout(cancelDelete, DELETE_CONFIRM_TIMEOUT_MS)
+}
+
+/** Close the confirmation without deleting. */
+function cancelDelete() {
+  showDeleteConfirm.value = false
+  clearDeleteConfirmTimer()
+}
+
+function clearDeleteConfirmTimer() {
+  if (deleteConfirmTimer) {
+    clearTimeout(deleteConfirmTimer)
+    deleteConfirmTimer = null
+  }
+}
+
+function onConfirmDelete() {
+  cancelDelete()
+  if (deleteDraft()) {
     afterWrite()
+    flash('Row deleted')
+  }
 }
 
 function onToggleFavourite() {
@@ -586,9 +611,43 @@ function flash(message) {
   flashTimer = setTimeout(() => { flashMessage.value = '' }, 1800)
 }
 
-// Escape reverts the whole draft. Enter is handled globally so it works even
-// when focus is on the piano or body, not just inside the panel.
+// The in-place delete confirmation. The timer is a safety net so an opened
+// confirmation never lingers if the pointer moves on.
+const DELETE_CONFIRM_TIMEOUT_MS = 5000
+const showDeleteConfirm = ref(false)
+const deleteActionEl = ref(null)
+let deleteConfirmTimer = null
+
+/** What the confirmation asks: the chord name when there is one, else the id. */
+const deleteQuestion = computed(() => {
+  const slotId = inspector.value.slotId
+  if (slotId == null)
+    return ''
+  const root = picker.value.currentRoot || ''
+  const quality = picker.value.currentChord || 'M'
+  const symbol = inspector.value.symbol || (quality === 'M' ? root : `${root}${quality}`)
+  return symbol ? `Delete ${symbol} (id ${slotId})?` : `Delete this chord (id ${slotId})?`
+})
+
+/** An outside pointer press closes the confirmation, like any menu. */
+function onDeleteOutsidePointer(event) {
+  if (!showDeleteConfirm.value)
+    return
+  if (deleteActionEl.value && deleteActionEl.value.contains(event.target))
+    return
+  cancelDelete()
+}
+
+// Escape reverts the whole draft. An open delete confirmation takes Escape
+// first, so the first press closes it and the next one reverts. Enter is
+// handled globally so it works even when focus is on the piano or body, not
+// just inside the panel.
 function onKeydown(event) {
+  if (event.key === 'Escape' && showDeleteConfirm.value) {
+    event.preventDefault()
+    cancelDelete()
+    return
+  }
   if (event.key === 'Escape' && globals.chordInspector.open) {
     event.preventDefault()
     onRevert()
@@ -677,6 +736,7 @@ onMounted(() => {
   window.addEventListener('keydown', onGlobalEnter)
   refreshAudioHint()
   window.addEventListener('pointerdown', onAudioUnlockEvent)
+  window.addEventListener('pointerdown', onDeleteOutsidePointer)
   window.addEventListener('keydown', onAudioUnlockEvent)
   window.addEventListener('click', onAudioUnlockEvent)
 })
@@ -743,6 +803,11 @@ watch(captured, (cap) => {
   autoApplyCaptured()
 })
 
+// The confirmation belongs to one row: closing or switching rows dismisses it.
+watch(() => globals.chordInspector.slotId, () => {
+  cancelDelete()
+})
+
 onUnmounted(() => {
   stopBrowseAccordion()
   stopTransposeAccordion()
@@ -752,8 +817,11 @@ onUnmounted(() => {
   window.removeEventListener('pointerdown', onAudioUnlockEvent)
   window.removeEventListener('keydown', onAudioUnlockEvent)
   window.removeEventListener('click', onAudioUnlockEvent)
+  window.removeEventListener('pointerdown', onDeleteOutsidePointer)
   if (flashTimer)
     clearTimeout(flashTimer)
+  if (deleteConfirmTimer)
+    clearTimeout(deleteConfirmTimer)
   if (keyboardAuditionTimer)
     clearTimeout(keyboardAuditionTimer)
 })
@@ -860,8 +928,22 @@ onUnmounted(() => {
           @click="onToggleFavourite">
           {{ favourite ? '★ Favourite' : '☆ Favourite' }}
         </button>
-        <button type="button" class="ui tiny button" title="Delete this row"
-          @click="onDelete">Delete</button>
+        <span ref="deleteActionEl" class="delete-action">
+          <button type="button" class="ui tiny button" title="Delete this row"
+            @click="askDelete">Delete</button>
+          <!-- The confirmation sits above the button so the row never moves.
+          The first click only opens it; only the danger button deletes. -->
+          <span v-if="showDeleteConfirm" class="delete-confirm" role="alertdialog"
+            aria-label="Confirm deleting this row">
+            <span class="delete-confirm-question">{{ deleteQuestion }}</span>
+            <span class="delete-confirm-actions">
+              <button type="button" class="ui tiny button delete-confirm-yes"
+                @click="onConfirmDelete">Delete</button>
+              <button type="button" class="ui tiny button"
+                @click="cancelDelete">Keep</button>
+            </span>
+          </span>
+        </span>
       </template>
       <template v-else>
         <button type="button" class="ui small primary button" :disabled="!canAdd"
@@ -1155,6 +1237,54 @@ editable custom field. */
   height: 1.5rem;
   background: #b9a98e;
   margin: 0 0.4rem;
+}
+
+/* Delete asks in place. The wrapper is the positioning context, so the card
+   floats above the button and nothing in the row shifts when it opens. */
+.delete-action {
+  position: relative;
+  display: inline-flex;
+}
+
+.delete-confirm {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+  padding: 0.35rem 0.5rem;
+  background: #fbf7f0;
+  border: 1px solid #d9c9b0;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(74, 52, 24, 0.18);
+}
+
+/* A small pointer down at the button, so the card reads as attached to it. */
+.delete-confirm::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  right: 1rem;
+  border: 0.35rem solid transparent;
+  border-top-color: #d9c9b0;
+}
+
+.delete-confirm-question {
+  color: #4a3418;
+  font-size: 0.8rem;
+}
+
+.delete-confirm-yes {
+  background: #f6e3e0 !important;
+  border-color: #d8a9a2 !important;
+  color: #8c2f24 !important;
+}
+
+.delete-confirm-yes:hover {
+  background: #eecfc9 !important;
 }
 
 .checkboxLabel {

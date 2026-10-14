@@ -814,30 +814,39 @@ export function toggleFavourite() {
 }
 
 /**
- * Delete the selected slot. The grid shrinks to match and the nearest slot is
- * selected, so the inspector always points at a real row.
+ * Delete the selected slot. The grid shrinks to match and the next row is
+ * selected, or the previous row when the deleted row was the last one, so the
+ * inspector always points at a real row and stays near where the user was.
  */
 export function deleteDraft() {
-  const id = inspector().slotId
+  const ins = inspector()
+  const id = ins.slotId
   if (id == null || !globals.isProjectLoaded)
     return false
+  // The grid order before the delete, so the selection can move to the row that
+  // slides into the deleted row's place rather than jumping to the top.
+  const rowsBefore = Object.keys(globals.chordTriggerMap ?? {})
+  const position = rowsBefore.indexOf(ins.triggerNote)
   globals.idsToDelete = [id]
   deleteGridChords()
   globals.projectKey = resolveProjectKey(globals.project) ?? globals.projectKey ?? null
   detectKeysAfterEdit()
-  const triggerNotes = Object.keys(globals.chordTriggerMap ?? {})
-  if (triggerNotes.length === 0) {
-    inspector().open = false
-    inspector().slotId = null
-    inspector().triggerNote = ''
-    inspector().notes = []
-    inspector().voicingMode = 'auto'
-    inspector().symbol = ''
-    inspector().symbols = []
+  const rowsAfter = Object.keys(globals.chordTriggerMap ?? {})
+  if (rowsAfter.length === 0) {
+    ins.open = false
+    ins.slotId = null
+    ins.triggerNote = ''
+    ins.notes = []
+    ins.voicingMode = 'auto'
+    ins.symbol = ''
+    ins.symbols = []
     clearPlayedVoicing()
     return true
   }
-  openForSlot(triggerNotes[0])
+  // The row that followed the deleted one now holds its index, so keep that
+  // index. Deleting the last row clamps to the row before it.
+  const nextIndex = position < 0 ? 0 : Math.min(position, rowsAfter.length - 1)
+  openForSlot(rowsAfter[nextIndex])
   return true
 }
 

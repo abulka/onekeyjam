@@ -37,6 +37,17 @@ function makeProject() {
     return project
 }
 
+/**
+ * A project whose grid arrangement covers every chord, the way a saved project
+ * does. buildProject leaves songs.default.ids empty, and an empty arrangement
+ * makes the grid collapse to one row on any delete.
+ */
+function makeArrangedProject() {
+    const project = makeProject()
+    project.songs.default.ids = project.chords.map((chord) => chord.id)
+    return project
+}
+
 function install(project, maxChordConfigs = 3) {
     globals.project = project
     globals.maxChordConfigs = maxChordConfigs
@@ -262,6 +273,37 @@ describe('chordInspector draft', () => {
         assert.equal(project.chords.length, rowCountBefore - 1)
         assert.equal(globals.chordInspector.open, true)
         assert.ok(globals.chordInspector.triggerNote)
+    })
+
+    it('selects the row after the deleted one', () => {
+        const project = makeArrangedProject()
+        install(project)
+        const rows = Object.keys(globals.chordTriggerMap)
+        openForSlot(rows[1])
+        assert.equal(deleteDraft(), true)
+        const remaining = Object.keys(globals.chordTriggerMap)
+        assert.equal(remaining.length, 2, 'the grid kept its height minus the deleted row')
+        assert.equal(globals.chordInspector.triggerNote, remaining[1], 'the following row took the deleted row\'s place')
+    })
+
+    it('selects the previous row when the last row is deleted', () => {
+        const project = makeArrangedProject()
+        install(project)
+        const rows = Object.keys(globals.chordTriggerMap)
+        openForSlot(rows[rows.length - 1])
+        assert.equal(deleteDraft(), true)
+        const remaining = Object.keys(globals.chordTriggerMap)
+        assert.equal(globals.chordInspector.triggerNote, remaining[remaining.length - 1], 'the row before it is selected')
+    })
+
+    it('selects the next row when the first row is deleted', () => {
+        const project = makeArrangedProject()
+        install(project)
+        const rows = Object.keys(globals.chordTriggerMap)
+        openForSlot(rows[0])
+        assert.equal(deleteDraft(), true)
+        const remaining = Object.keys(globals.chordTriggerMap)
+        assert.equal(globals.chordInspector.triggerNote, remaining[0], 'the second row moved up and stays selected')
     })
 
     it('offers a played chord as Captured and applies it only on request', () => {
