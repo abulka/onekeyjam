@@ -100,9 +100,10 @@ open the panel or move the page.
 
 To open a row in the inspector, hover its chord cell and click the small pencil
 that appears at the top right. The pencil shows while the pointer is over the
-cell and is not pinned to the selected row. It opens the panel and brings its
-header into view when the panel is off screen. The pencil is not shown on the
-Perform page, which has no inspector.
+cell and while Edit Chords is closed, so it is only offered when it has a job:
+with the panel already open, clicking a row switches the inspector by itself. It
+opens the panel and brings its header into view when the panel is off screen.
+The pencil is not shown on the Perform page, which has no inspector.
 
 **Cancel** in the Edit Chords actions row discards the draft, exactly like
 Revert, and then closes the panel. The row stays selected, so opening it again

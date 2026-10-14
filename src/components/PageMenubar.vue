@@ -73,7 +73,7 @@ const allSteps = [
   },
   {
     target: '[data-step="edit-chords"]',
-    content: 'This is the inspector for the selected chord row. Click a row in the grid to select it, then hover its chord cell and click the pencil that appears to load it here. Edit it and press Save changes, or Cancel to discard and close. Use "+ Add chord" to create a new row.',
+    content: 'This is the inspector for the selected chord row. With it closed, hover a row in the grid and click the pencil that appears in its chord cell to load it here; with it open, clicking a row switches it. Edit and press Save changes, or Cancel to discard and close. Use "+ Add chord" to create a new row.',
     placement: 'bottom-start',
     // auto, auto-start, auto-end, top, top-start, top-end, bottom, bottom-start, bottom-end, right, right-start, right-end, left, left-start, left-end
   },

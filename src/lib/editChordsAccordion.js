@@ -2,13 +2,16 @@
 
 /**
  * @module lib/editChordsAccordion
- * @desc Open and close the Edit Chords accordion section in the main view.
+ * @desc Open and close the Edit Chords accordion section in the main view, and
+ * report whether it is open.
  *
  * The chord inspector lives inside that one section. The grid's edit pencil
  * opens it; the inspector's Cancel button closes it again. Fomantic owns the
  * animation and the `active` classes, so both actions run through jQuery here.
- * On the Perform and Settings pages the section does not exist, so every
- * function is a safe no-op there.
+ * The open state is read from those classes, because the user can also close
+ * the panel by clicking its header, which goes through no code of ours. On the
+ * Perform and Settings pages the section does not exist, so the open and close
+ * functions are safe no-ops and the section reads as closed.
  */
 
 const EDIT_CHORDS_SECTION = 'edit-chords'
@@ -66,4 +69,25 @@ export function closeEditChordsAccordion() {
     return false
   $(found.accordion).accordion('close', found.index)
   return true
+}
+
+/**
+ * Watch whether the Edit Chords section is open. The callback is called at once
+ * with the current state, then on every open or close, including a click on the
+ * accordion header, which no code of ours goes through. A missing section (the
+ * Perform and Settings pages) reads as closed.
+ * @param {(isOpen: boolean) => void} callback
+ * @returns {() => void} stop watching
+ */
+export function observeEditChordsOpen(callback) {
+  const found = findEditChordsSection()
+  if (!found || typeof MutationObserver === 'undefined') {
+    callback(false)
+    return () => {}
+  }
+  const report = () => callback(found.title.classList.contains('active'))
+  report()
+  const observer = new MutationObserver(report)
+  observer.observe(found.title, { attributes: true, attributeFilter: ['class'] })
+  return () => observer.disconnect()
 }

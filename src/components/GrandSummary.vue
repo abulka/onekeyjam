@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { globals } from '../../src/lib/globals.js'
 import { setSoloMode, setScalePolicy, rerollShuffleScale, applyScalePolicy } from '../../src/lib/change-scale.js'
 import { samePitchClasses, closestScaleIndex, pitchClassSet, POLICY_PRESETS } from '../../src/lib/autoScale.js'
@@ -22,7 +22,7 @@ import { openForSlot, addRow, selectSlot } from '@/lib/chordInspector.js'
 import { linkProjectToKeyboard } from '@/lib/boot-project.js'
 import { flushCurrentProject } from '@/lib/currentProjectStore.js'
 import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '@/lib/massOperationsOnChordConfigs'
-import { openEditChordsAccordion } from '@/lib/editChordsAccordion.js'
+import { openEditChordsAccordion, observeEditChordsOpen } from '@/lib/editChordsAccordion.js'
 
 const props = defineProps({
   // On the Perform page there is no inspector panel, so the chord cell shows no
@@ -30,16 +30,25 @@ const props = defineProps({
   openInspectorOnSelect: { type: Boolean, default: true },
 })
 
+// True while the Edit Chords panel is showing. The pencil is only offered when
+// the panel is closed, so a visible pencil always has a job: with the panel
+// open, clicking a row already switches the inspector.
+const editChordsOpen = ref(false)
+let stopEditChordsOpenWatch = () => {}
+
 /**
  * The pencil in the chord cell: open that row in Edit Chords and reveal the
  * panel. This is the only grid control that opens the inspector; clicking a row
  * merely selects it. Selecting and opening never write: the inspector holds a
  * draft until Save, and switching rows replaces the previous draft silently.
+ * A row already holding the draft is left alone, so reopening the panel shows
+ * unsaved work instead of reloading the saved row over it.
  */
 function openChordEditor(triggerNote) {
   if (!triggerNote || !props.openInspectorOnSelect)
     return
-  openForSlot(triggerNote)
+  if (globals.chordInspector.triggerNote !== triggerNote)
+    openForSlot(triggerNote)
   openEditChordsAccordion()
 }
 
@@ -622,6 +631,19 @@ function generalTableClick(event) {
   selectGridRow(triggerNote)
 }
 
+// The pencil is offered only while the panel is closed. Following the section
+// itself, rather than our own actions, also notices the user closing the panel
+// by clicking its header.
+onMounted(() => {
+  stopEditChordsOpenWatch = observeEditChordsOpen((isOpen) => {
+    editChordsOpen.value = isOpen
+  })
+})
+
+onUnmounted(() => {
+  stopEditChordsOpenWatch()
+})
+
 </script>
 
 <template>
@@ -826,9 +848,10 @@ function generalTableClick(event) {
             {{ info.lhChord }}
           </code>
           <!-- The only control that opens Edit Chords from the grid. It appears
-          while the pointer is over this cell, so a plain click anywhere in the
-          row can select without moving the page. -->
-          <button v-if="openInspectorOnSelect" type="button" class="chord-edit"
+          while the pointer is over this cell and while the panel is closed, so
+          a visible pencil always has a job: with the panel open, clicking a row
+          already switches the inspector. -->
+          <button v-if="openInspectorOnSelect && !editChordsOpen" type="button" class="chord-edit"
             :title="`Edit ${info.lhChord || 'this chord'} in Edit Chords`"
             aria-label="Edit this chord in Edit Chords"
             @click.stop="openChordEditor(info.lhTriggerNote)">
