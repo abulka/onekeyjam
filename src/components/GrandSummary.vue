@@ -9,6 +9,7 @@ import { scaleAnnotation, PROJECT_COLOURS } from '../../src/lib/chordScaleEngine
 import { Note } from '@/lib/midi/webmidi.js'
 import { getProjectChordsTriggers } from "../../src/lib/project-chord-triggers.js"
 import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events.js"
+import { broadcastLiveNote } from "@/lib/midi/audition-note.js"
 import { start, dragover, dragend } from '../../src/lib/drag-drop-table-rows.js'
 import { keyDetection } from '../../src/lib/keyDetection';
 import { projectKeyNotes, projectKeyName, projectKeyShortName, keyColourHue } from '../../src/lib/projectKey.js';
@@ -560,6 +561,9 @@ function chordMouseDown(e) {
     note: new Note(e.target.innerText, { attack: globals.fixedNoteVelocity })
   }
   onNoteOn(simulatedEvent)
+  // Light the trigger key on the main piano while the chord sounds, matching a
+  // real trigger. The source keeps grid clicks out of the raw live-note readout.
+  broadcastLiveNote(simulatedEvent.note.number, true, 'grid-trigger')
 }
 
 function chordMouseUp(e) {
@@ -567,6 +571,7 @@ function chordMouseUp(e) {
     note: new Note(e.target.innerText, { attack: globals.fixedNoteVelocity })
   }
   onNoteOff(simulatedEvent)
+  broadcastLiveNote(simulatedEvent.note.number, false, 'grid-trigger')
 }
 
 function ondragstart(event) {
@@ -811,7 +816,7 @@ function generalTableClick(event) {
             @mouseup="chordMouseUp" 
             @touchend.prevent="chordMouseUp" 
             :class="{ 'boldy': info.lhChordIsCurrent }"
-            class="trigger-btn p-2">
+            class="trigger-btn trigger-note p-2">
             {{ info.lhTriggerNote }}
           </button>
         </td>
@@ -1008,6 +1013,29 @@ function generalTableClick(event) {
 </template>
 
 <style>
+/* Trigger note column: supplementary to the chord, so keep it quiet. Plain
+   muted text rather than a button, with a gentle current-row accent. */
+.trigger-note {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #8a7a66;
+  font-size: 0.78em;
+  font-weight: normal;
+  padding: 0 0.35em;
+  margin-left: 0;
+  cursor: pointer;
+}
+
+.trigger-note:hover {
+  color: #4a3418;
+  border-color: #d9c9b0;
+}
+
+.trigger-note.boldy {
+  color: #4a3418;
+  font-weight: 600;
+}
+
 /* show borders on inner table showing scale filters so can highlight current cell */
 table.scale-filters {
   border-collapse: separate;

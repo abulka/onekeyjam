@@ -285,15 +285,6 @@ function onToggleFavourite() {
   toggleFavourite()
 }
 
-/**
- * Step the chord type (previous, next or random) and play the result. The
- * click changes the pickers, so it should be heard like a combo change.
- */
-function onStepChord(direction) {
-  stepChord(direction)
-  startDraftAudition()
-}
-
 /** Pick a radio row: it decides what Save stores. Neither row overwrites the other. */
 function onChooseNormalised() {
   chooseNormalised()
@@ -436,6 +427,72 @@ function onHoverInvert(direction, state) {
 
 function onHoverStep(direction, state) {
   auditionPreview(previewStep(direction), state)
+}
+
+// Transpose & invert buttons audition the freshly applied draft while the mouse
+// is held, then stop on release, matching the grey audition buttons. Hover
+// previews are unchanged. Keyboard activation has no mouse-up, so it stops
+// itself after a short pause.
+let keyboardAuditionTimer = null
+
+function pressStep(direction) {
+  stepChord(direction)
+  startDraftAudition()
+}
+
+function pressTranspose(semitones) {
+  transposeDraft(semitones)
+  startDraftAudition()
+}
+
+function pressFifth(direction) {
+  fifthDraft(direction)
+  startDraftAudition()
+}
+
+function pressInvert(direction) {
+  invertDraft(direction)
+  startDraftAudition()
+}
+
+/** Release the press-audition (mouse-up, touch-end or leaving the button). */
+function releaseAudition() {
+  stopAuditionChord()
+}
+
+function scheduleKeyboardStop() {
+  clearTimeout(keyboardAuditionTimer)
+  keyboardAuditionTimer = setTimeout(stopAuditionChord, 1000)
+}
+
+// A click with detail 0 comes from the keyboard; mouse clicks were already
+// handled on mousedown, so ignore those to avoid applying the change twice.
+function clickStep(direction, event) {
+  if (event && event.detail !== 0)
+    return
+  pressStep(direction)
+  scheduleKeyboardStop()
+}
+
+function clickTranspose(semitones, event) {
+  if (event && event.detail !== 0)
+    return
+  pressTranspose(semitones)
+  scheduleKeyboardStop()
+}
+
+function clickFifth(direction, event) {
+  if (event && event.detail !== 0)
+    return
+  pressFifth(direction)
+  scheduleKeyboardStop()
+}
+
+function clickInvert(direction, event) {
+  if (event && event.detail !== 0)
+    return
+  pressInvert(direction)
+  scheduleKeyboardStop()
 }
 
 // Vue-controlled tabs for the Browse section. Replaces the Fomantic tab
@@ -624,6 +681,8 @@ onUnmounted(() => {
   window.removeEventListener('click', onAudioUnlockEvent)
   if (flashTimer)
     clearTimeout(flashTimer)
+  if (keyboardAuditionTimer)
+    clearTimeout(keyboardAuditionTimer)
 })
 </script>
 
@@ -761,29 +820,59 @@ onUnmounted(() => {
         <p class="row-hint">Hover to hear the result. Click applies it to Edit Chords above (unsaved until Save changes).</p>
         <div class="inspector-row">
           <button type="button" class="ui tiny button" title="Hover to hear the previous chord type, click to load it into the draft"
-            @click="onStepChord('prev')" @mouseenter="onHoverStep('prev', true)" @mouseleave="onHoverStep('prev', false)" @focus="onHoverStep('prev', true)" @blur="onHoverStep('prev', false)">Previous chord</button>
+            @mousedown="pressStep('prev')" @touchstart.prevent="pressStep('prev')"
+            @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickStep('prev', $event)"
+            @mouseenter="onHoverStep('prev', true)" @mouseleave="onHoverStep('prev', false)" @focus="onHoverStep('prev', true)" @blur="onHoverStep('prev', false)">Previous chord</button>
           <button type="button" class="ui tiny button" title="Hover to hear the next chord type, click to load it into the draft"
-            @click="onStepChord('next')" @mouseenter="onHoverStep('next', true)" @mouseleave="onHoverStep('next', false)" @focus="onHoverStep('next', true)" @blur="onHoverStep('next', false)">Next chord</button>
+            @mousedown="pressStep('next')" @touchstart.prevent="pressStep('next')"
+            @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickStep('next', $event)"
+            @mouseenter="onHoverStep('next', true)" @mouseleave="onHoverStep('next', false)" @focus="onHoverStep('next', true)" @blur="onHoverStep('next', false)">Next chord</button>
           <button type="button" class="ui tiny button" title="Pick a random chord type into the draft"
-            @click="onStepChord('random')">Random 🎲</button>
+            @mousedown="pressStep('random')" @touchstart.prevent="pressStep('random')"
+            @mouseup="releaseAudition()" @mouseleave="releaseAudition()"
+            @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickStep('random', $event)">Random 🎲</button>
         </div>
         <div class="inspector-row">
           <button type="button" class="ui tiny button" title="Hover to hear one semitone down, click to load it into the draft"
-            @click="transposeDraft(-1)" @mouseenter="onHoverTranspose(-1, true)" @mouseleave="onHoverTranspose(-1, false)" @focus="onHoverTranspose(-1, true)" @blur="onHoverTranspose(-1, false)">1 <i class="caret down icon"></i></button>
+            @mousedown="pressTranspose(-1)" @touchstart.prevent="pressTranspose(-1)"
+            @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickTranspose(-1, $event)"
+            @mouseenter="onHoverTranspose(-1, true)" @mouseleave="onHoverTranspose(-1, false)" @focus="onHoverTranspose(-1, true)" @blur="onHoverTranspose(-1, false)">1 <i class="caret down icon"></i></button>
           <button type="button" class="ui tiny button" title="Hover to hear one semitone up, click to load it into the draft"
-            @click="transposeDraft(1)" @mouseenter="onHoverTranspose(1, true)" @mouseleave="onHoverTranspose(1, false)" @focus="onHoverTranspose(1, true)" @blur="onHoverTranspose(1, false)">1 <i class="caret up icon"></i></button>
+            @mousedown="pressTranspose(1)" @touchstart.prevent="pressTranspose(1)"
+            @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickTranspose(1, $event)"
+            @mouseenter="onHoverTranspose(1, true)" @mouseleave="onHoverTranspose(1, false)" @focus="onHoverTranspose(1, true)" @blur="onHoverTranspose(1, false)">1 <i class="caret up icon"></i></button>
           <button type="button" class="ui tiny button" title="Hover to hear a fifth down (circle of fifths), click to load it into the draft"
-            @click="fifthDraft(-1)" @mouseenter="onHoverFifth(-1, true)" @mouseleave="onHoverFifth(-1, false)" @focus="onHoverFifth(-1, true)" @blur="onHoverFifth(-1, false)">5th <i class="caret down icon"></i></button>
+            @mousedown="pressFifth(-1)" @touchstart.prevent="pressFifth(-1)"
+            @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickFifth(-1, $event)"
+            @mouseenter="onHoverFifth(-1, true)" @mouseleave="onHoverFifth(-1, false)" @focus="onHoverFifth(-1, true)" @blur="onHoverFifth(-1, false)">5th <i class="caret down icon"></i></button>
           <button type="button" class="ui tiny button" title="Hover to hear a fifth up (circle of fifths), click to load it into the draft"
-            @click="fifthDraft(1)" @mouseenter="onHoverFifth(1, true)" @mouseleave="onHoverFifth(1, false)" @focus="onHoverFifth(1, true)" @blur="onHoverFifth(1, false)">5th <i class="caret up icon"></i></button>
+            @mousedown="pressFifth(1)" @touchstart.prevent="pressFifth(1)"
+            @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickFifth(1, $event)"
+            @mouseenter="onHoverFifth(1, true)" @mouseleave="onHoverFifth(1, false)" @focus="onHoverFifth(1, true)" @blur="onHoverFifth(1, false)">5th <i class="caret up icon"></i></button>
         </div>
         <div class="inspector-row">
           <button type="button" class="ui tiny button" title="Hover to hear the inversion down, click to load it into the draft"
-            @click="invertDraft(-1)" @mouseenter="onHoverInvert(-1, true)" @mouseleave="onHoverInvert(-1, false)" @focus="onHoverInvert(-1, true)" @blur="onHoverInvert(-1, false)">Invert <i class="caret left icon"></i></button>
+            @mousedown="pressInvert(-1)" @touchstart.prevent="pressInvert(-1)"
+            @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickInvert(-1, $event)"
+            @mouseenter="onHoverInvert(-1, true)" @mouseleave="onHoverInvert(-1, false)" @focus="onHoverInvert(-1, true)" @blur="onHoverInvert(-1, false)">Invert <i class="caret left icon"></i></button>
           <button type="button" class="ui tiny button" title="Hover to hear the inversion up, click to load it into the draft"
-            @click="invertDraft(1)" @mouseenter="onHoverInvert(1, true)" @mouseleave="onHoverInvert(1, false)" @focus="onHoverInvert(1, true)" @blur="onHoverInvert(1, false)">Invert <i class="caret right icon"></i></button>
+            @mousedown="pressInvert(1)" @touchstart.prevent="pressInvert(1)"
+            @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickInvert(1, $event)"
+            @mouseenter="onHoverInvert(1, true)" @mouseleave="onHoverInvert(1, false)" @focus="onHoverInvert(1, true)" @blur="onHoverInvert(1, false)">Invert <i class="caret right icon"></i></button>
           <button type="button" class="ui tiny button" title="Hover to hear the root position, click to load it into the draft"
-            @click="invertDraft(0)" @mouseenter="onHoverInvert(0, true)" @mouseleave="onHoverInvert(0, false)" @focus="onHoverInvert(0, true)" @blur="onHoverInvert(0, false)">Reset inversion</button>
+            @mousedown="pressInvert(0)" @touchstart.prevent="pressInvert(0)"
+            @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
+            @click="clickInvert(0, $event)"
+            @mouseenter="onHoverInvert(0, true)" @mouseleave="onHoverInvert(0, false)" @focus="onHoverInvert(0, true)" @blur="onHoverInvert(0, false)">Reset inversion</button>
         </div>
         <p class="row-hint">Transposing is a new chord; inverting changes the Normalised voicing.</p>
       </div>
