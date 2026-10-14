@@ -1,4 +1,5 @@
 // @ts-check
+import { Note } from '@tonaljs/tonal'
 import { indexToNote } from '../note-tools.js'
 import { labelForOffset } from './piano-key-map.js'
 
@@ -32,13 +33,29 @@ export function whiteKeyOffset(index) {
 }
 
 /**
- * The computer key label that sits on the i-th white key, or '' past the end of
+ * The computer keyboard key label that sits on the i-th white key, or '' past the end of
  * the mapped keyboard.
  * @param {number} index
  * @returns {string}
  */
 export function whiteKeyLabel(index) {
     return labelForOffset(whiteKeyOffset(index))
+}
+
+/**
+ * The computer keyboard key that triggers a chord note, or '' when the note has
+ * no mapped key. Trigger notes are the white notes starting at C of the trigger
+ * octave, so the key is simply the one at the note's offset from that C. This
+ * works for notes that overflow into the next octave too.
+ * @param {string} note the trigger note including octave, e.g. 'G3'
+ * @param {number} [lhTriggerOctave=3]
+ * @returns {string}
+ */
+export function computerKeyForNote(note, lhTriggerOctave = 3) {
+    const midi = Note.midi(note)
+    if (typeof midi !== 'number')
+        return ''
+    return labelForOffset(midi - 12 * (lhTriggerOctave + 1))
 }
 
 /**

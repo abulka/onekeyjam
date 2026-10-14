@@ -95,14 +95,15 @@ the grid, the take, or Flashback Capture.
 ## Trigger keys and solo keys
 
 The chord table's **Trigger** column shows which left-hand key plays which chord.
-On a MIDI keyboard the white trigger keys run C D E F G A B from C3 by default;
-on the computer keyboard the same keys are `z x c v b n m` for seven chords, and
-higher triggers continue on `q w e r …`. The demo welcome lists them too. Solo
-notes are the white keys to the right of the chord triggers (from C4 by default),
-which are the computer keys after the last trigger, `q w e r t y u` for a seven
-chord song. White keys below the jam octave that no chord trigger uses become
-extra low solo notes, so the first solo key is always the white note just after
-the last chord trigger.
+It names the note and, in brackets, the computer key that plays the same trigger,
+for example `G3 (B)`. On a MIDI keyboard the white trigger keys run C D E F G A B
+from C3 by default; on the computer keyboard the same keys are `z x c v b n m`
+for seven chords, and higher triggers continue on `q w e r …`. The demo welcome
+lists them too. Solo notes are the white keys to the right of the chord triggers
+(from C4 by default), which are the computer keys after the last trigger,
+`q w e r t y u` for a seven chord song. White keys below the jam octave that no
+chord trigger uses become extra low solo notes, so the first solo key is always
+the white note just after the last chord trigger.
 
 Seven chords fit comfortably in one octave, which suits computer keyboard
 playing. More chords are allowed: extra triggers continue into higher octaves

@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { describeChordSoloSplit, previewKeys, whiteKeyOffset, whiteKeyLabel } from '@/lib/midi/keyboard-split.js'
+import { describeChordSoloSplit, previewKeys, whiteKeyOffset, whiteKeyLabel, computerKeyForNote } from '@/lib/midi/keyboard-split.js'
 
 /*
  * The chord/solo split is a single floating position: the first `chordCount`
@@ -65,5 +65,16 @@ describe('describeChordSoloSplit', () => {
         assert.equal(whiteKeyLabel(0), 'Z')
         assert.equal(whiteKeyLabel(7), 'Q')
         assert.equal(whiteKeyLabel(8), 'W')
+    })
+
+    it('maps a trigger note to its computer keyboard key', () => {
+        // The trigger octave starts on C = Z, so the white notes run Z X C V B N M.
+        assert.equal(computerKeyForNote('C3', 3), 'Z')
+        assert.equal(computerKeyForNote('G3', 3), 'B')
+        assert.equal(computerKeyForNote('B3', 3), 'M')
+        // A note that overflows into the next octave keeps the run going.
+        assert.equal(computerKeyForNote('C4', 3), 'Q')
+        // A different trigger octave shifts the base: C2 is still Z.
+        assert.equal(computerKeyForNote('G2', 2), 'B')
     })
 })

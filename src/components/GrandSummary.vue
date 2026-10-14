@@ -8,6 +8,7 @@ import { applyProjectKeySettings } from '../../src/lib/projectScaleSettings.js'
 import { scaleAnnotation, PROJECT_COLOURS } from '../../src/lib/chordScaleEngine.js'
 import { Note } from '@/lib/midi/webmidi.js'
 import { getProjectChordsTriggers } from "../../src/lib/project-chord-triggers.js"
+import { computerKeyForNote } from "../../src/lib/midi/keyboard-split.js"
 import { onNoteOn, onNoteOff } from "@/lib/midi/wire-events.js"
 import { broadcastLiveNote } from "@/lib/midi/audition-note.js"
 import { start, dragover, dragend } from '../../src/lib/drag-drop-table-rows.js'
@@ -442,6 +443,7 @@ function _generateSummaryInfo(note) {
   }
   const chordConfig = triggerMap[note]
   info.lhTriggerNote = note
+  info.lhTriggerKey = computerKeyForNote(note, globals.keyboard ? globals.keyboard.lhTriggerOctave : 3)
 
   info.chordConfigName = chordConfig.name
   info.lhChord = chordConfig.chord
@@ -556,9 +558,16 @@ function _scaleFilterMouseDown(e) {
   onNoteOff(simulatedEvent)  // not needed, but just in case
 }
 
+function triggerNoteFromEvent(e) {
+  // Read the note from the row attribute, not the button's text: the button now
+  // also shows the computer key, e.g. "G3 (B)".
+  const tr = e.target.closest('tr')
+  return tr ? tr.getAttribute('data-trigger-note') : ''
+}
+
 function chordMouseDown(e) {
   let simulatedEvent = {
-    note: new Note(e.target.innerText, { attack: globals.fixedNoteVelocity })
+    note: new Note(triggerNoteFromEvent(e), { attack: globals.fixedNoteVelocity })
   }
   onNoteOn(simulatedEvent)
   // Light the trigger key on the main piano while the chord sounds, matching a
@@ -568,7 +577,7 @@ function chordMouseDown(e) {
 
 function chordMouseUp(e) {
   let simulatedEvent = {
-    note: new Note(e.target.innerText, { attack: globals.fixedNoteVelocity })
+    note: new Note(triggerNoteFromEvent(e), { attack: globals.fixedNoteVelocity })
   }
   onNoteOff(simulatedEvent)
   broadcastLiveNote(simulatedEvent.note.number, false, 'grid-trigger')
@@ -816,8 +825,9 @@ function generalTableClick(event) {
             @mouseup="chordMouseUp" 
             @touchend.prevent="chordMouseUp" 
             :class="{ 'boldy': info.lhChordIsCurrent }"
-            class="trigger-btn trigger-note p-2">
-            {{ info.lhTriggerNote }}
+            class="trigger-btn trigger-note p-2"
+            :title="info.lhTriggerKey ? 'Trigger note. Computer keyboard key: ' + info.lhTriggerKey : 'Trigger note'">
+            {{ info.lhTriggerNote }}<span v-if="info.lhTriggerKey" class="trigger-key"> ({{ info.lhTriggerKey }})</span>
           </button>
         </td>
         <td class="key-cell">
@@ -1034,6 +1044,20 @@ function generalTableClick(event) {
 .trigger-note.boldy {
   color: #4a3418;
   font-weight: 600;
+}
+
+/* The computer keyboard key shown beside the trigger note, e.g. "G3 (B)". It
+   reads as a keyboard shortcut, so keep it the same size as the note and make
+   it darker and bolder rather than smaller and fainter. */
+.trigger-key {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1em;
+  font-weight: 700;
+  color: #3a2c1a;
+}
+
+.trigger-note.boldy .trigger-key {
+  color: #241a0d;
 }
 
 /* show borders on inner table showing scale filters so can highlight current cell */
