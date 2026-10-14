@@ -110,14 +110,13 @@ function clearCustomVoicing() {
 }
 
 /**
- * Reset the bass to automatic (blank). Called whenever the chord identity is
- * replaced (a played chord, a Root/Chord change, transpose, step, a chord
- * link, or a new project), so a slash from the previous chord cannot linger.
- * Note edits and voicing switches keep the bass.
+ * Reset the bass to blank. Called whenever the chord identity is replaced (a
+ * played chord, a Root/Chord change, transpose, step, a chord link, or a new
+ * project), so a slash from the previous chord cannot linger. Note edits and
+ * voicing switches keep the bass.
  */
 function resetBassToAuto() {
   globals.chordPicker.currentBass = ''
-  globals.chordPicker.bassAuto = true
 }
 
 /** The notes the normalised row shows for the current pickers. */
@@ -199,9 +198,6 @@ export function loadDraftFromSlot(triggerNote = globals.currentChordTriggerNote)
   globals.chordPicker.currentRoot = root
   globals.chordPicker.currentChord = quality
   globals.chordPicker.currentBass = config.bass ? normaliseNoteName(config.bass) : ''
-  // A stored bass is the user's choice; a blank one stays automatic, so typing
-  // notes with a slash can still fill it.
-  globals.chordPicker.bassAuto = !config.bass
   globals.chordPicker.currentChordInversion = 0
 
   const derived = autoNotesFor(root, quality, 0)
@@ -315,12 +311,10 @@ export function setIdentity(root, quality) {
 
 /**
  * Change the bass (the picker, the custom-row field or a typed '/bass' token).
- * A value set here is the user's explicit choice, so detected slash basses no
- * longer overwrite it.
+ * A value set here is the user's explicit choice.
  */
 export function setBass(bass) {
   globals.chordPicker.currentBass = bass ? normaliseNoteName(bass) : ''
-  globals.chordPicker.bassAuto = false
 }
 
 /**
@@ -434,8 +428,9 @@ export function setNotes(notes) {
   ins.customNotes = [...ins.notes]
   const detected = Tonal.Chord.detect(ins.notes)
   if (detected.length > 0) {
-    // The name is plain; a detected slash bass fills the shared Bass field
-    // while it is still automatic (see applyDetectedBass).
+    // The name is plain. A slash in the detected symbol is only Tonal's lowest
+    // note, not a bass the user chose, so it never touches the Bass field:
+    // leaving it blank lets the grid derive the low root from the voicing.
     const [plain] = removeBassSlash(detected[0])
     ins.symbols = detected
     ins.symbol = plain
@@ -444,24 +439,11 @@ export function setNotes(notes) {
     // The picker follows the notes: root, quality and inversion all update so
     // the combos never disagree with what sounds.
     applySymbolToIdentity(detected[0])
-    applyDetectedBass(removeBassSlash(detected[0])[1])
   }
   else {
     ins.customSymbol = ins.symbol
     ins.customSymbols = [...ins.symbols]
-    applyDetectedBass('')
   }
-}
-
-/**
- * Keep the Bass field following the typed notes while it is automatic: a
- * detected slash bass is applied, and losing the slash clears it again. A bass
- * the user picked or typed is left alone.
- */
-function applyDetectedBass(bass) {
-  if (!globals.chordPicker.bassAuto)
-    return
-  globals.chordPicker.currentBass = bass ? normaliseNoteName(bass) : ''
 }
 
 /**
@@ -844,26 +826,109 @@ export function deleteDraft() {
   return true
 }
 
-/** Move the draft root by semitones, keeping the quality. A new root is a new chord. */
+/** The active custom voicing: the custom row, or the draft notes if it is empty. */
+function activeCustomNotes() {
+  const ins = inspector()
+  if (Array.isArray(ins.customNotes) && ins.customNotes.length > 0)
+    return [...ins.customNotes]
+  return Array.isArray(ins.notes) ? [...ins.notes] : []
+}
+
+/**
+ * Replace the custom voicing with transformed notes and re-detect its name.
+ * `mapBass` transforms the user's explicit slash bass, if they set one; a blank
+ * bass is left to be derived on save.
+ */
+function applyCustomTransform(notes, mapBass) {
+  const bassBefore = globals.chordPicker.currentBass
+  setNotes(notes)
+  if (bassBefore)
+    setBass(mapBass ? mapBass(bassBefore) : bassBefore)
+}
+
+/** Transpose a list of custom notes by semitones, keeping the app's note style. */
+function transposeCustomNotes(notes, semitones) {
+  const interval = Tonal.Interval.fromSemitones(semitones)
+  return notes.map(note => normaliseNoteName(Tonal.Note.transpose(note, interval)))
+}
+
+/** Transpose a list of custom notes by fifths in the given direction. */
+function fifthCustomNotes(notes, direction) {
+  return notes.map(note => normaliseNoteName(Tonal.Note.transposeFifths(note, direction)))
+}
+
+/**
+ * Invert a list of custom notes: up lifts the lowest note an octave, down drops
+ * the highest an octave. Returns null when there is nothing to invert.
+ */
+function invertCustomNotes(notes, direction) {
+  if (direction === 0)
+    return null
+  const withMidi = notes
+    .map((note, index) => ({ note, index, midi: Tonal.Note.midi(note) }))
+    .filter(entry => Number.isFinite(entry.midi))
+  if (withMidi.length < 2)
+    return null
+  const target = withMidi.reduce((best, entry) =>
+    direction > 0
+      ? (entry.midi < best.midi ? entry : best)
+      : (entry.midi > best.midi ? entry : best))
+  const octave = Tonal.Interval.fromSemitones(direction > 0 ? 12 : -12)
+  const moved = normaliseNoteName(Tonal.Note.transpose(target.note, octave))
+  const result = notes.filter((_, index) => index !== target.index).concat(moved)
+  return sortNotes(result)
+}
+
+/**
+ * Move the draft root by semitones. Normalised: a new root is a new chord.
+ * Custom: transpose the custom voicing (and the explicit slash bass) so it is
+ * shaped rather than destroyed.
+ */
 export function transposeDraft(semitones) {
+  if (inspector().voicingMode === 'custom') {
+    const interval = Tonal.Interval.fromSemitones(semitones)
+    applyCustomTransform(
+      transposeCustomNotes(activeCustomNotes(), semitones),
+      bass => normaliseNoteName(Tonal.Note.transpose(bass, interval)),
+    )
+    return
+  }
   const newRoot = normaliseNoteName(
     Tonal.Note.transpose(globals.chordPicker.currentRoot, Tonal.Interval.fromSemitones(semitones)))
   setIdentity(newRoot, globals.chordPicker.currentChord)
 }
 
-/** Move the draft root by fifths, keeping the quality. A new root is a new chord. */
+/**
+ * Move the draft root by fifths. Normalised: a new root is a new chord.
+ * Custom: transpose the custom voicing (and the explicit slash bass) by a fifth.
+ */
 export function fifthDraft(direction) {
+  if (inspector().voicingMode === 'custom') {
+    applyCustomTransform(
+      fifthCustomNotes(activeCustomNotes(), direction),
+      bass => normaliseNoteName(Tonal.Note.transposeFifths(bass, direction)),
+    )
+    return
+  }
   const newRoot = normaliseNoteName(
     Tonal.Note.transposeFifths(globals.chordPicker.currentRoot, direction))
   setIdentity(newRoot, globals.chordPicker.currentChord)
 }
 
 /**
- * Invert the normalised voicing up or down. The Bass field is the user's own
- * and is left alone; on save the derived bass is the voicing's lowest note.
- * With Custom selected only the normalised row changes, so nothing is lost.
+ * Invert the draft up or down. Normalised: move the inversion counter, keeping
+ * the Bass field the user's own (on save the derived bass is the lowest note).
+ * Custom: invert the custom notes themselves, keeping the explicit bass.
+ * Reset (direction 0) is only meaningful for the normalised counter.
  */
 export function invertDraft(direction) {
+  if (inspector().voicingMode === 'custom') {
+    const notes = invertCustomNotes(activeCustomNotes(), direction)
+    if (!notes)
+      return
+    applyCustomTransform(notes)
+    return
+  }
   const { inversion } = calcChordInversionNumberAndNewBass(
     globals.chordPicker.currentRoot,
     globals.chordPicker.currentChord,
@@ -873,8 +938,6 @@ export function invertDraft(direction) {
   )
   globals.chordPicker.currentChordInversion = inversion
   clearPlayedVoicing()
-  if (inspector().voicingMode === 'custom')
-    return
   applyAuto()
 }
 
@@ -897,11 +960,19 @@ export function stepChord(direction) {
 
 /**
  * Preview what a Transpose & invert button would sound like, without touching
- * the draft. Returns the Auto voicing notes and bass for the prospective
- * chord, so hovering can audition it. The draft stays clean until click.
- * @returns {{ notes: string[], bass: string }}
+ * the draft. Returns the resulting voicing and bass, so hovering can audition
+ * it. In Custom mode it previews the transformed custom notes; otherwise the
+ * prospective normalised chord. The draft stays clean until click.
+ * @returns {{ notes: string[], bass: string } | null}
  */
 export function previewTranspose(semitones) {
+  if (inspector().voicingMode === 'custom') {
+    const interval = Tonal.Interval.fromSemitones(semitones)
+    return {
+      notes: transposeCustomNotes(activeCustomNotes(), semitones),
+      bass: customPreviewBass(bass => normaliseNoteName(Tonal.Note.transpose(bass, interval))),
+    }
+  }
   const root = globals.chordPicker.currentRoot
   const quality = globals.chordPicker.currentChord
   const newRoot = normaliseNoteName(
@@ -911,6 +982,12 @@ export function previewTranspose(semitones) {
 
 /** Preview a fifth move without touching the draft. */
 export function previewFifth(direction) {
+  if (inspector().voicingMode === 'custom') {
+    return {
+      notes: fifthCustomNotes(activeCustomNotes(), direction),
+      bass: customPreviewBass(bass => normaliseNoteName(Tonal.Note.transposeFifths(bass, direction))),
+    }
+  }
   const root = globals.chordPicker.currentRoot
   const quality = globals.chordPicker.currentChord
   const newRoot = normaliseNoteName(
@@ -920,6 +997,12 @@ export function previewFifth(direction) {
 
 /** Preview an inversion without touching the draft. */
 export function previewInvert(direction) {
+  if (inspector().voicingMode === 'custom') {
+    const notes = invertCustomNotes(activeCustomNotes(), direction)
+    if (!notes)
+      return null
+    return { notes, bass: globals.chordPicker.currentBass || '' }
+  }
   const root = globals.chordPicker.currentRoot
   const quality = globals.chordPicker.currentChord
   const { bass, inversion } = calcChordInversionNumberAndNewBass(
@@ -932,13 +1015,21 @@ export function previewInvert(direction) {
   return { notes: autoNotesFor(root, quality, inversion), bass }
 }
 
+/** The explicit slash bass transformed for a preview, or '' when there is none. */
+function customPreviewBass(mapBass) {
+  const bass = globals.chordPicker.currentBass
+  return bass ? mapBass(bass) : ''
+}
+
 /**
  * Preview stepping the chord quality without touching the draft.
  * Returns null for 'random' (no stable preview) or an empty catalogue.
  * @returns {{ notes: string[], bass: string, quality: string } | null}
  */
 export function previewStep(direction) {
-  if (direction === 'random')
+  // A quality change would replace a custom voicing, so the step buttons are
+  // disabled in Custom mode and have no preview.
+  if (direction === 'random' || inspector().voicingMode === 'custom')
     return null
   const options = calcAllChordSymbols(globals.chordPicker.showAllChords, globals.chordPicker.shortChordNames)
   if (options.length === 0)

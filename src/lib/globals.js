@@ -111,11 +111,9 @@ export const globals = reactive({
     chordPicker: {
         currentRoot: 'C',
         currentChord: 'M',
+        // The user's explicit bass, or blank to derive the low root on save.
+        // Detection never writes this. See chordInspector.js.
         currentBass: '',
-        // True while the bass is still automatic (no stored or picked bass), so
-        // typing notes with a slash bass can fill it. Any explicit pick or typed
-        // bass clears it. See chordInspector.js.
-        bassAuto: true,
         currentChordInversion: 0,
         inversionChangesBass: true,
         showAllChords: false,

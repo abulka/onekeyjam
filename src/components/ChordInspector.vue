@@ -92,6 +92,10 @@ const favourite = computed(() => {
 // come through here.
 const customActive = computed(() => globals.chordInspector.voicingMode === 'custom')
 
+// Quality changes and reset inversion would replace a custom voicing, so they
+// are disabled while Custom is selected.
+const customDisabledTitle = 'Not available for a custom voicing — change the chord with the pickers first, or switch to Normalised'
+
 const selectedRoot = computed({
   get: () => picker.value.currentRoot,
   set: (value) => {
@@ -725,7 +729,8 @@ onUnmounted(() => {
           <option v-for="option in bassOptions" :key="option.value" :value="option.value">{{ option.text }}</option>
         </select>
       </label>
-      <span v-if="picker.currentChordInversion" class="inv-tag">inv {{ picker.currentChordInversion }}</span>
+      <!-- The inversion counter only describes the normalised voicing. -->
+      <span v-if="!customActive && picker.currentChordInversion" class="inv-tag">inv {{ picker.currentChordInversion }}</span>
       <span v-if="audioLocked" class="field-hint">Sound is off after refresh. Click or press any key once, then hover again.</span>
     </div>
 
@@ -819,17 +824,20 @@ onUnmounted(() => {
       <div class="content">
         <p class="row-hint">Hover to hear the result. Click applies it to Edit Chords above (unsaved until Save changes).</p>
         <div class="inspector-row">
-          <button type="button" class="ui tiny button" title="Hover to hear the previous chord type, click to load it into the draft"
+          <button type="button" class="ui tiny button" :class="{ disabled: customActive }" :disabled="customActive"
+            :title="customActive ? customDisabledTitle : 'Hover to hear the previous chord type, click to load it into the draft'"
             @mousedown="pressStep('prev')" @touchstart.prevent="pressStep('prev')"
             @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
             @click="clickStep('prev', $event)"
             @mouseenter="onHoverStep('prev', true)" @mouseleave="onHoverStep('prev', false)" @focus="onHoverStep('prev', true)" @blur="onHoverStep('prev', false)">Previous chord</button>
-          <button type="button" class="ui tiny button" title="Hover to hear the next chord type, click to load it into the draft"
+          <button type="button" class="ui tiny button" :class="{ disabled: customActive }" :disabled="customActive"
+            :title="customActive ? customDisabledTitle : 'Hover to hear the next chord type, click to load it into the draft'"
             @mousedown="pressStep('next')" @touchstart.prevent="pressStep('next')"
             @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
             @click="clickStep('next', $event)"
             @mouseenter="onHoverStep('next', true)" @mouseleave="onHoverStep('next', false)" @focus="onHoverStep('next', true)" @blur="onHoverStep('next', false)">Next chord</button>
-          <button type="button" class="ui tiny button" title="Pick a random chord type into the draft"
+          <button type="button" class="ui tiny button" :class="{ disabled: customActive }" :disabled="customActive"
+            :title="customActive ? customDisabledTitle : 'Pick a random chord type into the draft'"
             @mousedown="pressStep('random')" @touchstart.prevent="pressStep('random')"
             @mouseup="releaseAudition()" @mouseleave="releaseAudition()"
             @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
@@ -868,13 +876,14 @@ onUnmounted(() => {
             @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
             @click="clickInvert(1, $event)"
             @mouseenter="onHoverInvert(1, true)" @mouseleave="onHoverInvert(1, false)" @focus="onHoverInvert(1, true)" @blur="onHoverInvert(1, false)">Invert <i class="caret right icon"></i></button>
-          <button type="button" class="ui tiny button" title="Hover to hear the root position, click to load it into the draft"
+          <button type="button" class="ui tiny button" :class="{ disabled: customActive }" :disabled="customActive"
+            :title="customActive ? customDisabledTitle : 'Hover to hear the root position, click to load it into the draft'"
             @mousedown="pressInvert(0)" @touchstart.prevent="pressInvert(0)"
             @mouseup="releaseAudition()" @touchend.prevent="releaseAudition()" @touchcancel.prevent="releaseAudition()"
             @click="clickInvert(0, $event)"
             @mouseenter="onHoverInvert(0, true)" @mouseleave="onHoverInvert(0, false)" @focus="onHoverInvert(0, true)" @blur="onHoverInvert(0, false)">Reset inversion</button>
         </div>
-        <p class="row-hint">Transposing is a new chord; inverting changes the Normalised voicing.</p>
+        <p class="row-hint">Normalised: transposing is a new chord and inverting changes the generated voicing. Custom: transposing and inverting reshape your notes; the step and reset buttons are off.</p>
       </div>
 
       <div class="title" data-accordion-section="inspector-options">

@@ -63,29 +63,25 @@ describe('slash basses', () => {
         globals.currentChordBeingJammed.source = saved.jammed.source
     })
 
-    it('typed notes that imply a slash set the bass and the header shows it', () => {
+    it('typed notes never invent a bass; the header shows the plain name', () => {
         install()
         openForSlot('C3')
         globals.chordInspector.open = true
         assert.equal(globals.chordPicker.currentBass, '', 'starts blank')
 
         assert.equal(setNotesFromText('G3 C4 E4'), true)
-        assert.equal(globals.chordPicker.currentBass, 'G', 'the detected CM/G applies the G bass')
-        assert.equal(headerSymbol(), 'CM/G', 'the header names the slash bass')
+        assert.equal(globals.chordPicker.currentBass, '', 'detection does not fill the bass')
+        assert.equal(headerSymbol(), 'CM', 'no auto slash bass in the header')
     })
 
-    it('dropping the slash clears an automatic bass but not an explicit one', () => {
+    it('an explicit pick is kept across note edits', () => {
         install()
         openForSlot('C3')
         globals.chordInspector.open = true
         setNotesFromText('G3 C4 E4')
-        assert.equal(globals.chordPicker.currentBass, 'G')
+        assert.equal(globals.chordPicker.currentBass, '', 'typing leaves the bass blank')
 
-        setNotesFromText('C3 E3 G3')
-        assert.equal(globals.chordPicker.currentBass, '', 'the automatic bass is cleared')
-        assert.equal(headerSymbol(), 'CM', 'a root or blank bass is omitted')
-
-        // An explicit pick survives later note edits.
+        // An explicit pick survives later note edits for the same chord.
         setBass('E')
         setNotesFromText('C3 E3 G3')
         assert.equal(globals.chordPicker.currentBass, 'E', 'the picked bass is kept')

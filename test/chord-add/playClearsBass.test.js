@@ -86,16 +86,16 @@ describe('a played or replaced chord clears the bass', () => {
         assert.ok(!headerSymbol().includes('/'), 'the header no longer shows a slash')
     })
 
-    it('playing a new chord clears an automatically applied slash bass', () => {
+    it('typed notes never invent a slash bass', () => {
         install()
         openForSlot('C3')
         globals.chordInspector.open = true
         assert.equal(setNotesFromText('G3 C4 E4'), true)
-        assert.equal(globals.chordPicker.currentBass, 'G', 'typed notes applied the detected slash')
+        assert.equal(globals.chordPicker.currentBass, '', 'typing does not invent a bass')
 
         play('Em7no5', ['D4', 'E4', 'G4'], ['Em7no5'])
         assert.equal(autoApplyCaptured(), true)
-        assert.equal(globals.chordPicker.currentBass, '', 'the automatic slash is cleared on a new play')
+        assert.equal(globals.chordPicker.currentBass, '', 'still blank after a new play')
     })
 
     it('changing the chord identity clears the bass', () => {
