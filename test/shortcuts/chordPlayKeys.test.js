@@ -4,6 +4,7 @@ import { scaleNameToNotes } from '@/lib/scaleToNotes.js'
 import { keyDownListener, keyUpListener } from '@/lib/midi/livePianoKeyboardShortcuts.js'
 import { initChordPlayEvents } from '@/lib/midi/wire-chord-play-events.js'
 import { calculateRhBlackNoteModifierNotes } from '@/lib/midi/wire-events.js'
+import { clearHoveredPreview, rememberHover } from '@/lib/auditionHover.js'
 
 /*
  * The chord audition and trigger shortcuts:
@@ -87,6 +88,7 @@ describe('chord play keys', () => {
 
     beforeEach(() => {
         setupProjectGlobals()
+        clearHoveredPreview()
         events = []
         document.broadcastEvent = (name, detail) => { events.push({ name, detail }) }
     })
@@ -108,6 +110,17 @@ describe('chord play keys', () => {
         assert.deepEqual(events, [
             { name: 'chord-play-lh-trigger', detail: { state: 'on' } },
             { name: 'chord-play-lh-trigger', detail: { state: 'off' } },
+        ])
+    })
+
+    it('Quote release also hands sound back to a hovered preview', () => {
+        rememberHover(['C3', 'E3', 'G3'], 'C')
+        pressDown('Quote')
+        release('Quote')
+        assert.deepEqual(events, [
+            { name: 'chord-play-lh-trigger', detail: { state: 'on' } },
+            { name: 'chord-play-lh-trigger', detail: { state: 'off' } },
+            { name: 'chord-play', detail: { state: 'off' } },
         ])
     })
 

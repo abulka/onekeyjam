@@ -167,7 +167,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
           <div class="sc-item"><div class="sc-body"><code class="kb">Space</code> stop recording, stop the pattern or take playback, or play the pattern when it has notes. Pauses while you type in a field.</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Tab</code> switch between the Edit and Perform pages · <code class="kb">Shift+Tab</code> switch between the current page and Help</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">`</code> (hold) play / audition the picked chord. Release hands sound back to any preview still hovered. Hover hears, click loads into Edit Chords; only Save changes the grid. After a refresh, click or press any key once before hovering.</div></div>
-          <div class="sc-item"><div class="sc-body"><code class="kb">'</code> (hold) play the current left-hand chord</div></div>
+          <div class="sc-item"><div class="sc-body"><code class="kb">'</code> (hold) play the current left-hand chord. Release also hands sound back to any preview still hovered.</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">→</code> (hold) step to and play the next left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">←</code> (hold) step to and play the previous left-hand chord</div></div>
           <div class="sc-item"><div class="sc-body"><code class="kb">Alt+1</code> scale filter off · <code class="kb">Alt+2</code> scale filter on (magic mode)</div></div>

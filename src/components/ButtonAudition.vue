@@ -3,7 +3,7 @@ import { auditionNotes } from '../../src/lib/auditionNotes'
 import { forgetHover, rememberHover } from '@/lib/auditionHover.js'
 import { ensureAudioReady } from '@/lib/audio/general-midi.js'
 
-defineProps(['notes', 'bass', 'title'])
+const props = defineProps(['notes', 'bass', 'title'])
 
 /*
 There are three ways to play the notes in a chord:
@@ -32,7 +32,10 @@ function auditionHover(notes, bass, state) {
     // to grid, inspector, or browse previews alike.
     if (Array.isArray(notes) && notes.length > 0) {
         if (state)
-            rememberHover(notes, bass)
+            // The resolver reads the props live, so a speaker that shows the
+            // draft (or a row whose notes change under the pointer) resumes the
+            // current notes instead of the ones seen when the pointer entered.
+            rememberHover(notes, bass, () => ({ notes: props.notes, bass: props.bass }))
         else
             forgetHover(notes)
         auditionNotes(notes, bass, state)

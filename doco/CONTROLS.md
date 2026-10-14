@@ -31,7 +31,7 @@ the jam notes. The on-screen keyboard labels show the computer keys.
 | Add chord | hold `C#` (shift), press `F#` | `/`, or hold `s`, press `g` | adds a new chord row and selects it; edit it in the inspector |
 | Reset transpositions | hold `C#` (shift), press `G#` | hold `s`, press `h`, or `Backspace` | undoes any transposing done while playing |
 | Audition picked chord | - | hold `` ` `` (top-left key) | plays the chord currently in the Chord Inspector without adding it; releasing it hands sound back to any preview still hovered (see below) |
-| Replay current chord | - | hold `'` | replays the current left-hand chord (on a MIDI keyboard, replay its white trigger key) |
+| Replay current chord | - | hold `'` | replays the current left-hand chord (on a MIDI keyboard, replay its white trigger key); releasing it also hands sound back to any preview still hovered |
 | Next/previous chord | - | hold `→` / `←` | steps through the project's chords with wrap-around and plays each one (on a MIDI keyboard, play the white trigger keys directly) |
 | Switch to magic mode | - | `,` | turns on one-finger chords and scale filtering |
 | Switch to normal piano | - | `.` | plays a plain keyboard, with chords and filtering off |
@@ -80,8 +80,13 @@ the grid, the take, or Flashback Capture.
   previewed it.
 - Hold Backquote (```) to hear the draft chord that Save would write. Release
   stops the draft. If the pointer is still over a browse chord, a transpose
-  preview, or a grid speaker button, that preview resumes at once. Moving away
+  preview, or a grid speaker button, that preview resumes at once, re-derived
+  from the current draft, so a transform you applied while hovering sounds as
+  the button now proposes rather than the version seen on entry. Moving away
   first means nothing resumes.
+- Hold `'` to replay the current left-hand chord, exactly as before. Releasing
+  it also hands sound back to any preview still hovered, the same as releasing
+  Backquote.
 
 ---
 

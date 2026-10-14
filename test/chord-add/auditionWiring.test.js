@@ -3,9 +3,11 @@ import { nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { vi } from 'vitest'
 import { globals } from '@/lib/globals.js'
-import { resetInspector, autoNotesFor } from '@/lib/chordInspector.js'
+import { resetInspector, autoNotesFor, previewTranspose } from '@/lib/chordInspector.js'
 import { auditionNotes } from '@/lib/auditionNotes'
+import { clearHoveredPreview, getHoveredPreview } from '@/lib/auditionHover.js'
 import ChordInspector from '@/components/ChordInspector.vue'
+import ButtonAudition from '@/components/ButtonAudition.vue'
 
 // Record what each audition control actually asks to play.
 vi.mock('@/lib/auditionNotes', async (importOriginal) => {
@@ -97,9 +99,11 @@ describe('ChordInspector audition wiring', () => {
             jammed: JSON.parse(JSON.stringify(globals.currentChordBeingJammed)),
         }
         auditionNotes.mockClear()
+        clearHoveredPreview()
     })
 
     afterEach(() => {
+        clearHoveredPreview()
         globals.project = saved.project
         globals.chordTriggerMap = saved.chordTriggerMap
         globals.currentChordTriggerNote = saved.currentChordTriggerNote
@@ -230,6 +234,65 @@ describe('ChordInspector audition wiring', () => {
             await nextTick()
             assert.ok(auditionNotes.mock.calls.length > 0, 'Random auditions the chord it picked')
             assert.ok(notesOfLastAudition().length > 0, 'a chord actually sounds')
+        }
+        finally {
+            wrapper.unmount()
+        }
+    })
+
+    it('re-resolves a hovered transform against the draft after the click applies it', async () => {
+        installMajorRow()
+        const wrapper = mount(ChordInspector, { attachTo: document.body })
+        try {
+            await nextTick()
+            await nextTick()
+
+            // Hover +1: the preview is "draft plus one semitone".
+            const plusOne = buttonByTitle(wrapper, 'Hover to hear one semitone up')
+            assert.ok(plusOne, '+1 button exists')
+            await plusOne.trigger('mouseenter')
+
+            // Click applies it: the draft moves up, and the applied result is auditioned.
+            await plusOne.trigger('mousedown')
+            await plusOne.trigger('mouseup')
+            await nextTick()
+            assert.equal(globals.chordPicker.currentRoot, 'C#', 'the draft moved up a semitone')
+
+            // Releasing backquote stops the draft and resumes the hovered preview.
+            auditionNotes.mockClear()
+            document.dispatchEvent(new CustomEvent('chord-play', { detail: { state: 'off' } }))
+            const resumed = notesOfLastAudition()
+            assert.deepEqual(resumed, previewTranspose(1).notes, 'resumes the transform the button now proposes')
+            assert.notDeepEqual(
+                resumed,
+                autoNotesFor(globals.chordPicker.currentRoot, globals.chordPicker.currentChord, 0),
+                'not simply the new draft (the stale pre-click preview)',
+            )
+        }
+        finally {
+            wrapper.unmount()
+        }
+    })
+
+    it('a draft-following speaker resumes the current notes after the draft moves', async () => {
+        const wrapper = mount(ButtonAudition, {
+            attachTo: document.body,
+            props: { notes: ['C3', 'E3', 'G3'], bass: 'C' },
+        })
+        try {
+            await nextTick()
+            await wrapper.trigger('mouseenter')
+            assert.deepEqual(getHoveredPreview(), { notes: ['C3', 'E3', 'G3'], bass: 'C' })
+
+            // The draft moves under the pointer, for example by stepping the
+            // trigger with the arrow keys: the prop follows reactively.
+            await wrapper.setProps({ notes: ['D3', 'F3', 'A3'], bass: 'D' })
+            await nextTick()
+            assert.deepEqual(
+                getHoveredPreview(),
+                { notes: ['D3', 'F3', 'A3'], bass: 'D' },
+                'the resume follows the live prop, not the entry snapshot',
+            )
         }
         finally {
             wrapper.unmount()

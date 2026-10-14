@@ -396,8 +396,10 @@ function onBrowseSelect(detail) {
 }
 
 // Transpose & invert: hovering previews the result, clicking applies it to
-// the draft (still unsaved until Save changes).
-function auditionPreview(preview, state) {
+// the draft (still unsaved until Save changes). The optional resolver lets the
+// shared hover memory recompute the preview when backquote is released, so
+// applying the transform under the pointer does not leave a stale preview.
+function auditionPreview(preview, state, resolve) {
   if (!state) {
     forgetHover(preview?.notes)
     auditionNotes([], '', false)
@@ -405,7 +407,7 @@ function auditionPreview(preview, state) {
   }
   if (!preview || !Array.isArray(preview.notes) || preview.notes.length === 0)
     return
-  rememberHover(preview.notes, preview.bass || '')
+  rememberHover(preview.notes, preview.bass || '', resolve)
   // Never wake audio from hover, same reason as browse preview above.
   stopAuditionChord()
   auditionNotes(preview.notes, preview.bass || '', true)
@@ -418,19 +420,19 @@ function onHoverPlayed(state) {
 }
 
 function onHoverTranspose(semitones, state) {
-  auditionPreview(previewTranspose(semitones), state)
+  auditionPreview(previewTranspose(semitones), state, () => previewTranspose(semitones))
 }
 
 function onHoverFifth(direction, state) {
-  auditionPreview(previewFifth(direction), state)
+  auditionPreview(previewFifth(direction), state, () => previewFifth(direction))
 }
 
 function onHoverInvert(direction, state) {
-  auditionPreview(previewInvert(direction), state)
+  auditionPreview(previewInvert(direction), state, () => previewInvert(direction))
 }
 
 function onHoverStep(direction, state) {
-  auditionPreview(previewStep(direction), state)
+  auditionPreview(previewStep(direction), state, () => previewStep(direction))
 }
 
 // Transpose & invert buttons audition the freshly applied draft while the mouse

@@ -3,6 +3,7 @@ import { globals } from '../globals.js'
 import { transposeChordTriggerMap, circleOfFifthsChordTriggerMap, invertChordTriggerMap } from '../transpose.js'
 import { resetTranspositionsEtc } from '../resetState.js'
 import { isTypingTarget } from '../is-typing-target.js'
+import { getHoveredPreview } from '../auditionHover.js'
 
 export function keyDownListener(e) {
     // console.log('keydown', e.key, e.keyCode, 'this', this);  // 'this' is the window
@@ -166,6 +167,13 @@ export function keyDownListener(e) {
         break
       case 'Quote':
         document.broadcastEvent("chord-play-lh-trigger", { state: 'off' })  // get params from globals area later
+        // Quote keeps its own job of replaying the selected grid chord, but on
+        // release it also hands sound back to any audition preview still
+        // hovered, the same resume releasing backquote triggers. The audition
+        // owner (ChordInspector) does the actual replay, so no audio logic
+        // leaks into this layer.
+        if (getHoveredPreview())
+          document.broadcastEvent("chord-play", { state: 'off' })
         break
       case 'ArrowRight':
         document.broadcastEvent("chord-play-lh-trigger-next", { state: 'off' })
