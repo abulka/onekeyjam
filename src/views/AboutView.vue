@@ -306,8 +306,10 @@ watch(() => globals.helpPage, async () => {
       <ul class="ui list">
         <li>
           <strong>Edit Chords</strong> - the inspector for the selected grid row.
-          Click a row to load it, change its chord, play with its voicing (Auto or
-          Custom), then Save. <strong>+ Add chord</strong> creates a new row.
+          Hover a row's chord cell and click the pencil that appears at the top
+          right to load it here, change its chord, play with its voicing (Auto or
+          Custom), then Save. Revert discards the draft; Cancel discards it and
+          closes the panel. <strong>+ Add chord</strong> creates a new row.
         </li>
         <li>
           <strong>Key Detection</strong> - set the project key, see the detected

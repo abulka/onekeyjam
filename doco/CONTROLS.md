@@ -92,6 +92,24 @@ the grid, the take, or Flashback Capture.
 
 ---
 
+## Opening a chord in Edit Chords
+
+Clicking anywhere in a chord grid row triggers that chord quietly and selects
+the row, so the sounding chord and the Edit Chords draft follow it. It does not
+open the panel or move the page.
+
+To open a row in the inspector, hover its chord cell and click the small pencil
+that appears at the top right. The pencil shows while the pointer is over the
+cell and is not pinned to the selected row. It opens the panel and brings its
+header into view when the panel is off screen. The pencil is not shown on the
+Perform page, which has no inspector.
+
+**Cancel** in the Edit Chords actions row discards the draft, exactly like
+Revert, and then closes the panel. The row stays selected, so opening it again
+shows the saved chord.
+
+---
+
 ## Trigger keys and solo keys
 
 The chord table's **Trigger** column shows which left-hand key plays which chord.

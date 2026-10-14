@@ -10,7 +10,7 @@ function msg() {
 </script>
 
 <template>
-    <span class="ui text grey" title="Add a chord with '+ Add chord', or click a row to edit it in the inspector">
+    <span class="ui text grey" title="Add a chord with '+ Add chord', or click a row then its pencil to edit it in the inspector">
         <span v-if="globals.enableLhChordTriggers">
             {{ msg() }}
             <!-- via <b><code>{{ globals.currentChordTriggerNote }}</code></b> -->

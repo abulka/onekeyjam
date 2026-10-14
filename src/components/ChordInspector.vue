@@ -52,6 +52,7 @@ import { auditionNotes } from '@/lib/auditionNotes.js'
 import { stopAuditionChord } from '@/lib/midi/audition-note.js'
 import { ensureAudioReady, isAudioLocked } from '@/lib/audio/general-midi.js'
 import { forgetHover, getHoveredPreview, rememberHover } from '@/lib/auditionHover.js'
+import { closeEditChordsAccordion } from '@/lib/editChordsAccordion.js'
 import ButtonAudition from './ButtonAudition.vue'
 import CommonChords from './CommonChords.vue'
 import CircleOfFifths from './CircleOfFifths.vue'
@@ -299,6 +300,18 @@ function onSave() {
 
 function onRevert() {
   revertDraft()
+}
+
+/**
+ * Cancel discards the draft exactly like Revert, then closes the Edit Chords
+ * section so the panel is out of the way. The selected row stays selected, so
+ * opening it again (hover its chord cell and use the pencil) shows the saved
+ * chord.
+ */
+function onCancel() {
+  onRevert()
+  globals.chordInspector.open = false
+  closeEditChordsAccordion()
 }
 
 function onAdd(event) {
@@ -837,6 +850,9 @@ onUnmounted(() => {
           title="Add the current chord as a new row" @click="onAdd">Add as new chord</button>
         <button type="button" class="ui small button" :disabled="!dirty" title="Discard the draft (Esc)"
           @click="onRevert">Revert</button>
+        <button type="button" class="ui small button"
+          title="Discard the draft and close Edit Chords"
+          @click="onCancel">Cancel</button>
         <span class="actions-divider"></span>
         <button type="button" class="ui tiny button" title="Add a copy of this chord as a new row"
           @click="onDuplicate">Duplicate</button>

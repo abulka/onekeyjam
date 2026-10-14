@@ -22,45 +22,25 @@ import { openForSlot, addRow, selectSlot } from '@/lib/chordInspector.js'
 import { linkProjectToKeyboard } from '@/lib/boot-project.js'
 import { flushCurrentProject } from '@/lib/currentProjectStore.js'
 import { markAllVisibleChordsForDeletion, markAllVisibleChordsAsFavourites } from '@/lib/massOperationsOnChordConfigs'
+import { openEditChordsAccordion } from '@/lib/editChordsAccordion.js'
 
 const props = defineProps({
-  // On the Perform page there is no inspector panel, so a click just selects.
+  // On the Perform page there is no inspector panel, so the chord cell shows no
+  // edit pencil: a click there only selects.
   openInspectorOnSelect: { type: Boolean, default: true },
 })
 
 /**
- * Select a slot, open the inspector on it and reveal the Edit Chords section.
- * Selecting never writes: the inspector holds a draft until Save. Clicking
- * another row switches silently; the previous draft is replaced.
+ * The pencil in the chord cell: open that row in Edit Chords and reveal the
+ * panel. This is the only grid control that opens the inspector; clicking a row
+ * merely selects it. Selecting and opening never write: the inspector holds a
+ * draft until Save, and switching rows replaces the previous draft silently.
  */
-function selectAndEdit(triggerNote) {
-  if (!triggerNote)
-    return
-  selectSlot(triggerNote)
-  if (!props.openInspectorOnSelect)
+function openChordEditor(triggerNote) {
+  if (!triggerNote || !props.openInspectorOnSelect)
     return
   openForSlot(triggerNote)
   openEditChordsAccordion()
-}
-
-/** Open the accordion section that holds the inspector, if it is closed. */
-function openEditChordsAccordion() {
-  const title = document.querySelector('[data-accordion-section="edit-chords"]')
-  if (!title || typeof $ !== 'function')
-    return
-  const accordion = title.closest('.ui.accordion')
-  if (!accordion)
-    return
-  const index = Array.from(accordion.children)
-    .filter((child) => child.classList.contains('title'))
-    .indexOf(title)
-  if (index >= 0)
-    $(accordion).accordion('open', index)
-  // With a tall grid the panel can be off screen. Bring it into view so the
-  // row clicked and the editor that opened are visibly connected.
-  const rect = title.getBoundingClientRect()
-  if (rect.top < 0 || rect.top > window.innerHeight)
-    title.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 /** Add a row (seeded from a just-played chord when there is one) and edit it. */
@@ -81,10 +61,10 @@ function onDeleteSelectedChords(event) {
   releaseControlFocus(event)
 }
 
-function syncPickerAfterGridClick(triggerNote) {
-  // Clicking a scale-filter cell selects the row and loads the draft, so the
-  // inspector keeps following the grid. It does not open the panel, and it
-  // switches silently like a row click.
+/** Select a row and load its draft, so the inspector follows the grid. Opening
+ * the panel is left to the chord cell's pencil, so a stray click never moves
+ * the page or switches the panel underneath the pointer. */
+function selectGridRow(triggerNote) {
   try {
     if (triggerNote && triggerNote in globals.chordTriggerMap)
       selectSlot(triggerNote)
@@ -615,7 +595,7 @@ function scaleFilterTableClick(event) {
     }
     onNoteOn(simulatedEvent)
     onNoteOff(simulatedEvent)
-    syncPickerAfterGridClick(triggerNote)
+    selectGridRow(triggerNote)
   }
 
   // change scale filter
@@ -631,15 +611,15 @@ function scaleFilterTableClick(event) {
 function generalTableClick(event) {
   const tr = event.target.closest('tr')
   const triggerNote = tr.getAttribute('data-trigger-note')
-  // Quietly change the sounding chord and scale, then select the row and open
-  // the inspector on it. Editing happens in the panel, never in the grid.
-  // Switching rows replaces any unsaved draft silently (no confirm prompt).
+  // Quietly change the sounding chord and scale, then select the row. A plain
+  // click in the grid must never open Edit Chords or move the page: that is the
+  // chord cell's pencil. Switching rows replaces any unsaved draft silently.
   let simulatedEvent = {
     note: new Note(triggerNote, { attack: 0.0 }) // 0 means silent - only onNoteOn() understands this convention
   }
   onNoteOn(simulatedEvent)
   onNoteOff(simulatedEvent)
-  selectAndEdit(triggerNote)
+  selectGridRow(triggerNote)
 }
 
 </script>
@@ -841,10 +821,19 @@ function generalTableClick(event) {
         <!-- <td>
           {{ info.chordConfigName }}
         </td> -->
-        <td>
+        <td class="chord-cell">
           <code :class="{ 'boldy': info.lhChordIsCurrent }">
             {{ info.lhChord }}
           </code>
+          <!-- The only control that opens Edit Chords from the grid. It appears
+          while the pointer is over this cell, so a plain click anywhere in the
+          row can select without moving the page. -->
+          <button v-if="openInspectorOnSelect" type="button" class="chord-edit"
+            :title="`Edit ${info.lhChord || 'this chord'} in Edit Chords`"
+            aria-label="Edit this chord in Edit Chords"
+            @click.stop="openChordEditor(info.lhTriggerNote)">
+            <i class="pencil icon" aria-hidden="true"></i>
+          </button>
         </td>
         <!-- <td>
           {{ info.symbols }}
@@ -1393,6 +1382,41 @@ select.preset-custom {
 .key-badge-change {
   box-shadow: inset 2px 0 0 hsl(var(--key-hue, 35) 60% 40%);
   font-weight: bold;
+}
+
+/* Chord cell: holds the chord name and the edit pencil. The pencil is
+   positioned absolutely in the top right corner so the cell keeps its exact
+   size and the chord name never moves. It is shown only while the pointer is
+   over this cell, so the selected row carries no extra control. */
+.chord-cell {
+  position: relative;
+}
+
+.chord-edit {
+  position: absolute;
+  top: 0.1rem;
+  right: 0.1rem;
+  padding: 0 0.2rem;
+  font-size: 0.7rem;
+  line-height: 1;
+  color: #8a7a66;
+  background: #fbf7f0;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  /* Hidden rather than removed, so the cell never resizes; visibility also
+     keeps the button out of the tab order and out of the way of clicks. */
+  visibility: hidden;
+}
+
+.chord-cell:hover .chord-edit,
+#grand-summary tbody tr:focus-within .chord-edit {
+  visibility: visible;
+}
+
+.chord-edit:hover {
+  color: #4a3418;
+  border-color: #d9c9b0;
 }
 
 /* A divider marks the first row of a new key run, so a modulation is easy to
