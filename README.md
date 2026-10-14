@@ -239,4 +239,4 @@ Bug reports and feature requests are welcome in the
 
 ## License
 
-[MIT](LICENSE) (c) Andy Bulka
+[MIT](LICENSE) (c) 2026 Andy Bulka
