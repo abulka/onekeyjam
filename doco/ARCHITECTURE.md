@@ -497,9 +497,11 @@ and the validation commands.
   restores it at boot, and `initCurrentProjectAutosave()` (called at the end of
   the boot in `src/lib/main.js`) keeps it up to date with a debounced deep watch,
   flushing on `pagehide`. Destructive actions call `flushCurrentProject()` so a
-  quick reload cannot restore a pre-delete snapshot. Loading or creating another
-  project simply replaces the snapshot; the take, sequencer pattern and UI prefs
-  persist separately.
+  quick reload cannot restore a pre-delete snapshot. Loading another project
+  simply replaces the snapshot; the take, sequencer pattern and UI prefs
+  persist separately. Creating a **new** project is the one exception for the
+  take: `newProject()` clears it (and its Flashback buffer), so a fresh project
+  starts blank, while loading an existing project keeps the take.
 
 ## Further reading
 

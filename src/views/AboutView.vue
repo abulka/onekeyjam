@@ -368,8 +368,9 @@ watch(() => globals.helpPage, async () => {
         The status readouts at the top of the page summarise the current chord and
         scale at a glance, so you always know what you are playing over. Recording
         is free (no quantisation or metronome) and is timed at 120 BPM. The latest
-        take is kept in the browser, so a page refresh does not lose it; clear it
-        with the Clear button when you are done.
+        take is kept in the browser, so a page refresh does not lose it; it stays
+        with you when you open another project, and starting a new project clears
+        it. Clear it with the Clear button when you are done.
       </p>
 
       <figure>

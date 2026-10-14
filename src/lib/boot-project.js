@@ -24,6 +24,7 @@ import { fetchTestSong, fetchClassicProject, fetchProgressionProject, fetchRockP
 import { listKeyboardConfigs, listKeyboardConfigDetails, fetchKeyboardConfig, listTestSongs, listClassicProjects, listProgressionProjects, listRockProjects, listMultiKeyProjects, listUserProjects } from './projectLibrary';
 import { restoreCurrentProject, flushCurrentProject } from './currentProjectStore.js';
 import { clampBpm } from './uiPrefs.js';
+import { clearTake } from './midi/recorder.js';
 
 /** @typedef {import("./typedefs").ChordTriggerMap} ChordTriggerMap */
 /** @typedef {import("./typedefs").KeyboardConfig} KeyboardConfig */
@@ -310,7 +311,11 @@ export function parseMidiAndAllocateChords(midi, fileName) {
 }
 
 export function newProject() {
-    // 7. Called by Menu File/New. Creates a fresh empty project.
+    // 7. Called by Menu File/New. Creates a fresh empty project. A new project
+    // is a blank slate, so the previous take (and its Flashback buffer) is
+    // discarded rather than carried into it. Loading an existing project keeps
+    // the take, so it can still be exported afterwards.
+    clearTake();
     projectChores2name(emptyProject(), '', undefined, 'user');
     projectChores({ project: globals.project, maxChordConfigs: globals.maxChordConfigs });
 }
