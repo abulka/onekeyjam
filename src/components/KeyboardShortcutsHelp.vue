@@ -99,7 +99,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
             <div class="sc-body">
               <code class="kb">,</code> magic mode ·
               <code class="kb">.</code> normal piano ·
-              <code class="kb">/</code> add the jammed chord
+              <code class="kb">/</code> add the jammed chord ·
+              <code class="kb">Shift+/</code> add it with the Normalised voicing
+            </div>
+          </div>
+          <div class="sc-item">
+            <div class="sc-label">Save the chord being edited</div>
+            <div class="sc-body">
+              <code class="kb">Enter</code> save the highlighted row with the voicing
+              Edit Chords has selected ·
+              <code class="kb">Shift+Enter</code> the same, but with the Normalised voicing
             </div>
           </div>
           <div class="sc-item">

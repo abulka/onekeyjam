@@ -29,6 +29,8 @@ the jam notes. The on-screen keyboard labels show the computer keys.
 | Shift | hold `C#` in the trigger octave | hold `s` | modifies the other left black keys |
 | All notes off | hold `C#` (shift), press `D#` | hold `s`, press `d` | stops every sounding note |
 | Add chord | hold `C#` (shift), press `F#` | `/`, or hold `s`, press `g` | adds a new chord row and selects it; edit it in the inspector |
+| Add chord (Normalised) | - | `Shift+/` | adds a new chord row using the generated Normalised voicing, even when Edit Chords has a Custom voicing selected |
+| Commit the edit | - | `Enter` / `Shift+Enter` | saves the chord highlighted in Edit Chords with the voicing selected there; `Shift+Enter` saves it with the Normalised voicing |
 | Reset transpositions | hold `C#` (shift), press `G#` | hold `s`, press `h`, or `Backspace` | undoes any transposing done while playing |
 | Audition picked chord | - | hold `` ` `` (top-left key) | plays the chord currently in the Chord Inspector without adding it; releasing it hands sound back to any preview still hovered (see below) |
 | Replay current chord | - | hold `'` | replays the current left-hand chord (on a MIDI keyboard, replay its white trigger key); releasing it also hands sound back to any preview still hovered |

@@ -69,6 +69,16 @@ export function autoSymbolFor(root, quality) {
   return removeBassSlash(createChordSymbol(root, quality))[0]
 }
 
+/**
+ * True when a stored row was written as an exact voicing rather than generated
+ * from its symbol: Save with the Custom row, Add with a played chord, and so on.
+ * Those rows carry the "(user jam)" label; generated ones carry "(user)". Rows
+ * from a project file use their own labels and are judged by their notes alone.
+ */
+function isStoredExactVoicing(config) {
+  return typeof config?.name === 'string' && config.name.endsWith('(user jam)')
+}
+
 function splitSymbols(symbols, fallback) {
   if (Array.isArray(symbols))
     return symbols.filter(Boolean)
@@ -202,7 +212,12 @@ export function loadDraftFromSlot(triggerNote = globals.currentChordTriggerNote)
 
   const derived = autoNotesFor(root, quality, 0)
   const notes = Array.isArray(config.chordNotes) ? [...config.chordNotes] : []
-  const isCustom = notes.length > 0 && !arraysAreEqual(notes, derived)
+  // A hand-made voicing that happens to match the generated one note for note is
+  // indistinguishable from Normalised by its notes alone, and the panel would
+  // silently drop the user's choice. The stored label is what tells the two
+  // kinds of row apart: an exact save is "(user jam)", a generated one "(user)".
+  const isCustom = notes.length > 0
+    && (!arraysAreEqual(notes, derived) || isStoredExactVoicing(config))
   const ins = inspector()
   ins.notes = notes
   ins.voicingMode = isCustom ? 'custom' : 'auto'

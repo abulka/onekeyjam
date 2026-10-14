@@ -9,9 +9,10 @@ import { isTypingTarget } from '../is-typing-target.js'
  * 0 = toggle Solo in key.
  *
  * The freed lower-row punctuation keys have their own jobs:
- *   /  add the jammed chord (works in both magic and normal piano mode)
- *   ,  switch to magic mode
- *   .  switch to normal piano mode
+ *   /        add the jammed chord (works in both magic and normal piano mode)
+ *   Shift+/  add it with the Normalised voicing selected first
+ *   ,        switch to magic mode
+ *   .        switch to normal piano mode
  *
  * These work on every page and every octave and do not need the on-screen
  * keyboard to be focused. They mirror the right-hand black-key modifiers in
@@ -21,18 +22,42 @@ import { isTypingTarget } from '../is-typing-target.js'
 /** @type {Array<'scale1'|'scale2'|'scale3'|'notesOfChord'>} */
 const SCALE_FILTERS = ['scale1', 'scale2', 'scale3', 'notesOfChord']
 
+/**
+ * True when a key press came from inside the Edit Chords panel, where Enter and
+ * Shift+Enter are allowed even while a field has focus.
+ * @param {EventTarget|null} target
+ */
+function isInChordInspector(target) {
+    if (!target || typeof (/** @type {HTMLElement} */ (target)).closest !== 'function')
+        return false
+    return (/** @type {HTMLElement} */ (target)).closest('.chord-inspector') != null
+}
+
 /** @param {KeyboardEvent} e */
 function onKeyDown(e) {
     if (e.ctrlKey || e.metaKey || e.altKey || e.repeat)
         return
+
+    // Shift+/ is taken over even while a field in the Edit Chords panel has
+    // focus, the same way Enter is, so the four commit keys behave alike from
+    // anywhere in that panel. Plain / is left to the field there: those inputs
+    // use the character themselves.
+    if (e.code === 'Slash' && e.shiftKey && isInChordInspector(e.target)) {
+        e.preventDefault()
+        document.broadcastEvent('chord-add', { voicing: 'normalised' })
+        return
+    }
+
     if (isTypingTarget(e.target))
         return
 
     // The repurposed lower-row keys work in every mode, so handle them before
-    // the magic-mode-only scale shortcuts below.
-    if (!e.shiftKey && e.code === 'Slash') {
+    // the magic-mode-only scale shortcuts below. Plain `/` adds the chord with
+    // whatever voicing the Edit Chords panel has selected; Shift+/ asks for the
+    // Normalised voicing first, so the generated chord is what gets added.
+    if (e.code === 'Slash') {
         e.preventDefault()
-        document.broadcastEvent('chord-add', {})
+        document.broadcastEvent('chord-add', e.shiftKey ? { voicing: 'normalised' } : {})
         return
     }
     if (!e.shiftKey && e.code === 'Comma') {

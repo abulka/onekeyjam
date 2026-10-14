@@ -156,6 +156,11 @@ function applyNotes() {
 
 /** Leaving the field applies the notes and shows them in their stored form. */
 function onNotesBlur() {
+  // Only parse while the field was really being edited. A commit sets
+  // notesFocused to false first, so the blur it triggers cannot put Custom back
+  // after a save has just chosen Normalised.
+  if (!notesFocused.value)
+    return
   notesFocused.value = false
   // Clearing the field throws the custom voicing away and returns to Normalised.
   if (notesText.value.trim() === '') {
@@ -247,8 +252,24 @@ function blurActionButton() {
     el.blur()
 }
 
-function onSave() {
-  applyNotes()
+/**
+ * Leave the notes field if it still holds focus, without parsing it: the draft
+ * has just moved on, so parsing the old text would re-select Custom.
+ */
+function leaveNotesField() {
+  if (typeof document === 'undefined')
+    return
+  const el = document.activeElement
+  if (el && el.classList?.contains('notes-input') && typeof el.blur === 'function')
+    el.blur()
+}
+
+/**
+ * Save the draft as it stands. The caller has already applied the notes field
+ * text, so this never re-reads it: re-applying after the voicing was chosen
+ * would put a Custom voicing back and undo a Shift+Enter.
+ */
+function commitSave() {
   if (saveDraft()) {
     afterWrite()
     blurActionButton()
@@ -256,19 +277,38 @@ function onSave() {
   }
 }
 
-function onRevert() {
-  revertDraft()
-}
-
-function onAdd() {
-  applyNotes()
+/**
+ * Add a row from the draft as it stands. As with commitSave, the notes text is
+ * already applied by the caller.
+ */
+function commitAdd() {
   if (addRow()) {
     afterWrite()
     blurActionButton()
     notesFocused.value = false
     notesText.value = globals.chordInspector.notes.join(' ')
+    leaveNotesField()
     flash('Chord added')
   }
+}
+
+function onSave() {
+  applyNotes()
+  commitSave()
+}
+
+function onRevert() {
+  revertDraft()
+}
+
+function onAdd(event) {
+  applyNotes()
+  // Shift+/ (and any chord-add event that carries a voicing) asks for the
+  // Normalised voicing, so pick it before the new row is built. Plain / leaves
+  // whichever voicing the panel has selected alone.
+  if (event?.detail?.voicing === 'normalised')
+    chooseNormalised()
+  commitAdd()
 }
 
 function onDuplicate() {
@@ -543,7 +583,9 @@ function onKeydown(event) {
 }
 
 // Enter commits the edit: it saves a dirty row, or adds a pending chord when
-// there is no row yet. It never duplicates a clean row. Buttons in the Save
+// there is no row yet. It never duplicates a clean row. Shift+Enter does the
+// same, but first selects the Normalised voicing, so it updates or adds the
+// generated chord even when the Custom row was selected. Buttons in the Save
 // row keep native Enter so there is no double activation. Text areas keep
 // Enter for new lines. Typing in other text fields or picks outside Edit
 // Chords never triggers a commit.
@@ -577,9 +619,20 @@ function onGlobalEnter(event) {
   // (the watcher runs async), so apply it first: highlight, play, Enter then
   // updates the highlighted row instead of adding a duplicate.
   autoApplyCaptured()
-  const action = resolveEnterAction()
+  let action = resolveEnterAction()
+  // Shift+Enter asks for the Normalised voicing. With a row selected that choice
+  // is itself the change, so the action is decided again afterwards: a row that
+  // simply stored a custom voicing is rewritten rather than silently ignored.
+  // With no row it only proceeds when Enter had something to add, so a stray
+  // Shift+Enter never invents a chord. The condition must cover both: an 'add'
+  // (no row, a pending chord) and a clean selected row, which has no action of
+  // its own but may still store a Custom voicing worth replacing.
+  if (event.shiftKey && (action !== 'none' || globals.chordInspector.slotId != null)) {
+    chooseNormalised()
+    action = resolveEnterAction()
+  }
   if (action === 'save') {
-    onSave()
+    commitSave()
     notesFocused.value = false
     notesText.value = globals.chordInspector.notes.join(' ')
     if (el && typeof el.blur === 'function' && el.tagName === 'INPUT')
@@ -587,7 +640,7 @@ function onGlobalEnter(event) {
     return
   }
   if (action === 'add') {
-    onAdd()
+    commitAdd()
     if (el && typeof el.blur === 'function' && el.tagName === 'INPUT')
       el.blur()
   }
@@ -604,7 +657,8 @@ onMounted(() => {
   if (transposeAccordion.value)
     stopTransposeAccordion = registerAccordion(transposeAccordion.value, 'chord-inspector-transpose')
   // '/' and the MIDI Shift+F# shortcut broadcast `chord-add`; it now means
-  // "create a row", the same as the + Add chord button.
+  // "create a row", the same as the + Add chord button. Shift+/ carries
+  // `{ voicing: 'normalised' }`, which picks the Normalised row first.
   document.addEventListener('chord-add', onAdd)
   document.addEventListener('chord-play', onChordPlay)
   window.addEventListener('keydown', onGlobalEnter)
@@ -797,6 +851,28 @@ onUnmounted(() => {
         <button type="button" class="ui small primary button" :disabled="!canAdd"
           title="Add the current chord as a new row (Enter)" @click="onAdd">Add as new chord</button>
       </template>
+    </div>
+
+    <!-- Keyboard shortcut reminders for the row actions above. -->
+    <div class="shortcut-hints" aria-label="Keyboard shortcuts">
+      <span class="shortcut-hint" title="Enter saves the highlighted row with the voicing Edit Chords has selected (this also adds the first chord when the project has no rows yet)">
+        <kbd>Enter</kbd> save
+      </span>
+      <span class="shortcut-hint" title="Shift+Enter saves it with the Normalised voicing">
+        <kbd>Shift+Enter</kbd> save normalised
+      </span>
+      <span class="shortcut-hint" title="/ adds the chord you are jamming">
+        <kbd>/</kbd> add chord
+      </span>
+      <span class="shortcut-hint" title="Shift+/ adds it with the Normalised voicing">
+        <kbd>Shift+/</kbd> add normalised chord
+      </span>
+      <span class="shortcut-hint" title="Hold backquote to hear the chord Edit Chords would save">
+        <kbd>`</kbd> audition draft
+      </span>
+      <span class="shortcut-hint" title="Hold apostrophe to replay the chord selected in the grid">
+        <kbd>'</kbd> replay grid chord
+      </span>
     </div>
 
     <!-- Browse: a catalogue for dialling up a chord, never the target -->
@@ -999,6 +1075,39 @@ onUnmounted(() => {
   background: #efe3cf;
   color: #6b5a45;
   font-size: 0.75rem;
+}
+
+/* Keyboard shortcut reminders under the row actions. Keys are pills, the
+   description is quiet text, so the strip reads as a hint rather than buttons. */
+.shortcut-hints {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 1rem;
+  margin: 0 0 0.7rem 0;
+}
+
+.shortcut-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #6b5a45;
+  font-size: 0.78rem;
+}
+
+.shortcut-hint kbd {
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.2rem 0.45rem;
+  border: 1px solid #c9a86a;
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: #fdf6e3;
+  color: #3a2c1a;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+  white-space: nowrap;
 }
 
 /* The two voicing radios: one row each, read-only normalised text and an

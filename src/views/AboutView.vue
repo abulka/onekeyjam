@@ -279,7 +279,8 @@ watch(() => globals.helpPage, async () => {
         <li>Trigger chords with the run that starts at <code>{{ chordKeysText }}</code> (the white keys of the chord trigger octave, continuing to the right).</li>
         <li>The black keys <code>s d g h j</code> in that octave are the chord modifiers. Hold <code>s</code> as a shift key and use the others to switch scales or transpose.</li>
         <li>Play solo notes with <code>{{ soloKeysText }}</code> - the keys after the last chord trigger. These are filtered into the current scale.</li>
-        <li><code>,</code> switches to magic mode, <code>.</code> switches to normal piano, and <code>/</code> adds the chord you are jamming, in either mode.</li>
+        <li><code>,</code> switches to magic mode, <code>.</code> switches to normal piano, <code>/</code> adds the chord you are jamming, and <code>Shift+/</code> adds it with the Normalised voicing, in either mode.</li>
+        <li><code>Enter</code> saves the chord highlighted in Edit Chords with the voicing selected there. <code>Shift+Enter</code> does the same with the Normalised voicing.</li>
       </ol>
       <p>
         The keys play whenever the app window is focused; they pause only while
@@ -456,8 +457,11 @@ watch(() => globals.helpPage, async () => {
           window is focused, then play chords with <code>{{ chordKeysText }}</code>
           and solo notes with <code>{{ soloKeysText }}</code>. The black keys are
           <code>s d g h j</code> on the left and <code>2 3 5 6 7</code> on the
-          right; <code>,</code> and <code>.</code> switch mode and <code>/</code>
-          adds the jammed chord. Open
+          right; <code>,</code> and <code>.</code> switch mode, <code>/</code>
+          adds the jammed chord and <code>Shift+/</code> adds it with the
+          Normalised voicing; <code>Enter</code> saves the chord highlighted in
+          Edit Chords, and <code>Shift+Enter</code> saves it with the Normalised
+          voicing. Open
           <strong>Shortcuts help</strong> above the keyboard, next to Key labels,
           for the full quick reference, including chord audition keys and Alt shortcuts.
         </li>
