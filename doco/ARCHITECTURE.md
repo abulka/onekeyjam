@@ -508,6 +508,14 @@ and the validation commands.
   take: `newProject()` clears it (and its Flashback buffer), so a fresh project
   starts blank, while loading an existing project keeps the take.
 
+The right-hand **scale filter** is derived from the chord trigger map, rebuilt by
+`changeScaleFilter()` in `src/lib/change-scale.js`. A project with no chords has
+nothing to filter against, so there is no filter: the map, the locked scale and
+any ScalePicker pick are cleared. That is why a new (or emptied) project cannot
+inherit the previous song's scale on the keyboard. Scale filtering on/off and
+the magic/normal keyboard mode are the user's own switches, so clearing the
+filter never changes them.
+
 ## Further reading
 
 - `README.md` covers what the app is, how to run it and how to use it.

@@ -22,6 +22,7 @@ API
 - changeScaleFilter (scale)
 - setActiveScaleFilter (scaleTonic, scaleType, scaleNotes = [], scaleTypes = [])
 - setActiveScaleFilterToMatchChord (chordTonic, chordType)
+- resetScaleFilterState ()
 
 */
 
@@ -105,10 +106,19 @@ export function changeScaleFilter(scaleFilter) {
     if (!scaleFilter)
         scaleFilter = globals.currentScaleFilter
 
+    // No chords means no filter, so the right hand plays exactly what is played
+    // (see jam()). Clear everything rather than leave the previous project's
+    // scale behind, so a new or emptied project cannot keep an old scale map,
+    // lock or ScalePicker pick. This sits above the frozen guard because a lock
+    // has nothing to hold onto without a chord.
+    if (Object.keys(globals.chordTriggerMap).length == 0) {
+        resetScaleFilterState()
+        reportScaleFilterCleared()
+        return
+    }
+
     // protection
     if (globals.scaleFiltering.frozen)
-        return
-    if (Object.keys(globals.chordTriggerMap).length == 0)
         return
 
     // A normal scale change replaces any live auto/shuffle scale. The policy
@@ -629,10 +639,44 @@ function clearActiveScaleFilter() {
     globals.scaleFiltering.manualScaleFilter = ''
     globals.scaleFiltering.scaleTonic = ''
     globals.scaleFiltering.scaleType = ''
-    globals.scaleFiltering.scaleTypesMatchingCurrentChord
+    globals.scaleFiltering.scaleTypesMatchingCurrentChord = undefined
     globals.scaleFiltering.chordsThatFitScale = []
     globals.scaleFiltering.modesOfScale = []
     globals.scaleTriggerMap = {}
+}
+
+/**
+ * Clear every piece of scale-filter state, leaving the project with no filter at
+ * all. Used when there is no chord to filter against (a new project, or one
+ * whose last chord was deleted).
+ *
+ * This deliberately leaves the user's global modes alone: `scaleFilteringEnabled`
+ * (scale filtering on/off) and `bypass` (magic vs normal keyboard) are choices,
+ * not state derived from a chord, so this must not switch them for the user.
+ */
+export function resetScaleFilterState() {
+    clearActiveScaleFilter()
+    // A locked (frozen) scale and a ScalePicker override only make sense
+    // against the chord that was sounding, so they go too.
+    globals.scaleFiltering.frozen = false  // also clears frozenScaleNotes
+    globals.scaleFiltering.keyModeActive = false
+    globals.scaleOverrideName = ''
+    globals.scaleOverrideNotes = []
+}
+
+/**
+ * Tell the UI that the scale and its filter map have gone. Kept separate from
+ * reportScaleChange() so clearing does not touch the chord history or remap
+ * held notes.
+ */
+function reportScaleFilterCleared() {
+    // The empty project has no scale notes, and the listeners expect an array.
+    const notes = globals.currentScaleNotes ?? []
+
+    // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+    document.broadcastEvent('scale-changed', { notes })
+    // @ts-ignore: Property 'broadcastEvent' does not exist on type 'Document'
+    document.broadcastEvent('scale-filtering-changed', { state: globals.scaleFilteringEnabled, notes })
 }
 
 /**

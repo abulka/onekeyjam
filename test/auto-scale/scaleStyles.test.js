@@ -52,6 +52,7 @@ function resetGlobals() {
 describe('scale styles', () => {
 
     beforeEach(() => {
+        document.broadcastEvent = () => { }
         resetGlobals()
         globals.project = /** @type {Project} */ (makeProject())
     })
