@@ -1059,7 +1059,7 @@ onUnmounted(() => {
             @click="clickInvert(0, $event)"
             @mouseenter="onHoverInvert(0, true)" @mouseleave="onHoverInvert(0, false)" @focus="onHoverInvert(0, true)" @blur="onHoverInvert(0, false)">Reset inversion</button>
         </div>
-        <p class="row-hint">Normalised: transposing is a new chord and inverting changes the generated voicing. Custom: transposing and inverting reshape your notes; the step and reset buttons are off.</p>
+        <p class="row-hint">Normalised: transposing moves the slash bass with the root and regenerates the voicing; inverting changes the generated voicing. Custom: transposing and inverting reshape your notes; the step and reset buttons are off.</p>
       </div>
 
       <div class="title" data-accordion-section="inspector-options">

@@ -121,9 +121,10 @@ function clearCustomVoicing() {
 
 /**
  * Reset the bass to blank. Called whenever the chord identity is replaced (a
- * played chord, a Root/Chord change, transpose, step, a chord link, or a new
- * project), so a slash from the previous chord cannot linger. Note edits and
- * voicing switches keep the bass.
+ * played chord, a Root/Chord change, step, a chord link, or a new project), so a
+ * slash from the previous chord cannot linger. Note edits and voicing switches
+ * keep the bass; a transpose goes through here too but then re-applies the bass
+ * moved with the root (see transposeDraft/fifthDraft).
  */
 function resetBassToAuto() {
   globals.chordPicker.currentBass = ''
@@ -621,7 +622,11 @@ export function autoApplyCaptured() {
   const ins = inspector()
   rememberPlayedVoicing(captured)
   // A freshly played chord is a new chord, so a slash from the previous one is
-  // cleared. The grid derives the low root later (played chords do not fill it).
+  // cleared first, then the detected slash becomes the chord's bass. Storing it
+  // in the identity (not just the voicing) keeps an inversion through the
+  // Normalised/Custom switch and the Shift+Enter fast path. A root-position
+  // play has no slash, so the field stays blank and the low root is derived.
+  // Restores the rule the simplification removed (079fea6 -> 3b177c0 -> here).
   resetBassToAuto()
 
   const [plain] = removeBassSlash(captured.chord || captured.symbols?.[0] || '')
@@ -642,6 +647,10 @@ export function autoApplyCaptured() {
   else {
     setPlayedAsCustom(captured, sortNotes([...captured.notes]))
   }
+
+  // The detected slash bass belongs to the chord, shared by both voicings.
+  if (captured.bass)
+    setBass(captured.bass)
 
   // Consumed: the watcher sees no fresh capture, but the played notes stay
   // available for the Capture button.
@@ -674,8 +683,9 @@ function setPlayedAsCustom(captured, notes) {
 /**
  * Capture the played notes into the custom voicing row and select it. Works
  * for a fresh capture and for the kept played notes after auto-apply, so the
- * played voicing can be restored after editing the custom row. The Bass field
- * is the user's own and is never set here.
+ * played voicing can be restored after editing the custom row. A played slash
+ * bass fills the field only when it is blank, so a bass the user typed survives
+ * the capture.
  */
 export function useCapturedNotes() {
   const ins = inspector()
@@ -683,11 +693,13 @@ export function useCapturedNotes() {
   let notes = []
   let chord = ''
   let symbols = []
+  let bass = ''
   if (fresh.available) {
     rememberPlayedVoicing(fresh)
     notes = sortNotes([...fresh.notes])
     chord = fresh.chord || ''
     symbols = [...fresh.symbols]
+    bass = fresh.bass || ''
     ins.capturedIgnored = [...fresh.notes]
   }
   else if (hasPlayedVoicing()) {
@@ -695,6 +707,7 @@ export function useCapturedNotes() {
     notes = [...played.notes]
     chord = played.chord || ''
     symbols = [...played.symbols]
+    bass = played.bass || ''
   }
   else {
     return false
@@ -718,6 +731,10 @@ export function useCapturedNotes() {
   ins.voicingMode = 'custom'
   if (chord)
     applySymbolToIdentity(chord)
+  // The played slash bass fills a blank field, but never overwrites a bass the
+  // user typed meanwhile.
+  if (bass && !globals.chordPicker.currentBass)
+    setBass(bass)
   return true
 }
 
@@ -942,9 +959,10 @@ function invertCustomNotes(notes, direction) {
 }
 
 /**
- * Move the draft root by semitones. Normalised: a new root is a new chord.
- * Custom: transpose the custom voicing (and the explicit slash bass) so it is
- * shaped rather than destroyed.
+ * Move the draft root by semitones. Normalised: a new root is a new chord, and
+ * a slash bass moves with the root (GM/D +1 is G#M/D#); a blank bass stays
+ * blank. Custom: transpose the custom voicing (and the explicit slash bass) so
+ * it is shaped rather than destroyed.
  */
 export function transposeDraft(semitones) {
   if (inspector().voicingMode === 'custom') {
@@ -955,14 +973,21 @@ export function transposeDraft(semitones) {
     )
     return
   }
+  const interval = Tonal.Interval.fromSemitones(semitones)
+  const bassBefore = globals.chordPicker.currentBass
   const newRoot = normaliseNoteName(
-    Tonal.Note.transpose(globals.chordPicker.currentRoot, Tonal.Interval.fromSemitones(semitones)))
+    Tonal.Note.transpose(globals.chordPicker.currentRoot, interval))
   setIdentity(newRoot, globals.chordPicker.currentChord)
+  // setIdentity clears the bass so a slash cannot linger on a different chord.
+  // A transposition keeps the chord, so the slash moves with the root instead.
+  if (bassBefore)
+    setBass(normaliseNoteName(Tonal.Note.transpose(bassBefore, interval)))
 }
 
 /**
- * Move the draft root by fifths. Normalised: a new root is a new chord.
- * Custom: transpose the custom voicing (and the explicit slash bass) by a fifth.
+ * Move the draft root by fifths. Normalised: a new root is a new chord, and a
+ * slash bass moves with the root; a blank bass stays blank. Custom: transpose
+ * the custom voicing (and the explicit slash bass) by a fifth.
  */
 export function fifthDraft(direction) {
   if (inspector().voicingMode === 'custom') {
@@ -972,9 +997,13 @@ export function fifthDraft(direction) {
     )
     return
   }
+  const bassBefore = globals.chordPicker.currentBass
   const newRoot = normaliseNoteName(
     Tonal.Note.transposeFifths(globals.chordPicker.currentRoot, direction))
   setIdentity(newRoot, globals.chordPicker.currentChord)
+  // A transposition keeps the chord, so the slash moves with the root.
+  if (bassBefore)
+    setBass(normaliseNoteName(Tonal.Note.transposeFifths(bassBefore, direction)))
 }
 
 /**
@@ -1037,9 +1066,13 @@ export function previewTranspose(semitones) {
   }
   const root = globals.chordPicker.currentRoot
   const quality = globals.chordPicker.currentChord
+  const interval = Tonal.Interval.fromSemitones(semitones)
   const newRoot = normaliseNoteName(
-    Tonal.Note.transpose(root, Tonal.Interval.fromSemitones(semitones)))
-  return { notes: autoNotesFor(newRoot, quality, 0), bass: newRoot }
+    Tonal.Note.transpose(root, interval))
+  // A set slash bass moves with the root; a blank one previews as the new root,
+  // matching what a save would derive.
+  const bass = customPreviewBass(bass => normaliseNoteName(Tonal.Note.transpose(bass, interval))) || newRoot
+  return { notes: autoNotesFor(newRoot, quality, 0), bass }
 }
 
 /** Preview a fifth move without touching the draft. */
@@ -1054,7 +1087,9 @@ export function previewFifth(direction) {
   const quality = globals.chordPicker.currentChord
   const newRoot = normaliseNoteName(
     Tonal.Note.transposeFifths(root, direction))
-  return { notes: autoNotesFor(newRoot, quality, 0), bass: newRoot }
+  // A set slash bass moves with the root; a blank one previews as the new root.
+  const bass = customPreviewBass(bass => normaliseNoteName(Tonal.Note.transposeFifths(bass, direction))) || newRoot
+  return { notes: autoNotesFor(newRoot, quality, 0), bass }
 }
 
 /** Preview an inversion without touching the draft. */

@@ -115,6 +115,14 @@ Only the card's Delete removes the row. It closes on Keep, on Escape, on a click
 away, or on its own after a few seconds. After the delete the next row is
 selected, or the row before it when the deleted row was the last one.
 
+**/ Bass** is the chord's bass, shared by the Normalised and Custom voicings.
+Play a chord whose lowest note is not its root, such as `D4 G4 B4` (`GM/D`), and
+the field fills with that bass; a root-position chord leaves it blank, which
+means the low note is derived when you save. Changing the **Root** or **Chord**
+picker clears it, because that is a different chord. Transposing, or moving by a
+fifth, keeps it and moves it with the root in both voicings, so `GM/D` up a
+semitone is `G#M/D#`; inverting keeps it as well.
+
 ---
 
 ## Trigger keys and solo keys

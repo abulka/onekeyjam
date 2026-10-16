@@ -1,6 +1,8 @@
 // @ts-check
-// A slash bass must not linger: playing a chord or changing the chord identity
-// clears it, while note edits and voicing switches keep it.
+// A slash bass belongs to the chord and must not linger from an unrelated one:
+// a played chord replaces it with its detected slash (or clears it when there is
+// none), a chord identity change clears it, and a transpose moves it with the
+// root, while note edits and voicing switches keep it.
 import assert from 'assert'
 import { globals } from '@/lib/globals.js'
 import { buildProject } from '@/lib/build-project.js'
@@ -111,9 +113,22 @@ describe('a played or replaced chord clears the bass', () => {
         chooseCustom()
         setIdentity('A', 'm')
         assert.equal(globals.chordPicker.currentBass, '', 'an identity change from Custom clears the bass')
+    })
+
+    it('a transpose moves the bass with the root, in both voicings', () => {
+        install()
+        openForSlot('C3')
+        globals.chordInspector.open = true
 
         setBass('F')
         transposeDraft(1)
-        assert.equal(globals.chordPicker.currentBass, '', 'a transpose clears the bass')
+        assert.equal(globals.chordPicker.currentBass, 'F#', 'a normalised transpose moves the slash bass')
+
+        transposeDraft(-1)
+        assert.equal(globals.chordPicker.currentBass, 'F', 'and back again')
+
+        chooseCustom()
+        transposeDraft(1)
+        assert.equal(globals.chordPicker.currentBass, 'F#', 'a custom transpose moves it too')
     })
 })

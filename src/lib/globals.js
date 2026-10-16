@@ -111,8 +111,9 @@ export const globals = reactive({
     chordPicker: {
         currentRoot: 'C',
         currentChord: 'M',
-        // The user's explicit bass, or blank to derive the low root on save.
-        // Detection never writes this. See chordInspector.js.
+        // The chord's bass: the detected slash of a played chord, or the user's
+        // explicit choice. Blank means the low root is derived from the voicing
+        // on save. See chordInspector.js.
         currentBass: '',
         currentChordInversion: 0,
         inversionChangesBass: true,

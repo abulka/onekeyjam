@@ -188,6 +188,11 @@ and the validation commands.
   only on request. Note spellings are normalised (`normaliseNoteName`), stored
   theoretical spellings are repaired on load by `emergencyRepairProject`, and
   every audition derives its bass through `normaliseAuditionBass`.
+  The Bass field is the chord's bass, shared by the Normalised and Custom
+  voicings: a played chord stores its detected slash there (a root-position play
+  leaves it blank, so the low root is derived), a Root/Chord change clears it,
+  and a transpose or a move by a fifth carries it with the root in both voicings
+  (`GM/D` +1 is `G#M/D#`).
 - The Edit view's dedicated **Key Detection** accordion
   (`src/components/KeySignature.vue`) owns the project key: its detection
   candidates (chords, notes and the optional music21 server) each offer "set as

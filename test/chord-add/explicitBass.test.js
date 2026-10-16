@@ -1,6 +1,7 @@
 // @ts-check
-// The Bass field is the user's own: nothing auto-fills it. A blank bass still
-// sounds as the voicing's low root, derived when the chord is saved.
+// The Bass field is the chord's bass: a played chord fills it from the detected
+// slash, or the user sets it by hand. Typed notes never invent one. A blank bass
+// still sounds as the voicing's low root, derived when the chord is saved.
 import assert from 'assert'
 import { globals } from '@/lib/globals.js'
 import { buildProject } from '@/lib/build-project.js'
