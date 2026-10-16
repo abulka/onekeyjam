@@ -55,7 +55,7 @@ function analyseNotes(notes) {
     doDetect(currentNotes);
 }
 
-function doDetect(currentNotes, retainLastDetectionResult=true) {
+function doDetect(currentNotes) {
     if (!(currentNotes instanceof Array))
         throw (`currentNotes '${currentNotes}' is not an array?`)
 
@@ -80,21 +80,19 @@ function doDetect(currentNotes, retainLastDetectionResult=true) {
         globals.currentChordBeingJammed.stale = false
     }
     else {
-        // Even though notes weren't detected, still save them just in case user wants to add them to project anyway
+        // Even though notes weren't detected, still save them just in case user wants to add them to project anyway.
+        // The identity is cleared so a previously played chord cannot leak in: an unrecognised voicing is
+        // captured from its notes alone (see chordInspector).
         if (currentNotes.length > 1) {
             globals.currentChordBeingJammed.chordNotes = currentNotes;
             globals.currentChordBeingJammed.source = 'midi'
         }
-        
+
+        globals.currentChordBeingJammed.chord = ''
+        globals.currentChordBeingJammed.symbols = []
+        globals.currentChordBeingJammed.tonic = ''
+        globals.currentChordBeingJammed.type = ''
+        globals.currentChordBeingJammed.bass = ''
         globals.currentChordBeingJammed.stale = true
-
-        if (!retainLastDetectionResult)
-            clearDetection();
     }
-}
-
-function clearDetection() {
-    globals.clearCurrentChordBeingJammed()
-    lastNotesAnalysed = []
-    lastNotes = []
 }

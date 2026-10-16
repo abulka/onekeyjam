@@ -509,6 +509,26 @@ export function capturedInfo() {
   }
 }
 
+/**
+ * Name a capture that Tonal could not recognise from its notes: the lowest
+ * played note becomes the root, with a plain major quality. Returns the derived
+ * symbol. Resetting the quality too (not just the root) keeps the name from
+ * depending on whatever chord was played or selected before; the stored chord
+ * stays a valid Tonal symbol, so the picker, the scales and key detection all
+ * keep working with no special format.
+ */
+function applyDerivedRootFromNotes(notes) {
+  if (Array.isArray(notes) && notes.length > 0) {
+    const lowest = Tonal.Note.get(notes[0])
+    if (!lowest.empty) {
+      globals.chordPicker.currentRoot = normaliseNoteName(lowest.pc)
+      globals.chordPicker.currentChord = 'M'
+      globals.chordPicker.currentChordInversion = 0
+    }
+  }
+  return autoSymbolFor(globals.chordPicker.currentRoot, globals.chordPicker.currentChord)
+}
+
 /** True when a played voicing is kept for toggling against Auto. */
 export function hasPlayedVoicing() {
   const ins = inspector()
@@ -633,9 +653,18 @@ export function autoApplyCaptured() {
 function setPlayedAsCustom(captured, notes) {
   const ins = inspector()
   const [plain] = removeBassSlash(captured.chord || captured.symbols?.[0] || '')
+  if (plain) {
+    ins.customSymbol = plain
+    ins.customSymbols = captured.symbols.length > 0 ? [...captured.symbols] : [plain]
+  }
+  else {
+    // No detected name: name it from the lowest played note instead of
+    // inheriting the selected row's symbol.
+    const symbol = applyDerivedRootFromNotes(notes)
+    ins.customSymbol = symbol
+    ins.customSymbols = [symbol]
+  }
   ins.customNotes = [...notes]
-  ins.customSymbol = plain || ins.symbol
-  ins.customSymbols = captured.symbols.length > 0 ? [...captured.symbols] : [...ins.symbols]
   ins.notes = [...notes]
   ins.symbol = ins.customSymbol
   ins.symbols = [...ins.customSymbols]
@@ -671,9 +700,18 @@ export function useCapturedNotes() {
     return false
   }
   const [plain] = removeBassSlash(chord)
+  if (plain) {
+    ins.customSymbol = plain
+    ins.customSymbols = symbols.length > 0 ? [...symbols] : [plain]
+  }
+  else {
+    // No detected name: name it from the lowest played note instead of
+    // inheriting the selected row's symbol.
+    const symbol = applyDerivedRootFromNotes(notes)
+    ins.customSymbol = symbol
+    ins.customSymbols = [symbol]
+  }
   ins.customNotes = [...notes]
-  ins.customSymbol = plain || ins.symbol
-  ins.customSymbols = symbols.length > 0 ? [...symbols] : [...ins.symbols]
   ins.notes = [...notes]
   ins.symbol = ins.customSymbol
   ins.symbols = [...ins.customSymbols]
@@ -779,7 +817,7 @@ export function addRow() {
   }
   const captured = capturedInfo()
   if (captured.available) {
-    const symbol = captured.chord || captured.symbols[0] || 'C'
+    const symbol = captured.chord || captured.symbols[0] || applyDerivedRootFromNotes(captured.notes)
     chordAddToProjectExact(symbol, [...captured.notes], [...captured.symbols], captured.bass)
     return selectNewestSlot() ?? false
   }
